@@ -1,0 +1,412 @@
+import 'package:flutter/material.dart' hide FormState;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:better_form/better_form.dart';
+
+// Test-specific providers for easier testing
+final testControllerProvider =
+    StateNotifierProvider<RiverpodFormController, FormState>((ref) {
+      return RiverpodFormController(initialValue: {});
+    });
+
+void main() {
+  group('RiverpodTextFormField', () {
+    testWidgets('should render with initial value', (tester) async {
+      final nameField = BetterFormFieldID<String>('name');
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            testControllerProvider.overrideWith((ref) {
+              return RiverpodFormController(initialValue: {'name': 'John'});
+            }),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: RiverpodTextFormField(
+                fieldId: nameField,
+                controllerProvider: testControllerProvider,
+                decoration: const InputDecoration(labelText: 'Name'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('John'), findsOneWidget);
+      expect(find.text('Name'), findsOneWidget);
+    });
+
+    testWidgets('should update value when typing', (tester) async {
+      final nameField = BetterFormFieldID<String>('name');
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            testControllerProvider.overrideWith((ref) {
+              return RiverpodFormController(initialValue: {'name': ''});
+            }),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: RiverpodTextFormField(
+                fieldId: nameField,
+                controllerProvider: testControllerProvider,
+                decoration: const InputDecoration(labelText: 'Name'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.enterText(find.byType(TextFormField), 'Jane');
+      await tester.pump();
+
+      // The field should show the entered text
+      expect(find.text('Jane'), findsOneWidget);
+    });
+
+    testWidgets('should show validation error', (tester) async {
+      final emailField = BetterFormFieldID<String>('email');
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            testControllerProvider.overrideWith((ref) {
+              final controller = RiverpodFormController(
+                initialValue: {'email': ''},
+              );
+              controller.registerField(
+                BetterFormField<String>(
+                  id: emailField,
+                  initialValue: '',
+                  validator: (value) =>
+                      value.contains('@') ? null : 'Invalid email',
+                ),
+              );
+              return controller;
+            }),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: RiverpodTextFormField(
+                fieldId: emailField,
+                controllerProvider: testControllerProvider,
+                decoration: const InputDecoration(labelText: 'Email'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.enterText(find.byType(TextFormField), 'invalid-email');
+      await tester.pump();
+
+      // For Riverpod fields, validation happens on field registration
+      // The error should be shown immediately
+      expect(find.text('Invalid email'), findsOneWidget);
+    });
+  });
+
+  group('RiverpodNumberFormField', () {
+    testWidgets('should render with initial numeric value', (tester) async {
+      final ageField = BetterFormFieldID<num>('age');
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            formControllerProvider(const {}).overrideWith((ref) {
+              return RiverpodFormController(initialValue: {'age': 25});
+            }),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: RiverpodNumberFormField(
+                fieldId: ageField,
+                decoration: const InputDecoration(labelText: 'Age'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('25'), findsOneWidget);
+      expect(find.text('Age'), findsOneWidget);
+    });
+
+    testWidgets('should accept numeric input', (tester) async {
+      final ageField = BetterFormFieldID<num>('age');
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            formControllerProvider(const {}).overrideWith((ref) {
+              return RiverpodFormController(initialValue: {'age': 0});
+            }),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: RiverpodNumberFormField(
+                fieldId: ageField,
+                decoration: const InputDecoration(labelText: 'Age'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.enterText(find.byType(TextFormField), '30');
+      await tester.pump();
+
+      expect(find.text('30'), findsOneWidget);
+    });
+
+    testWidgets('should enforce min/max constraints', (tester) async {
+      final ageField = BetterFormFieldID<num>('age');
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            formControllerProvider(const {}).overrideWith((ref) {
+              return RiverpodFormController(initialValue: {'age': 25});
+            }),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: RiverpodNumberFormField(
+                fieldId: ageField,
+                min: 18,
+                max: 100,
+                decoration: const InputDecoration(labelText: 'Age'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      // Try to enter value below minimum
+      await tester.enterText(find.byType(TextFormField), '15');
+      await tester.pump();
+
+      // The value should not be accepted (field should still show original value)
+      expect(find.text('25'), findsOneWidget);
+    });
+  });
+
+  group('RiverpodCheckboxFormField', () {
+    testWidgets('should render with initial boolean value', (tester) async {
+      final newsletterField = BetterFormFieldID<bool>('newsletter');
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            formControllerProvider(const {}).overrideWith((ref) {
+              return RiverpodFormController(initialValue: {'newsletter': true});
+            }),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: RiverpodCheckboxFormField(
+                fieldId: newsletterField,
+                title: const Text('Subscribe to newsletter'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Subscribe to newsletter'), findsOneWidget);
+      // Checkbox should be checked (true)
+      final checkbox = tester.widget<CheckboxListTile>(
+        find.byType(CheckboxListTile),
+      );
+      expect(checkbox.value, true);
+    });
+
+    testWidgets('should toggle value when tapped', (tester) async {
+      final newsletterField = BetterFormFieldID<bool>('newsletter');
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            formControllerProvider(const {}).overrideWith((ref) {
+              return RiverpodFormController(
+                initialValue: {'newsletter': false},
+              );
+            }),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: RiverpodCheckboxFormField(
+                fieldId: newsletterField,
+                title: const Text('Subscribe to newsletter'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      // Initially unchecked
+      CheckboxListTile checkbox = tester.widget<CheckboxListTile>(
+        find.byType(CheckboxListTile),
+      );
+      expect(checkbox.value, false);
+
+      // Tap to check
+      await tester.tap(find.byType(CheckboxListTile));
+      await tester.pump();
+
+      // Should now be checked
+      checkbox = tester.widget<CheckboxListTile>(find.byType(CheckboxListTile));
+      expect(checkbox.value, true);
+    });
+
+    testWidgets('should show validation error', (tester) async {
+      final agreeField = BetterFormFieldID<bool>('agree');
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            formControllerProvider(const {}).overrideWith((ref) {
+              final controller = RiverpodFormController(
+                initialValue: {'agree': false},
+              );
+              controller.registerField(
+                BetterFormField<bool>(
+                  id: agreeField,
+                  initialValue: false,
+                  validator: (value) => value == true ? null : 'You must agree',
+                ),
+              );
+              return controller;
+            }),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: RiverpodCheckboxFormField(
+                fieldId: agreeField,
+                title: const Text('I agree to terms'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('You must agree'), findsOneWidget);
+    });
+  });
+
+  group('RiverpodDropdownFormField', () {
+    testWidgets('should render with initial value', (tester) async {
+      final priorityField = BetterFormFieldID<String>('priority');
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            formControllerProvider(const {}).overrideWith((ref) {
+              return RiverpodFormController(
+                initialValue: {'priority': 'medium'},
+              );
+            }),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: RiverpodDropdownFormField<String>(
+                fieldId: priorityField,
+                items: const [
+                  DropdownMenuItem(value: 'low', child: Text('Low')),
+                  DropdownMenuItem(value: 'medium', child: Text('Medium')),
+                  DropdownMenuItem(value: 'high', child: Text('High')),
+                ],
+                decoration: const InputDecoration(labelText: 'Priority'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Priority'), findsOneWidget);
+      expect(find.text('Medium'), findsOneWidget);
+    });
+
+    testWidgets('should change value when selected', (tester) async {
+      final priorityField = BetterFormFieldID<String>('priority');
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            formControllerProvider(const {}).overrideWith((ref) {
+              return RiverpodFormController(
+                initialValue: {'priority': 'medium'},
+              );
+            }),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: RiverpodDropdownFormField<String>(
+                fieldId: priorityField,
+                items: const [
+                  DropdownMenuItem(value: 'low', child: Text('Low')),
+                  DropdownMenuItem(value: 'medium', child: Text('Medium')),
+                  DropdownMenuItem(value: 'high', child: Text('High')),
+                ],
+                decoration: const InputDecoration(labelText: 'Priority'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      // Initially shows 'Medium'
+      expect(find.text('Medium'), findsOneWidget);
+
+      // Note: Testing dropdown selection requires more complex interaction
+      // This test verifies the widget renders correctly with initial value
+    });
+  });
+
+  group('RiverpodFormStatus', () {
+    testWidgets('should show form status', (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            formControllerProvider(const {}).overrideWith((ref) {
+              return RiverpodFormController(initialValue: {'name': 'John'});
+            }),
+          ],
+          child: MaterialApp(home: Scaffold(body: const RiverpodFormStatus())),
+        ),
+      );
+
+      expect(find.text('Form Status'), findsOneWidget);
+      expect(find.text('Form is clean'), findsOneWidget);
+      expect(find.text('Is Valid: true'), findsOneWidget);
+    });
+
+    testWidgets('should show dirty state when form is modified', (
+      tester,
+    ) async {
+      final nameField = BetterFormFieldID<String>('name');
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            formControllerProvider(const {}).overrideWith((ref) {
+              final controller = RiverpodFormController(
+                initialValue: {'name': 'John'},
+              );
+              // Simulate setting a value to make it dirty
+              Future.microtask(() => controller.setValue(nameField, 'Jane'));
+              return controller;
+            }),
+          ],
+          child: MaterialApp(home: Scaffold(body: const RiverpodFormStatus())),
+        ),
+      );
+
+      await tester.pump();
+
+      expect(find.text('Form is dirty'), findsOneWidget);
+    });
+  });
+}

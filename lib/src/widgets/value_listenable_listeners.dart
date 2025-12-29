@@ -16,7 +16,7 @@ class BetterFormFieldValueListenableBuilder<T> extends StatelessWidget {
   });
 
   final BetterFormFieldID<T> fieldId;
-  final Widget Function(BuildContext context, T value, Widget? child) builder;
+  final Widget Function(BuildContext context, T? value, Widget? child) builder;
   final BetterFormController? controller;
   final Widget? child;
 
@@ -24,7 +24,7 @@ class BetterFormFieldValueListenableBuilder<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final ctrl = controller ?? BetterForm.of(context)!;
 
-    return ValueListenableBuilder<T>(
+    return ValueListenableBuilder<T?>(
       valueListenable: ctrl.fieldValueListenable<T>(fieldId),
       builder: builder,
       child: child,
@@ -98,7 +98,7 @@ class BetterFormFieldListenableBuilder<T> extends StatelessWidget {
   final BetterFormFieldID<T> fieldId;
   final Widget Function(
     BuildContext context,
-    T value,
+    T? value,
     ValidationResult validation,
     bool isDirty,
   ) builder;
@@ -108,7 +108,7 @@ class BetterFormFieldListenableBuilder<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final ctrl = controller ?? BetterForm.of(context)!;
 
-    return ValueListenableBuilder<T>(
+    return ValueListenableBuilder<T?>(
       valueListenable: ctrl.fieldValueListenable<T>(fieldId),
       builder: (context, value, _) {
         return ValueListenableBuilder<ValidationResult>(

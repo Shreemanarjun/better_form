@@ -3,43 +3,35 @@ import 'package:flutter/material.dart';
 import 'base_form_field.dart';
 
 /// Number form field with type safety
-class BetterNumberFormField extends BetterFormFieldWidget<int> {
+class BetterNumberFormField extends BetterNumberFormFieldWidget {
   const BetterNumberFormField({
     super.key,
     required super.fieldId,
     super.controller,
     super.validator,
     super.initialValue,
-    this.decoration = const InputDecoration(),
-    this.enabled,
+    super.decoration = const InputDecoration(),
+    super.enabled,
   });
 
-  final InputDecoration decoration;
-  final bool? enabled;
-
   @override
-  BetterFormFieldWidgetState<int> createState() =>
+  BetterNumberFormFieldWidgetState createState() =>
       _BetterNumberFormFieldState();
 }
 
-class _BetterNumberFormFieldState extends BetterFormFieldWidgetState<int>
-    with BetterFormFieldTextMixin<int> {
-  @override
-  String valueToString(int value) => value.toString();
-
-  @override
-  int? stringToValue(String text) => int.tryParse(text);
-
+class _BetterNumberFormFieldState extends BetterNumberFormFieldWidgetState {
   @override
   Widget build(BuildContext context) {
+    final widget = this.widget as BetterNumberFormField;
+
     return TextFormField(
       controller: textController,
-      decoration: (widget as BetterNumberFormField).decoration.copyWith(
+      decoration: widget.decoration.copyWith(
         errorText: validation.errorMessage,
         suffixIcon: isDirty ? const Icon(Icons.edit, size: 16) : null,
       ),
       keyboardType: TextInputType.number,
-      enabled: (widget as BetterNumberFormField).enabled,
+      enabled: widget.enabled,
       onChanged: (value) => didChange(int.tryParse(value) ?? 0),
     );
   }

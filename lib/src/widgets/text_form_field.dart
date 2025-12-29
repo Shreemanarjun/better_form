@@ -4,8 +4,9 @@ import '../controller.dart';
 import '../field_id.dart';
 import '../field.dart';
 import '../form.dart';
+import '../validation.dart';
 
-/// Text form field with type safety
+/// Text form field with type safety and reactive signals
 class BetterTextFormField extends StatefulWidget {
   const BetterTextFormField({
     super.key,
@@ -38,6 +39,7 @@ class _BetterTextFormFieldState extends State<BetterTextFormField> {
   late BetterFormController _controller;
   late final TextEditingController _textController;
   bool _isInitialized = false;
+  late final VoidCallback _valueListener;
 
   @override
   void didChangeDependencies() {
@@ -58,9 +60,18 @@ class _BetterTextFormFieldState extends State<BetterTextFormField> {
 
       // Now we can safely get the value
       _textController = TextEditingController(
-        text: _controller.getValue(widget.fieldId),
+        text: _controller.getValue(widget.fieldId) ?? '',
       );
-      _controller.addFieldListener(widget.fieldId, _onFieldChanged);
+
+      // Set up listener for external value changes
+      _valueListener = () {
+        final currentValue = _controller.getValue(widget.fieldId) ?? '';
+        if (_textController.text != currentValue) {
+          _textController.text = currentValue;
+        }
+      };
+      _controller.fieldValueListenable(widget.fieldId).addListener(_valueListener);
+
       _isInitialized = true;
     }
   }
@@ -70,50 +81,50 @@ class _BetterTextFormFieldState extends State<BetterTextFormField> {
     super.didUpdateWidget(oldWidget);
     if (widget.controller != oldWidget.controller ||
         widget.fieldId != oldWidget.fieldId) {
-      _controller.removeFieldListener(oldWidget.fieldId, _onFieldChanged);
+      // Remove old listener
+      _controller.fieldValueListenable(oldWidget.fieldId).removeListener(_valueListener);
+
       _controller = widget.controller ?? BetterForm.of(context)!;
-      _controller.addFieldListener(widget.fieldId, _onFieldChanged);
-      final newText = _controller.getValue(widget.fieldId);
+      final newText = _controller.getValue(widget.fieldId) ?? '';
       if (_textController.text != newText) {
         _textController.text = newText;
       }
+
+      // Add listener to new controller/field
+      _controller.fieldValueListenable(widget.fieldId).addListener(_valueListener);
     }
   }
 
   @override
   void dispose() {
-    _controller.removeFieldListener(widget.fieldId, _onFieldChanged);
+    _controller.fieldValueListenable(widget.fieldId).removeListener(_valueListener);
     _textController.dispose();
     super.dispose();
   }
 
-  void _onFieldChanged() {
-    final newValue = _controller.getValue(widget.fieldId);
-    if (_textController.text != newValue) {
-      _textController.text = newValue;
-    }
-    // Always call setState to update validation state/isDirty even if text didn't change
-    if (mounted) {
-      setState(() {});
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final validation = _controller.getValidation(widget.fieldId);
-    final isDirty = _controller.isFieldDirty(widget.fieldId);
-
-    return TextFormField(
-      controller: _textController,
-      decoration: widget.decoration.copyWith(
-        errorText: validation.errorMessage,
-        suffixIcon: isDirty ? const Icon(Icons.edit, size: 16) : null,
-      ),
-      keyboardType: widget.keyboardType,
-      maxLines: widget.maxLines,
-      obscureText: widget.obscureText,
-      enabled: widget.enabled,
-      onChanged: (value) => _controller.setValue(widget.fieldId, value),
+    return ValueListenableBuilder<ValidationResult>(
+      valueListenable: _controller.fieldValidationNotifier(widget.fieldId),
+      builder: (context, validation, child) {
+        return ValueListenableBuilder<bool>(
+          valueListenable: _controller.fieldDirtyNotifier(widget.fieldId),
+          builder: (context, isDirty, child) {
+            return TextFormField(
+              controller: _textController,
+              decoration: widget.decoration.copyWith(
+                errorText: validation.errorMessage,
+                suffixIcon: isDirty ? const Icon(Icons.edit, size: 16) : null,
+              ),
+              keyboardType: widget.keyboardType,
+              maxLines: widget.maxLines,
+              obscureText: widget.obscureText,
+              enabled: widget.enabled,
+              onChanged: (value) => _controller.setValue(widget.fieldId, value),
+            );
+          },
+        );
+      },
     );
   }
 }

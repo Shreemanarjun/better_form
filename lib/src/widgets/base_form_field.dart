@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../controller.dart';
@@ -70,36 +71,33 @@ abstract class BetterFormFieldWidgetState<T>
     // Auto-register the field if it's not already registered
     _ensureFieldRegistered();
 
-    _currentValue = _controller.getValue(widget.fieldId);
+    _currentValue = _controller.getValue(widget.fieldId) ?? widget.initialValue;
     _controller.addFieldListener(widget.fieldId, _onFieldChanged);
   }
 
   void _ensureFieldRegistered() {
     // Check if the field is already registered using the public API
     if (!_controller.isFieldRegistered(widget.fieldId)) {
-      // Field not registered, register it with provided validator and initial value
+      // Field not registered, try to get initial value from controller or widget
+      T? initialValue = widget.initialValue;
+
+      // If no initial value provided in widget, try to get it from controller's initial values
+      initialValue ??= _controller.initialValue[widget.fieldId.key] as T?;
+
+      // If still no initial value, throw error
+      if (initialValue == null) {
+        throw StateError(
+          'Field ${widget.fieldId} must have an initialValue. '
+          'Please provide an initialValue explicitly or ensure the field exists in the controller.',
+        );
+      }
+
       _controller.registerField(
         BetterFormField<T>(
           id: widget.fieldId,
-          initialValue: widget.initialValue ?? _getDefaultValue(),
+          initialValue: initialValue,
           validator: widget.validator,
         ),
-      );
-    }
-  }
-
-  T _getDefaultValue() {
-    final defaultValue = _controller.getDefaultValueForType<T>();
-    if (defaultValue != null) return defaultValue;
-
-    // Fallback for custom types
-    try {
-      return null as T;
-    } catch (e) {
-      // If T is non-nullable and we have no default, we have to throw a better error
-      throw StateError(
-        'No default value found for type $T in field ${widget.fieldId}. '
-        'Please provide an initialValue explicitly.',
       );
     }
   }
@@ -112,7 +110,7 @@ abstract class BetterFormFieldWidgetState<T>
       _controller.removeFieldListener(oldWidget.fieldId, _onFieldChanged);
       _controller = widget.controller ?? BetterForm.of(context)!;
       _controller.addFieldListener(widget.fieldId, _onFieldChanged);
-      _currentValue = _controller.getValue(widget.fieldId);
+      _currentValue = _controller.getValue(widget.fieldId) ?? widget.initialValue;
     }
   }
 
@@ -128,7 +126,9 @@ abstract class BetterFormFieldWidgetState<T>
     setState(() {
       _currentValue = newValue;
     });
-    onFieldChanged(newValue);
+    if (newValue != null) {
+      onFieldChanged(newValue);
+    }
   }
 
   /// Called when the field value changes externally
@@ -197,7 +197,11 @@ mixin BetterFormFieldTextMixin<T> on BetterFormFieldWidgetState<T> {
         ? valueToString(_currentValue as T)
         : '';
     if (_textController.text != newText) {
-      _textController.text = newText;
+      scheduleMicrotask(() {
+        if (mounted && _textController.text != newText) {
+          _textController.text = newText;
+        }
+      });
     }
   }
 
@@ -212,7 +216,10 @@ mixin BetterFormFieldTextMixin<T> on BetterFormFieldWidgetState<T> {
     super.onFieldChanged(value);
     final textValue = valueToString(value);
     if (_textController.text != textValue) {
-      _textController.text = textValue;
+      _textController.value = TextEditingValue(
+        text: textValue,
+        selection: TextSelection.collapsed(offset: textValue.length),
+      );
     }
   }
 
@@ -268,17 +275,82 @@ abstract class BetterTextFormFieldWidgetState
   Widget build(BuildContext context) {
     final widget = this.widget as BetterTextFormFieldWidget;
 
-    return TextFormField(
-      controller: textController,
-      decoration: widget.decoration.copyWith(
-        errorText: validation.errorMessage,
-        suffixIcon: isDirty ? const Icon(Icons.edit, size: 16) : null,
-      ),
-      keyboardType: widget.keyboardType,
-      maxLines: widget.maxLines,
-      obscureText: widget.obscureText,
-      enabled: widget.enabled,
-      onChanged: (value) => didChange(value),
+    return ValueListenableBuilder<ValidationResult>(
+      valueListenable: _controller.fieldValidationNotifier(widget.fieldId),
+      builder: (context, validation, child) {
+        return ValueListenableBuilder<bool>(
+          valueListenable: _controller.fieldDirtyNotifier(widget.fieldId),
+          builder: (context, isDirty, child) {
+            return TextFormField(
+              controller: textController,
+              decoration: widget.decoration.copyWith(
+                errorText: validation.errorMessage,
+                suffixIcon: isDirty ? const Icon(Icons.edit, size: 16) : null,
+              ),
+              keyboardType: widget.keyboardType,
+              maxLines: widget.maxLines,
+              obscureText: widget.obscureText,
+              enabled: widget.enabled,
+              onChanged: (value) => didChange(value),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+/// Simplified number form field base class
+abstract class BetterNumberFormFieldWidget extends BetterFormFieldWidget<int> {
+  const BetterNumberFormFieldWidget({
+    super.key,
+    required super.fieldId,
+    super.controller,
+    super.validator,
+    super.initialValue,
+    this.decoration = const InputDecoration(),
+    this.enabled,
+  });
+
+  final InputDecoration decoration;
+  final bool? enabled;
+
+  @override
+  BetterNumberFormFieldWidgetState createState();
+}
+
+abstract class BetterNumberFormFieldWidgetState
+    extends BetterFormFieldWidgetState<int>
+    with BetterFormFieldTextMixin<int> {
+  @override
+  String valueToString(int value) => value.toString();
+
+  @override
+  int? stringToValue(String text) => int.tryParse(text);
+
+  @override
+  Widget build(BuildContext context) {
+    final widget = this.widget as BetterNumberFormFieldWidget;
+
+    return ValueListenableBuilder<ValidationResult>(
+      valueListenable: _controller.fieldValidationNotifier(widget.fieldId),
+      builder: (context, validation, child) {
+        return ValueListenableBuilder<bool>(
+          valueListenable: _controller.fieldDirtyNotifier(widget.fieldId),
+          builder: (context, isDirty, child) {
+            return TextFormField(
+              controller: textController,
+              decoration: widget.decoration.copyWith(
+                errorText: validation.errorMessage,
+                suffixIcon: isDirty ? const Icon(Icons.edit, size: 16) : null,
+              ),
+              keyboardType: TextInputType.number,
+              enabled: widget.enabled,
+              onChanged: (value) => didChange(int.tryParse(value) ?? 0),
+            );
+          },
+        );
+      },
     );
   }
 }

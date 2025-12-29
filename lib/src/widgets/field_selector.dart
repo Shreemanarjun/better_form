@@ -19,7 +19,7 @@ class FieldChangeInfo<T> {
   });
 
   final BetterFormFieldID<T> fieldId;
-  final T value;
+  final T? value;
   final ValidationResult validation;
   final bool isDirty;
   final bool hasInitialValueChanged;
@@ -68,7 +68,7 @@ class BetterFormFieldSelector<T> extends StatefulWidget {
 
 class _BetterFormFieldSelectorState<T> extends State<BetterFormFieldSelector<T>> {
   late BetterFormController _controller;
-  late T _currentValue;
+  late T? _currentValue;
   late ValidationResult _currentValidation;
   late bool _currentIsDirty;
   late bool _hasInitialValueChanged;
@@ -118,7 +118,7 @@ class _BetterFormFieldSelectorState<T> extends State<BetterFormFieldSelector<T>>
   }
 
   void _updateCurrentState() {
-    _currentValue = _controller.getValue(widget.fieldId);
+    _currentValue = _controller.getValue(widget.fieldId) ?? _controller.initialValue[widget.fieldId.key] as T?;
     _currentValidation = _controller.getValidation(widget.fieldId);
     _currentIsDirty = _controller.isFieldDirty(widget.fieldId);
 
@@ -184,7 +184,7 @@ class BetterFormFieldValueSelector<T> extends StatelessWidget {
   });
 
   final BetterFormFieldID<T> fieldId;
-  final Widget Function(BuildContext context, T value, Widget? child) builder;
+  final Widget Function(BuildContext context, T? value, Widget? child) builder;
   final BetterFormController? controller;
   final Widget? child;
 

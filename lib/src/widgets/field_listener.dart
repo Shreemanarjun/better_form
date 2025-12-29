@@ -20,11 +20,17 @@ class BetterFormFieldListener<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = BetterForm.of(context);
     if (controller == null) {
-      throw FlutterError('BetterFormFieldListener must be used within a BetterForm');
+      throw FlutterError(
+        'BetterFormFieldListener must be used within a BetterForm',
+      );
     }
 
+    // For listeners, we don't require pre-registration since fields may be
+    // registered later in the widget tree. The listener will work as long
+    // as the field exists when accessed.
+
     final notifier = controller.getFieldNotifier<T>(fieldId);
-    return ValueListenableBuilder<T>(
+    return ValueListenableBuilder<T?>(
       valueListenable: notifier,
       builder: (context, value, child) {
         return builder(context, value, child);
