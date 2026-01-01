@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
-import '../controller.dart';
-import '../field.dart';
-import '../field_id.dart';
-import '../form.dart';
-import '../validation.dart';
+import '../controllers/controller.dart';
+import '../controllers/field.dart';
+import '../controllers/field_id.dart';
+import '../controllers/validation.dart';
+import 'riverpod_form_fields.dart';
 
 /// Base class for custom form field widgets that automatically handles
 /// controller management, listeners, and value synchronization
@@ -66,7 +66,7 @@ abstract class BetterFormFieldWidgetState<T>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _controller = widget.controller ?? BetterForm.of(context)!;
+    _controller = widget.controller ?? BetterForm.controllerOf(context)!;
 
     // Auto-register the field if it's not already registered
     _ensureFieldRegistered();
@@ -108,7 +108,7 @@ abstract class BetterFormFieldWidgetState<T>
     if (widget.controller != oldWidget.controller ||
         widget.fieldId != oldWidget.fieldId) {
       _controller.removeFieldListener(oldWidget.fieldId, _onFieldChanged);
-      _controller = widget.controller ?? BetterForm.of(context)!;
+      _controller = widget.controller ?? BetterForm.controllerOf(context)!;
       _controller.addFieldListener(widget.fieldId, _onFieldChanged);
       _currentValue = _controller.getValue(widget.fieldId) ?? widget.initialValue;
     }

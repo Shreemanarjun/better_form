@@ -1,8 +1,38 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart' hide FormState;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../field_id.dart';
-import '../riverpod_controller.dart';
+import '../controllers/controller.dart';
+import '../controllers/riverpod_controller.dart';
+import '../controllers/field.dart';
+import '../controllers/field_id.dart';
+
+/// Configuration for a form field
+class BetterFormFieldConfig<T> {
+  const BetterFormFieldConfig({
+    required this.id,
+    this.initialValue,
+    this.validator,
+    this.label,
+    this.hint,
+  });
+
+  final BetterFormFieldID<T> id;
+  final T? initialValue;
+  final String? Function(T? value)? validator;
+  final String? label;
+  final String? hint;
+
+  BetterFormField<T> toField() {
+    return BetterFormField<T>(
+      id: id,
+      initialValue: initialValue as T,
+      validator: validator,
+      label: label,
+      hint: hint,
+    );
+  }
+}
 
 /// A form widget that automatically manages a Riverpod controller provider
 /// and makes it available to all child Riverpod form fields
@@ -10,206 +40,103 @@ class BetterForm extends ConsumerWidget {
   const BetterForm({
     super.key,
     this.initialValue = const {},
+    this.fields = const [],
     required this.child,
   });
 
   final Map<String, dynamic> initialValue;
+  final List<BetterFormFieldConfig> fields;
   final Widget child;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Create a unique controller provider for this form instance
     final controllerProvider = formControllerProvider(initialValue);
+    final controller = ref.read(controllerProvider.notifier) as BetterFormController;
 
-    return _BetterFormScope(
-      controllerProvider: controllerProvider,
-      child: child,
+    return ProviderScope(
+      overrides: [
+        currentControllerProvider.overrideWithValue(controllerProvider),
+      ],
+      child: _FieldRegistrar(
+        controllerProvider: controllerProvider,
+        fields: fields,
+        child: _BetterFormScope(
+          controller: controller,
+          controllerProvider: controllerProvider,
+          fields: fields,
+          child: child,
+        ),
+      ),
     );
   }
 
   /// Get the controller provider from the nearest BetterForm ancestor
-  static StateNotifierProvider<RiverpodFormController, FormState>? of(
+  static AutoDisposeStateNotifierProvider<RiverpodFormController, FormState>? of(
     BuildContext context,
   ) {
     final _BetterFormScope? scope = context
         .dependOnInheritedWidgetOfExactType<_BetterFormScope>();
     return scope?.controllerProvider;
   }
+
+  /// Get the controller from the nearest BetterForm ancestor (for compatibility)
+  static BetterFormController? controllerOf(BuildContext context) {
+    final _BetterFormScope? scope = context
+        .dependOnInheritedWidgetOfExactType<_BetterFormScope>();
+    return scope?.controller;
+  }
 }
 
 class _BetterFormScope extends InheritedWidget {
   const _BetterFormScope({
     required super.child,
+    required this.controller,
     required this.controllerProvider,
+    required this.fields,
   });
 
-  final StateNotifierProvider<RiverpodFormController, FormState>
+  final BetterFormController controller;
+  final AutoDisposeStateNotifierProvider<RiverpodFormController, FormState>
   controllerProvider;
+  final List<BetterFormFieldConfig> fields;
 
   @override
   bool updateShouldNotify(_BetterFormScope oldWidget) {
-    return controllerProvider != oldWidget.controllerProvider;
+    return controller != oldWidget.controller ||
+           controllerProvider != oldWidget.controllerProvider ||
+           !const ListEquality().equals(fields, oldWidget.fields);
   }
 }
 
-/// Riverpod-based text form field
-class RiverpodTextFormField extends ConsumerStatefulWidget {
-  const RiverpodTextFormField({
-    super.key,
-    required this.fieldId,
-    this.decoration,
-    this.keyboardType,
-    this.maxLength,
-    this.controllerProvider,
+/// Automatically registers fields with the controller
+class _FieldRegistrar extends ConsumerWidget {
+  const _FieldRegistrar({
+    required this.controllerProvider,
+    required this.fields,
+    required this.child,
   });
 
-  final BetterFormFieldID<String> fieldId;
-  final InputDecoration? decoration;
-  final TextInputType? keyboardType;
-  final int? maxLength;
-  final StateNotifierProvider<RiverpodFormController, FormState>?
-  controllerProvider;
+  final AutoDisposeStateNotifierProvider<RiverpodFormController, FormState> controllerProvider;
+  final List<BetterFormFieldConfig> fields;
+  final Widget child;
 
   @override
-  ConsumerState<RiverpodTextFormField> createState() =>
-      _RiverpodTextFormFieldState();
-}
-
-class _RiverpodTextFormFieldState extends ConsumerState<RiverpodTextFormField> {
-  late final TextEditingController _textController;
-
-  @override
-  void initState() {
-    super.initState();
-    _textController = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    _textController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final controllerProvider =
-        widget.controllerProvider ??
-        BetterForm.of(context) ??
-        formControllerProvider(const {});
+  Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.read(controllerProvider.notifier);
-    final formState = ref.watch(controllerProvider);
 
-    final value = formState.getValue(widget.fieldId);
-    final validation = formState.getValidation(widget.fieldId);
-    final isDirty = formState.isFieldDirty(widget.fieldId);
-
-    // Update controller text when value changes externally
-    if (_textController.text != (value ?? '')) {
-      _textController.text = value ?? '';
+    // Register all fields with the controller
+    for (final fieldConfig in fields) {
+      if (!controller.isFieldRegistered(fieldConfig.id)) {
+        controller.registerField(fieldConfig.toField());
+      }
     }
 
-    return TextFormField(
-      controller: _textController,
-      keyboardType: widget.keyboardType,
-      maxLength: widget.maxLength,
-      decoration: (widget.decoration ?? const InputDecoration()).copyWith(
-        errorText: validation.isValid ? null : validation.errorMessage,
-        suffixIcon: isDirty ? const Icon(Icons.edit, size: 16) : null,
-      ),
-      onChanged: (newValue) => controller.setValue(widget.fieldId, newValue),
-    );
+    return child;
   }
 }
 
-/// Riverpod-based number form field
-class RiverpodNumberFormField extends ConsumerStatefulWidget {
-  const RiverpodNumberFormField({
-    super.key,
-    required this.fieldId,
-    this.decoration,
-    this.min,
-    this.max,
-    this.controllerProvider,
-  });
 
-  final BetterFormFieldID<num> fieldId;
-  final InputDecoration? decoration;
-  final num? min;
-  final num? max;
-  final StateNotifierProvider<RiverpodFormController, FormState>?
-  controllerProvider;
-
-  @override
-  ConsumerState<RiverpodNumberFormField> createState() =>
-      _RiverpodNumberFormFieldState();
-}
-
-class _RiverpodNumberFormFieldState
-    extends ConsumerState<RiverpodNumberFormField> {
-  late final TextEditingController _textController;
-
-  @override
-  void initState() {
-    super.initState();
-    _textController = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    _textController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final controllerProvider =
-        widget.controllerProvider ??
-        BetterForm.of(context) ??
-        formControllerProvider(const {});
-    final controller = ref.read(controllerProvider.notifier);
-    final formState = ref.watch(controllerProvider);
-
-    final value = formState.getValue(widget.fieldId);
-    final validation = formState.getValidation(widget.fieldId);
-    final isDirty = formState.isFieldDirty(widget.fieldId);
-
-    // Update controller text when value changes externally
-    final displayValue = value?.toString() ?? '0';
-    if (_textController.text != displayValue) {
-      _textController.text = displayValue;
-    }
-
-    return TextFormField(
-      controller: _textController,
-      keyboardType: TextInputType.number,
-      decoration: (widget.decoration ?? const InputDecoration()).copyWith(
-        errorText: validation.isValid ? null : validation.errorMessage,
-        suffixIcon: isDirty ? const Icon(Icons.edit, size: 16) : null,
-      ),
-      onChanged: (text) {
-        final number = num.tryParse(text);
-        if (number != null) {
-          // Validate range if specified
-          if ((widget.min != null && number < widget.min!) ||
-              (widget.max != null && number > widget.max!)) {
-            // Invalid range - revert to current value
-            final currentValue = formState.getValue(widget.fieldId);
-            _textController.text = currentValue?.toString() ?? '0';
-            return;
-          }
-          controller.setValue(widget.fieldId, number);
-        } else if (text.isEmpty) {
-          // Allow empty input, but don't update value yet
-          return;
-        } else {
-          // Invalid number - revert to current value
-          final currentValue = formState.getValue(widget.fieldId);
-          _textController.text = currentValue?.toString() ?? '0';
-        }
-      },
-    );
-  }
-}
 
 /// Riverpod-based checkbox form field
 class RiverpodCheckboxFormField extends ConsumerWidget {
@@ -222,7 +149,7 @@ class RiverpodCheckboxFormField extends ConsumerWidget {
 
   final BetterFormFieldID<bool> fieldId;
   final Widget? title;
-  final StateNotifierProvider<RiverpodFormController, FormState>?
+  final AutoDisposeStateNotifierProvider<RiverpodFormController, FormState>?
   controllerProvider;
 
   @override
@@ -231,25 +158,33 @@ class RiverpodCheckboxFormField extends ConsumerWidget {
         this.controllerProvider ??
         BetterForm.of(context) ??
         formControllerProvider(const {});
-    final controller = ref.read(controllerProvider.notifier);
-    final formState = ref.watch(controllerProvider);
 
-    final value = formState.getValue(fieldId);
-    final validation = formState.getValidation(fieldId);
-    final isDirty = formState.isFieldDirty(fieldId);
+    return ProviderScope(
+      overrides: [
+        currentControllerProvider.overrideWithValue(controllerProvider),
+      ],
+      child: Consumer(
+        builder: (context, ref, child) {
+          final controller = ref.read(controllerProvider.notifier);
+          final value = ref.watch(fieldValueProvider(fieldId));
+          final validation = ref.watch(fieldValidationProvider(fieldId));
+          final isDirty = ref.watch(fieldDirtyProvider(fieldId));
 
-    return CheckboxListTile(
-      value: value ?? false,
-      title: title,
-      subtitle: validation.isValid
-          ? (isDirty
-                ? const Text('Modified', style: TextStyle(fontSize: 12))
-                : null)
-          : Text(
-              validation.errorMessage ?? '',
-              style: const TextStyle(color: Colors.red, fontSize: 12),
-            ),
-      onChanged: (newValue) => controller.setValue(fieldId, newValue ?? false),
+          return CheckboxListTile(
+            value: value ?? false,
+            title: title,
+            subtitle: validation.isValid
+                ? (isDirty
+                      ? const Text('Modified', style: TextStyle(fontSize: 12))
+                      : null)
+                : Text(
+                    validation.errorMessage ?? '',
+                    style: const TextStyle(color: Colors.red, fontSize: 12),
+                  ),
+            onChanged: (newValue) => controller.setValue(fieldId, newValue ?? false),
+          );
+        },
+      ),
     );
   }
 }
@@ -267,7 +202,7 @@ class RiverpodDropdownFormField<T> extends ConsumerWidget {
   final BetterFormFieldID<T> fieldId;
   final List<DropdownMenuItem<T>> items;
   final InputDecoration? decoration;
-  final StateNotifierProvider<RiverpodFormController, FormState>?
+  final AutoDisposeStateNotifierProvider<RiverpodFormController, FormState>?
   controllerProvider;
 
   @override
@@ -276,25 +211,33 @@ class RiverpodDropdownFormField<T> extends ConsumerWidget {
         this.controllerProvider ??
         BetterForm.of(context) ??
         formControllerProvider(const {});
-    final controller = ref.read(controllerProvider.notifier);
-    final formState = ref.watch(controllerProvider);
 
-    final value = formState.getValue(fieldId);
-    final validation = formState.getValidation(fieldId);
-    final isDirty = formState.isFieldDirty(fieldId);
+    return ProviderScope(
+      overrides: [
+        currentControllerProvider.overrideWithValue(controllerProvider),
+      ],
+      child: Consumer(
+        builder: (context, ref, child) {
+          final controller = ref.read(controllerProvider.notifier);
+          final value = ref.watch(fieldValueProvider(fieldId));
+          final validation = ref.watch(fieldValidationProvider(fieldId));
+          final isDirty = ref.watch(fieldDirtyProvider(fieldId));
 
-    return DropdownButtonFormField<T>(
-      initialValue: value,
-      items: items,
-      decoration: (decoration ?? const InputDecoration()).copyWith(
-        errorText: validation.isValid ? null : validation.errorMessage,
-        suffixIcon: isDirty ? const Icon(Icons.edit, size: 16) : null,
+          return DropdownButtonFormField<T>(
+            initialValue: value,
+            items: items,
+            decoration: (decoration ?? const InputDecoration()).copyWith(
+              errorText: validation.isValid ? null : validation.errorMessage,
+              suffixIcon: isDirty ? const Icon(Icons.edit, size: 16) : null,
+            ),
+            onChanged: (newValue) {
+              if (newValue != null) {
+                controller.setValue(fieldId, newValue);
+              }
+            },
+          );
+        },
       ),
-      onChanged: (newValue) {
-        if (newValue != null) {
-          controller.setValue(fieldId, newValue);
-        }
-      },
     );
   }
 }
@@ -303,7 +246,7 @@ class RiverpodDropdownFormField<T> extends ConsumerWidget {
 class RiverpodFormStatus extends ConsumerWidget {
   const RiverpodFormStatus({super.key, this.controllerProvider});
 
-  final StateNotifierProvider<RiverpodFormController, FormState>?
+  final AutoDisposeStateNotifierProvider<RiverpodFormController, FormState>?
   controllerProvider;
 
   @override
@@ -312,26 +255,38 @@ class RiverpodFormStatus extends ConsumerWidget {
         this.controllerProvider ??
         BetterForm.of(context) ??
         formControllerProvider(const {});
-    final formState = ref.watch(controllerProvider);
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Form Status', style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            Text(formState.isDirty ? 'Form is dirty' : 'Form is clean'),
-            Text('Is Valid: ${formState.isValid}'),
-            if (formState.isSubmitting) ...[
-              const SizedBox(height: 8),
-              const LinearProgressIndicator(),
-              const SizedBox(height: 4),
-              const Text('Submitting...'),
-            ],
-          ],
-        ),
+    return ProviderScope(
+      overrides: [
+        currentControllerProvider.overrideWithValue(controllerProvider),
+      ],
+      child: Consumer(
+        builder: (context, ref, child) {
+          final isDirty = ref.watch(formDirtyProvider);
+          final isValid = ref.watch(formValidProvider);
+          final isSubmitting = ref.watch(formSubmittingProvider);
+
+          return Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Form Status', style: Theme.of(context).textTheme.titleMedium),
+                  const SizedBox(height: 8),
+                  Text(isDirty ? 'Form is dirty' : 'Form is clean'),
+                  Text('Is Valid: $isValid'),
+                  if (isSubmitting) ...[
+                    const SizedBox(height: 8),
+                    const LinearProgressIndicator(),
+                    const SizedBox(height: 4),
+                    const Text('Submitting...'),
+                  ],
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }

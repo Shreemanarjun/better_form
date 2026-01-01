@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:better_form/better_form.dart';
-import 'package:better_form/src/controller.dart';
+import 'package:better_form/src/controllers/controller.dart';
 
 void main() {
   group('RiverpodFormController', () {
@@ -226,6 +227,32 @@ void main() {
 
       controller.unregisterField(phoneField);
       expect(controller.isFieldRegistered(phoneField), false);
+    });
+  });
+
+  group('Form Controller Provider Behavior', () {
+    test('should create new controller instances for different initial values', () {
+      final container = ProviderContainer();
+
+      final controller1 = container.read(formControllerProvider({'name': 'John'}).notifier);
+      final controller2 = container.read(formControllerProvider({'name': 'Jane'}).notifier);
+
+      expect(controller1.getValue(BetterFormFieldID<String>('name')), 'John');
+      expect(controller2.getValue(BetterFormFieldID<String>('name')), 'Jane');
+
+      // They should be different instances
+      expect(controller1, isNot(same(controller2)));
+    });
+
+    test('should reuse controller instances for same initial values', () {
+      final container = ProviderContainer();
+
+      final initialValue = {'name': 'John'};
+      final controller1 = container.read(formControllerProvider(initialValue).notifier);
+      final controller2 = container.read(formControllerProvider(initialValue).notifier);
+
+      // They should be the same instance (Riverpod caches family providers)
+      expect(controller1, same(controller2));
     });
   });
 }

@@ -5,9 +5,9 @@ import 'package:better_form/better_form.dart';
 
 // Test-specific providers for easier testing
 final testControllerProvider =
-    StateNotifierProvider<RiverpodFormController, FormState>((ref) {
-      return RiverpodFormController(initialValue: {});
-    });
+    StateNotifierProvider.autoDispose<RiverpodFormController, FormState>((ref) {
+  return RiverpodFormController(initialValue: {});
+});
 
 void main() {
   group('RiverpodTextFormField', () {

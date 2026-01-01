@@ -295,46 +295,51 @@ class RiverpodFormController extends StateNotifier<FormState> {
   }
 }
 
-/// Provider for form controller
-final formControllerProvider = StateNotifierProvider.family<
+/// Provider for form controller with auto-disposal
+final formControllerProvider = StateNotifierProvider.autoDispose.family<
     RiverpodFormController,
     FormState,
     Map<String, dynamic>>((ref, initialValue) {
   return RiverpodFormController(initialValue: initialValue);
 });
 
-/// Provider for field value
+/// Provider for the current controller provider (can be overridden)
+final currentControllerProvider = Provider<AutoDisposeStateNotifierProvider<RiverpodFormController, FormState>>((ref) {
+  return formControllerProvider(const {});
+});
+
+/// Provider for field value with selector for performance
 final fieldValueProvider = Provider.family<dynamic, BetterFormFieldID<dynamic>>((ref, fieldId) {
-  final formState = ref.watch(formControllerProvider(const {}));
-  return formState.getValue(fieldId);
-});
+  final controllerProvider = ref.watch(currentControllerProvider);
+  return ref.watch(controllerProvider.select((formState) => formState.getValue(fieldId)));
+}, dependencies: [currentControllerProvider]);
 
-/// Provider for field validation
+/// Provider for field validation with selector for performance
 final fieldValidationProvider = Provider.family<ValidationResult, BetterFormFieldID<dynamic>>((ref, fieldId) {
-  final formState = ref.watch(formControllerProvider(const {}));
-  return formState.getValidation(fieldId);
-});
+  final controllerProvider = ref.watch(currentControllerProvider);
+  return ref.watch(controllerProvider.select((formState) => formState.getValidation(fieldId)));
+}, dependencies: [currentControllerProvider]);
 
-/// Provider for field dirty state
+/// Provider for field dirty state with selector for performance
 final fieldDirtyProvider = Provider.family<bool, BetterFormFieldID<dynamic>>((ref, fieldId) {
-  final formState = ref.watch(formControllerProvider(const {}));
-  return formState.isFieldDirty(fieldId);
-});
+  final controllerProvider = ref.watch(currentControllerProvider);
+  return ref.watch(controllerProvider.select((formState) => formState.isFieldDirty(fieldId)));
+}, dependencies: [currentControllerProvider]);
 
-/// Provider for form validity
+/// Provider for form validity with selector for performance
 final formValidProvider = Provider<bool>((ref) {
-  final formState = ref.watch(formControllerProvider(const {}));
-  return formState.isValid;
-});
+  final controllerProvider = ref.watch(currentControllerProvider);
+  return ref.watch(controllerProvider.select((formState) => formState.isValid));
+}, dependencies: [currentControllerProvider]);
 
-/// Provider for form dirty state
+/// Provider for form dirty state with selector for performance
 final formDirtyProvider = Provider<bool>((ref) {
-  final formState = ref.watch(formControllerProvider(const {}));
-  return formState.isDirty;
-});
+  final controllerProvider = ref.watch(currentControllerProvider);
+  return ref.watch(controllerProvider.select((formState) => formState.isDirty));
+}, dependencies: [currentControllerProvider]);
 
-/// Provider for form submitting state
+/// Provider for form submitting state with selector for performance
 final formSubmittingProvider = Provider<bool>((ref) {
-  final formState = ref.watch(formControllerProvider(const {}));
-  return formState.isSubmitting;
-});
+  final controllerProvider = ref.watch(currentControllerProvider);
+  return ref.watch(controllerProvider.select((formState) => formState.isSubmitting));
+}, dependencies: [currentControllerProvider]);

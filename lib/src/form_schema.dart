@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import 'controller.dart';
-import 'field_id.dart';
-import 'field.dart';
-import 'validation.dart';
+import 'controllers/controller.dart';
+import 'controllers/field_id.dart';
+import 'controllers/field.dart';
+import 'controllers/validation.dart';
 
 /// Base class for form field schemas with type safety
 abstract class FormFieldSchema<T> {

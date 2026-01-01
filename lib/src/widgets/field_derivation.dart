@@ -2,9 +2,9 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
-import '../controller.dart';
-import '../field_id.dart';
-import '../form.dart';
+import '../controllers/controller.dart';
+import '../controllers/field_id.dart';
+import 'riverpod_form_fields.dart';
 
 /// A widget that automatically derives field values based on other field changes.
 ///
@@ -74,7 +74,7 @@ class _BetterFormFieldDerivationState extends State<BetterFormFieldDerivation> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    final newController = BetterForm.of(context);
+    final newController = BetterForm.controllerOf(context);
     if (newController != _controller) {
       // Remove listeners from old controller
       if (_controller != null) {
@@ -206,7 +206,7 @@ class _BetterFormFieldDerivationsState
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    final newController = BetterForm.of(context);
+    final newController = BetterForm.controllerOf(context);
     if (newController != _controller) {
       // Clean up old listeners
       _removeAllListeners();

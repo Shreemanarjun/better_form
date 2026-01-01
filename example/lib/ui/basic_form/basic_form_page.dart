@@ -3,85 +3,148 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:better_form/better_form.dart';
 import '../../constants/field_ids.dart';
 
-// Basic Form Example
+// Basic Form Example with Declarative API
 class BasicFormExample extends ConsumerWidget {
   const BasicFormExample({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final controller = ref.watch(formControllerProvider({'name': '', 'email': '', 'age': 0, 'newsletter': false}).notifier);
-    final formState = ref.watch(formControllerProvider({'name': '', 'email': '', 'age': 0, 'newsletter': false}));
+    return BetterForm(
+      initialValue: {
+        'name': '',
+        'email': '',
+        'age': 18,
+        'newsletter': false,
+      },
+      fields: [
+        BetterFormFieldConfig<String>(
+          id: nameField,
+          initialValue: '',
+          validator: _validateName,
+          label: 'Full Name',
+          hint: 'Enter your full name',
+        ),
+        BetterFormFieldConfig<String>(
+          id: emailField,
+          initialValue: '',
+          validator: _validateEmail,
+          label: 'Email',
+          hint: 'Enter your email',
+        ),
+        BetterFormFieldConfig<num>(
+          id: ageField,
+          initialValue: 18,
+          validator: _validateAge,
+          label: 'Age',
+          hint: 'Enter your age',
+        ),
+        BetterFormFieldConfig<bool>(
+          id: newsletterField,
+          initialValue: false,
+          label: 'Newsletter',
+        ),
+      ],
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Basic Form Fields (Declarative API)',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Fields are automatically registered with validation!',
+              style: TextStyle(color: Colors.grey),
+            ),
+            const SizedBox(height: 16),
+            RiverpodTextFormField(
+              fieldId: nameField,
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.person),
+              ),
+            ),
+            const SizedBox(height: 16),
+            RiverpodTextFormField(
+              fieldId: emailField,
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.email),
+              ),
+            ),
+            const SizedBox(height: 16),
+            RiverpodNumberFormField(
+              fieldId: ageField,
+              min: 0,
+              max: 120,
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.calendar_today),
+              ),
+            ),
+            const SizedBox(height: 16),
+            RiverpodCheckboxFormField(
+              fieldId: newsletterField,
+              title: const Text('Subscribe to newsletter'),
+            ),
+            const SizedBox(height: 24),
+            const RiverpodFormStatus(),
+            const SizedBox(height: 16),
+            Consumer(
+              builder: (context, ref, child) {
+                final controllerProvider = BetterForm.of(context)!;
+                final controller = ref.read(controllerProvider.notifier);
+                final formState = ref.watch(controllerProvider);
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Basic Form Fields',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-          RiverpodTextFormField(
-            fieldId: nameField,
-            decoration: const InputDecoration(
-              labelText: 'Full Name',
-              hintText: 'Enter your full name',
-              prefixIcon: Icon(Icons.person),
-            ),
-          ),
-          const SizedBox(height: 16),
-          RiverpodTextFormField(
-            fieldId: emailField,
-            decoration: const InputDecoration(
-              labelText: 'Email',
-              hintText: 'Enter your email',
-              prefixIcon: Icon(Icons.email),
-            ),
-            keyboardType: TextInputType.emailAddress,
-          ),
-          const SizedBox(height: 16),
-          RiverpodNumberFormField(
-            fieldId: ageField,
-            decoration: const InputDecoration(
-              labelText: 'Age',
-              hintText: 'Enter your age',
-              prefixIcon: Icon(Icons.calendar_today),
-            ),
-          ),
-          const SizedBox(height: 16),
-          RiverpodCheckboxFormField(
-            fieldId: newsletterField,
-            title: const Text('Subscribe to newsletter'),
-          ),
-          const SizedBox(height: 24),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    final values = formState.values;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Form values: $values'),
-                        duration: const Duration(seconds: 3),
+                return Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          final values = formState.values;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Form values: $values'),
+                              duration: const Duration(seconds: 3),
+                            ),
+                          );
+                        },
+                        child: const Text('Show Values'),
                       ),
-                    );
-                  },
-                  child: const Text('Show Values'),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () => controller.reset(),
-                  child: const Text('Reset'),
-                ),
-              ),
-            ],
-          ),
-        ],
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => controller.reset(),
+                        child: const Text('Reset'),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  static String? _validateName(String? value) {
+    if (value == null || value.isEmpty) return 'Name is required';
+    if (value.length < 2) return 'Name must be at least 2 characters';
+    return null;
+  }
+
+  static String? _validateEmail(String? value) {
+    if (value == null || value.isEmpty) return 'Email is required';
+    if (!value.contains('@')) return 'Invalid email format';
+    return null;
+  }
+
+  static String? _validateAge(num? value) {
+    if (value == null) return 'Age is required';
+    if (value < 0) return 'Age cannot be negative';
+    if (value > 120) return 'Age must be realistic';
+    return null;
   }
 }

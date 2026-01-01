@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../controller.dart';
-import '../field_id.dart';
-import '../form.dart';
-import '../validation.dart';
+import '../controllers/controller.dart';
+import '../controllers/field_id.dart';
+import '../controllers/validation.dart';
+import 'riverpod_form_fields.dart';
 
 /// Information about what changed in a field
 class FieldChangeInfo<T> {
@@ -80,7 +80,7 @@ class _BetterFormFieldSelectorState<T> extends State<BetterFormFieldSelector<T>>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _controller = widget.controller ?? BetterForm.of(context)!;
+    _controller = widget.controller ?? BetterForm.controllerOf(context)!;
 
     // Initialize current state
     _updateCurrentState();
@@ -103,7 +103,7 @@ class _BetterFormFieldSelectorState<T> extends State<BetterFormFieldSelector<T>>
       oldWidget.controller?.removeFieldListener(oldWidget.fieldId, _onFieldChanged);
 
       // Add new listener
-      _controller = widget.controller ?? BetterForm.of(context)!;
+      _controller = widget.controller ?? BetterForm.controllerOf(context)!;
       _controller.addFieldListener(widget.fieldId, _onFieldChanged);
 
       // Update state

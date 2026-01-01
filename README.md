@@ -1,19 +1,65 @@
 # Better Form 🚀
 
-A robust, type-safe, and reactive form management package for Flutter built on Riverpod.
+A high-performance, type-safe, and reactive form management package for Flutter built on Riverpod with automatic memory management.
 
-**Better Form** provides a modern, declarative approach to form management with compile-time type safety, automatic state management, and seamless integration with Flutter's reactive architecture.
+**Better Form** provides a modern, declarative approach to form management with compile-time type safety, optimized performance through Riverpod selectors, auto-disposable controllers, and seamless integration with Flutter's reactive architecture.
 
 ## ✨ Features
 
 - 🔒 **Type-Safe**: Define fields with `BetterFormFieldID<T>` for compile-time safety
-- ⚡ **Riverpod-Powered**: Built on Riverpod for efficient state management and dependency injection
+- ⚡ **High-Performance**: Riverpod selectors prevent unnecessary rebuilds - only affected widgets update
+- 🗑️ **Auto-Disposable**: Controllers automatically clean up memory when no longer needed
 - 🎯 **Automatic Controller Management**: `BetterForm` widget handles controller creation automatically
 - 🧩 **Flexible Field Widgets**: `RiverpodTextFormField`, `RiverpodNumberFormField`, `RiverpodCheckboxFormField`, etc.
 - 🚦 **Smart Validation**: Field-level and cross-field validation with real-time feedback
 - 🔄 **Form State Tracking**: Dirty state, validation status, and submission state
 - 🔁 **Legacy Compatible**: Supports existing `BetterFormController` API for migration
 - 📱 **Flutter Native**: Works with all Flutter form widgets and follows Material Design
+- 🎨 **Provider Flexibility**: Support for custom controllers and BetterForm integration
+
+## ⚡ Performance & Memory Management
+
+### Riverpod Selectors for Optimal Performance
+
+Better Form uses Riverpod selectors to ensure only affected widgets rebuild when form state changes:
+
+```dart
+// Before: Any field change → ALL widgets rebuild
+final formState = ref.watch(controllerProvider); // Watches entire state
+final value = formState.getValue(fieldId);
+
+// After: Only specific field widgets rebuild
+final value = ref.watch(fieldValueProvider(fieldId)); // Selective watching
+final validation = ref.watch(fieldValidationProvider(fieldId));
+final isDirty = ref.watch(fieldDirtyProvider(fieldId));
+```
+
+**Performance Benefits:**
+- **Granular Updates**: Only widgets displaying changed data rebuild
+- **Reduced CPU Usage**: Fewer unnecessary widget rebuilds
+- **Better UX**: Smoother interactions in complex forms
+- **Scalable**: Performance remains consistent with form size
+
+### Auto-Disposable Controllers
+
+Controllers automatically clean up when no longer needed:
+
+```dart
+// Automatic disposal - no manual cleanup required
+final formControllerProvider = StateNotifierProvider.autoDispose.family<
+    RiverpodFormController,
+    FormState,
+    Map<String, dynamic>>((ref, initialValue) {
+  return RiverpodFormController(initialValue: initialValue);
+  // Controller automatically disposed when provider is no longer used
+});
+```
+
+**Memory Benefits:**
+- **Leak Prevention**: Controllers disposed when widgets unmount
+- **Resource Cleanup**: Automatic memory management
+- **Long-Running Apps**: No memory accumulation over time
+- **Zero Configuration**: Works out-of-the-box
 
 ---
 
@@ -45,14 +91,20 @@ final ageField = BetterFormFieldID<num>('age');
 final newsletterField = BetterFormFieldID<bool>('newsletter');
 ```
 
-### 2. Create Your Form
+### 2. Create Your Form (Declarative API - Recommended)
 
-Use the `BetterForm` widget for automatic controller management:
+Use the `BetterForm` widget with declarative field configuration for automatic registration:
 
 ```dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:better_form/better_form.dart';
+
+// Define field IDs globally
+final nameField = BetterFormFieldID<String>('name');
+final emailField = BetterFormFieldID<String>('email');
+final ageField = BetterFormFieldID<num>('age');
+final newsletterField = BetterFormFieldID<bool>('newsletter');
 
 class UserRegistrationForm extends ConsumerWidget {
   const UserRegistrationForm({super.key});
@@ -66,33 +118,47 @@ class UserRegistrationForm extends ConsumerWidget {
         'age': 18,
         'newsletter': false,
       },
+      fields: const [
+        BetterFormFieldConfig<String>(
+          id: nameField,
+          initialValue: '',
+          validator: _validateName,
+          label: 'Full Name',
+          hint: 'Enter your full name',
+        ),
+        BetterFormFieldConfig<String>(
+          id: emailField,
+          initialValue: '',
+          validator: _validateEmail,
+          label: 'Email',
+          hint: 'Enter your email',
+        ),
+        BetterFormFieldConfig<num>(
+          id: ageField,
+          initialValue: 18,
+          validator: _validateAge,
+          label: 'Age',
+          hint: 'Enter your age',
+        ),
+        BetterFormFieldConfig<bool>(
+          id: newsletterField,
+          initialValue: false,
+          label: 'Newsletter',
+        ),
+      ],
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            RiverpodTextFormField(
-              fieldId: nameField,
-              decoration: const InputDecoration(
-                labelText: 'Full Name',
-                hintText: 'Enter your full name',
-              ),
-            ),
+            RiverpodTextFormField(fieldId: nameField),
             const SizedBox(height: 16),
             RiverpodTextFormField(
               fieldId: emailField,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                hintText: 'Enter your email',
-              ),
               keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: 16),
             RiverpodNumberFormField(
               fieldId: ageField,
-              decoration: const InputDecoration(
-                labelText: 'Age',
-                hintText: 'Enter your age',
-              ),
               min: 0,
               max: 120,
             ),
@@ -123,6 +189,70 @@ class UserRegistrationForm extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  static String? _validateName(String? value) {
+    if (value == null || value.isEmpty) return 'Name is required';
+    if (value.length < 2) return 'Name must be at least 2 characters';
+    return null;
+  }
+
+  static String? _validateEmail(String? value) {
+    if (value == null || value.isEmpty) return 'Email is required';
+    if (!value.contains('@')) return 'Invalid email format';
+    return null;
+  }
+
+  static String? _validateAge(num? value) {
+    if (value == null) return 'Age is required';
+    if (value < 0) return 'Age cannot be negative';
+    if (value > 120) return 'Age must be realistic';
+    return null;
+  }
+}
+```
+
+### 2b. Create Your Form (Manual API - Legacy)
+
+For advanced use cases or migration from existing code:
+
+```dart
+class UserRegistrationForm extends ConsumerWidget {
+  const UserRegistrationForm({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return BetterForm(
+      initialValue: {
+        'name': '',
+        'email': '',
+        'age': 18,
+        'newsletter': false,
+      },
+      child: Builder(
+        builder: (context) {
+          // Manual field registration in build context
+          final controllerProvider = BetterForm.of(context);
+          if (controllerProvider != null) {
+            final controller = ref.read(controllerProvider.notifier);
+            // Register validation here (legacy approach)
+            controller.registerField(BetterFormField<String>(
+              id: emailField,
+              initialValue: '',
+              validator: (value) => value.contains('@') ? null : 'Invalid email',
+            ));
+          }
+
+          return Column(
+            children: [
+              RiverpodTextFormField(fieldId: nameField),
+              RiverpodTextFormField(fieldId: emailField),
+              // ... other fields
+            ],
+          );
+        },
       ),
     );
   }
@@ -171,6 +301,332 @@ Widget build(BuildContext context, WidgetRef ref) {
   );
 }
 ```
+
+---
+
+## 📋 FormFieldSchema - Declarative Form Definition
+
+For complex forms with advanced validation, dynamic behavior, and type safety, Better Form provides a **declarative schema system** that defines your entire form structure in one place.
+
+### Schema-Based Form Definition
+
+Define your form using schema classes instead of imperative widget configuration:
+
+```dart
+import 'package:better_form/better_form.dart';
+
+// Define field IDs
+final nameField = BetterFormFieldID<String>('name');
+final emailField = BetterFormFieldID<String>('email');
+final ageField = BetterFormFieldID<num>('age');
+final newsletterField = BetterFormFieldID<bool>('newsletter');
+final spouseNameField = BetterFormFieldID<String>('spouseName');
+
+// Create form schema
+final userRegistrationSchema = FormSchema(
+  name: 'User Registration',
+  description: 'Register a new user account',
+  fields: [
+    // Text field with validation
+    TextFieldSchema(
+      id: nameField,
+      initialValue: '',
+      label: 'Full Name',
+      hint: 'Enter your full name',
+      isRequired: true,
+      minLength: 2,
+      maxLength: 50,
+    ),
+
+    // Email with pattern validation
+    TextFieldSchema(
+      id: emailField,
+      initialValue: '',
+      label: 'Email Address',
+      hint: 'Enter your email',
+      isRequired: true,
+      validator: (value) => value.contains('@') ? null : 'Invalid email',
+    ),
+
+    // Number with range validation
+    NumberFieldSchema(
+      id: ageField,
+      initialValue: 18,
+      label: 'Age',
+      hint: 'Enter your age',
+      min: 0,
+      max: 120,
+    ),
+
+    // Boolean field
+    BooleanFieldSchema(
+      id: newsletterField,
+      initialValue: false,
+      label: 'Newsletter',
+    ),
+
+    // Conditional field - only visible when married
+    ConditionalFieldSchema<String>(
+      id: spouseNameField,
+      initialValue: '',
+      label: 'Spouse Name',
+      visibilityCondition: (formState) =>
+        formState['maritalStatus'] == 'married',
+      isRequired: true,
+    ),
+  ],
+  submitButtonText: 'Create Account',
+  resetButtonText: 'Clear Form',
+);
+```
+
+### Using Schema with SchemaBasedFormController
+
+```dart
+class SchemaBasedRegistrationForm extends ConsumerStatefulWidget {
+  const SchemaBasedRegistrationForm({super.key});
+
+  @override
+  ConsumerState<SchemaBasedRegistrationForm> createState() =>
+      _SchemaBasedRegistrationFormState();
+}
+
+class _SchemaBasedRegistrationFormState
+    extends ConsumerState<SchemaBasedRegistrationForm> {
+  late final SchemaBasedFormController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = SchemaBasedFormController(schema: userRegistrationSchema);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('User Registration')),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            // Render visible fields based on schema
+            ..._controller.visibleFields.map((fieldSchema) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: _buildFieldForSchema(fieldSchema),
+              );
+            }),
+
+            const SizedBox(height: 24),
+
+            // Form status
+            Consumer(
+              builder: (context, ref, child) {
+                // You could watch form state here
+                return const SizedBox.shrink();
+              },
+            ),
+
+            // Action buttons
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => _controller.reset(),
+                    child: Text(userRegistrationSchema.resetButtonText),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _handleSubmit,
+                    child: Text(userRegistrationSchema.submitButtonText),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFieldForSchema(FormFieldSchema<dynamic> schema) {
+    final fieldId = schema.id;
+
+    // Build appropriate widget based on schema type
+    if (schema is TextFieldSchema) {
+      return RiverpodTextFormField(
+        fieldId: fieldId as BetterFormFieldID<String>,
+        decoration: InputDecoration(
+          labelText: schema.label,
+          hintText: schema.hint,
+        ),
+        keyboardType: schema.keyboardType,
+      );
+    } else if (schema is NumberFieldSchema) {
+      return RiverpodNumberFormField(
+        fieldId: fieldId as BetterFormFieldID<num>,
+        decoration: InputDecoration(
+          labelText: schema.label,
+          hintText: schema.hint,
+        ),
+        min: schema.min,
+        max: schema.max,
+      );
+    } else if (schema is BooleanFieldSchema) {
+      return RiverpodCheckboxFormField(
+        fieldId: fieldId as BetterFormFieldID<bool>,
+        title: Text(schema.label ?? ''),
+      );
+    }
+
+    // Fallback for unsupported schema types
+    return const SizedBox.shrink();
+  }
+
+  Future<void> _handleSubmit() async {
+    // Validate form using schema
+    final validationResult = await _controller.validateForm();
+
+    if (validationResult.isValid) {
+      // Submit form
+      final submitResult = await _controller.submitForm();
+
+      if (submitResult.success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Registration successful!')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Submission failed: ${submitResult.error}')),
+        );
+      }
+    } else {
+      // Show validation errors
+      final errors = validationResult.allErrors;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Validation errors: ${errors.join(", ")}')),
+      );
+    }
+  }
+}
+```
+
+### Advanced Schema Features
+
+#### Async Validation
+```dart
+TextFieldSchema(
+  id: usernameField,
+  initialValue: '',
+  label: 'Username',
+  asyncValidator: (value) async {
+    // Simulate API call to check username availability
+    await Future.delayed(const Duration(milliseconds: 500));
+    final response = await api.checkUsernameAvailability(value);
+
+    if (!response.available) {
+      return 'Username "${value}" is already taken';
+    }
+    return null;
+  },
+)
+```
+
+#### Cross-Field Validation
+```dart
+FormSchema(
+  fields: [...],
+  onValidate: (values) async {
+    final password = values['password'];
+    final confirmPassword = values['confirmPassword'];
+
+    if (password != confirmPassword) {
+      return ['Passwords do not match'];
+    }
+
+    // Additional business logic validation
+    if (password.length < 8) {
+      return ['Password must be at least 8 characters'];
+    }
+
+    return []; // No errors
+  },
+)
+```
+
+#### Selection Fields with Options
+```dart
+SelectionFieldSchema<String>(
+  id: countryField,
+  initialValue: 'US',
+  label: 'Country',
+  options: ['US', 'CA', 'UK', 'DE', 'FR'],
+  isRequired: true,
+)
+```
+
+#### Date Fields with Range Validation
+```dart
+DateFieldSchema(
+  id: birthDateField,
+  initialValue: DateTime.now().subtract(const Duration(days: 365 * 18)),
+  label: 'Birth Date',
+  minDate: DateTime.now().subtract(const Duration(days: 365 * 120)),
+  maxDate: DateTime.now().subtract(const Duration(days: 365 * 13)),
+)
+```
+
+### Schema Benefits
+
+#### ✅ **Type Safety**
+- Compile-time guarantees for field types
+- IntelliSense support for all schema properties
+- Runtime type checking for form values
+
+#### ✅ **Maintainability**
+- Single source of truth for form structure
+- Easy to modify validation rules
+- Clear separation of form logic from UI
+
+#### ✅ **Reusability**
+- Share schemas across different UI implementations
+- Apply same validation in multiple contexts
+- Build complex forms from reusable components
+
+#### ✅ **Advanced Features**
+- Conditional field visibility
+- Async validation with API calls
+- Cross-field validation logic
+- Built-in validation rules (min/max, patterns, etc.)
+
+#### ✅ **Developer Experience**
+- Full IDE support with autocompletion
+- Clear error messages and validation feedback
+- Easy debugging and testing
+
+### When to Use FormFieldSchema
+
+**Use FormFieldSchema when you need:**
+- Complex validation rules with multiple conditions
+- Dynamic forms with conditional fields
+- API-driven validation (username availability, etc.)
+- Type-safe form definitions with compile-time guarantees
+- Reusable form logic across different screens
+- Advanced form behaviors (conditional visibility, cross-field validation)
+
+**Use Widget-Based Approach when you have:**
+- Simple forms with basic validation
+- One-off forms with unique requirements
+- Rapid prototyping
+- Minimal validation needs
 
 ---
 
@@ -498,13 +954,17 @@ final isDirty = formState.isDirty;
 
 ### Current Limitations
 
-1. **Field Registration**: Fields must be registered with validation logic before use. This is typically done in the `build` method.
+1. **Field Registration (Widget Approach)**: When using the widget-based approach, fields must be registered with validation logic before use. This is typically done in the `build` method. For automatic registration, use the declarative `BetterForm.fields` parameter or `FormFieldSchema`.
 
 2. **Controller Scope**: Each `BetterForm` creates its own controller. For shared state across multiple forms, use manual controller management.
 
-3. **Validation Timing**: Validation occurs on field change, not on blur. Consider implementing custom validation triggers if needed.
+3. **Validation Timing**: Validation occurs on field change by default. For blur-based validation, implement custom validation triggers.
 
 4. **Nested Forms**: Avoid nesting `BetterForm` widgets as they create separate controller scopes.
+
+5. **Schema-Based Forms**: `SchemaBasedFormController` requires manual widget building. Future versions may include pre-built schema-aware widgets.
+
+6. **Async Validation**: Complex async validation may require debouncing to prevent excessive API calls.
 
 ### Performance Considerations
 
