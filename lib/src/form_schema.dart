@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'i18n.dart';
+import 'enums.dart';
 
 import 'package:flutter/material.dart';
 
-import 'controllers/controller.dart';
+import 'controllers/riverpod_controller.dart';
 import 'controllers/field_id.dart';
 import 'controllers/field.dart';
 import 'controllers/validation.dart';
@@ -19,6 +21,11 @@ abstract class FormFieldSchema<T> {
     this.isRequired = false,
     this.isVisible = true,
     this.dependencies = const [],
+    this.debounceDuration,
+    this.builder,
+    this.transformer,
+    this.stateValidator,
+    this.emptyValue,
   });
 
   /// Unique identifier for the field
@@ -30,8 +37,28 @@ abstract class FormFieldSchema<T> {
   /// Synchronous validator
   final String? Function(T value)? validator;
 
+  /// Validator with access to full form state (for cross-field validation)
+  final String? Function(T value, Map<String, dynamic> values)? stateValidator;
+
   /// Asynchronous validator
   final Future<String?> Function(T value)? asyncValidator;
+
+  /// Debounce duration for async validation
+  final Duration? debounceDuration;
+
+  /// Custom widget builder
+  final Widget Function(
+    BuildContext context,
+    BetterFormController controller,
+    BetterFormField<T> field,
+  )?
+  builder;
+
+  /// Input transformer
+  final T Function(dynamic value)? transformer;
+
+  /// Value used when clearing the field
+  final T? emptyValue;
 
   /// Display label
   final String? label;
@@ -54,8 +81,12 @@ abstract class FormFieldSchema<T> {
       id: id,
       initialValue: initialValue,
       validator: validator,
+      asyncValidator: asyncValidator,
+      debounceDuration: debounceDuration,
       label: label,
       hint: hint,
+      transformer: transformer,
+      emptyValue: emptyValue,
     );
   }
 
@@ -65,7 +96,11 @@ abstract class FormFieldSchema<T> {
   }
 
   /// Get validation errors for this field
-  Future<List<String>> validate(T value, Map<String, dynamic> formState) async {
+  Future<List<String>> validate(
+    T value,
+    Map<String, dynamic> formState, {
+    BetterFormMessages messages = const DefaultBetterFormMessages(),
+  }) async {
     final errors = <String>[];
 
     // Synchronous validation
@@ -73,6 +108,14 @@ abstract class FormFieldSchema<T> {
       final syncError = validator!(value);
       if (syncError != null) {
         errors.add(syncError);
+      }
+    }
+
+    // Cross-field validation
+    if (stateValidator != null) {
+      final stateError = stateValidator!(value, formState);
+      if (stateError != null) {
+        errors.add(stateError);
       }
     }
 
@@ -84,13 +127,13 @@ abstract class FormFieldSchema<T> {
           errors.add(asyncError);
         }
       } catch (e) {
-        errors.add('Validation failed: ${e.toString()}');
+        errors.add(messages.validationFailed(e.toString()));
       }
     }
 
     // Required field validation
     if (isRequired && _isEmptyValue(value)) {
-      errors.add('${label ?? id.key} is required');
+      errors.add(messages.required(label ?? id.key));
     }
 
     return errors;
@@ -117,6 +160,10 @@ class TextFieldSchema extends FormFieldSchema<String> {
     required super.initialValue,
     super.validator,
     super.asyncValidator,
+    super.debounceDuration,
+    super.builder,
+    super.transformer,
+    super.stateValidator,
     super.label,
     super.hint,
     super.isRequired,
@@ -136,20 +183,21 @@ class TextFieldSchema extends FormFieldSchema<String> {
   @override
   Future<List<String>> validate(
     String value,
-    Map<String, dynamic> formState,
-  ) async {
-    final errors = await super.validate(value, formState);
+    Map<String, dynamic> formState, {
+    BetterFormMessages messages = const DefaultBetterFormMessages(),
+  }) async {
+    final errors = await super.validate(value, formState, messages: messages);
 
     if (minLength != null && value.length < minLength!) {
-      errors.add('Minimum length is $minLength characters');
+      errors.add(messages.minLength(minLength!));
     }
 
     if (maxLength != null && value.length > maxLength!) {
-      errors.add('Maximum length is $maxLength characters');
+      errors.add(messages.maxLength(maxLength!));
     }
 
     if (pattern != null && !RegExp(pattern!).hasMatch(value)) {
-      errors.add('Invalid format');
+      errors.add(messages.invalidFormat());
     }
 
     return errors;
@@ -163,6 +211,10 @@ class NumberFieldSchema extends FormFieldSchema<num> {
     required super.initialValue,
     super.validator,
     super.asyncValidator,
+    super.debounceDuration,
+    super.builder,
+    super.transformer,
+    super.stateValidator,
     super.label,
     super.hint,
     super.isRequired,
@@ -180,16 +232,17 @@ class NumberFieldSchema extends FormFieldSchema<num> {
   @override
   Future<List<String>> validate(
     num value,
-    Map<String, dynamic> formState,
-  ) async {
-    final errors = await super.validate(value, formState);
+    Map<String, dynamic> formState, {
+    BetterFormMessages messages = const DefaultBetterFormMessages(),
+  }) async {
+    final errors = await super.validate(value, formState, messages: messages);
 
     if (min != null && value < min!) {
-      errors.add('Minimum value is $min');
+      errors.add(messages.minValue(min!));
     }
 
     if (max != null && value > max!) {
-      errors.add('Maximum value is $max');
+      errors.add(messages.maxValue(max!));
     }
 
     return errors;
@@ -203,6 +256,10 @@ class BooleanFieldSchema extends FormFieldSchema<bool> {
     required super.initialValue,
     super.validator,
     super.asyncValidator,
+    super.debounceDuration,
+    super.builder,
+    super.transformer,
+    super.stateValidator,
     super.label,
     super.hint,
     super.isRequired,
@@ -218,6 +275,10 @@ class DateFieldSchema extends FormFieldSchema<DateTime> {
     required super.initialValue,
     super.validator,
     super.asyncValidator,
+    super.debounceDuration,
+    super.builder,
+    super.transformer,
+    super.stateValidator,
     super.label,
     super.hint,
     super.isRequired,
@@ -233,16 +294,17 @@ class DateFieldSchema extends FormFieldSchema<DateTime> {
   @override
   Future<List<String>> validate(
     DateTime value,
-    Map<String, dynamic> formState,
-  ) async {
-    final errors = await super.validate(value, formState);
+    Map<String, dynamic> formState, {
+    BetterFormMessages messages = const DefaultBetterFormMessages(),
+  }) async {
+    final errors = await super.validate(value, formState, messages: messages);
 
     if (minDate != null && value.isBefore(minDate!)) {
-      errors.add('Date must be after ${minDate!.toString().split(' ')[0]}');
+      errors.add(messages.minDate(minDate!));
     }
 
     if (maxDate != null && value.isAfter(maxDate!)) {
-      errors.add('Date must be before ${maxDate!.toString().split(' ')[0]}');
+      errors.add(messages.maxDate(maxDate!));
     }
 
     return errors;
@@ -256,6 +318,10 @@ class SelectionFieldSchema<T> extends FormFieldSchema<T> {
     required super.initialValue,
     super.validator,
     super.asyncValidator,
+    super.debounceDuration,
+    super.builder,
+    super.transformer,
+    super.stateValidator,
     super.label,
     super.hint,
     super.isRequired,
@@ -267,11 +333,15 @@ class SelectionFieldSchema<T> extends FormFieldSchema<T> {
   final List<T> options;
 
   @override
-  Future<List<String>> validate(T value, Map<String, dynamic> formState) async {
-    final errors = await super.validate(value, formState);
+  Future<List<String>> validate(
+    T value,
+    Map<String, dynamic> formState, {
+    BetterFormMessages messages = const DefaultBetterFormMessages(),
+  }) async {
+    final errors = await super.validate(value, formState, messages: messages);
 
     if (!options.contains(value)) {
-      errors.add('Invalid selection');
+      errors.add(messages.invalidSelection());
     }
 
     return errors;
@@ -285,6 +355,10 @@ class ConditionalFieldSchema<T> extends FormFieldSchema<T> {
     required super.initialValue,
     super.validator,
     super.asyncValidator,
+    super.debounceDuration,
+    super.builder,
+    super.transformer,
+    super.stateValidator,
     super.label,
     super.hint,
     super.isRequired,
@@ -311,7 +385,11 @@ class FormSchema {
     this.resetButtonText = 'Reset',
     this.onSubmit,
     this.onValidate,
+    this.messages = const DefaultBetterFormMessages(),
   });
+
+  /// Translation messages for validation
+  final BetterFormMessages messages;
 
   /// Name of the form
   final String? name;
@@ -351,37 +429,35 @@ class FormSchema {
     return fields.where((field) => field.shouldBeVisible(formState)).toList();
   }
 
-  /// Validate the entire form
-  Future<FormValidationResult> validate(Map<String, dynamic> formState) async {
-    final fieldErrors = <BetterFormFieldID<dynamic>, List<String>>{};
-    var hasErrors = false;
+  /// Validate the given values against the schema
+  Future<FormValidationResult> validate(
+    Map<String, dynamic> values, {
+    BetterFormMessages? customMessages,
+  }) async {
+    final actualMessages = customMessages ?? messages;
+    final results = <BetterFormFieldID<dynamic>, List<String>>{};
 
-    // Validate each field
     for (final field in fields) {
-      if (field.shouldBeVisible(formState)) {
-        final value = formState[field.id.key];
-        if (value != null) {
-          final errors = await field.validate(value, formState);
-          if (errors.isNotEmpty) {
-            fieldErrors[field.id] = errors;
-            hasErrors = true;
-          }
-        }
+      final value = values[field.id.key];
+      final fieldErrors = await field.validate(
+        value,
+        values,
+        messages: actualMessages,
+      );
+      if (fieldErrors.isNotEmpty) {
+        results[field.id] = fieldErrors;
       }
     }
 
-    // Run custom validation if provided
+    // Run form-level validation
     List<String> customErrors = [];
     if (onValidate != null) {
-      customErrors = await onValidate!(formState);
-      if (customErrors.isNotEmpty) {
-        hasErrors = true;
-      }
+      customErrors = await onValidate!(values);
     }
 
     return FormValidationResult(
-      isValid: !hasErrors,
-      fieldErrors: fieldErrors,
+      isValid: results.isEmpty && customErrors.isEmpty,
+      fieldErrors: results,
       customErrors: customErrors,
     );
   }
@@ -515,11 +591,28 @@ class SchemaBasedFormController extends BetterFormController {
     // For now, just submit without checking submitting state
     try {
       final result = await schema.submit(values);
+      if (!result.success && result.validationResult != null) {
+        focusFirstError();
+      }
       return result;
     } catch (e) {
-      return FormSubmissionResult.failure(error: e.toString());
+      return FormSubmissionResult.failure(
+        error: schema.messages.validationFailed(e.toString()),
+      );
     }
   }
+
+  /// Reset the form
+  void resetForm({ResetStrategy strategy = ResetStrategy.initialValues}) {
+    reset(strategy: strategy);
+  }
+
+  /// Check if the form is dirty (different from initial values)
+  bool get isFormDirty => isDirty;
+
+  /// Check if a specific field is dirty
+  bool isFieldModified<T>(BetterFormFieldID<T> fieldId) =>
+      isFieldDirty(fieldId);
 
   static Map<String, dynamic> _buildInitialValue(
     FormSchema schema,
@@ -537,5 +630,4 @@ class SchemaBasedFormController extends BetterFormController {
 
     return result;
   }
-
 }

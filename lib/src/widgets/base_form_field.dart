@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
-import '../controllers/controller.dart';
+import '../controllers/riverpod_controller.dart';
 import '../controllers/field.dart';
 import '../controllers/field_id.dart';
 import '../controllers/validation.dart';
@@ -32,23 +32,23 @@ abstract class BetterFormFieldWidgetState<T>
     extends State<BetterFormFieldWidget<T>> {
   late BetterFormController _controller;
   T? _currentValue;
+  late FocusNode _focusNode;
   bool _isMounted = false;
 
   /// Get the current field value
-  T get value {
-    if (_currentValue == null) {
-      throw StateError(
-        'Field value not initialized. Make sure to access this after didChangeDependencies.',
-      );
-    }
-    return _currentValue!;
-  }
+  T? get value => _currentValue;
+
+  /// Get the focus node
+  FocusNode get focusNode => _focusNode;
 
   /// Get the controller
   BetterFormController get controller => _controller;
 
   /// Check if the field is dirty
   bool get isDirty => _controller.isFieldDirty(widget.fieldId);
+
+  /// Check if the field is touched
+  bool get isTouched => _controller.isFieldTouched(widget.fieldId);
 
   /// Get validation result
   ValidationResult get validation => _controller.getValidation(widget.fieldId);
@@ -61,6 +61,8 @@ abstract class BetterFormFieldWidgetState<T>
   void initState() {
     super.initState();
     _isMounted = true;
+    _focusNode = FocusNode();
+    _focusNode.addListener(_onFocusChanged);
   }
 
   @override
@@ -70,6 +72,9 @@ abstract class BetterFormFieldWidgetState<T>
 
     // Auto-register the field if it's not already registered
     _ensureFieldRegistered();
+
+    // Register focus node
+    _controller.registerFocusNode(widget.fieldId, _focusNode);
 
     _currentValue = _controller.getValue(widget.fieldId) ?? widget.initialValue;
     _controller.addFieldListener(widget.fieldId, _onFieldChanged);
@@ -109,8 +114,10 @@ abstract class BetterFormFieldWidgetState<T>
         widget.fieldId != oldWidget.fieldId) {
       _controller.removeFieldListener(oldWidget.fieldId, _onFieldChanged);
       _controller = widget.controller ?? BetterForm.controllerOf(context)!;
+      _controller.registerFocusNode(widget.fieldId, _focusNode);
       _controller.addFieldListener(widget.fieldId, _onFieldChanged);
-      _currentValue = _controller.getValue(widget.fieldId) ?? widget.initialValue;
+      _currentValue =
+          _controller.getValue(widget.fieldId) ?? widget.initialValue;
     }
   }
 
@@ -118,6 +125,8 @@ abstract class BetterFormFieldWidgetState<T>
   void dispose() {
     _isMounted = false;
     _controller.removeFieldListener(widget.fieldId, _onFieldChanged);
+    _focusNode.removeListener(_onFocusChanged);
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -126,23 +135,30 @@ abstract class BetterFormFieldWidgetState<T>
     setState(() {
       _currentValue = newValue;
     });
-    if (newValue != null) {
+    if (_controller.isFieldRegistered(widget.fieldId)) {
       onFieldChanged(newValue);
+    }
+  }
+
+  void _onFocusChanged() {
+    if (!_focusNode.hasFocus) {
+      // Lost focus -> touched
+      _controller.markAsTouched(widget.fieldId);
     }
   }
 
   /// Called when the field value changes externally
   /// Override this to react to external value changes
-  void onFieldChanged(T value) {}
+  void onFieldChanged(T? value) {}
 
   /// Update the field value and notify the form
   /// This is the primary way to update field values
-  void didChange(T value) {
+  void didChange(T? value) {
     _controller.setValue(widget.fieldId, value);
   }
 
   /// Alias for didChange - update the field value
-  void setField(T value) => didChange(value);
+  void setField(T? value) => didChange(value);
 
   /// Patch multiple field values at once
   /// Useful for complex form fields that control multiple values
@@ -161,13 +177,12 @@ abstract class BetterFormFieldWidgetState<T>
 
   /// Mark field as touched (for validation purposes)
   void markAsTouched() {
-    // Could be used to trigger validation on touch
-    // Currently, validation happens on value change
+    _controller.markAsTouched(widget.fieldId);
   }
 
   /// Focus the field (if it has focus capability)
   void focus() {
-    // Override in subclasses that support focusing
+    _focusNode.requestFocus();
   }
 
   /// Build the widget - override this to provide your UI
@@ -212,9 +227,9 @@ mixin BetterFormFieldTextMixin<T> on BetterFormFieldWidgetState<T> {
   }
 
   @override
-  void onFieldChanged(T value) {
+  void onFieldChanged(T? value) {
     super.onFieldChanged(value);
-    final textValue = valueToString(value);
+    final textValue = value != null ? valueToString(value) : '';
     if (_textController.text != textValue) {
       _textController.value = TextEditingValue(
         text: textValue,
@@ -231,7 +246,7 @@ mixin BetterFormFieldTextMixin<T> on BetterFormFieldWidgetState<T> {
   }
 
   /// Convert value to string for text controller
-  String valueToString(T value);
+  String valueToString(T? value);
 
   /// Convert string back to value
   T? stringToValue(String text);
@@ -266,7 +281,7 @@ abstract class BetterTextFormFieldWidgetState
     extends BetterFormFieldWidgetState<String>
     with BetterFormFieldTextMixin<String> {
   @override
-  String valueToString(String value) => value;
+  String valueToString(String? value) => value ?? '';
 
   @override
   String? stringToValue(String text) => text;
@@ -281,11 +296,31 @@ abstract class BetterTextFormFieldWidgetState
         return ValueListenableBuilder<bool>(
           valueListenable: _controller.fieldDirtyNotifier(widget.fieldId),
           builder: (context, isDirty, child) {
+            final shouldShowError =
+                validation.isValidating ||
+                (_controller.isFieldTouched(widget.fieldId) ||
+                    _controller.isSubmitting);
+
             return TextFormField(
               controller: textController,
+              focusNode: focusNode,
               decoration: widget.decoration.copyWith(
-                errorText: validation.errorMessage,
-                suffixIcon: isDirty ? const Icon(Icons.edit, size: 16) : null,
+                errorText: shouldShowError && !validation.isValidating
+                    ? validation.errorMessage
+                    : null,
+                helperText: validation.isValidating ? 'Validating...' : null,
+                suffixIcon: validation.isValidating
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: Padding(
+                          padding: EdgeInsets.all(4),
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      )
+                    : isDirty
+                    ? const Icon(Icons.edit, size: 16)
+                    : null,
               ),
               keyboardType: widget.keyboardType,
               maxLines: widget.maxLines,
@@ -323,7 +358,7 @@ abstract class BetterNumberFormFieldWidgetState
     extends BetterFormFieldWidgetState<int>
     with BetterFormFieldTextMixin<int> {
   @override
-  String valueToString(int value) => value.toString();
+  String valueToString(int? value) => value?.toString() ?? '';
 
   @override
   int? stringToValue(String text) => int.tryParse(text);
@@ -338,11 +373,31 @@ abstract class BetterNumberFormFieldWidgetState
         return ValueListenableBuilder<bool>(
           valueListenable: _controller.fieldDirtyNotifier(widget.fieldId),
           builder: (context, isDirty, child) {
+            final shouldShowError =
+                validation.isValidating ||
+                (_controller.isFieldTouched(widget.fieldId) ||
+                    _controller.isSubmitting);
+
             return TextFormField(
               controller: textController,
+              focusNode: focusNode,
               decoration: widget.decoration.copyWith(
-                errorText: validation.errorMessage,
-                suffixIcon: isDirty ? const Icon(Icons.edit, size: 16) : null,
+                errorText: shouldShowError && !validation.isValidating
+                    ? validation.errorMessage
+                    : null,
+                helperText: validation.isValidating ? 'Validating...' : null,
+                suffixIcon: validation.isValidating
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: Padding(
+                          padding: EdgeInsets.all(4),
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      )
+                    : isDirty
+                    ? const Icon(Icons.edit, size: 16)
+                    : null,
               ),
               keyboardType: TextInputType.number,
               enabled: widget.enabled,

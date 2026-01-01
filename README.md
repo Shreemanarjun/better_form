@@ -750,7 +750,7 @@ class CustomColorPicker extends ConsumerStatefulWidget {
 class _CustomColorPickerState extends ConsumerState<CustomColorPicker> {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final controllerProvider = widget.controllerProvider ?? BetterForm.of(context) ?? formControllerProvider(const {});
+    final controllerProvider = widget.controllerProvider ?? BetterForm.of(context) ?? formControllerProvider(const BetterFormParameter(initialValue: {}));
     final controller = ref.read(controllerProvider.notifier);
     final formState = ref.watch(controllerProvider);
     final currentColor = formState.getValue(widget.fieldId) ?? Colors.blue;

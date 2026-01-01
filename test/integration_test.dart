@@ -5,7 +5,9 @@ import 'package:better_form/better_form.dart';
 
 void main() {
   group('Complete Form Integration Tests', () {
-    testWidgets('should handle complete user registration form', (tester) async {
+    testWidgets('should handle complete user registration form', (
+      tester,
+    ) async {
       // Define form fields
       final nameField = BetterFormFieldID<String>('name');
       final emailField = BetterFormFieldID<String>('email');
@@ -16,44 +18,44 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            formControllerProvider(const {}).overrideWith((ref) {
-              final controller = RiverpodFormController(initialValue: {
-                'name': '',
-                'email': '',
-                'age': 18,
-                'newsletter': false,
-                'agree': false,
-              });
-
-              // Register fields with validation
-              controller.registerField(BetterFormField<String>(
-                id: nameField,
-                initialValue: '',
-                validator: (value) =>
-                    value.isEmpty ? 'Name is required' : null,
-              ));
-
-              controller.registerField(BetterFormField<String>(
-                id: emailField,
-                initialValue: '',
-                validator: (value) =>
-                    value.contains('@') ? null : 'Invalid email',
-              ));
-
-              controller.registerField(BetterFormField<num>(
-                id: ageField,
-                initialValue: 18,
-                validator: (value) =>
-                    value >= 18 ? null : 'Must be 18 or older',
-              ));
-
-              controller.registerField(BetterFormField<bool>(
-                id: agreeField,
-                initialValue: false,
-                validator: (value) =>
-                    value == true ? null : 'You must agree to terms',
-              ));
-
+            formControllerProvider(
+              const BetterFormParameter(initialValue: {}),
+            ).overrideWith((ref) {
+              final controller = RiverpodFormController(
+                initialValue: {
+                  'name': '',
+                  'email': '',
+                  'age': 18,
+                  'newsletter': false,
+                  'agree': false,
+                },
+                fields: [
+                  BetterFormField<String>(
+                    id: nameField,
+                    initialValue: '',
+                    validator: (value) =>
+                        value.isEmpty ? 'Name is required' : null,
+                  ),
+                  BetterFormField<String>(
+                    id: emailField,
+                    initialValue: '',
+                    validator: (value) =>
+                        value.contains('@') ? null : 'Invalid email',
+                  ),
+                  BetterFormField<num>(
+                    id: ageField,
+                    initialValue: 18,
+                    validator: (value) =>
+                        value >= 18 ? null : 'Must be 18 or older',
+                  ),
+                  BetterFormField<bool>(
+                    id: agreeField,
+                    initialValue: false,
+                    validator: (value) =>
+                        value == true ? null : 'You must agree to terms',
+                  ),
+                ],
+              );
               return controller;
             }),
           ],
@@ -102,25 +104,47 @@ void main() {
                     const SizedBox(height: 24),
                     Consumer(
                       builder: (context, ref, child) {
-                        final formState = ref.watch(formControllerProvider(const {}));
+                        final formState = ref.watch(
+                          formControllerProvider(
+                            const BetterFormParameter(initialValue: {}),
+                          ),
+                        );
                         final isValid = formState.isValid;
                         final isDirty = formState.isDirty;
 
                         return Column(
                           children: [
-                            Text('Form Status: ${isDirty ? 'Modified' : 'Unchanged'}'),
-                            Text('Validation: ${isValid ? 'Valid' : 'Invalid'}'),
+                            Text(
+                              'Form Status: ${isDirty ? 'Modified' : 'Unchanged'}',
+                            ),
+                            Text(
+                              'Validation: ${isValid ? 'Valid' : 'Invalid'}',
+                            ),
                             const SizedBox(height: 16),
                             ElevatedButton(
-                              onPressed: isValid ? () {
-                                final values = ref.read(formControllerProvider(const {})).values;
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Form submitted: ${values.length} fields'),
-                                    backgroundColor: Colors.green,
-                                  ),
-                                );
-                              } : null,
+                              onPressed: isValid
+                                  ? () {
+                                      final values = ref
+                                          .read(
+                                            formControllerProvider(
+                                              const BetterFormParameter(
+                                                initialValue: {},
+                                              ),
+                                            ),
+                                          )
+                                          .values;
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'Form submitted: ${values.length} fields',
+                                          ),
+                                          backgroundColor: Colors.green,
+                                        ),
+                                      );
+                                    }
+                                  : null,
                               child: const Text('Submit'),
                             ),
                           ],
@@ -134,6 +158,7 @@ void main() {
           ),
         ),
       );
+      await tester.pump();
 
       // Initially form should be invalid (missing required fields)
       expect(find.text('Validation: Invalid'), findsOneWidget);
@@ -174,11 +199,15 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            formControllerProvider(const {}).overrideWith((ref) {
-              return RiverpodFormController(initialValue: {
-                'name': 'Initial Name',
-                'email': 'initial@example.com',
-              });
+            formControllerProvider(
+              const BetterFormParameter(initialValue: {}),
+            ).overrideWith((ref) {
+              return RiverpodFormController(
+                initialValue: {
+                  'name': 'Initial Name',
+                  'email': 'initial@example.com',
+                },
+              );
             }),
           ],
           child: MaterialApp(
@@ -197,7 +226,13 @@ void main() {
                     builder: (context, ref, child) {
                       return ElevatedButton(
                         onPressed: () {
-                          ref.read(formControllerProvider(const {}).notifier).reset();
+                          ref
+                              .read(
+                                formControllerProvider(
+                                  const BetterFormParameter(initialValue: {}),
+                                ).notifier,
+                              )
+                              .reset();
                         },
                         child: const Text('Reset'),
                       );
@@ -218,7 +253,10 @@ void main() {
       await tester.enterText(find.byType(TextFormField).first, 'Modified Name');
       await tester.pump();
 
-      await tester.enterText(find.byType(TextFormField).last, 'modified@example.com');
+      await tester.enterText(
+        find.byType(TextFormField).last,
+        'modified@example.com',
+      );
       await tester.pump();
 
       expect(find.text('Modified Name'), findsOneWidget);
@@ -240,32 +278,38 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            formControllerProvider(const {}).overrideWith((ref) {
-              final controller = RiverpodFormController(initialValue: {
-                'password': '',
-                'confirmPassword': '',
-              });
-
-              // Register fields with cross-field validation
-              controller.registerField(BetterFormField<String>(
-                id: passwordField,
-                initialValue: '',
-                validator: (value) {
-                  if (value.length < 6) return 'Password must be at least 6 characters';
-                  return null;
-                },
-              ));
-
-              controller.registerField(BetterFormField<String>(
-                id: confirmPasswordField,
-                initialValue: '',
-                validator: (value) {
-                  final password = controller.getValue(passwordField);
-                  if (value != password) return 'Passwords do not match';
-                  return null;
-                },
-              ));
-
+            formControllerProvider(
+              const BetterFormParameter(initialValue: {}),
+            ).overrideWith((ref) {
+              late final RiverpodFormController controller;
+              controller = RiverpodFormController(
+                initialValue: {'password': '', 'confirmPassword': ''},
+                fields: [
+                  BetterFormField<String>(
+                    id: passwordField,
+                    initialValue: '',
+                    validator: (value) {
+                      if (value.length < 6) {
+                        return 'Password must be at least 6 characters';
+                      }
+                      return null;
+                    },
+                  ),
+                  BetterFormField<String>(
+                    id: confirmPasswordField,
+                    initialValue: '',
+                    validator: (value) {
+                      try {
+                        final password = controller.getValue(passwordField);
+                        if (value != password) return 'Passwords do not match';
+                      } catch (_) {
+                        // During initial state creation, controller is not yet initialized
+                      }
+                      return null;
+                    },
+                  ),
+                ],
+              );
               return controller;
             }),
           ],
@@ -279,11 +323,17 @@ void main() {
                   ),
                   RiverpodTextFormField(
                     fieldId: confirmPasswordField,
-                    decoration: const InputDecoration(labelText: 'Confirm Password'),
+                    decoration: const InputDecoration(
+                      labelText: 'Confirm Password',
+                    ),
                   ),
                   Consumer(
                     builder: (context, ref, child) {
-                      final formState = ref.watch(formControllerProvider(const {}));
+                      final formState = ref.watch(
+                        formControllerProvider(
+                          const BetterFormParameter(initialValue: {}),
+                        ),
+                      );
                       return Text('Form Valid: ${formState.isValid}');
                     },
                   ),
@@ -324,30 +374,30 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            formControllerProvider(const {}).overrideWith((ref) {
-              final controller = RiverpodFormController(initialValue: {
-                'showExtra': false,
-                'extra': '',
-              });
-
-              controller.registerField(BetterFormField<bool>(
-                id: showExtraField,
-                initialValue: false,
-              ));
-
-              controller.registerField(BetterFormField<String>(
-                id: extraField,
-                initialValue: '',
-              ));
-
-              return controller;
+            formControllerProvider(
+              const BetterFormParameter(initialValue: {}),
+            ).overrideWith((ref) {
+              return RiverpodFormController(
+                initialValue: {'showExtra': false, 'extra': ''},
+                fields: [
+                  BetterFormField<bool>(
+                    id: showExtraField,
+                    initialValue: false,
+                  ),
+                  BetterFormField<String>(id: extraField, initialValue: ''),
+                ],
+              );
             }),
           ],
           child: MaterialApp(
             home: Scaffold(
               body: Consumer(
                 builder: (context, ref, child) {
-                  final formState = ref.watch(formControllerProvider(const {}));
+                  final formState = ref.watch(
+                    formControllerProvider(
+                      const BetterFormParameter(initialValue: {}),
+                    ),
+                  );
                   final showExtra = formState.getValue(showExtraField) ?? false;
 
                   return Column(
@@ -360,7 +410,9 @@ void main() {
                         const SizedBox(height: 16),
                         RiverpodTextFormField(
                           fieldId: extraField,
-                          decoration: const InputDecoration(labelText: 'Extra Information'),
+                          decoration: const InputDecoration(
+                            labelText: 'Extra Information',
+                          ),
                         ),
                       ],
                     ],
@@ -388,6 +440,66 @@ void main() {
 
       // Extra field should be hidden again
       expect(find.text('Extra Information'), findsNothing);
+    });
+  });
+
+  group('BetterForm Widget Integration', () {
+    testWidgets('should work with dedicated BetterForm widget', (tester) async {
+      final nameField = BetterFormFieldID<String>('name');
+      final emailField = BetterFormFieldID<String>('email');
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: BetterForm(
+                initialValue: {'name': 'Jane Doe', 'email': 'jane@example.com'},
+                fields: [
+                  BetterFormFieldConfig<String>(
+                    id: nameField,
+                    initialValue: '',
+                    validator: (value) => value.isEmpty ? 'Required' : null,
+                  ),
+                  BetterFormFieldConfig<String>(
+                    id: emailField,
+                    initialValue: '',
+                    validator: (value) =>
+                        value.contains('@') ? null : 'Invalid',
+                  ),
+                ],
+                child: Column(
+                  children: [
+                    RiverpodTextFormField(
+                      fieldId: nameField,
+                      decoration: const InputDecoration(labelText: 'Name'),
+                    ),
+                    RiverpodTextFormField(
+                      fieldId: emailField,
+                      decoration: const InputDecoration(labelText: 'Email'),
+                    ),
+                    Consumer(
+                      builder: (context, ref, child) {
+                        final provider = BetterForm.of(context)!;
+                        final formState = ref.watch(provider);
+                        return Text('Form Valid: ${formState.isValid}');
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('Jane Doe'), findsOneWidget);
+      expect(find.text('jane@example.com'), findsOneWidget);
+      expect(find.text('Form Valid: true'), findsOneWidget);
+
+      await tester.enterText(find.byType(TextField).first, '');
+      await tester.pump();
+      expect(find.text('Form Valid: false'), findsOneWidget);
     });
   });
 }

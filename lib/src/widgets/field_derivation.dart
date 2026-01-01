@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
-import '../controllers/controller.dart';
+import '../controllers/riverpod_controller.dart';
 import '../controllers/field_id.dart';
 import 'riverpod_form_fields.dart';
 

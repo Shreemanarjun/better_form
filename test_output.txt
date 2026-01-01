@@ -1,0 +1,147 @@
+00:00 +0: loading /Users/shreemanarjunsahu/personal/flutter_package/better_form/test/headless_test.dart                                                                                                00:00 +0: Headless Widgets BetterRawTextField supports custom UI (Cupertino style)                                                                                                                     00:01 +0: Headless Widgets BetterRawTextField supports custom UI (Cupertino style)                                                                                                                     00:01 +0: Headless Widgets BetterRawTextField supports custom UI (Cupertino style)                                                                                                                     
+══╡ EXCEPTION CAUGHT BY WIDGETS LIBRARY ╞═══════════════════════════════════════════════════════════
+The following _TypeError was thrown building BetterForm(dirty, dependencies:
+[UncontrolledProviderScope], state: _ConsumerState#bc6ad):
+type 'RiverpodFormController' is not a subtype of type 'BetterFormController' in type cast
+
+The relevant error-causing widget was:
+  BetterForm
+  BetterForm:file:///Users/shreemanarjunsahu/personal/flutter_package/better_form/test/headless_test.dart:24:21
+
+When the exception was thrown, this was the stack:
+#0      BetterForm.build (package:better_form/src/widgets/riverpod_form_fields.dart:56:48)
+#1      _ConsumerState.build (package:flutter_riverpod/src/consumer.dart:476:19)
+#2      StatefulElement.build (package:flutter/src/widgets/framework.dart:5833:27)
+#3      ConsumerStatefulElement.build (package:flutter_riverpod/src/consumer.dart:539:20)
+#4      ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5723:15)
+#5      StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5884:11)
+#6      Element.rebuild (package:flutter/src/widgets/framework.dart:5435:7)
+#7      ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5705:5)
+#8      StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5875:11)
+#9      ComponentElement.mount (package:flutter/src/widgets/framework.dart:5699:5)
+...     Normal element mounting (25 frames)
+#34     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4548:16)
+#35     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7169:36)
+#36     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7185:32)
+...     Normal element mounting (332 frames)
+#368    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4548:16)
+#369    MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7169:36)
+#370    MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7185:32)
+...     Normal element mounting (471 frames)
+#841    _UncontrolledProviderScopeElement.mount (package:flutter_riverpod/src/framework.dart:315:11)
+...     Normal element mounting (9 frames)
+#850    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4548:16)
+#851    Element.updateChild (package:flutter/src/widgets/framework.dart:3998:20)
+#852    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5747:16)
+#853    Element.rebuild (package:flutter/src/widgets/framework.dart:5435:7)
+#854    ProxyElement.update (package:flutter/src/widgets/framework.dart:6051:5)
+#855    _InheritedNotifierElement.update (package:flutter/src/widgets/inherited_notifier.dart:108:11)
+#856    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#857    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5747:16)
+#858    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5884:11)
+#859    Element.rebuild (package:flutter/src/widgets/framework.dart:5435:7)
+#860    StatefulElement.update (package:flutter/src/widgets/framework.dart:5909:5)
+#861    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#862    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5747:16)
+#863    Element.rebuild (package:flutter/src/widgets/framework.dart:5435:7)
+#864    ProxyElement.update (package:flutter/src/widgets/framework.dart:6051:5)
+#865    _InheritedNotifierElement.update (package:flutter/src/widgets/inherited_notifier.dart:108:11)
+#866    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#867    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5747:16)
+#868    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5884:11)
+#869    Element.rebuild (package:flutter/src/widgets/framework.dart:5435:7)
+#870    StatefulElement.update (package:flutter/src/widgets/framework.dart:5909:5)
+#871    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#872    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5747:16)
+#873    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5884:11)
+#874    Element.rebuild (package:flutter/src/widgets/framework.dart:5435:7)
+#875    StatefulElement.update (package:flutter/src/widgets/framework.dart:5909:5)
+#876    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#877    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5747:16)
+#878    Element.rebuild (package:flutter/src/widgets/framework.dart:5435:7)
+#879    ProxyElement.update (package:flutter/src/widgets/framework.dart:6051:5)
+#880    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#881    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5747:16)
+#882    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5884:11)
+#883    Element.rebuild (package:flutter/src/widgets/framework.dart:5435:7)
+#884    StatefulElement.update (package:flutter/src/widgets/framework.dart:5909:5)
+#885    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#886    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5747:16)
+#887    Element.rebuild (package:flutter/src/widgets/framework.dart:5435:7)
+#888    ProxyElement.update (package:flutter/src/widgets/framework.dart:6051:5)
+#889    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#890    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5747:16)
+#891    Element.rebuild (package:flutter/src/widgets/framework.dart:5435:7)
+#892    ProxyElement.update (package:flutter/src/widgets/framework.dart:6051:5)
+#893    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#894    _RawViewElement._updateChild (package:flutter/src/widgets/view.dart:481:16)
+#895    _RawViewElement.update (package:flutter/src/widgets/view.dart:568:5)
+#896    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#897    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5747:16)
+#898    Element.rebuild (package:flutter/src/widgets/framework.dart:5435:7)
+#899    StatelessElement.update (package:flutter/src/widgets/framework.dart:5797:5)
+#900    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#901    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5747:16)
+#902    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5884:11)
+#903    Element.rebuild (package:flutter/src/widgets/framework.dart:5435:7)
+#904    StatefulElement.update (package:flutter/src/widgets/framework.dart:5909:5)
+#905    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+#906    RootElement._rebuild (package:flutter/src/widgets/binding.dart:1716:16)
+#907    RootElement.update (package:flutter/src/widgets/binding.dart:1694:5)
+#908    RootElement.performRebuild (package:flutter/src/widgets/binding.dart:1708:7)
+#909    Element.rebuild (package:flutter/src/widgets/framework.dart:5435:7)
+#910    BuildScope._tryRebuild (package:flutter/src/widgets/framework.dart:2695:15)
+#911    BuildScope._flushDirtyElements (package:flutter/src/widgets/framework.dart:2752:11)
+#912    BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3056:18)
+#913    AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:1506:19)
+#914    RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:495:5)
+#915    SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1434:15)
+#916    SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1347:9)
+#917    AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:1335:9)
+#920    TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#921    AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:1324:27)
+#922    WidgetTester.pumpWidget.<anonymous closure> (package:flutter_test/src/widget_tester.dart:598:22)
+#925    TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#926    WidgetTester.pumpWidget (package:flutter_test/src/widget_tester.dart:595:27)
+#927    main.<anonymous closure>.<anonymous closure> (file:///Users/shreemanarjunsahu/personal/flutter_package/better_form/test/headless_test.dart:19:20)
+#928    testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:29)
+<asynchronous suspension>
+#929    TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1059:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 5 frames from dart:async and package:stack_trace)
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: exactly one matching candidate
+  Actual: _TypeWidgetFinder:<Found 0 widgets with type "CupertinoTextField": []>
+   Which: means none were found but one was expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure>.<anonymous closure> (file:///Users/shreemanarjunsahu/personal/flutter_package/better_form/test/headless_test.dart:71:7)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1059:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///Users/shreemanarjunsahu/personal/flutter_package/better_form/test/headless_test.dart line 71
+The test description was:
+  BetterRawTextField supports custom UI (Cupertino style)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following message was thrown:
+Multiple exceptions (2) were detected during the running of the current test, and at least one was
+unexpected.
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:01 +0 -1: Headless Widgets BetterRawTextField supports custom UI (Cupertino style) [E]                                                                                                              
+  Test failed. See exception logs above.
+  The test description was: BetterRawTextField supports custom UI (Cupertino style)
+  
+
+To run this test again: /Users/shreemanarjunsahu/fvm/versions/stable/bin/cache/dart-sdk/bin/dart test /Users/shreemanarjunsahu/personal/flutter_package/better_form/test/headless_test.dart -p vm --plain-name 'Headless Widgets BetterRawTextField supports custom UI (Cupertino style)'
+00:01 +0 -1: Some tests failed.                                                                                                                                                                        

@@ -6,8 +6,8 @@ import 'package:better_form/better_form.dart';
 // Test-specific providers for easier testing
 final testControllerProvider =
     StateNotifierProvider.autoDispose<RiverpodFormController, FormState>((ref) {
-  return RiverpodFormController(initialValue: {});
-});
+      return RiverpodFormController(initialValue: {});
+    });
 
 void main() {
   group('RiverpodTextFormField', () {
@@ -75,14 +75,14 @@ void main() {
             testControllerProvider.overrideWith((ref) {
               final controller = RiverpodFormController(
                 initialValue: {'email': ''},
-              );
-              controller.registerField(
-                BetterFormField<String>(
-                  id: emailField,
-                  initialValue: '',
-                  validator: (value) =>
-                      value.contains('@') ? null : 'Invalid email',
-                ),
+                fields: [
+                  BetterFormField<String>(
+                    id: emailField,
+                    initialValue: '',
+                    validator: (value) =>
+                        value.contains('@') ? null : 'Invalid email',
+                  ),
+                ],
               );
               return controller;
             }),
@@ -115,7 +115,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            formControllerProvider(const {}).overrideWith((ref) {
+            formControllerProvider(
+              const BetterFormParameter(initialValue: {}),
+            ).overrideWith((ref) {
               return RiverpodFormController(initialValue: {'age': 25});
             }),
           ],
@@ -140,7 +142,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            formControllerProvider(const {}).overrideWith((ref) {
+            formControllerProvider(
+              const BetterFormParameter(initialValue: {}),
+            ).overrideWith((ref) {
               return RiverpodFormController(initialValue: {'age': 0});
             }),
           ],
@@ -167,7 +171,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            formControllerProvider(const {}).overrideWith((ref) {
+            formControllerProvider(
+              const BetterFormParameter(initialValue: {}),
+            ).overrideWith((ref) {
               return RiverpodFormController(initialValue: {'age': 25});
             }),
           ],
@@ -200,7 +206,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            formControllerProvider(const {}).overrideWith((ref) {
+            formControllerProvider(
+              const BetterFormParameter(initialValue: {}),
+            ).overrideWith((ref) {
               return RiverpodFormController(initialValue: {'newsletter': true});
             }),
           ],
@@ -229,7 +237,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            formControllerProvider(const {}).overrideWith((ref) {
+            formControllerProvider(
+              const BetterFormParameter(initialValue: {}),
+            ).overrideWith((ref) {
               return RiverpodFormController(
                 initialValue: {'newsletter': false},
               );
@@ -267,16 +277,19 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            formControllerProvider(const {}).overrideWith((ref) {
+            formControllerProvider(
+              const BetterFormParameter(initialValue: {}),
+            ).overrideWith((ref) {
               final controller = RiverpodFormController(
                 initialValue: {'agree': false},
-              );
-              controller.registerField(
-                BetterFormField<bool>(
-                  id: agreeField,
-                  initialValue: false,
-                  validator: (value) => value == true ? null : 'You must agree',
-                ),
+                fields: [
+                  BetterFormField<bool>(
+                    id: agreeField,
+                    initialValue: false,
+                    validator: (value) =>
+                        value == true ? null : 'You must agree',
+                  ),
+                ],
               );
               return controller;
             }),
@@ -303,7 +316,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            formControllerProvider(const {}).overrideWith((ref) {
+            formControllerProvider(
+              const BetterFormParameter(initialValue: {}),
+            ).overrideWith((ref) {
               return RiverpodFormController(
                 initialValue: {'priority': 'medium'},
               );
@@ -335,7 +350,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            formControllerProvider(const {}).overrideWith((ref) {
+            formControllerProvider(
+              const BetterFormParameter(initialValue: {}),
+            ).overrideWith((ref) {
               return RiverpodFormController(
                 initialValue: {'priority': 'medium'},
               );
@@ -370,7 +387,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            formControllerProvider(const {}).overrideWith((ref) {
+            formControllerProvider(
+              const BetterFormParameter(initialValue: {}),
+            ).overrideWith((ref) {
               return RiverpodFormController(initialValue: {'name': 'John'});
             }),
           ],
@@ -391,7 +410,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            formControllerProvider(const {}).overrideWith((ref) {
+            formControllerProvider(
+              const BetterFormParameter(initialValue: {}),
+            ).overrideWith((ref) {
               final controller = RiverpodFormController(
                 initialValue: {'name': 'John'},
               );

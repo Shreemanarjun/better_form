@@ -6,8 +6,7 @@ class BetterFormFieldID<T> {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is BetterFormFieldID<T> && runtimeType == other.runtimeType && key == other.key;
+      identical(this, other) || other is BetterFormFieldID && key == other.key;
 
   @override
   int get hashCode => key.hashCode;

@@ -48,7 +48,7 @@ class _RiverpodTextFormFieldState extends ConsumerState<RiverpodTextFormField> {
     final controllerProvider =
         widget.controllerProvider ??
         BetterForm.of(context) ??
-        formControllerProvider(const {});
+        formControllerProvider(const BetterFormParameter(initialValue: {}));
 
     return ProviderScope(
       overrides: [
