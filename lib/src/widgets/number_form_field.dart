@@ -31,17 +31,47 @@ class RiverpodNumberFormField extends ConsumerStatefulWidget {
 class _RiverpodNumberFormFieldState
     extends ConsumerState<RiverpodNumberFormField> {
   late final TextEditingController _textController;
+  late final FocusNode _focusNode;
 
   @override
   void initState() {
     super.initState();
     _textController = TextEditingController();
+    _focusNode = FocusNode();
+    _focusNode.addListener(_onFocusChange);
   }
 
   @override
   void dispose() {
     _textController.dispose();
+    _focusNode.removeListener(_onFocusChange);
+    _focusNode.dispose();
     super.dispose();
+  }
+
+  void _onFocusChange() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  /// Ensure the parsed number matches the expected type based on the current value
+  num _ensureCorrectType(num parsedNumber, num? currentValue) {
+    if (currentValue == null) {
+      // If no current value, check the field type from the initial value
+      // For now, default to double for decimal support
+      return parsedNumber.toDouble();
+    }
+
+    // Match the type of the current value
+    if (currentValue is int) {
+      return parsedNumber.toInt();
+    } else if (currentValue is double) {
+      return parsedNumber.toDouble();
+    } else {
+      // Default to double for maximum compatibility
+      return parsedNumber.toDouble();
+    }
   }
 
   @override
@@ -62,36 +92,61 @@ class _RiverpodNumberFormFieldState
           final validation = ref.watch(fieldValidationProvider(widget.fieldId));
           final isDirty = ref.watch(fieldDirtyProvider(widget.fieldId));
 
-          // Update controller text when value changes externally
-          final displayValue = value?.toString() ?? '0';
-          if (_textController.text != displayValue) {
-            _textController.text = displayValue;
+          // Sync text if not focused to handle initial value and external updates
+          if (!_focusNode.hasFocus) {
+            final displayValue = value?.toString() ?? '';
+            // Only update if different to avoid cursor/selection issues (though less relevant when not focused)
+            if (_textController.text != displayValue) {
+              _textController.text = displayValue;
+            }
+          }
+
+          Widget? suffixIcon;
+          if (validation.isValidating) {
+            suffixIcon = const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            );
+          } else if (isDirty) {
+            suffixIcon = const Icon(Icons.edit, size: 16);
           }
 
           return TextFormField(
             controller: _textController,
+            focusNode: _focusNode,
             keyboardType: TextInputType.number,
             decoration: (widget.decoration ?? const InputDecoration()).copyWith(
               errorText: validation.isValid ? null : validation.errorMessage,
-              suffixIcon: isDirty ? const Icon(Icons.edit, size: 16) : null,
+              suffixIcon: suffixIcon,
             ),
             onChanged: (text) {
+              // Allow empty text - set to 0 or current value
+              if (text.isEmpty) {
+                final defaultValue = value ?? 0.0;
+                final typedDefault = _ensureCorrectType(defaultValue, value);
+                controller.setValue(widget.fieldId, typedDefault);
+                return;
+              }
+
+              // Try to parse the number
               final number = num.tryParse(text);
               if (number != null) {
                 // Validate range if specified
                 if ((widget.min != null && number < widget.min!) ||
                     (widget.max != null && number > widget.max!)) {
-                  // Invalid range - revert to current value
-                  _textController.text = value?.toString() ?? '0';
+                  // Invalid range - don't update the value, but keep the text as-is
+                  // The validation error will still show
                   return;
                 }
-                controller.setValue(widget.fieldId, number);
-              } else if (text.isEmpty) {
-                // Allow empty input, but don't update value yet
-                return;
+
+                // Ensure the number type matches the field type
+                final typedNumber = _ensureCorrectType(number, value);
+                controller.setValue(widget.fieldId, typedNumber);
               } else {
-                // Invalid number - revert to current value
-                _textController.text = value?.toString() ?? '0';
+                // For invalid input (like partial decimals), don't update the value
+                // but allow the text to remain. This prevents cursor jumping.
+                // The field will show validation errors when appropriate.
               }
             },
           );

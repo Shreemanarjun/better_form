@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'ui/basic_form/basic_form_page.dart';
-
 import 'ui/advanced/advanced_page.dart';
+import 'ui/schema_form/schema_form_page.dart';
+import 'ui/conditional_form/conditional_form_page.dart';
+import 'ui/derived_fields/derived_fields_page.dart';
+import 'ui/validation_examples/validation_examples_page.dart';
+import 'ui/headless_form/headless_form_page.dart';
+import 'ui/performance_examples/performance_examples_page.dart';
 
 void main() {
   runApp(const ProviderScope(child: BetterFormExampleApp()));
@@ -50,7 +55,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 8, vsync: this);
   }
 
   @override
@@ -66,15 +71,31 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         title: const Text('Better Form Examples'),
         bottom: TabBar(
           controller: _tabController,
+          isScrollable: true,
           tabs: const [
-            Tab(text: 'Basic Form', icon: Icon(Icons.edit)),
+            Tab(text: 'Basic', icon: Icon(Icons.edit)),
+            Tab(text: 'Schema', icon: Icon(Icons.schema)),
+            Tab(text: 'Conditional', icon: Icon(Icons.visibility)),
+            Tab(text: 'Derived', icon: Icon(Icons.calculate)),
+            Tab(text: 'Validation', icon: Icon(Icons.check_circle)),
+            Tab(text: 'Headless', icon: Icon(Icons.code)),
+            Tab(text: 'Performance', icon: Icon(Icons.speed)),
             Tab(text: 'Advanced', icon: Icon(Icons.settings)),
           ],
         ),
       ),
       body: TabBarView(
         controller: _tabController,
-        children: [BasicFormExample(), AdvancedExample()],
+        children: const [
+          BasicFormExample(),
+          SchemaFormExample(),
+          ConditionalFormExample(),
+          DerivedFieldsExample(),
+          ValidationExamples(),
+          HeadlessFormExample(),
+          PerformanceExamples(),
+          AdvancedExample(),
+        ],
       ),
     );
   }

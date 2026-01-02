@@ -31,10 +31,12 @@ class FieldChangeInfo<T> {
   bool get valueChanged => previousValue != null && value != previousValue;
 
   /// Whether the validation changed
-  bool get validationChanged => previousValidation != null && validation != previousValidation;
+  bool get validationChanged =>
+      previousValidation != null && validation != previousValidation;
 
   /// Whether the dirty state changed
-  bool get dirtyStateChanged => previousIsDirty != null && isDirty != previousIsDirty;
+  bool get dirtyStateChanged =>
+      previousIsDirty != null && isDirty != previousIsDirty;
 
   /// Whether any aspect changed
   bool get hasChanged => valueChanged || validationChanged || dirtyStateChanged;
@@ -55,7 +57,12 @@ class BetterFormFieldSelector<T> extends StatefulWidget {
   });
 
   final BetterFormFieldID<T> fieldId;
-  final Widget Function(BuildContext context, FieldChangeInfo<T> info, Widget? child) builder;
+  final Widget Function(
+    BuildContext context,
+    FieldChangeInfo<T> info,
+    Widget? child,
+  )
+  builder;
   final BetterFormController? controller;
   final bool listenToValue;
   final bool listenToValidation;
@@ -63,10 +70,12 @@ class BetterFormFieldSelector<T> extends StatefulWidget {
   final Widget? child;
 
   @override
-  State<BetterFormFieldSelector<T>> createState() => _BetterFormFieldSelectorState<T>();
+  State<BetterFormFieldSelector<T>> createState() =>
+      _BetterFormFieldSelectorState<T>();
 }
 
-class _BetterFormFieldSelectorState<T> extends State<BetterFormFieldSelector<T>> {
+class _BetterFormFieldSelectorState<T>
+    extends State<BetterFormFieldSelector<T>> {
   late BetterFormController _controller;
   late T? _currentValue;
   late ValidationResult _currentValidation;
@@ -98,9 +107,11 @@ class _BetterFormFieldSelectorState<T> extends State<BetterFormFieldSelector<T>>
         oldWidget.listenToValue != widget.listenToValue ||
         oldWidget.listenToValidation != widget.listenToValidation ||
         oldWidget.listenToDirty != widget.listenToDirty) {
-
       // Remove old listener
-      oldWidget.controller?.removeFieldListener(oldWidget.fieldId, _onFieldChanged);
+      oldWidget.controller?.removeFieldListener(
+        oldWidget.fieldId,
+        _onFieldChanged,
+      );
 
       // Add new listener
       _controller = widget.controller ?? BetterForm.controllerOf(context)!;
@@ -118,13 +129,16 @@ class _BetterFormFieldSelectorState<T> extends State<BetterFormFieldSelector<T>>
   }
 
   void _updateCurrentState() {
-    _currentValue = _controller.getValue(widget.fieldId) ?? _controller.initialValue[widget.fieldId.key] as T?;
+    _currentValue =
+        _controller.getValue(widget.fieldId) ??
+        _controller.initialValue[widget.fieldId.key] as T?;
     _currentValidation = _controller.getValidation(widget.fieldId);
     _currentIsDirty = _controller.isFieldDirty(widget.fieldId);
 
     // Check if initial value has changed
     final initialValue = _controller.initialValue[widget.fieldId.key];
-    _hasInitialValueChanged = initialValue != null && _currentValue != initialValue;
+    _hasInitialValueChanged =
+        initialValue != null && _currentValue != initialValue;
   }
 
   void _onFieldChanged() {
@@ -143,7 +157,8 @@ class _BetterFormFieldSelectorState<T> extends State<BetterFormFieldSelector<T>>
       shouldRebuild = true;
     }
 
-    if (widget.listenToValidation && _currentValidation != _previousValidation) {
+    if (widget.listenToValidation &&
+        _currentValidation != _previousValidation) {
       shouldRebuild = true;
     }
 
@@ -212,7 +227,12 @@ class BetterFormFieldPerformanceMonitor<T> extends StatefulWidget {
   });
 
   final BetterFormFieldID<T> fieldId;
-  final Widget Function(BuildContext context, FieldChangeInfo<T> info, int rebuildCount) builder;
+  final Widget Function(
+    BuildContext context,
+    FieldChangeInfo<T> info,
+    int rebuildCount,
+  )
+  builder;
   final BetterFormController? controller;
 
   @override
@@ -220,7 +240,8 @@ class BetterFormFieldPerformanceMonitor<T> extends StatefulWidget {
       _BetterFormFieldPerformanceMonitorState<T>();
 }
 
-class _BetterFormFieldPerformanceMonitorState<T> extends State<BetterFormFieldPerformanceMonitor<T>> {
+class _BetterFormFieldPerformanceMonitorState<T>
+    extends State<BetterFormFieldPerformanceMonitor<T>> {
   int _rebuildCount = 0;
 
   @override
@@ -248,7 +269,12 @@ class BetterFormFieldConditionalSelector<T> extends StatelessWidget {
   });
 
   final BetterFormFieldID<T> fieldId;
-  final Widget Function(BuildContext context, FieldChangeInfo<T> info, Widget? child) builder;
+  final Widget Function(
+    BuildContext context,
+    FieldChangeInfo<T> info,
+    Widget? child,
+  )
+  builder;
   final bool Function(FieldChangeInfo<T> info) shouldRebuild;
   final BetterFormController? controller;
   final Widget? child;

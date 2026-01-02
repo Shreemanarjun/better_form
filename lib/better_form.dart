@@ -18,3 +18,6 @@ export 'src/widgets/text_form_field.dart';
 export 'src/widgets/number_form_field.dart';
 export 'src/widgets/field_selector.dart';
 export 'src/widgets/field_derivation.dart';
+export 'src/widgets/dependent_field.dart';
+export 'src/widgets/better_form_section.dart';
+export 'src/persistence/form_persistence.dart';

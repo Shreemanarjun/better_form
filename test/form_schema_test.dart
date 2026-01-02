@@ -108,11 +108,7 @@ void main() {
 
     group('NumberFieldSchema', () {
       test('should validate minimum value', () async {
-        final schema = NumberFieldSchema(
-          id: ageField,
-          initialValue: 0,
-          min: 0,
-        );
+        final schema = NumberFieldSchema(id: ageField, initialValue: 0, min: 0);
 
         final errors = await schema.validate(-1, {});
         expect(errors, contains('Minimum value is 0'));
@@ -199,16 +195,8 @@ void main() {
               isRequired: true,
               minLength: 2,
             ),
-            NumberFieldSchema(
-              id: ageField,
-              initialValue: 18,
-              min: 0,
-              max: 120,
-            ),
-            BooleanFieldSchema(
-              id: newsletterField,
-              initialValue: false,
-            ),
+            NumberFieldSchema(id: ageField, initialValue: 18, min: 0, max: 120),
+            BooleanFieldSchema(id: newsletterField, initialValue: false),
           ],
           submitButtonText: 'Create Account',
           resetButtonText: 'Clear Form',
@@ -228,22 +216,23 @@ void main() {
         expect(field, isNotNull);
         expect(field!.id, nameField);
 
-        final nonExistent = formSchema.getField<String>(BetterFormFieldID<String>('email'));
+        final nonExistent = formSchema.getField<String>(
+          BetterFormFieldID<String>('email'),
+        );
         expect(nonExistent, isNull);
       });
 
       test('should get visible fields', () {
         final visibleFields = formSchema.getVisibleFields({});
-        expect(visibleFields, hasLength(3)); // All fields are visible by default
+        expect(
+          visibleFields,
+          hasLength(3),
+        ); // All fields are visible by default
       });
 
       test('should validate entire form', () async {
         // Valid form data
-        final validData = {
-          'name': 'John Doe',
-          'age': 25,
-          'newsletter': true,
-        };
+        final validData = {'name': 'John Doe', 'age': 25, 'newsletter': true};
 
         final validResult = await formSchema.validate(validData);
         expect(validResult.isValid, true);
@@ -260,15 +249,14 @@ void main() {
         final invalidResult = await formSchema.validate(invalidData);
         expect(invalidResult.isValid, false);
         expect(invalidResult.fieldErrors, hasLength(2)); // name and age errors
-        expect(invalidResult.allErrors, hasLength(3)); // name has 2 errors, age has 1
+        expect(
+          invalidResult.allErrors,
+          hasLength(3),
+        ); // name has 2 errors, age has 1
       });
 
       test('should submit form successfully', () async {
-        final formData = {
-          'name': 'John Doe',
-          'age': 25,
-          'newsletter': true,
-        };
+        final formData = {'name': 'John Doe', 'age': 25, 'newsletter': true};
 
         final result = await formSchema.submit(formData);
         expect(result.success, true);
@@ -291,12 +279,7 @@ void main() {
 
       test('should handle custom validation', () async {
         final schemaWithCustomValidation = FormSchema(
-          fields: [
-            TextFieldSchema(
-              id: nameField,
-              initialValue: 'John',
-            ),
-          ],
+          fields: [TextFieldSchema(id: nameField, initialValue: 'John')],
           onValidate: (values) async {
             if (values['name'] == 'Admin') {
               return ['Admin username not allowed'];
@@ -305,12 +288,19 @@ void main() {
           },
         );
 
-        final validResult = await schemaWithCustomValidation.validate({'name': 'John'});
+        final validResult = await schemaWithCustomValidation.validate({
+          'name': 'John',
+        });
         expect(validResult.isValid, true);
 
-        final invalidResult = await schemaWithCustomValidation.validate({'name': 'Admin'});
+        final invalidResult = await schemaWithCustomValidation.validate({
+          'name': 'Admin',
+        });
         expect(invalidResult.isValid, false);
-        expect(invalidResult.customErrors, contains('Admin username not allowed'));
+        expect(
+          invalidResult.customErrors,
+          contains('Admin username not allowed'),
+        );
       });
 
       test('should handle async validation', () async {
@@ -328,10 +318,14 @@ void main() {
           ],
         );
 
-        final validResult = await schemaWithAsyncValidation.validate({'name': 'available'});
+        final validResult = await schemaWithAsyncValidation.validate({
+          'name': 'available',
+        });
         expect(validResult.isValid, true);
 
-        final invalidResult = await schemaWithAsyncValidation.validate({'name': 'taken'});
+        final invalidResult = await schemaWithAsyncValidation.validate({
+          'name': 'taken',
+        });
         expect(invalidResult.isValid, false);
         expect(invalidResult.allErrors, contains('Username already taken'));
       });
@@ -349,12 +343,7 @@ void main() {
               initialValue: 'John',
               isRequired: true,
             ),
-            NumberFieldSchema(
-              id: ageField,
-              initialValue: 25,
-              min: 0,
-              max: 120,
-            ),
+            NumberFieldSchema(id: ageField, initialValue: 25, min: 0, max: 120),
           ],
         );
 
@@ -437,7 +426,10 @@ void main() {
         expect(result.isValid, false);
         expect(result.fieldErrors, hasLength(2));
         expect(result.customErrors, hasLength(1));
-        expect(result.allErrors, hasLength(4)); // 2 from name, 1 from age, 1 custom
+        expect(
+          result.allErrors,
+          hasLength(4),
+        ); // 2 from name, 1 from age, 1 custom
         expect(result.getFieldErrors(nameField), hasLength(2));
         expect(result.getFieldErrors(ageField), hasLength(1));
       });

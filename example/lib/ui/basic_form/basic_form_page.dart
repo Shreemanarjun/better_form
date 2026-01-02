@@ -10,12 +10,7 @@ class BasicFormExample extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return BetterForm(
-      initialValue: {
-        'name': '',
-        'email': '',
-        'age': 18,
-        'newsletter': false,
-      },
+      initialValue: {'name': '', 'email': '', 'age': 18, 'newsletter': false},
       fields: [
         BetterFormFieldConfig<String>(
           id: nameField,
@@ -61,17 +56,13 @@ class BasicFormExample extends ConsumerWidget {
             const SizedBox(height: 16),
             RiverpodTextFormField(
               fieldId: nameField,
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.person),
-              ),
+              decoration: const InputDecoration(prefixIcon: Icon(Icons.person)),
             ),
             const SizedBox(height: 16),
             RiverpodTextFormField(
               fieldId: emailField,
               keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.email),
-              ),
+              decoration: const InputDecoration(prefixIcon: Icon(Icons.email)),
             ),
             const SizedBox(height: 16),
             RiverpodNumberFormField(

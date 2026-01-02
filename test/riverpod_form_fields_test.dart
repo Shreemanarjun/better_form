@@ -194,8 +194,10 @@ void main() {
       await tester.enterText(find.byType(TextFormField), '15');
       await tester.pump();
 
-      // The value should not be accepted (field should still show original value)
-      expect(find.text('25'), findsOneWidget);
+      // The value should not be accepted into the model (kept as 25),
+      // but the field text should show '15' to allow correcting.
+      // (Previous expectation of showing '25' would prevent typing any number starting with a digit < min)
+      expect(find.text('15'), findsOneWidget);
     });
   });
 

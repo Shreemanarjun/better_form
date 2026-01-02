@@ -9,6 +9,7 @@ import 'field_id.dart';
 import 'validation.dart';
 import '../i18n.dart';
 import '../enums.dart';
+import '../persistence/form_persistence.dart';
 
 /// Form state managed by Riverpod
 class FormState {
@@ -78,6 +79,8 @@ class BetterFormFieldConfig<T> {
     this.validator,
     this.label,
     this.hint,
+    this.asyncValidator,
+    this.debounceDuration,
   });
 
   final BetterFormFieldID<T> id;
@@ -85,6 +88,8 @@ class BetterFormFieldConfig<T> {
   final String? Function(T value)? validator;
   final String? label;
   final String? hint;
+  final Future<String?> Function(T value)? asyncValidator;
+  final Duration? debounceDuration;
 
   BetterFormField<T> toField() {
     T? finalInitialValue = initialValue;
@@ -94,12 +99,21 @@ class BetterFormFieldConfig<T> {
     if (originalValidator != null) {
       wrappedValidator = (T value) => originalValidator(value);
     }
+
+    final originalAsyncValidator = asyncValidator;
+    Future<String?> Function(T)? wrappedAsyncValidator;
+    if (originalAsyncValidator != null) {
+      wrappedAsyncValidator = (T value) => originalAsyncValidator(value);
+    }
+
     return BetterFormField<T>(
       id: id,
       initialValue: finalInitialValue as T,
       validator: wrappedValidator,
       label: label,
       hint: hint,
+      asyncValidator: wrappedAsyncValidator,
+      debounceDuration: debounceDuration,
     );
   }
 
@@ -112,7 +126,9 @@ class BetterFormFieldConfig<T> {
           initialValue == other.initialValue &&
           validator == other.validator &&
           label == other.label &&
-          hint == other.hint;
+          hint == other.hint &&
+          asyncValidator == other.asyncValidator &&
+          debounceDuration == other.debounceDuration;
 
   @override
   int get hashCode =>
@@ -120,7 +136,9 @@ class BetterFormFieldConfig<T> {
       initialValue.hashCode ^
       validator.hashCode ^
       label.hashCode ^
-      hint.hashCode;
+      hint.hashCode ^
+      asyncValidator.hashCode ^
+      debounceDuration.hashCode;
 }
 
 /// Riverpod-based form controller
@@ -175,10 +193,15 @@ class RiverpodFormController extends StateNotifier<FormState> {
     );
   }
 
+  final BetterFormPersistence? persistence;
+  final String? formId;
+
   RiverpodFormController({
     Map<String, dynamic> initialValue = const {},
     List<BetterFormField> fields = const [],
     this.messages = const DefaultBetterFormMessages(),
+    this.persistence,
+    this.formId,
   }) : super(_createInitialState(initialValue, fields)) {
     _initialValue.addAll(initialValue);
     for (final field in fields) {
@@ -200,6 +223,55 @@ class RiverpodFormController extends StateNotifier<FormState> {
             : null,
         debounceDuration: (field as dynamic).debounceDuration,
       );
+    }
+    _loadPersistedState();
+  }
+
+  Future<void> _loadPersistedState() async {
+    if (persistence != null && formId != null) {
+      final savedValues = await persistence!.getSavedState(formId!);
+      if (savedValues != null && mounted) {
+        final newValues = Map<String, dynamic>.from(state.values);
+        newValues.addAll(savedValues);
+
+        // We need to re-validate everything with the loaded values
+        final newValidations = Map<String, ValidationResult>.from(
+          state.validations,
+        );
+        final newDirtyStates = Map<String, bool>.from(state.dirtyStates);
+
+        for (final key in savedValues.keys) {
+          // check if field exists, validation etc.
+          if (_fieldDefinitions.containsKey(key)) {
+            final field = _fieldDefinitions[key]!;
+            final value = savedValues[key];
+
+            // Mark as dirty if different from initial
+            final initial = _initialValue[key];
+            final isDirty = initial == null ? value != null : value != initial;
+            newDirtyStates[key] = isDirty;
+
+            // Validate
+            if (field.validator != null) {
+              try {
+                final res = (field.validator as dynamic)(value);
+                newValidations[key] = res != null
+                    ? ValidationResult(isValid: false, errorMessage: res)
+                    : ValidationResult.valid;
+              } catch (_) {}
+            }
+          } else {
+            // If field not registered yet, just set value, it will be validated on registration
+            newDirtyStates[key] = true;
+          }
+        }
+
+        state = state.copyWith(
+          values: newValues,
+          validations: newValidations,
+          dirtyStates: newDirtyStates,
+        );
+      }
     }
   }
 
@@ -366,6 +438,11 @@ class RiverpodFormController extends StateNotifier<FormState> {
       validations: newValidations,
       dirtyStates: newDirtyStates,
     );
+
+    // Persist change
+    if (persistence != null && formId != null) {
+      persistence!.saveFormState(formId!, newValues);
+    }
   }
 
   /// Register a field
@@ -491,6 +568,10 @@ class RiverpodFormController extends StateNotifier<FormState> {
       dirtyStates: newDirtyStates,
       touchedStates: newTouchedStates,
     );
+    // Should we persist removal? Maybe.
+    if (persistence != null && formId != null) {
+      persistence!.saveFormState(formId!, newValues);
+    }
   }
 
   /// Reset form to initial state or clear it
@@ -546,6 +627,13 @@ class RiverpodFormController extends StateNotifier<FormState> {
       touchedStates: newTouchedStates,
       isSubmitting: false,
     );
+
+    if (persistence != null && formId != null) {
+      // If resetting to initial values, we effectively "clear" the modifications.
+      // We can either clear storage or save the new (initial) values.
+      // Saving the current values is safer.
+      persistence!.saveFormState(formId!, newValues);
+    }
   }
 
   /// Reset specific fields
@@ -694,6 +782,8 @@ class BetterFormController extends RiverpodFormController {
     super.initialValue,
     super.fields,
     super.messages = const DefaultBetterFormMessages(),
+    super.persistence,
+    super.formId,
   }) {
     addListener(_onStateChanged);
   }
@@ -969,22 +1059,30 @@ class BetterFormParameter {
   const BetterFormParameter({
     this.initialValue = const {},
     this.fields = const [],
+    this.persistence,
+    this.formId,
   });
 
   final Map<String, dynamic> initialValue;
   final List<BetterFormFieldConfig> fields;
+  final BetterFormPersistence? persistence;
+  final String? formId;
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is BetterFormParameter &&
           const MapEquality().equals(initialValue, other.initialValue) &&
-          const ListEquality().equals(fields, other.fields);
+          const ListEquality().equals(fields, other.fields) &&
+          persistence == other.persistence &&
+          formId == other.formId;
 
   @override
   int get hashCode =>
       const MapEquality().hash(initialValue) ^
-      const ListEquality().hash(fields);
+      const ListEquality().hash(fields) ^
+      persistence.hashCode ^
+      formId.hashCode;
 }
 
 /// Provider for form controller with auto-disposal
@@ -998,6 +1096,8 @@ final formControllerProvider = StateNotifierProvider.autoDispose
         initialValue: param.initialValue,
         fields: param.fields.map((f) => f.toField()).toList(),
         messages: messages,
+        persistence: param.persistence,
+        formId: param.formId,
       );
     });
 

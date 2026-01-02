@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../controllers/riverpod_controller.dart';
 import '../controllers/field_id.dart';
+import '../persistence/form_persistence.dart';
 
 /// A form widget that automatically manages a Riverpod controller provider
 /// and makes it available to all child Riverpod form fields
@@ -12,18 +13,27 @@ class BetterForm extends ConsumerWidget {
     super.key,
     this.initialValue = const {},
     this.fields = const [],
+    this.persistence,
+    this.formId,
     required this.child,
   });
 
   final Map<String, dynamic> initialValue;
   final List<BetterFormFieldConfig<dynamic>> fields;
+  final BetterFormPersistence? persistence;
+  final String? formId;
   final Widget child;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Create a unique controller provider for this form instance
     final controllerProvider = formControllerProvider(
-      BetterFormParameter(initialValue: initialValue, fields: fields),
+      BetterFormParameter(
+        initialValue: initialValue,
+        fields: fields,
+        persistence: persistence,
+        formId: formId,
+      ),
     );
     final controller =
         ref.watch(controllerProvider.notifier) as BetterFormController;
@@ -145,14 +155,25 @@ class RiverpodCheckboxFormField extends ConsumerWidget {
           return CheckboxListTile(
             value: value ?? false,
             title: title,
-            subtitle: validation.isValid
-                ? (isDirty
-                      ? const Text('Modified', style: TextStyle(fontSize: 12))
-                      : null)
-                : Text(
-                    validation.errorMessage ?? '',
-                    style: const TextStyle(color: Colors.red, fontSize: 12),
-                  ),
+            subtitle: validation.isValidating
+                ? const Text(
+                    'Validating...',
+                    style: TextStyle(color: Colors.blue, fontSize: 12),
+                  )
+                : (validation.isValid
+                      ? (isDirty
+                            ? const Text(
+                                'Modified',
+                                style: TextStyle(fontSize: 12),
+                              )
+                            : null)
+                      : Text(
+                          validation.errorMessage ?? '',
+                          style: const TextStyle(
+                            color: Colors.red,
+                            fontSize: 12,
+                          ),
+                        )),
             onChanged: (newValue) =>
                 controller.setValue(fieldId, newValue ?? false),
           );
@@ -196,12 +217,23 @@ class RiverpodDropdownFormField<T> extends ConsumerWidget {
           final validation = ref.watch(fieldValidationProvider(fieldId));
           final isDirty = ref.watch(fieldDirtyProvider(fieldId));
 
+          Widget? suffixIcon;
+          if (validation.isValidating) {
+            suffixIcon = const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            );
+          } else if (isDirty) {
+            suffixIcon = const Icon(Icons.edit, size: 16);
+          }
+
           return DropdownButtonFormField<T>(
             initialValue: value,
             items: items,
             decoration: (decoration ?? const InputDecoration()).copyWith(
               errorText: validation.isValid ? null : validation.errorMessage,
-              suffixIcon: isDirty ? const Icon(Icons.edit, size: 16) : null,
+              suffixIcon: suffixIcon,
             ),
             onChanged: (newValue) {
               if (newValue != null) {

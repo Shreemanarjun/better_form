@@ -66,15 +66,27 @@ class _RiverpodTextFormFieldState extends ConsumerState<RiverpodTextFormField> {
             _textController.text = value ?? '';
           }
 
+          Widget? suffixIcon;
+          if (validation.isValidating) {
+            suffixIcon = const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            );
+          } else if (isDirty) {
+            suffixIcon = const Icon(Icons.edit, size: 16);
+          }
+
           return TextFormField(
             controller: _textController,
             keyboardType: widget.keyboardType,
             maxLength: widget.maxLength,
             decoration: (widget.decoration ?? const InputDecoration()).copyWith(
               errorText: validation.isValid ? null : validation.errorMessage,
-              suffixIcon: isDirty ? const Icon(Icons.edit, size: 16) : null,
+              suffixIcon: suffixIcon,
             ),
-            onChanged: (newValue) => controller.setValue(widget.fieldId, newValue),
+            onChanged: (newValue) =>
+                controller.setValue(widget.fieldId, newValue),
           );
         },
       ),

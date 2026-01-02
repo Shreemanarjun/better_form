@@ -6,34 +6,44 @@ void main() {
     late BetterFormController controller;
 
     setUp(() {
-      controller = BetterFormController(initialValue: {
-        'name': 'John',
-        'email': 'john@example.com',
-        'age': 25,
-        'active': true,
-      });
+      controller = BetterFormController(
+        initialValue: {
+          'name': 'John',
+          'email': 'john@example.com',
+          'age': 25,
+          'active': true,
+        },
+      );
 
       // Register fields
-      controller.registerField(BetterFormField<String>(
-        id: BetterFormFieldID<String>('name'),
-        initialValue: 'John',
-      ));
+      controller.registerField(
+        BetterFormField<String>(
+          id: BetterFormFieldID<String>('name'),
+          initialValue: 'John',
+        ),
+      );
 
-      controller.registerField(BetterFormField<String>(
-        id: BetterFormFieldID<String>('email'),
-        initialValue: 'john@example.com',
-        validator: (value) => value.contains('@') ? null : 'Invalid email',
-      ));
+      controller.registerField(
+        BetterFormField<String>(
+          id: BetterFormFieldID<String>('email'),
+          initialValue: 'john@example.com',
+          validator: (value) => value.contains('@') ? null : 'Invalid email',
+        ),
+      );
 
-      controller.registerField(BetterFormField<num>(
-        id: BetterFormFieldID<num>('age'),
-        initialValue: 25,
-      ));
+      controller.registerField(
+        BetterFormField<num>(
+          id: BetterFormFieldID<num>('age'),
+          initialValue: 25,
+        ),
+      );
 
-      controller.registerField(BetterFormField<bool>(
-        id: BetterFormFieldID<bool>('active'),
-        initialValue: true,
-      ));
+      controller.registerField(
+        BetterFormField<bool>(
+          id: BetterFormFieldID<bool>('active'),
+          initialValue: true,
+        ),
+      );
     });
 
     tearDown(() {
@@ -130,16 +140,25 @@ void main() {
 
       test('should reset validation state when resetting', () {
         // Set invalid value
-        controller.setValue(BetterFormFieldID<String>('email'), 'invalid-email');
+        controller.setValue(
+          BetterFormFieldID<String>('email'),
+          'invalid-email',
+        );
 
         // Should be invalid
-        expect(controller.getValidation(BetterFormFieldID<String>('email')).isValid, false);
+        expect(
+          controller.getValidation(BetterFormFieldID<String>('email')).isValid,
+          false,
+        );
 
         // Reset
         controller.reset();
 
         // Should be valid again (back to initial valid value)
-        expect(controller.getValidation(BetterFormFieldID<String>('email')).isValid, true);
+        expect(
+          controller.getValidation(BetterFormFieldID<String>('email')).isValid,
+          true,
+        );
       });
 
       test('should reset touched state when resetting', () {
@@ -180,10 +199,9 @@ void main() {
       test('should handle null vs non-null changes', () {
         // Add a field that can be null
         final optionalField = BetterFormFieldID<String?>('optional');
-        controller.registerField(BetterFormField<String?>(
-          id: optionalField,
-          initialValue: null,
-        ));
+        controller.registerField(
+          BetterFormField<String?>(id: optionalField, initialValue: null),
+        );
 
         expect(controller.isFieldDirty(optionalField), false);
 
