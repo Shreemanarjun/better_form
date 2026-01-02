@@ -186,6 +186,47 @@ class MyCustomRatingField extends ConsumerWidget {
 }
 ```
 
+### 4. Simplified Usage with Builders or Base Classes
+Custom widgets can leverage `BetterFormScope` for an effortless development experience. `BetterFormScope` provides high-performance reactive accessors and a powerful `submit` helper.
+
+#### Using `BetterFormBuilder`
+```dart
+BetterFormBuilder(
+  builder: (context, scope) {
+    final isValid = scope.watchIsValid;
+    final isSubmitting = scope.watchIsSubmitting;
+
+    return ElevatedButton(
+      onPressed: (isValid && !isSubmitting)
+        ? () => scope.submit(onValid: (values) async => print(values))
+        : null,
+      child: Text(isSubmitting ? 'Submitting...' : 'Submit'),
+    );
+  },
+)
+```
+
+#### Extending `BetterFormWidget`
+```dart
+class FormStatusPanel extends BetterFormWidget {
+  const FormStatusPanel({super.key});
+
+  @override
+  Widget buildForm(BuildContext context, BetterFormScope scope) {
+    // Rebuilds ONLY when 'name' or validation for 'email' changes
+    final name = scope.watchValue(nameField);
+    final emailError = scope.watchError(emailField);
+
+    return Column(
+      children: [
+        if (name != null) Text('Welcome, $name'),
+        if (emailError != null) Text(emailError, style: TextStyle(color: Colors.red)),
+      ],
+    );
+  }
+}
+```
+
 ---
 
 ## 🧠 Advanced Features
@@ -290,6 +331,8 @@ While powerful, be aware of current constraints:
 
 ### Widgets
 - **`BetterForm`**: Root widget context.
+- **`BetterFormBuilder`**: Builder widget with controller and state.
+- **`BetterFormWidget`**: Base class for custom form widgets.
 - **`BetterFormSection`**: Lazy field registration and sectional organization.
 - **`RiverpodTextFormField`**: Text input.
 - **`RiverpodNumberFormField`**: Numeric input (int/double).

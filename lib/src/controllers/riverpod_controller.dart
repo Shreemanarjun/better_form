@@ -227,6 +227,9 @@ class RiverpodFormController extends StateNotifier<FormState> {
     _loadPersistedState();
   }
 
+  /// Get the current state of the form.
+  FormState get currentState => state;
+
   Future<void> _loadPersistedState() async {
     if (persistence != null && formId != null) {
       final savedValues = await persistence!.getSavedState(formId!);
