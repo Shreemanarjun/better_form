@@ -22,3 +22,7 @@ export 'src/widgets/dependent_field.dart';
 export 'src/widgets/better_form_section.dart';
 export 'src/widgets/form_builder.dart';
 export 'src/persistence/form_persistence.dart';
+export 'src/widgets/field_selector/better_form_field_conditional_selector.dart';
+export 'src/widgets/field_selector/better_form_field_performance_monitor.dart';
+export 'src/widgets/field_selector/better_form_field_selector.dart';
+export 'src/widgets/field_selector/better_form_field_value_selector.dart';

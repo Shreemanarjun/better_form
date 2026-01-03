@@ -108,7 +108,7 @@ class BetterFormFieldConfig<T> {
 
     return BetterFormField<T>(
       id: id,
-      initialValue: finalInitialValue as T,
+      initialValue: finalInitialValue,
       validator: wrappedValidator,
       label: label,
       hint: hint,

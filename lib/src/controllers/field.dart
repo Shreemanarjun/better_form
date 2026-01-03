@@ -15,7 +15,7 @@ class BetterFormField<T> {
   });
 
   final BetterFormFieldID<T> id;
-  final T initialValue;
+  final T? initialValue;
   final T? emptyValue;
   final String? Function(T value)? validator;
   final String? label;

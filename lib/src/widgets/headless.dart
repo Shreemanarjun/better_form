@@ -41,7 +41,7 @@ class BetterFieldStateSnapshot<T> {
 
   /// Helper to check if error should be shown (touched or submitting)
   bool get shouldShowError =>
-      (isTouched || isSubmitting) && !validation.isValidating;
+      (isTouched || isSubmitting) && !validation.isValid;
 
   /// Helper to check if field is invalid
   bool get hasError => !validation.isValid;

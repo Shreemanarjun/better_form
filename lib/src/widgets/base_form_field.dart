@@ -89,14 +89,7 @@ abstract class BetterFormFieldWidgetState<T>
       // If no initial value provided in widget, try to get it from controller's initial values
       initialValue ??= _controller.initialValue[widget.fieldId.key] as T?;
 
-      // If still no initial value, throw error
-      if (initialValue == null) {
-        throw StateError(
-          'Field ${widget.fieldId} must have an initialValue. '
-          'Please provide an initialValue explicitly or ensure the field exists in the controller.',
-        );
-      }
-
+      // Allow null initial values - the field can start with null
       _controller.registerField(
         BetterFormField<T>(
           id: widget.fieldId,

@@ -18,7 +18,25 @@ class InMemoryFormPersistence implements BetterFormPersistence {
 
   @override
   Future<void> saveFormState(String formId, Map<String, dynamic> values) async {
-    _storage[formId] = Map.from(values);
+    _storage[formId] = _deepCopy(values);
+  }
+
+  /// Creates a deep copy of the map for data isolation
+  Map<String, dynamic> _deepCopy(Map<String, dynamic> original) {
+    final copy = <String, dynamic>{};
+
+    for (final entry in original.entries) {
+      final value = entry.value;
+      if (value is Map<String, dynamic>) {
+        copy[entry.key] = _deepCopy(value);
+      } else if (value is List) {
+        copy[entry.key] = List.from(value);
+      } else {
+        copy[entry.key] = value;
+      }
+    }
+
+    return copy;
   }
 
   @override

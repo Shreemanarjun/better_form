@@ -163,8 +163,16 @@ class _BetterFormFieldDerivationState extends State<BetterFormFieldDerivation> {
       // Compute the derived value
       final derivedValue = widget.derive(values);
 
-      // Update the target field
-      _controller!.setValue(widget.targetField, derivedValue);
+      // Only update if the value has actually changed to avoid infinite loops
+      final currentValue = _controller!.getValue(widget.targetField);
+      if (currentValue != derivedValue) {
+        // Defer the update to avoid modifying provider during widget building
+        scheduleMicrotask(() {
+          if (_controller != null) {
+            _controller!.setValue(widget.targetField, derivedValue);
+          }
+        });
+      }
     } catch (e) {
       // Log error in debug mode
       if (kDebugMode) {
@@ -284,8 +292,16 @@ class _BetterFormFieldDerivationsState
       // Compute the derived value
       final derivedValue = config.derive(values);
 
-      // Update the target field
-      _controller!.setValue(config.targetField, derivedValue);
+      // Only update if the value has actually changed to avoid infinite loops
+      final currentValue = _controller!.getValue(config.targetField);
+      if (currentValue != derivedValue) {
+        // Defer the update to avoid modifying provider during widget building
+        scheduleMicrotask(() {
+          if (_controller != null) {
+            _controller!.setValue(config.targetField, derivedValue);
+          }
+        });
+      }
     } catch (e) {
       if (kDebugMode) {
         debugPrint('Error in field derivation for ${config.targetField}: $e');
