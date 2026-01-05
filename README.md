@@ -9,7 +9,7 @@
 <a href="https://github.com/Shreemanarjun/better_form/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a>
 <img src="https://img.shields.io/badge/coverage-93%25-brightgreen" alt="Code Coverage">
 <img src="https://img.shields.io/badge/tests-1000%2B-brightgreen" alt="Tests">
-<img src="https://img.shields.io/badge/version-1.0.2-blue" alt="Version">
+<img src="https://img.shields.io/badge/version-0.0.1-blue" alt="Version">
 </p>
 
 <p align="center">

@@ -1,10 +1,6 @@
 name: Better Form CI
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
   workflow_dispatch:
     inputs:
       update_goldens:
