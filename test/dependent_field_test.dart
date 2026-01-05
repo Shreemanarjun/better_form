@@ -263,10 +263,9 @@ void main() {
     ) async {
       final customField = FormixFieldID<String>('custom_field');
       final customProvider =
-          StateNotifierProvider.autoDispose<
-            FormixController,
-            FormixData
-          >((ref) {
+          StateNotifierProvider.autoDispose<FormixController, FormixData>((
+            ref,
+          ) {
             return FormixController(
               initialValue: {'custom_field': 'custom_value'},
             );
@@ -662,9 +661,7 @@ void main() {
       final container = ProviderScope.containerOf(
         tester.element(find.text('Temp: exists')),
       );
-      (container.read(provider.notifier)).unregisterField(
-        tempField,
-      );
+      (container.read(provider.notifier)).unregisterField(tempField);
 
       await tester.pump();
 

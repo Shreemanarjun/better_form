@@ -64,7 +64,7 @@ class _RiverpodNumberFormFieldState
 
     controller.registerFocusNode(resolvedId, _focusNode);
     controller.registerContext(resolvedId, context);
-    }
+  }
 
   void _onFocusChange() {
     if (mounted) {

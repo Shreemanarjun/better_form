@@ -60,7 +60,7 @@ class _RiverpodTextFormFieldState extends ConsumerState<RiverpodTextFormField> {
 
     controller.registerFocusNode(resolvedId, _focusNode);
     controller.registerContext(resolvedId, context);
-    }
+  }
 
   @override
   void dispose() {

@@ -5,9 +5,7 @@ import 'package:formix/formix.dart';
 
 // Test-specific providers for easier testing
 final testControllerProvider =
-    StateNotifierProvider.autoDispose<FormixController, FormixData>((
-      ref,
-    ) {
+    StateNotifierProvider.autoDispose<FormixController, FormixData>((ref) {
       return FormixController(initialValue: {});
     });
 
@@ -244,9 +242,7 @@ void main() {
             formControllerProvider(
               const FormixParameter(initialValue: {}),
             ).overrideWith((ref) {
-              return FormixController(
-                initialValue: {'newsletter': false},
-              );
+              return FormixController(initialValue: {'newsletter': false});
             }),
           ],
           child: MaterialApp(
@@ -323,9 +319,7 @@ void main() {
             formControllerProvider(
               const FormixParameter(initialValue: {}),
             ).overrideWith((ref) {
-              return FormixController(
-                initialValue: {'priority': 'medium'},
-              );
+              return FormixController(initialValue: {'priority': 'medium'});
             }),
           ],
           child: MaterialApp(
@@ -357,9 +351,7 @@ void main() {
             formControllerProvider(
               const FormixParameter(initialValue: {}),
             ).overrideWith((ref) {
-              return FormixController(
-                initialValue: {'priority': 'medium'},
-              );
+              return FormixController(initialValue: {'priority': 'medium'});
             }),
           ],
           child: MaterialApp(

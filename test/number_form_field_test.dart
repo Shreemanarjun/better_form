@@ -391,10 +391,9 @@ void main() {
 
     testWidgets('handles controller provider override', (tester) async {
       final customProvider =
-          StateNotifierProvider.autoDispose<
-            FormixController,
-            FormixData
-          >((ref) {
+          StateNotifierProvider.autoDispose<FormixController, FormixData>((
+            ref,
+          ) {
             return FormixController(initialValue: {'num_field': 99});
           });
 

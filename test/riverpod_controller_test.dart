@@ -81,9 +81,7 @@ void main() {
     });
 
     test('isDirty returns false when no fields are dirty', () {
-      final state = FormixData(
-        dirtyStates: {'field1': false, 'field2': false},
-      );
+      final state = FormixData(dirtyStates: {'field1': false, 'field2': false});
 
       expect(state.isDirty, false);
     });
@@ -223,9 +221,7 @@ void main() {
     });
 
     test('getValue returns correct typed value', () {
-      final controller = FormixController(
-        initialValue: {'field1': 'test'},
-      );
+      final controller = FormixController(initialValue: {'field1': 'test'});
 
       expect(controller.getValue(FormixFieldID<String>('field1')), 'test');
     });
@@ -249,9 +245,7 @@ void main() {
     });
 
     test('setValue throws on type mismatch', () {
-      final controller = FormixController(
-        initialValue: {'field1': 'string'},
-      );
+      final controller = FormixController(initialValue: {'field1': 'string'});
 
       expect(
         () => controller.setValue(FormixFieldID<int>('field1'), 123),

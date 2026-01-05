@@ -315,9 +315,7 @@ void main() {
       final container = ProviderScope.containerOf(
         tester.element(find.text('Submitting: false')),
       );
-      (container.read(provider.notifier)).setSubmitting(
-        true,
-      );
+      (container.read(provider.notifier)).setSubmitting(true);
       await tester.pump();
 
       expect(capturedSnapshot!.isSubmitting, true);

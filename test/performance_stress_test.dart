@@ -15,12 +15,9 @@ void main() {
       );
 
       final container = ProviderContainer();
-      final controller =
-          container.read(
-                formControllerProvider(
-                  FormixParameter(fields: fields),
-                ).notifier,
-              );
+      final controller = container.read(
+        formControllerProvider(FormixParameter(fields: fields)).notifier,
+      );
 
       final stopwatch = Stopwatch()..start();
 
@@ -70,12 +67,9 @@ void main() {
       }
 
       final container = ProviderContainer();
-      final controller =
-          container.read(
-                formControllerProvider(
-                  FormixParameter(fields: fields),
-                ).notifier,
-              );
+      final controller = container.read(
+        formControllerProvider(FormixParameter(fields: fields)).notifier,
+      );
 
       final stopwatch = Stopwatch()..start();
 

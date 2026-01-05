@@ -259,9 +259,7 @@ void main() {
     final container = ProviderScope.containerOf(
       tester.element(find.text('Touched: false')),
     );
-    (container.read(provider.notifier)).markAsTouched(
-      field1,
-    );
+    (container.read(provider.notifier)).markAsTouched(field1);
     await tester.pump();
 
     expect(find.text('Touched: true'), findsOneWidget);
