@@ -28,11 +28,17 @@ void main() {
       expect(messages.required('Email'), 'Email is required');
       expect(messages.required('Password'), 'Password is required');
       expect(messages.required(''), ' is required');
-      expect(messages.required('Field with spaces'), 'Field with spaces is required');
+      expect(
+        messages.required('Field with spaces'),
+        'Field with spaces is required',
+      );
     });
 
     test('required handles special characters in labels', () {
-      expect(messages.required('Email & Password'), 'Email & Password is required');
+      expect(
+        messages.required('Email & Password'),
+        'Email & Password is required',
+      );
       expect(messages.required('User\'s Name'), 'User\'s Name is required');
       expect(messages.required('Field-Name_123'), 'Field-Name_123 is required');
     });
@@ -109,11 +115,19 @@ void main() {
     });
 
     test('validationFailed returns correct message with error parameter', () {
-      expect(messages.validationFailed('Network error'), 'Validation failed: Network error');
-      expect(messages.validationFailed('Timeout'), 'Validation failed: Timeout');
+      expect(
+        messages.validationFailed('Network error'),
+        'Validation failed: Network error',
+      );
+      expect(
+        messages.validationFailed('Timeout'),
+        'Validation failed: Timeout',
+      );
       expect(messages.validationFailed(''), 'Validation failed: ');
-      expect(messages.validationFailed('Error with spaces and symbols !@#'),
-          'Validation failed: Error with spaces and symbols !@#');
+      expect(
+        messages.validationFailed('Error with spaces and symbols !@#'),
+        'Validation failed: Error with spaces and symbols !@#',
+      );
     });
 
     test('validating returns correct message', () {
@@ -151,14 +165,23 @@ void main() {
       expect(messages.maxValue(50).contains('50'), true);
       expect(messages.maxValue(50).contains('Maximum'), true);
 
-      expect(messages.minDate(DateTime(2023, 1, 1)).contains('2023-01-01'), true);
+      expect(
+        messages.minDate(DateTime(2023, 1, 1)).contains('2023-01-01'),
+        true,
+      );
       expect(messages.minDate(DateTime(2023, 1, 1)).contains('after'), true);
 
-      expect(messages.maxDate(DateTime(2023, 12, 31)).contains('2023-12-31'), true);
+      expect(
+        messages.maxDate(DateTime(2023, 12, 31)).contains('2023-12-31'),
+        true,
+      );
       expect(messages.maxDate(DateTime(2023, 12, 31)).contains('before'), true);
 
       expect(messages.validationFailed('test').contains('test'), true);
-      expect(messages.validationFailed('test').contains('Validation failed'), true);
+      expect(
+        messages.validationFailed('test').contains('Validation failed'),
+        true,
+      );
 
       expect(messages.validating().contains('Validating'), true);
     });
@@ -235,8 +258,10 @@ void main() {
     test('custom implementation handles validation errors', () {
       final customMessages = CustomTestMessages();
 
-      expect(customMessages.validationFailed('Network timeout'),
-          'CUSTOM: Validation error: Network timeout');
+      expect(
+        customMessages.validationFailed('Network timeout'),
+        'CUSTOM: Validation error: Network timeout',
+      );
     });
   });
 

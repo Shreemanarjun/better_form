@@ -408,7 +408,12 @@ void main() {
             home: Scaffold(
               body: BetterForm(
                 initialValue: {'string_field': 'initial_value'},
-                fields: [BetterFormFieldConfig(id: stringField, initialValue: 'initial_value')],
+                fields: [
+                  BetterFormFieldConfig(
+                    id: stringField,
+                    initialValue: 'initial_value',
+                  ),
+                ],
                 child: TestValueSelector<String>(
                   fieldId: stringField,
                   builder: (context, value, child) {
@@ -424,7 +429,9 @@ void main() {
       expect(find.text('Value: initial_value'), findsOneWidget);
     });
 
-    testWidgets('renders with null value when field has no initial value', (tester) async {
+    testWidgets('renders with null value when field has no initial value', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
@@ -459,7 +466,9 @@ void main() {
                   fieldId: stringField,
                   builder: (context, value, child) {
                     buildCount++;
-                    return Text('Build: $buildCount, Value: ${value ?? "null"}');
+                    return Text(
+                      'Build: $buildCount, Value: ${value ?? "null"}',
+                    );
                   },
                 ),
               ),
@@ -472,7 +481,13 @@ void main() {
       expect(buildCount, 1);
 
       // Change field value
-      final controller = BetterForm.controllerOf(tester.element(find.byWidgetPredicate((widget) => widget is BetterFormFieldValueSelector<String>)))!;
+      final controller = BetterForm.controllerOf(
+        tester.element(
+          find.byWidgetPredicate(
+            (widget) => widget is BetterFormFieldValueSelector<String>,
+          ),
+        ),
+      )!;
       controller.setValue(stringField, 'updated_value');
 
       await tester.pump();
@@ -517,7 +532,13 @@ void main() {
       expect(find.text('Number: 42'), findsOneWidget);
 
       // Change value
-      final controller = BetterForm.controllerOf(tester.element(find.byWidgetPredicate((widget) => widget is BetterFormFieldValueSelector<int>)))!;
+      final controller = BetterForm.controllerOf(
+        tester.element(
+          find.byWidgetPredicate(
+            (widget) => widget is BetterFormFieldValueSelector<int>,
+          ),
+        ),
+      )!;
       controller.setValue(intField, 99);
 
       await tester.pump();
@@ -532,7 +553,9 @@ void main() {
             home: Scaffold(
               body: BetterForm(
                 initialValue: {'bool_field': true},
-                fields: [BetterFormFieldConfig(id: boolField, initialValue: true)],
+                fields: [
+                  BetterFormFieldConfig(id: boolField, initialValue: true),
+                ],
                 child: TestValueSelector<bool>(
                   fieldId: boolField,
                   builder: (context, value, child) {
@@ -548,7 +571,13 @@ void main() {
       expect(find.text('Boolean: true'), findsOneWidget);
 
       // Change value
-      final controller = BetterForm.controllerOf(tester.element(find.byWidgetPredicate((widget) => widget is BetterFormFieldValueSelector<bool>)))!;
+      final controller = BetterForm.controllerOf(
+        tester.element(
+          find.byWidgetPredicate(
+            (widget) => widget is BetterFormFieldValueSelector<bool>,
+          ),
+        ),
+      )!;
       controller.setValue(boolField, false);
 
       await tester.pump();
@@ -578,7 +607,13 @@ void main() {
       expect(find.text('Value: is_null'), findsOneWidget);
 
       // Set a value
-      final controller = BetterForm.controllerOf(tester.element(find.byWidgetPredicate((widget) => widget is BetterFormFieldValueSelector<String>)))!;
+      final controller = BetterForm.controllerOf(
+        tester.element(
+          find.byWidgetPredicate(
+            (widget) => widget is BetterFormFieldValueSelector<String>,
+          ),
+        ),
+      )!;
       controller.setValue(stringField, 'not_null');
 
       await tester.pump();
@@ -607,10 +642,7 @@ void main() {
                   child: childWidget,
                   builder: (context, value, child) {
                     return Column(
-                      children: [
-                        Text('Value: ${value ?? "null"}'),
-                        child!,
-                      ],
+                      children: [Text('Value: ${value ?? "null"}'), child!],
                     );
                   },
                 ),
@@ -672,7 +704,13 @@ void main() {
       expect(buildCount, 1);
 
       // Rapid changes
-      final controller = BetterForm.controllerOf(tester.element(find.byWidgetPredicate((widget) => widget is BetterFormFieldValueSelector<int>)))!;
+      final controller = BetterForm.controllerOf(
+        tester.element(
+          find.byWidgetPredicate(
+            (widget) => widget is BetterFormFieldValueSelector<int>,
+          ),
+        ),
+      )!;
       controller.setValue(intField, 1);
       await tester.pump();
       controller.setValue(intField, 2);
@@ -693,7 +731,8 @@ void main() {
                 fields: [BetterFormFieldConfig(id: stringField)],
                 child: TestValueSelector<String>(
                   fieldId: stringField,
-                  builder: (context, value, child) => Text('Value: ${value ?? "null"}'),
+                  builder: (context, value, child) =>
+                      Text('Value: ${value ?? "null"}'),
                 ),
               ),
             ),
@@ -706,8 +745,6 @@ void main() {
       expect(true, isTrue); // Test passes if no exceptions
     });
 
-
-
     testWidgets('works with complex object types', (tester) async {
       final listField = BetterFormFieldID<List<String>>('list_field');
 
@@ -716,8 +753,15 @@ void main() {
           child: MaterialApp(
             home: Scaffold(
               body: BetterForm(
-                initialValue: {'list_field': ['a', 'b', 'c']},
-                fields: [BetterFormFieldConfig(id: listField, initialValue: ['a', 'b', 'c'])],
+                initialValue: {
+                  'list_field': ['a', 'b', 'c'],
+                },
+                fields: [
+                  BetterFormFieldConfig(
+                    id: listField,
+                    initialValue: ['a', 'b', 'c'],
+                  ),
+                ],
                 child: TestValueSelector<List<String>>(
                   fieldId: listField,
                   builder: (context, value, child) {
@@ -733,7 +777,13 @@ void main() {
       expect(find.text('Length: 3'), findsOneWidget);
 
       // Change the list
-      final controller = BetterForm.controllerOf(tester.element(find.byWidgetPredicate((widget) => widget is BetterFormFieldValueSelector<List<String>>)))!;
+      final controller = BetterForm.controllerOf(
+        tester.element(
+          find.byWidgetPredicate(
+            (widget) => widget is BetterFormFieldValueSelector<List<String>>,
+          ),
+        ),
+      )!;
       controller.setValue(listField, ['x', 'y']);
 
       await tester.pump();
@@ -763,7 +813,13 @@ void main() {
       expect(find.text('Value: "null"'), findsOneWidget);
 
       // Set empty string
-      final controller = BetterForm.controllerOf(tester.element(find.byWidgetPredicate((widget) => widget is BetterFormFieldValueSelector<String>)))!;
+      final controller = BetterForm.controllerOf(
+        tester.element(
+          find.byWidgetPredicate(
+            (widget) => widget is BetterFormFieldValueSelector<String>,
+          ),
+        ),
+      )!;
       controller.setValue(stringField, '');
 
       await tester.pump();
@@ -789,11 +845,13 @@ void main() {
                   children: [
                     TestValueSelector<String>(
                       fieldId: field1,
-                      builder: (context, value, child) => Text('Field1: $value'),
+                      builder: (context, value, child) =>
+                          Text('Field1: $value'),
                     ),
                     TestValueSelector<String>(
                       fieldId: field2,
-                      builder: (context, value, child) => Text('Field2: $value'),
+                      builder: (context, value, child) =>
+                          Text('Field2: $value'),
                     ),
                   ],
                 ),
@@ -807,7 +865,9 @@ void main() {
       expect(find.text('Field2: value2'), findsOneWidget);
 
       // Change only field1
-      final controller = BetterForm.controllerOf(tester.element(find.byType(Column)))!;
+      final controller = BetterForm.controllerOf(
+        tester.element(find.byType(Column)),
+      )!;
       controller.setValue(field1, 'updated1');
 
       await tester.pump();

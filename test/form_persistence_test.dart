@@ -36,7 +36,10 @@ void main() {
     });
 
     test('saveFormState creates deep copy of data', () async {
-      final originalData = <String, dynamic>{'list': [1, 2, 3], 'map': <String, dynamic>{'nested': 'value'}};
+      final originalData = <String, dynamic>{
+        'list': [1, 2, 3],
+        'map': <String, dynamic>{'nested': 'value'},
+      };
       const formId = 'test_form';
 
       await persistence.saveFormState(formId, originalData);
@@ -167,8 +170,8 @@ void main() {
         'nested_map': {
           'level1': {
             'level2': 'deep_value',
-            'list_in_nested': ['a', 'b', 'c']
-          }
+            'list_in_nested': ['a', 'b', 'c'],
+          },
         },
         'null_value': null,
       };
@@ -178,7 +181,10 @@ void main() {
 
       expect(result, equals(complexData));
       expect(result!['nested_map']['level1']['level2'], equals('deep_value'));
-      expect(result['nested_map']['level1']['list_in_nested'], equals(['a', 'b', 'c']));
+      expect(
+        result['nested_map']['level1']['list_in_nested'],
+        equals(['a', 'b', 'c']),
+      );
     });
 
     test('handles special characters in form IDs', () async {
@@ -269,7 +275,7 @@ void main() {
         'string': 'original',
         'number': 42,
         'list': [1, 2, 3],
-        'map': {'nested': 'value'}
+        'map': {'nested': 'value'},
       };
 
       await persistence.saveFormState(formId, originalData);
@@ -313,11 +319,7 @@ void main() {
       const formId = 'enum_form';
 
       // Using a simple enum-like value
-      final dataWithEnum = {
-        'status': 'active',
-        'priority': 'high',
-        'count': 5,
-      };
+      final dataWithEnum = {'status': 'active', 'priority': 'high', 'count': 5};
 
       await persistence.saveFormState(formId, dataWithEnum);
       final result = await persistence.getSavedState(formId);

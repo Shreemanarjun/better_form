@@ -56,22 +56,25 @@ void main() {
       focusNode.dispose();
     });
 
-    test('shouldShowError returns true when valid but touched/submitting and invalid', () {
-      final focusNode = FocusNode();
-      final snapshot = BetterFieldStateSnapshot<String>(
-        value: 'test',
-        validation: ValidationResult(isValid: false, errorMessage: 'Error'),
-        isDirty: true,
-        isTouched: true,
-        isSubmitting: false,
-        focusNode: focusNode,
-        didChange: (_) {},
-        markAsTouched: () {},
-      );
+    test(
+      'shouldShowError returns true when valid but touched/submitting and invalid',
+      () {
+        final focusNode = FocusNode();
+        final snapshot = BetterFieldStateSnapshot<String>(
+          value: 'test',
+          validation: ValidationResult(isValid: false, errorMessage: 'Error'),
+          isDirty: true,
+          isTouched: true,
+          isSubmitting: false,
+          focusNode: focusNode,
+          didChange: (_) {},
+          markAsTouched: () {},
+        );
 
-      expect(snapshot.shouldShowError, true);
-      focusNode.dispose();
-    });
+        expect(snapshot.shouldShowError, true);
+        focusNode.dispose();
+      },
+    );
 
     test('shouldShowError returns false when validating', () {
       final focusNode = FocusNode();
@@ -136,7 +139,9 @@ void main() {
             home: Scaffold(
               body: BetterForm(
                 initialValue: const {'test_field': 'initial'},
-                fields: [BetterFormFieldConfig(id: id, initialValue: 'initial')],
+                fields: [
+                  BetterFormFieldConfig(id: id, initialValue: 'initial'),
+                ],
                 child: BetterRawFormField<String>(
                   fieldId: id,
                   initialValue: 'initial',
@@ -172,7 +177,9 @@ void main() {
             home: Scaffold(
               body: BetterForm(
                 initialValue: const {'test_field': 'initial'},
-                fields: [BetterFormFieldConfig(id: id, initialValue: 'initial')],
+                fields: [
+                  BetterFormFieldConfig(id: id, initialValue: 'initial'),
+                ],
                 child: BetterRawFormField<String>(
                   fieldId: id,
                   initialValue: 'initial',
@@ -206,13 +213,15 @@ void main() {
           child: MaterialApp(
             home: Scaffold(
               body: BetterForm(
-                initialValue: const {'test_field': ''}, // Start with empty string
+                initialValue: const {
+                  'test_field': '',
+                }, // Start with empty string
                 fields: [
                   BetterFormFieldConfig(
                     id: id,
                     initialValue: '',
                     validator: (v) => (v?.isEmpty ?? true) ? 'Required' : null,
-                  )
+                  ),
                 ],
                 child: BetterRawFormField<String>(
                   fieldId: id,
@@ -274,7 +283,9 @@ void main() {
       expect(capturedSnapshot!.isTouched, true);
     });
 
-    testWidgets('snapshot updates when submitting state changes', (tester) async {
+    testWidgets('snapshot updates when submitting state changes', (
+      tester,
+    ) async {
       final id = BetterFormFieldID<String>('test_field');
       BetterFieldStateSnapshot<String>? capturedSnapshot;
 
@@ -302,9 +313,15 @@ void main() {
       expect(capturedSnapshot!.isSubmitting, false);
 
       // Set submitting
-      final provider = BetterForm.of(tester.element(find.text('Submitting: false')))!;
-      final container = ProviderScope.containerOf(tester.element(find.text('Submitting: false')));
-      (container.read(provider.notifier) as BetterFormController).setSubmitting(true);
+      final provider = BetterForm.of(
+        tester.element(find.text('Submitting: false')),
+      )!;
+      final container = ProviderScope.containerOf(
+        tester.element(find.text('Submitting: false')),
+      );
+      (container.read(provider.notifier) as BetterFormController).setSubmitting(
+        true,
+      );
       await tester.pump();
 
       expect(capturedSnapshot!.isSubmitting, true);
@@ -312,7 +329,9 @@ void main() {
   });
 
   group('BetterRawTextField', () {
-    testWidgets('provides text snapshot with correct initial state', (tester) async {
+    testWidgets('provides text snapshot with correct initial state', (
+      tester,
+    ) async {
       final id = BetterFormFieldID<String>('text_field');
       BetterTextFieldStateSnapshot<String>? capturedSnapshot;
 
@@ -322,7 +341,9 @@ void main() {
             home: Scaffold(
               body: BetterForm(
                 initialValue: const {'text_field': 'initial'},
-                fields: [BetterFormFieldConfig(id: id, initialValue: 'initial')],
+                fields: [
+                  BetterFormFieldConfig(id: id, initialValue: 'initial'),
+                ],
                 child: BetterRawTextField<String>(
                   fieldId: id,
                   initialValue: 'initial',
@@ -347,7 +368,9 @@ void main() {
       expect(capturedSnapshot!.textController.text, 'initial');
     });
 
-    testWidgets('text controller updates when value changes externally', (tester) async {
+    testWidgets('text controller updates when value changes externally', (
+      tester,
+    ) async {
       final id = BetterFormFieldID<String>('text_field');
       BetterTextFieldStateSnapshot<String>? capturedSnapshot;
 
@@ -357,7 +380,9 @@ void main() {
             home: Scaffold(
               body: BetterForm(
                 initialValue: const {'text_field': 'initial'},
-                fields: [BetterFormFieldConfig(id: id, initialValue: 'initial')],
+                fields: [
+                  BetterFormFieldConfig(id: id, initialValue: 'initial'),
+                ],
                 child: BetterRawTextField<String>(
                   fieldId: id,
                   initialValue: 'initial',
@@ -379,8 +404,12 @@ void main() {
       expect(capturedSnapshot!.textController.text, 'initial');
 
       // Change value externally
-      final provider = BetterForm.of(tester.element(find.text('Controller: initial')))!;
-      final container = ProviderScope.containerOf(tester.element(find.text('Controller: initial')));
+      final provider = BetterForm.of(
+        tester.element(find.text('Controller: initial')),
+      )!;
+      final container = ProviderScope.containerOf(
+        tester.element(find.text('Controller: initial')),
+      );
       container.read(provider.notifier).setValue(id, 'external');
       await tester.pump();
 
@@ -397,7 +426,9 @@ void main() {
             home: Scaffold(
               body: BetterForm(
                 initialValue: const {'text_field': 'initial'},
-                fields: [BetterFormFieldConfig(id: id, initialValue: 'initial')],
+                fields: [
+                  BetterFormFieldConfig(id: id, initialValue: 'initial'),
+                ],
                 child: BetterRawTextField<String>(
                   fieldId: id,
                   initialValue: 'initial',
@@ -425,7 +456,9 @@ void main() {
       expect(capturedSnapshot!.value, 'typed');
     });
 
-    testWidgets('custom valueToString and stringToValue work correctly', (tester) async {
+    testWidgets('custom valueToString and stringToValue work correctly', (
+      tester,
+    ) async {
       final id = BetterFormFieldID<int>('number_field');
       BetterTextFieldStateSnapshot<int>? capturedSnapshot;
 

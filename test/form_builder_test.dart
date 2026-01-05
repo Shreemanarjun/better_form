@@ -156,7 +156,9 @@ void main() {
     expect(submittedValues?[field1.key], 'valid');
   });
 
-  testWidgets('BetterFormScope.watchValidation works correctly', (tester) async {
+  testWidgets('BetterFormScope.watchValidation works correctly', (
+    tester,
+  ) async {
     final field1 = BetterFormFieldID<String>('field1');
 
     await tester.pumpWidget(
@@ -187,15 +189,17 @@ void main() {
     expect(find.text('Validation: false'), findsOneWidget);
 
     // Set valid value
-    final provider = BetterForm.of(tester.element(find.text('Validation: false')))!;
-    final container = ProviderScope.containerOf(tester.element(find.text('Validation: false')));
+    final provider = BetterForm.of(
+      tester.element(find.text('Validation: false')),
+    )!;
+    final container = ProviderScope.containerOf(
+      tester.element(find.text('Validation: false')),
+    );
     container.read(provider.notifier).setValue(field1, 'valid');
     await tester.pump();
 
     expect(find.text('Validation: true'), findsOneWidget);
   });
-
-
 
   testWidgets('BetterFormScope.watchIsDirty works correctly', (tester) async {
     final field1 = BetterFormFieldID<String>('field1');
@@ -223,7 +227,9 @@ void main() {
 
     // Change value
     final provider = BetterForm.of(tester.element(find.text('Dirty: false')))!;
-    final container = ProviderScope.containerOf(tester.element(find.text('Dirty: false')));
+    final container = ProviderScope.containerOf(
+      tester.element(find.text('Dirty: false')),
+    );
     container.read(provider.notifier).setValue(field1, 'changed');
     await tester.pump();
 
@@ -254,17 +260,23 @@ void main() {
     expect(find.text('Touched: false'), findsOneWidget);
 
     // Mark as touched
-    final provider = BetterForm.of(tester.element(find.text('Touched: false')))!;
-    final container = ProviderScope.containerOf(tester.element(find.text('Touched: false')));
-    (container.read(provider.notifier) as BetterFormController).markAsTouched(field1);
+    final provider = BetterForm.of(
+      tester.element(find.text('Touched: false')),
+    )!;
+    final container = ProviderScope.containerOf(
+      tester.element(find.text('Touched: false')),
+    );
+    (container.read(provider.notifier) as BetterFormController).markAsTouched(
+      field1,
+    );
     await tester.pump();
 
     expect(find.text('Touched: true'), findsOneWidget);
   });
 
-
-
-  testWidgets('BetterFormScope.watchIsFormDirty works correctly', (tester) async {
+  testWidgets('BetterFormScope.watchIsFormDirty works correctly', (
+    tester,
+  ) async {
     final field1 = BetterFormFieldID<String>('field1');
 
     await tester.pumpWidget(
@@ -289,15 +301,21 @@ void main() {
     expect(find.text('Form Dirty: false'), findsOneWidget);
 
     // Change value
-    final provider = BetterForm.of(tester.element(find.text('Form Dirty: false')))!;
-    final container = ProviderScope.containerOf(tester.element(find.text('Form Dirty: false')));
+    final provider = BetterForm.of(
+      tester.element(find.text('Form Dirty: false')),
+    )!;
+    final container = ProviderScope.containerOf(
+      tester.element(find.text('Form Dirty: false')),
+    );
     container.read(provider.notifier).setValue(field1, 'changed');
     await tester.pump();
 
     expect(find.text('Form Dirty: true'), findsOneWidget);
   });
 
-  testWidgets('BetterFormScope.watchIsSubmitting works correctly', (tester) async {
+  testWidgets('BetterFormScope.watchIsSubmitting works correctly', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
@@ -318,9 +336,15 @@ void main() {
     expect(find.text('Submitting: false'), findsOneWidget);
 
     // Set submitting
-    final provider = BetterForm.of(tester.element(find.text('Submitting: false')))!;
-    final container = ProviderScope.containerOf(tester.element(find.text('Submitting: false')));
-    (container.read(provider.notifier) as BetterFormController).setSubmitting(true);
+    final provider = BetterForm.of(
+      tester.element(find.text('Submitting: false')),
+    )!;
+    final container = ProviderScope.containerOf(
+      tester.element(find.text('Submitting: false')),
+    );
+    (container.read(provider.notifier) as BetterFormController).setSubmitting(
+      true,
+    );
     await tester.pump();
 
     expect(find.text('Submitting: true'), findsOneWidget);
@@ -376,8 +400,11 @@ void main() {
 
     // Initially not touched
     final provider = BetterForm.of(tester.element(find.text('Mark Touched')))!;
-    final container = ProviderScope.containerOf(tester.element(find.text('Mark Touched')));
-    final controller = container.read(provider.notifier) as BetterFormController;
+    final container = ProviderScope.containerOf(
+      tester.element(find.text('Mark Touched')),
+    );
+    final controller =
+        container.read(provider.notifier) as BetterFormController;
     expect(controller.isFieldTouched(field1), false);
 
     // Mark as touched
@@ -425,7 +452,9 @@ void main() {
 
     // Set valid value
     final provider = BetterForm.of(tester.element(find.text('Validate')))!;
-    final container = ProviderScope.containerOf(tester.element(find.text('Validate')));
+    final container = ProviderScope.containerOf(
+      tester.element(find.text('Validate')),
+    );
     container.read(provider.notifier).setValue(field1, 'valid');
     await tester.pump();
 
@@ -467,8 +496,12 @@ void main() {
     expect(find.text('Value: initial'), findsOneWidget);
 
     // Change value
-    final provider = BetterForm.of(tester.element(find.text('Value: initial')))!;
-    final container = ProviderScope.containerOf(tester.element(find.text('Value: initial')));
+    final provider = BetterForm.of(
+      tester.element(find.text('Value: initial')),
+    )!;
+    final container = ProviderScope.containerOf(
+      tester.element(find.text('Value: initial')),
+    );
     container.read(provider.notifier).setValue(field1, 'changed');
     await tester.pump();
 
@@ -481,7 +514,9 @@ void main() {
     expect(find.text('Value: initial'), findsOneWidget);
   });
 
-  testWidgets('BetterFormScope.submit with onError callback works', (tester) async {
+  testWidgets('BetterFormScope.submit with onError callback works', (
+    tester,
+  ) async {
     final field1 = BetterFormFieldID<String>('field1');
     bool errorCalled = false;
     Map<String, ValidationResult>? errorResults;
@@ -528,7 +563,9 @@ void main() {
     expect(errorResults![field1.key]!.isValid, false);
   });
 
-  testWidgets('BetterFormBuilder throws error when not inside BetterForm', (tester) async {
+  testWidgets('BetterFormBuilder throws error when not inside BetterForm', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
@@ -544,14 +581,12 @@ void main() {
     expect(tester.takeException(), isA<FlutterError>());
   });
 
-  testWidgets('BetterFormWidget throws error when not inside BetterForm', (tester) async {
+  testWidgets('BetterFormWidget throws error when not inside BetterForm', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       ProviderScope(
-        child: MaterialApp(
-          home: Scaffold(
-            body: const CustomStatusDisplay(),
-          ),
-        ),
+        child: MaterialApp(home: Scaffold(body: const CustomStatusDisplay())),
       ),
     );
 

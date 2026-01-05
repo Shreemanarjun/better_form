@@ -31,6 +31,3 @@ class BetterFormFieldValueSelector<T> extends StatelessWidget {
     );
   }
 }
-
-
-

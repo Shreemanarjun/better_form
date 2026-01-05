@@ -80,7 +80,10 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: BetterForm(
-              initialValue: const {'source': 'initial', 'target': 'target_initial'},
+              initialValue: const {
+                'source': 'initial',
+                'target': 'target_initial',
+              },
               fields: [
                 BetterFormFieldConfig(id: sourceField),
                 BetterFormFieldConfig(id: targetField),
@@ -107,7 +110,10 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: BetterForm(
-              initialValue: const {'source': 'initial', 'target': 'target_initial'},
+              initialValue: const {
+                'source': 'initial',
+                'target': 'target_initial',
+              },
               fields: [
                 BetterFormFieldConfig(id: sourceField),
                 BetterFormFieldConfig(id: targetField),
@@ -119,9 +125,14 @@ void main() {
       );
 
       // Get controller to check values
-      final provider = BetterForm.of(tester.element(find.byType(BetterFormFieldDerivation)))!;
-      final container = ProviderScope.containerOf(tester.element(find.byType(BetterFormFieldDerivation)));
-      final controller = container.read(provider.notifier) as BetterFormController;
+      final provider = BetterForm.of(
+        tester.element(find.byType(BetterFormFieldDerivation)),
+      )!;
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(BetterFormFieldDerivation)),
+      );
+      final controller =
+          container.read(provider.notifier) as BetterFormController;
 
       // Initial value should be derived
       expect(controller.getValue(targetField), 'INITIAL');
@@ -165,9 +176,14 @@ void main() {
         ),
       );
 
-      final provider = BetterForm.of(tester.element(find.byType(BetterFormFieldDerivation)))!;
-      final container = ProviderScope.containerOf(tester.element(find.byType(BetterFormFieldDerivation)));
-      final controller = container.read(provider.notifier) as BetterFormController;
+      final provider = BetterForm.of(
+        tester.element(find.byType(BetterFormFieldDerivation)),
+      )!;
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(BetterFormFieldDerivation)),
+      );
+      final controller =
+          container.read(provider.notifier) as BetterFormController;
 
       expect(controller.getValue(fullNameField), 'John Doe');
 
@@ -198,11 +214,12 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: BetterForm(
-              initialValue: const {
-                'age': 0,
-              },
+              initialValue: const {'age': 0},
               fields: [
-                BetterFormFieldConfig(id: dobField, initialValue: DateTime(2000, 1, 1)),
+                BetterFormFieldConfig(
+                  id: dobField,
+                  initialValue: DateTime(2000, 1, 1),
+                ),
                 BetterFormFieldConfig(id: ageField),
               ],
               child: widget,
@@ -211,9 +228,14 @@ void main() {
         ),
       );
 
-      final provider = BetterForm.of(tester.element(find.byType(BetterFormFieldDerivation)))!;
-      final container = ProviderScope.containerOf(tester.element(find.byType(BetterFormFieldDerivation)));
-      final controller = container.read(provider.notifier) as BetterFormController;
+      final provider = BetterForm.of(
+        tester.element(find.byType(BetterFormFieldDerivation)),
+      )!;
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(BetterFormFieldDerivation)),
+      );
+      final controller =
+          container.read(provider.notifier) as BetterFormController;
 
       final expectedAge = DateTime.now().year - 2000;
       expect(controller.getValue(ageField), expectedAge);
@@ -232,7 +254,10 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: BetterForm(
-              initialValue: const {'source': 'initial', 'target': 'target_initial'},
+              initialValue: const {
+                'source': 'initial',
+                'target': 'target_initial',
+              },
               fields: [
                 BetterFormFieldConfig(id: sourceField),
                 BetterFormFieldConfig(id: targetField),
@@ -243,9 +268,14 @@ void main() {
         ),
       );
 
-      final provider = BetterForm.of(tester.element(find.byType(BetterFormFieldDerivation)))!;
-      final container = ProviderScope.containerOf(tester.element(find.byType(BetterFormFieldDerivation)));
-      final controller = container.read(provider.notifier) as BetterFormController;
+      final provider = BetterForm.of(
+        tester.element(find.byType(BetterFormFieldDerivation)),
+      )!;
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(BetterFormFieldDerivation)),
+      );
+      final controller =
+          container.read(provider.notifier) as BetterFormController;
 
       // Should not crash, target field should keep its initial value
       expect(controller.getValue(targetField), 'target_initial');
@@ -280,9 +310,14 @@ void main() {
         ),
       );
 
-      final provider = BetterForm.of(tester.element(find.byType(BetterFormFieldDerivation)))!;
-      final container = ProviderScope.containerOf(tester.element(find.byType(BetterFormFieldDerivation)));
-      final controller = container.read(provider.notifier) as BetterFormController;
+      final provider = BetterForm.of(
+        tester.element(find.byType(BetterFormFieldDerivation)),
+      )!;
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(BetterFormFieldDerivation)),
+      );
+      final controller =
+          container.read(provider.notifier) as BetterFormController;
 
       expect(controller.getValue(targetField), 'INITIAL');
 
@@ -372,9 +407,14 @@ void main() {
         ),
       );
 
-      final provider = BetterForm.of(tester.element(find.byType(BetterFormFieldDerivations)))!;
-      final container = ProviderScope.containerOf(tester.element(find.byType(BetterFormFieldDerivations)));
-      final controller = container.read(provider.notifier) as BetterFormController;
+      final provider = BetterForm.of(
+        tester.element(find.byType(BetterFormFieldDerivations)),
+      )!;
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(BetterFormFieldDerivations)),
+      );
+      final controller =
+          container.read(provider.notifier) as BetterFormController;
 
       expect(controller.getValue(fullNameField), 'John Doe');
       expect(controller.getValue(displayNameField), 'John <john@example.com>');
@@ -392,11 +432,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
-            home: BetterForm(
-              initialValue: const {},
-              fields: [],
-              child: widget,
-            ),
+            home: BetterForm(initialValue: const {}, fields: [], child: widget),
           ),
         ),
       );
