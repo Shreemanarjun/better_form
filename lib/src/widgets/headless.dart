@@ -3,8 +3,8 @@ import '../controllers/validation.dart';
 import 'base_form_field.dart';
 
 /// Snapshot of the current state of a form field
-class BetterFieldStateSnapshot<T> {
-  const BetterFieldStateSnapshot({
+class FormixFieldStateSnapshot<T> {
+  const FormixFieldStateSnapshot({
     required this.value,
     required this.validation,
     required this.isDirty,
@@ -48,8 +48,8 @@ class BetterFieldStateSnapshot<T> {
 }
 
 /// A headless form field widget that delegates UI building to a builder
-class BetterRawFormField<T> extends BetterFormFieldWidget<T> {
-  const BetterRawFormField({
+class FormixRawFormField<T> extends FormixFieldWidget<T> {
+  const FormixRawFormField({
     super.key,
     required super.fieldId,
     required this.builder,
@@ -58,14 +58,14 @@ class BetterRawFormField<T> extends BetterFormFieldWidget<T> {
     super.initialValue,
   });
 
-  final Widget Function(BuildContext context, BetterFieldStateSnapshot<T> state)
+  final Widget Function(BuildContext context, FormixFieldStateSnapshot<T> state)
   builder;
 
   @override
-  BetterRawFormFieldState<T> createState() => BetterRawFormFieldState<T>();
+  FormixRawFormFieldState<T> createState() => FormixRawFormFieldState<T>();
 }
 
-class BetterRawFormFieldState<T> extends BetterFormFieldWidgetState<T> {
+class FormixRawFormFieldState<T> extends FormixFieldWidgetState<T> {
   @override
   Widget build(BuildContext context) {
     // We need to listen to all the notifiers to rebuild when they change
@@ -81,9 +81,9 @@ class BetterRawFormFieldState<T> extends BetterFormFieldWidgetState<T> {
                 return ValueListenableBuilder<bool>(
                   valueListenable: controller.isSubmittingNotifier,
                   builder: (context, isSubmitting, child) {
-                    final rawWidget = widget as BetterRawFormField<T>;
+                    final rawWidget = widget as FormixRawFormField<T>;
 
-                    final snapshot = BetterFieldStateSnapshot<T>(
+                    final snapshot = FormixFieldStateSnapshot<T>(
                       value: value,
                       validation: validation,
                       isDirty: isDirty,
@@ -107,8 +107,8 @@ class BetterRawFormFieldState<T> extends BetterFormFieldWidgetState<T> {
 }
 
 /// Snapshot for text fields, including text controller
-class BetterTextFieldStateSnapshot<T> extends BetterFieldStateSnapshot<T> {
-  const BetterTextFieldStateSnapshot({
+class FormixTextFieldStateSnapshot<T> extends FormixFieldStateSnapshot<T> {
+  const FormixTextFieldStateSnapshot({
     required super.value,
     required super.validation,
     required super.isDirty,
@@ -125,8 +125,8 @@ class BetterTextFieldStateSnapshot<T> extends BetterFieldStateSnapshot<T> {
 }
 
 /// A headless text field widget
-class BetterRawTextField<T> extends BetterFormFieldWidget<T> {
-  const BetterRawTextField({
+class FormixRawTextField<T> extends FormixFieldWidget<T> {
+  const FormixRawTextField({
     super.key,
     required super.fieldId,
     required this.builder,
@@ -139,7 +139,7 @@ class BetterRawTextField<T> extends BetterFormFieldWidget<T> {
 
   final Widget Function(
     BuildContext context,
-    BetterTextFieldStateSnapshot<T> state,
+    FormixTextFieldStateSnapshot<T> state,
   )
   builder;
 
@@ -147,18 +147,18 @@ class BetterRawTextField<T> extends BetterFormFieldWidget<T> {
   final T? Function(String text) stringToValue;
 
   @override
-  BetterRawTextFieldState<T> createState() => BetterRawTextFieldState<T>();
+  FormixRawTextFieldState<T> createState() => FormixRawTextFieldState<T>();
 }
 
-class BetterRawTextFieldState<T> extends BetterFormFieldWidgetState<T>
-    with BetterFormFieldTextMixin<T> {
+class FormixRawTextFieldState<T> extends FormixFieldWidgetState<T>
+    with FormixFieldTextMixin<T> {
   @override
   String valueToString(T? value) =>
-      (widget as BetterRawTextField<T>).valueToString(value);
+      (widget as FormixRawTextField<T>).valueToString(value);
 
   @override
   T? stringToValue(String text) =>
-      (widget as BetterRawTextField<T>).stringToValue(text);
+      (widget as FormixRawTextField<T>).stringToValue(text);
 
   @override
   Widget build(BuildContext context) {
@@ -174,9 +174,9 @@ class BetterRawTextFieldState<T> extends BetterFormFieldWidgetState<T>
                 return ValueListenableBuilder<bool>(
                   valueListenable: controller.isSubmittingNotifier,
                   builder: (context, isSubmitting, child) {
-                    final rawWidget = widget as BetterRawTextField<T>;
+                    final rawWidget = widget as FormixRawTextField<T>;
 
-                    final snapshot = BetterTextFieldStateSnapshot<T>(
+                    final snapshot = FormixTextFieldStateSnapshot<T>(
                       value: value,
                       validation: validation,
                       isDirty: isDirty,

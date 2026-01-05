@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Better Form Demo',
+      title: 'Formix Demo',
       theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
       home: const HomePage(),
     );
@@ -50,7 +50,7 @@ class _HomePageState extends State<HomePage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Better Form Examples'),
+        title: const Text('Formix Examples'),
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,

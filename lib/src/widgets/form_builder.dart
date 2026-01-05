@@ -5,23 +5,23 @@ import '../controllers/field_id.dart';
 import '../controllers/validation.dart';
 import 'riverpod_form_fields.dart';
 
-/// A comprehensive toolset for interacting with [BetterForm] state and logic.
+/// A comprehensive toolset for interacting with [Formix] state and logic.
 ///
-/// [BetterFormScope] provides reactive accessors (for watching changes) and
+/// [FormixScope] provides reactive accessors (for watching changes) and
 /// action methods (for triggering logic). It abstracts away the complexity
 /// of Riverpod providers while maintaining high performance through granular
 /// selectors.
-class BetterFormScope {
+class FormixScope {
   /// The [BuildContext] of the widget.
   final BuildContext context;
 
   /// The [WidgetRef] used to watch and read providers.
   final WidgetRef ref;
 
-  /// The [BetterFormController] instance for the current form.
-  final BetterFormController controller;
+  /// The [FormixController] instance for the current form.
+  final FormixController controller;
 
-  BetterFormScope({
+  FormixScope({
     required this.context,
     required this.ref,
     required this.controller,
@@ -32,35 +32,35 @@ class BetterFormScope {
   /// Watch a specific field's value.
   ///
   /// Only rebuilds the widget when this specific field's value changes.
-  T? watchValue<T>(BetterFormFieldID<T> id) {
+  T? watchValue<T>(FormixFieldID<T> id) {
     final dynamic val = ref.watch(fieldValueProvider(id));
     return val as T?;
   }
 
   /// Watch a specific field's validation state.
-  ValidationResult watchValidation<T>(BetterFormFieldID<T> id) =>
+  ValidationResult watchValidation<T>(FormixFieldID<T> id) =>
       ref.watch(fieldValidationProvider(id));
 
   /// Watch only the error message of a field. Returns null if valid.
   ///
   /// More efficient than [watchValidation] if you only need the message.
-  String? watchError<T>(BetterFormFieldID<T> id) =>
+  String? watchError<T>(FormixFieldID<T> id) =>
       ref.watch(fieldErrorProvider(id));
 
   /// Watch if a field is currently being validated (async).
-  bool watchIsValidating<T>(BetterFormFieldID<T> id) =>
+  bool watchIsValidating<T>(FormixFieldID<T> id) =>
       ref.watch(fieldValidatingProvider(id));
 
   /// Watch if a specific field is valid.
-  bool watchFieldIsValid<T>(BetterFormFieldID<T> id) =>
+  bool watchFieldIsValid<T>(FormixFieldID<T> id) =>
       ref.watch(fieldIsValidProvider(id));
 
   /// Watch if a specific field is dirty (its value differs from initial).
-  bool watchIsDirty<T>(BetterFormFieldID<T> id) =>
+  bool watchIsDirty<T>(FormixFieldID<T> id) =>
       ref.watch(fieldDirtyProvider(id));
 
   /// Watch if a specific field has been touched (focused or modified).
-  bool watchIsTouched<T>(BetterFormFieldID<T> id) =>
+  bool watchIsTouched<T>(FormixFieldID<T> id) =>
       ref.watch(fieldTouchedProvider(id));
 
   /// Watch the overall validity of the form.
@@ -77,7 +77,7 @@ class BetterFormScope {
   /// WARNING: Using this will cause the widget to rebuild whenever ANY field
   /// in the form changes. For better performance, use field-specific watchers
   /// like [watchValue] or [watchValidation].
-  BetterFormState get watchState => ref.watch(BetterForm.of(context)!);
+  FormixState get watchState => ref.watch(Formix.of(context)!);
 
   /// Watch if a specific group of fields is valid.
   bool watchGroupIsValid(String prefix) =>
@@ -101,19 +101,18 @@ class BetterFormScope {
       controller.currentState.isGroupDirty(prefix);
 
   /// Update a field's value and trigger validation.
-  void setValue<T>(BetterFormFieldID<T> id, T value) =>
+  void setValue<T>(FormixFieldID<T> id, T value) =>
       controller.setValue(id, value);
 
   /// Mark a field as touched (usually called when a field loses focus).
-  void markAsTouched<T>(BetterFormFieldID<T> id) =>
-      controller.markAsTouched(id);
+  void markAsTouched<T>(FormixFieldID<T> id) => controller.markAsTouched(id);
 
   /// Request focus for a specific field.
-  void focusField<T>(BetterFormFieldID<T> id) => controller.focusField(id);
+  void focusField<T>(FormixFieldID<T> id) => controller.focusField(id);
 
   /// Scroll to a specific field.
   void scrollToField<T>(
-    BetterFormFieldID<T> id, {
+    FormixFieldID<T> id, {
     Duration duration = const Duration(milliseconds: 300),
     Curve curve = Curves.easeInOut,
     double alignment = 0.5,
@@ -138,26 +137,26 @@ class BetterFormScope {
   // --- Array Helpers ---
 
   /// Watch a form array.
-  List<T> watchArray<T>(BetterFormArrayID<T> id) => watchValue(id) ?? <T>[];
+  List<T> watchArray<T>(FormixArrayID<T> id) => watchValue(id) ?? <T>[];
 
   /// Add an item to a form array.
-  void addArrayItem<T>(BetterFormArrayID<T> id, T item) =>
+  void addArrayItem<T>(FormixArrayID<T> id, T item) =>
       controller.addArrayItem(id, item);
 
   /// Remove an item at index from a form array.
-  void removeArrayItemAt<T>(BetterFormArrayID<T> id, int index) =>
+  void removeArrayItemAt<T>(FormixArrayID<T> id, int index) =>
       controller.removeArrayItemAt(id, index);
 
   /// Replace an item at index in a form array.
-  void replaceArrayItem<T>(BetterFormArrayID<T> id, int index, T item) =>
+  void replaceArrayItem<T>(FormixArrayID<T> id, int index, T item) =>
       controller.replaceArrayItem(id, index, item);
 
   /// Move an item in a form array.
-  void moveArrayItem<T>(BetterFormArrayID<T> id, int oldIndex, int newIndex) =>
+  void moveArrayItem<T>(FormixArrayID<T> id, int oldIndex, int newIndex) =>
       controller.moveArrayItem(id, oldIndex, newIndex);
 
   /// Clear a form array.
-  void clearArray<T>(BetterFormArrayID<T> id) => controller.clearArray(id);
+  void clearArray<T>(FormixArrayID<T> id) => controller.clearArray(id);
 
   /// High-level helper for form submission.
   ///
@@ -184,14 +183,14 @@ class BetterFormScope {
   }
 }
 
-/// A builder widget that provides a [BetterFormScope] for easy form interaction.
+/// A builder widget that provides a [FormixScope] for easy form interaction.
 ///
 /// This is the preferred way to build custom form controls or status displays
 /// without creating a separate class.
 ///
 /// Example:
 /// ```dart
-/// BetterFormBuilder(
+/// FormixBuilder(
 ///   builder: (context, scope) {
 ///     final isSubmitting = scope.watchIsSubmitting;
 ///     final isValid = scope.watchIsValid;
@@ -205,24 +204,22 @@ class BetterFormScope {
 ///   },
 /// )
 /// ```
-class BetterFormBuilder extends ConsumerWidget {
-  const BetterFormBuilder({super.key, required this.builder});
+class FormixBuilder extends ConsumerWidget {
+  const FormixBuilder({super.key, required this.builder});
 
-  final Widget Function(BuildContext context, BetterFormScope scope) builder;
+  final Widget Function(BuildContext context, FormixScope scope) builder;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final provider = BetterForm.of(context);
+    final provider = Formix.of(context);
     if (provider == null) {
-      throw FlutterError(
-        'BetterFormBuilder must be placed inside a BetterForm widget',
-      );
+      throw FlutterError('FormixBuilder must be placed inside a Formix widget');
     }
 
     // We use ref.read to get the controller once, as it remains stable.
-    final controller = ref.read(provider.notifier) as BetterFormController;
+    final controller = ref.read(provider.notifier) as FormixController;
 
-    final scope = BetterFormScope(
+    final scope = FormixScope(
       context: context,
       ref: ref,
       controller: controller,
@@ -234,16 +231,16 @@ class BetterFormBuilder extends ConsumerWidget {
 
 /// A base class for creating modular, reusable form components.
 ///
-/// By extending [BetterFormWidget], you get safe, easy access to the form's
-/// [BetterFormScope] without manually looking up the controller or state.
+/// By extending [FormixWidget], you get safe, easy access to the form's
+/// [FormixScope] without manually looking up the controller or state.
 ///
 /// Example:
 /// ```dart
-/// class ErrorSummary extends BetterFormWidget {
+/// class ErrorSummary extends FormixWidget {
 ///   const ErrorSummary({super.key});
 ///
 ///   @override
-///   Widget buildForm(BuildContext context, BetterFormScope scope) {
+///   Widget buildForm(BuildContext context, FormixScope scope) {
 ///     if (scope.watchIsValid) return const SizedBox.shrink();
 ///
 ///     return Text(
@@ -253,22 +250,20 @@ class BetterFormBuilder extends ConsumerWidget {
 ///   }
 /// }
 /// ```
-abstract class BetterFormWidget extends ConsumerWidget {
-  const BetterFormWidget({super.key});
+abstract class FormixWidget extends ConsumerWidget {
+  const FormixWidget({super.key});
 
   @override
   @mustCallSuper
   Widget build(BuildContext context, WidgetRef ref) {
-    final provider = BetterForm.of(context);
+    final provider = Formix.of(context);
     if (provider == null) {
-      throw FlutterError(
-        '$runtimeType must be placed inside a BetterForm widget',
-      );
+      throw FlutterError('$runtimeType must be placed inside a Formix widget');
     }
 
-    final controller = ref.read(provider.notifier) as BetterFormController;
+    final controller = ref.read(provider.notifier) as FormixController;
 
-    final scope = BetterFormScope(
+    final scope = FormixScope(
       context: context,
       ref: ref,
       controller: controller,
@@ -277,6 +272,6 @@ abstract class BetterFormWidget extends ConsumerWidget {
     return buildForm(context, scope);
   }
 
-  /// Build the widget based on the provided [BetterFormScope].
-  Widget buildForm(BuildContext context, BetterFormScope scope);
+  /// Build the widget based on the provided [FormixScope].
+  Widget buildForm(BuildContext context, FormixScope scope);
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 import '../../constants/field_ids.dart';
 
 // Advanced Example
@@ -25,7 +25,7 @@ class _AdvancedExampleContentState
     extends ConsumerState<AdvancedExampleContent> {
   @override
   Widget build(BuildContext context) {
-    return BetterForm(
+    return Formix(
       initialValue: {
         'name': 'John Doe',
         'email': 'john@example.com',
@@ -37,7 +37,7 @@ class _AdvancedExampleContentState
         'confirmPassword': '',
       },
       fields: [
-        BetterFormFieldConfig<String>(
+        FormixFieldConfig<String>(
           id: nameField,
           initialValue: 'John Doe',
           validator: (value) {
@@ -46,7 +46,7 @@ class _AdvancedExampleContentState
             return null;
           },
         ),
-        BetterFormFieldConfig<String>(
+        FormixFieldConfig<String>(
           id: emailField,
           initialValue: 'john@example.com',
           validator: (value) {
@@ -58,7 +58,7 @@ class _AdvancedExampleContentState
             return null;
           },
         ),
-        BetterFormFieldConfig<num>(
+        FormixFieldConfig<num>(
           id: ageField,
           initialValue: 25,
           validator: (value) {
@@ -67,13 +67,13 @@ class _AdvancedExampleContentState
             return null;
           },
         ),
-        BetterFormFieldConfig<bool>(id: newsletterField, initialValue: true),
-        BetterFormFieldConfig<String>(
-          id: BetterFormFieldID<String>('country'),
+        FormixFieldConfig<bool>(id: newsletterField, initialValue: true),
+        FormixFieldConfig<String>(
+          id: FormixFieldID<String>('country'),
           initialValue: 'US',
         ),
-        BetterFormFieldConfig<String>(
-          id: BetterFormFieldID<String>('bio'),
+        FormixFieldConfig<String>(
+          id: FormixFieldID<String>('bio'),
           initialValue: '',
           validator: (value) {
             if (value.length > 500) {
@@ -82,8 +82,8 @@ class _AdvancedExampleContentState
             return null;
           },
         ),
-        BetterFormFieldConfig<String>(
-          id: BetterFormFieldID<String>('password'),
+        FormixFieldConfig<String>(
+          id: FormixFieldID<String>('password'),
           initialValue: '',
           validator: (value) {
             if (value.isEmpty) return 'Password is required';
@@ -93,8 +93,8 @@ class _AdvancedExampleContentState
             return null;
           },
         ),
-        BetterFormFieldConfig<String>(
-          id: BetterFormFieldID<String>('confirmPassword'),
+        FormixFieldConfig<String>(
+          id: FormixFieldID<String>('confirmPassword'),
           initialValue: '',
           validator: (value) {
             // Cross-field validation will be handled by a custom mechanism
@@ -175,7 +175,7 @@ class _AdvancedExampleContentState
             const SizedBox(height: 16),
 
             RiverpodDropdownFormField<String>(
-              fieldId: BetterFormFieldID<String>('country'),
+              fieldId: FormixFieldID<String>('country'),
               items: const [
                 DropdownMenuItem(value: 'US', child: Text('United States')),
                 DropdownMenuItem(value: 'CA', child: Text('Canada')),
@@ -204,7 +204,7 @@ class _AdvancedExampleContentState
             ),
             const SizedBox(height: 8),
             RiverpodTextFormField(
-              fieldId: BetterFormFieldID<String>('password'),
+              fieldId: FormixFieldID<String>('password'),
               decoration: const InputDecoration(
                 labelText: 'Password',
                 hintText: 'Create a password',
@@ -213,7 +213,7 @@ class _AdvancedExampleContentState
             ),
             const SizedBox(height: 16),
             RiverpodTextFormField(
-              fieldId: BetterFormFieldID<String>('confirmPassword'),
+              fieldId: FormixFieldID<String>('confirmPassword'),
               decoration: const InputDecoration(
                 labelText: 'Confirm Password',
                 hintText: 'Confirm your password',
@@ -224,7 +224,7 @@ class _AdvancedExampleContentState
 
             // Bio field with length limit
             RiverpodTextFormField(
-              fieldId: BetterFormFieldID<String>('bio'),
+              fieldId: FormixFieldID<String>('bio'),
               maxLength: 500,
               decoration: const InputDecoration(
                 labelText: 'Bio',
@@ -240,7 +240,7 @@ class _AdvancedExampleContentState
 
             Consumer(
               builder: (context, ref, child) {
-                final controllerProvider = BetterForm.of(context)!;
+                final controllerProvider = Formix.of(context)!;
                 final controller = ref.read(controllerProvider.notifier);
                 final formState = ref.watch(controllerProvider);
 

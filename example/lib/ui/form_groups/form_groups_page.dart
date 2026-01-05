@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 
 class FormGroupsPage extends StatelessWidget {
   const FormGroupsPage({super.key});
@@ -8,7 +8,7 @@ class FormGroupsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Form Groups & Namespacing')),
-      body: BetterForm(
+      body: Formix(
         initialValue: const {
           'user.name': 'John Doe',
           'address.city': 'New York',
@@ -23,16 +23,16 @@ class FormGroupsPage extends StatelessWidget {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
-              const BetterFormGroup(
+              const FormixGroup(
                 prefix: 'user',
                 child: Column(
                   children: [
                     RiverpodTextFormField(
-                      fieldId: BetterFormFieldID('name'),
+                      fieldId: FormixFieldID('name'),
                       decoration: InputDecoration(labelText: 'Name'),
                     ),
                     RiverpodTextFormField(
-                      fieldId: BetterFormFieldID('email'),
+                      fieldId: FormixFieldID('email'),
                       decoration: InputDecoration(labelText: 'Email'),
                     ),
                   ],
@@ -44,16 +44,16 @@ class FormGroupsPage extends StatelessWidget {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
-              const BetterFormGroup(
+              const FormixGroup(
                 prefix: 'address',
                 child: Column(
                   children: [
                     RiverpodTextFormField(
-                      fieldId: BetterFormFieldID('street'),
+                      fieldId: FormixFieldID('street'),
                       decoration: InputDecoration(labelText: 'Street'),
                     ),
                     RiverpodTextFormField(
-                      fieldId: BetterFormFieldID('city'),
+                      fieldId: FormixFieldID('city'),
                       decoration: InputDecoration(labelText: 'City'),
                     ),
                   ],
@@ -65,12 +65,12 @@ class FormGroupsPage extends StatelessWidget {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
-              const BetterFormGroup(
+              const FormixGroup(
                 prefix: 'delivery',
-                child: BetterFormGroup(
+                child: FormixGroup(
                   prefix: 'notice',
                   child: RiverpodTextFormField(
-                    fieldId: BetterFormFieldID('note'),
+                    fieldId: FormixFieldID('note'),
                     decoration: InputDecoration(
                       labelText: 'Special Instructions',
                     ),
@@ -78,7 +78,7 @@ class FormGroupsPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 32),
-              BetterFormBuilder(
+              FormixBuilder(
                 builder: (context, scope) {
                   return Column(
                     children: [
@@ -116,14 +116,14 @@ class FormGroupsPage extends StatelessWidget {
   }
 }
 
-class _GroupStatus extends BetterFormWidget {
+class _GroupStatus extends FormixWidget {
   final String prefix;
   final String label;
 
   const _GroupStatus({required this.prefix, required this.label});
 
   @override
-  Widget buildForm(BuildContext context, BetterFormScope scope) {
+  Widget buildForm(BuildContext context, FormixScope scope) {
     final isValid = scope.watchGroupIsValid(prefix);
     final isDirty = scope.watchGroupIsDirty(prefix);
 

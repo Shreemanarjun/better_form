@@ -1,7 +1,7 @@
 import 'dart:async';
 
 /// Abstract class for persisting form state
-abstract class BetterFormPersistence {
+abstract class FormixPersistence {
   /// Save form state
   Future<void> saveFormState(String formId, Map<String, dynamic> values);
 
@@ -13,7 +13,7 @@ abstract class BetterFormPersistence {
 }
 
 /// InMemory persistence for testing or temporary sessions
-class InMemoryFormPersistence implements BetterFormPersistence {
+class InMemoryFormPersistence implements FormixPersistence {
   final Map<String, Map<String, dynamic>> _storage = {};
 
   @override

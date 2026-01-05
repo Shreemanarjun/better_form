@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 import '../../constants/field_ids.dart';
 
 // Schema-based Form Example
@@ -72,7 +72,7 @@ class _SchemaFormExampleContentState
           label: 'Subscribe to newsletter',
         ),
         SelectionFieldSchema<String>(
-          id: BetterFormFieldID<String>('country'),
+          id: FormixFieldID<String>('country'),
           initialValue: 'US',
           label: 'Country',
           options: ['US', 'CA', 'UK', 'DE', 'FR', 'JP'],
@@ -123,7 +123,7 @@ class _SchemaFormExampleContentState
 
   @override
   Widget build(BuildContext context) {
-    return BetterForm(
+    return Formix(
       initialValue: {
         'name': '',
         'email': '',
@@ -133,7 +133,7 @@ class _SchemaFormExampleContentState
         'country': 'US',
       },
       fields: [
-        BetterFormFieldConfig<String>(
+        FormixFieldConfig<String>(
           id: nameField,
           initialValue: '',
           validator: (value) {
@@ -142,7 +142,7 @@ class _SchemaFormExampleContentState
             return null;
           },
         ),
-        BetterFormFieldConfig<String>(
+        FormixFieldConfig<String>(
           id: emailField,
           initialValue: '',
           validator: (value) {
@@ -153,7 +153,7 @@ class _SchemaFormExampleContentState
             return null;
           },
         ),
-        BetterFormFieldConfig<num>(
+        FormixFieldConfig<num>(
           id: ageField,
           initialValue: 18,
           validator: (value) {
@@ -162,13 +162,13 @@ class _SchemaFormExampleContentState
             return null;
           },
         ),
-        BetterFormFieldConfig<DateTime>(
+        FormixFieldConfig<DateTime>(
           id: dobField,
           initialValue: DateTime(2000, 1, 1),
         ),
-        BetterFormFieldConfig<bool>(id: newsletterField, initialValue: false),
-        BetterFormFieldConfig<String>(
-          id: BetterFormFieldID<String>('country'),
+        FormixFieldConfig<bool>(id: newsletterField, initialValue: false),
+        FormixFieldConfig<String>(
+          id: FormixFieldID<String>('country'),
           initialValue: 'US',
         ),
       ],
@@ -220,7 +220,7 @@ class _SchemaFormExampleContentState
               ),
               child: Consumer(
                 builder: (context, ref, child) {
-                  final controllerProvider = BetterForm.of(context)!;
+                  final controllerProvider = Formix.of(context)!;
                   final controller = ref.read(controllerProvider.notifier);
                   final value = ref.watch(fieldValueProvider(dobField));
                   return ListTile(
@@ -252,7 +252,7 @@ class _SchemaFormExampleContentState
             const SizedBox(height: 16),
 
             RiverpodDropdownFormField<String>(
-              fieldId: BetterFormFieldID<String>('country'),
+              fieldId: FormixFieldID<String>('country'),
               items: const [
                 DropdownMenuItem(value: 'US', child: Text('United States')),
                 DropdownMenuItem(value: 'CA', child: Text('Canada')),
@@ -270,7 +270,7 @@ class _SchemaFormExampleContentState
 
             Consumer(
               builder: (context, ref, child) {
-                final controllerProvider = BetterForm.of(context)!;
+                final controllerProvider = Formix.of(context)!;
                 final controller = ref.read(controllerProvider.notifier);
                 final formState = ref.watch(controllerProvider);
 

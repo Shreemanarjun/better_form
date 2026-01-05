@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../controllers/field_id.dart';
 import '../controllers/riverpod_controller.dart';
-import 'better_form.dart';
+import 'formix.dart';
 import 'form_group.dart';
 import 'riverpod_form_fields.dart';
 
@@ -18,14 +18,11 @@ class RiverpodNumberFormField extends ConsumerStatefulWidget {
     this.controllerProvider,
   });
 
-  final BetterFormFieldID<num> fieldId;
+  final FormixFieldID<num> fieldId;
   final InputDecoration? decoration;
   final num? min;
   final num? max;
-  final AutoDisposeStateNotifierProvider<
-    RiverpodFormController,
-    BetterFormState
-  >?
+  final AutoDisposeStateNotifierProvider<RiverpodFormController, FormixState>?
   controllerProvider;
 
   @override
@@ -59,13 +56,13 @@ class _RiverpodNumberFormFieldState
     super.didChangeDependencies();
     final provider =
         widget.controllerProvider ??
-        BetterForm.of(context) ??
-        formControllerProvider(const BetterFormParameter(initialValue: {}));
+        Formix.of(context) ??
+        formControllerProvider(const FormixParameter(initialValue: {}));
 
     final controller = ref.read(provider.notifier);
-    final resolvedId = BetterFormGroup.resolve(context, widget.fieldId);
+    final resolvedId = FormixGroup.resolve(context, widget.fieldId);
 
-    if (controller is BetterFormController) {
+    if (controller is FormixController) {
       controller.registerFocusNode(resolvedId, _focusNode);
       controller.registerContext(resolvedId, context);
     }
@@ -76,9 +73,9 @@ class _RiverpodNumberFormFieldState
       if (!_focusNode.hasFocus) {
         final provider =
             widget.controllerProvider ??
-            BetterForm.of(context) ??
-            formControllerProvider(const BetterFormParameter(initialValue: {}));
-        final resolvedId = BetterFormGroup.resolve(context, widget.fieldId);
+            Formix.of(context) ??
+            formControllerProvider(const FormixParameter(initialValue: {}));
+        final resolvedId = FormixGroup.resolve(context, widget.fieldId);
         ref.read(provider.notifier).markAsTouched(resolvedId);
       }
       setState(() {});
@@ -108,10 +105,10 @@ class _RiverpodNumberFormFieldState
   Widget build(BuildContext context) {
     final controllerProvider =
         widget.controllerProvider ??
-        BetterForm.of(context) ??
-        formControllerProvider(const BetterFormParameter(initialValue: {}));
+        Formix.of(context) ??
+        formControllerProvider(const FormixParameter(initialValue: {}));
 
-    final resolvedId = BetterFormGroup.resolve(context, widget.fieldId);
+    final resolvedId = FormixGroup.resolve(context, widget.fieldId);
 
     return ProviderScope(
       overrides: [

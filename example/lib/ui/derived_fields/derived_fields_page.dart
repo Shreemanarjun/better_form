@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 
 // Derived Fields Example
 class DerivedFieldsExample extends ConsumerWidget {
@@ -24,7 +24,7 @@ class _DerivedFieldsExampleContentState
     extends ConsumerState<DerivedFieldsExampleContent> {
   @override
   Widget build(BuildContext context) {
-    return BetterForm(
+    return Formix(
       initialValue: {
         'firstName': '',
         'lastName': '',
@@ -39,48 +39,45 @@ class _DerivedFieldsExampleContentState
         'finalTotal': 100.0,
       },
       fields: [
-        BetterFormFieldConfig<String>(
-          id: BetterFormFieldID<String>('firstName'),
+        FormixFieldConfig<String>(
+          id: FormixFieldID<String>('firstName'),
           initialValue: '',
         ),
-        BetterFormFieldConfig<String>(
-          id: BetterFormFieldID<String>('lastName'),
+        FormixFieldConfig<String>(
+          id: FormixFieldID<String>('lastName'),
           initialValue: '',
         ),
-        BetterFormFieldConfig<String>(
-          id: BetterFormFieldID<String>('fullName'),
+        FormixFieldConfig<String>(
+          id: FormixFieldID<String>('fullName'),
           initialValue: '',
         ),
-        BetterFormFieldConfig<int>(
-          id: BetterFormFieldID<int>('birthYear'),
+        FormixFieldConfig<int>(
+          id: FormixFieldID<int>('birthYear'),
           initialValue: 2000,
         ),
-        BetterFormFieldConfig<int>(
-          id: BetterFormFieldID<int>('currentYear'),
+        FormixFieldConfig<int>(
+          id: FormixFieldID<int>('currentYear'),
           initialValue: DateTime.now().year,
         ),
-        BetterFormFieldConfig<int>(
-          id: BetterFormFieldID<int>('age'),
-          initialValue: 0,
-        ),
-        BetterFormFieldConfig<double>(
-          id: BetterFormFieldID<double>('price'),
+        FormixFieldConfig<int>(id: FormixFieldID<int>('age'), initialValue: 0),
+        FormixFieldConfig<double>(
+          id: FormixFieldID<double>('price'),
           initialValue: 100.0,
         ),
-        BetterFormFieldConfig<int>(
-          id: BetterFormFieldID<int>('quantity'),
+        FormixFieldConfig<int>(
+          id: FormixFieldID<int>('quantity'),
           initialValue: 1,
         ),
-        BetterFormFieldConfig<double>(
-          id: BetterFormFieldID<double>('total'),
+        FormixFieldConfig<double>(
+          id: FormixFieldID<double>('total'),
           initialValue: 100.0,
         ),
-        BetterFormFieldConfig<double>(
-          id: BetterFormFieldID<double>('discountPercent'),
+        FormixFieldConfig<double>(
+          id: FormixFieldID<double>('discountPercent'),
           initialValue: 0.0,
         ),
-        BetterFormFieldConfig<double>(
-          id: BetterFormFieldID<double>('finalTotal'),
+        FormixFieldConfig<double>(
+          id: FormixFieldID<double>('finalTotal'),
           initialValue: 100.0,
         ),
       ],
@@ -110,7 +107,7 @@ class _DerivedFieldsExampleContentState
               children: [
                 Expanded(
                   child: RiverpodTextFormField(
-                    fieldId: BetterFormFieldID<String>('firstName'),
+                    fieldId: FormixFieldID<String>('firstName'),
                     decoration: const InputDecoration(
                       labelText: 'First Name',
                       prefixIcon: Icon(Icons.person),
@@ -120,7 +117,7 @@ class _DerivedFieldsExampleContentState
                 const SizedBox(width: 16),
                 Expanded(
                   child: RiverpodTextFormField(
-                    fieldId: BetterFormFieldID<String>('lastName'),
+                    fieldId: FormixFieldID<String>('lastName'),
                     decoration: const InputDecoration(
                       labelText: 'Last Name',
                       prefixIcon: Icon(Icons.person_outline),
@@ -149,9 +146,7 @@ class _DerivedFieldsExampleContentState
                   Consumer(
                     builder: (context, ref, child) {
                       final fullName = ref.watch(
-                        fieldValueProvider(
-                          BetterFormFieldID<String>('fullName'),
-                        ),
+                        fieldValueProvider(FormixFieldID<String>('fullName')),
                       );
                       return Text(
                         fullName?.isEmpty ?? true
@@ -173,7 +168,7 @@ class _DerivedFieldsExampleContentState
             ),
             const SizedBox(height: 8),
             RiverpodNumberFormField(
-              fieldId: BetterFormFieldID<int>('birthYear'),
+              fieldId: FormixFieldID<int>('birthYear'),
               min: 1900,
               max: DateTime.now().year,
               decoration: const InputDecoration(
@@ -201,7 +196,7 @@ class _DerivedFieldsExampleContentState
                   Consumer(
                     builder: (context, ref, child) {
                       final age = ref.watch(
-                        fieldValueProvider(BetterFormFieldID<int>('age')),
+                        fieldValueProvider(FormixFieldID<int>('age')),
                       );
                       return Text(
                         '$age years old',
@@ -224,7 +219,7 @@ class _DerivedFieldsExampleContentState
               children: [
                 Expanded(
                   child: RiverpodNumberFormField(
-                    fieldId: BetterFormFieldID<double>('price'),
+                    fieldId: FormixFieldID<double>('price'),
                     min: 0,
                     decoration: const InputDecoration(
                       labelText: 'Price per Item',
@@ -235,7 +230,7 @@ class _DerivedFieldsExampleContentState
                 const SizedBox(width: 16),
                 Expanded(
                   child: RiverpodNumberFormField(
-                    fieldId: BetterFormFieldID<int>('quantity'),
+                    fieldId: FormixFieldID<int>('quantity'),
                     min: 1,
                     decoration: const InputDecoration(
                       labelText: 'Quantity',
@@ -265,7 +260,7 @@ class _DerivedFieldsExampleContentState
                   Consumer(
                     builder: (context, ref, child) {
                       final total = ref.watch(
-                        fieldValueProvider(BetterFormFieldID<double>('total')),
+                        fieldValueProvider(FormixFieldID<double>('total')),
                       );
                       return Text(
                         '\$${total?.toStringAsFixed(2) ?? '0.00'}',
@@ -280,7 +275,7 @@ class _DerivedFieldsExampleContentState
 
             // Discount
             RiverpodNumberFormField(
-              fieldId: BetterFormFieldID<double>('discountPercent'),
+              fieldId: FormixFieldID<double>('discountPercent'),
               min: 0,
               max: 100,
               decoration: const InputDecoration(
@@ -308,9 +303,7 @@ class _DerivedFieldsExampleContentState
                   Consumer(
                     builder: (context, ref, child) {
                       final finalTotal = ref.watch(
-                        fieldValueProvider(
-                          BetterFormFieldID<double>('finalTotal'),
-                        ),
+                        fieldValueProvider(FormixFieldID<double>('finalTotal')),
                       );
                       return Text(
                         '\$${finalTotal?.toStringAsFixed(2) ?? '0.00'}',
@@ -330,24 +323,22 @@ class _DerivedFieldsExampleContentState
               builder: (context, ref, child) {
                 final firstName =
                     ref.watch(
-                      fieldValueProvider(
-                        BetterFormFieldID<String>('firstName'),
-                      ),
+                      fieldValueProvider(FormixFieldID<String>('firstName')),
                     ) ??
                     '';
                 final lastName =
                     ref.watch(
-                      fieldValueProvider(BetterFormFieldID<String>('lastName')),
+                      fieldValueProvider(FormixFieldID<String>('lastName')),
                     ) ??
                     '';
                 final fullName = '$firstName $lastName'.trim();
 
                 // Update the derived field value
                 WidgetsBinding.instance.addPostFrameCallback((_) {
-                  final controller = BetterForm.controllerOf(context);
+                  final controller = Formix.controllerOf(context);
                   if (controller != null) {
                     controller.setValue(
-                      BetterFormFieldID<String>('fullName'),
+                      FormixFieldID<String>('fullName'),
                       fullName,
                     );
                   }
@@ -361,20 +352,20 @@ class _DerivedFieldsExampleContentState
               builder: (context, ref, child) {
                 final birthYear =
                     ref.watch(
-                      fieldValueProvider(BetterFormFieldID<int>('birthYear')),
+                      fieldValueProvider(FormixFieldID<int>('birthYear')),
                     ) ??
                     2000;
                 final currentYear =
                     ref.watch(
-                      fieldValueProvider(BetterFormFieldID<int>('currentYear')),
+                      fieldValueProvider(FormixFieldID<int>('currentYear')),
                     ) ??
                     DateTime.now().year;
                 final age = currentYear - birthYear;
 
                 WidgetsBinding.instance.addPostFrameCallback((_) {
-                  final controller = BetterForm.controllerOf(context);
+                  final controller = Formix.controllerOf(context);
                   if (controller != null) {
-                    controller.setValue(BetterFormFieldID<int>('age'), age);
+                    controller.setValue(FormixFieldID<int>('age'), age);
                   }
                 });
 
@@ -386,23 +377,20 @@ class _DerivedFieldsExampleContentState
               builder: (context, ref, child) {
                 final price =
                     ref.watch(
-                      fieldValueProvider(BetterFormFieldID<double>('price')),
+                      fieldValueProvider(FormixFieldID<double>('price')),
                     ) ??
                     0.0;
                 final quantity =
                     ref.watch(
-                      fieldValueProvider(BetterFormFieldID<int>('quantity')),
+                      fieldValueProvider(FormixFieldID<int>('quantity')),
                     ) ??
                     1;
                 final total = price * quantity;
 
                 WidgetsBinding.instance.addPostFrameCallback((_) {
-                  final controller = BetterForm.controllerOf(context);
+                  final controller = Formix.controllerOf(context);
                   if (controller != null) {
-                    controller.setValue(
-                      BetterFormFieldID<double>('total'),
-                      total,
-                    );
+                    controller.setValue(FormixFieldID<double>('total'), total);
                   }
                 });
 
@@ -414,13 +402,13 @@ class _DerivedFieldsExampleContentState
               builder: (context, ref, child) {
                 final total =
                     ref.watch(
-                      fieldValueProvider(BetterFormFieldID<double>('total')),
+                      fieldValueProvider(FormixFieldID<double>('total')),
                     ) ??
                     0.0;
                 final discountPercent =
                     ref.watch(
                       fieldValueProvider(
-                        BetterFormFieldID<double>('discountPercent'),
+                        FormixFieldID<double>('discountPercent'),
                       ),
                     ) ??
                     0.0;
@@ -428,10 +416,10 @@ class _DerivedFieldsExampleContentState
                 final finalTotal = total - discountAmount;
 
                 WidgetsBinding.instance.addPostFrameCallback((_) {
-                  final controller = BetterForm.controllerOf(context);
+                  final controller = Formix.controllerOf(context);
                   if (controller != null) {
                     controller.setValue(
-                      BetterFormFieldID<double>('finalTotal'),
+                      FormixFieldID<double>('finalTotal'),
                       finalTotal,
                     );
                   }

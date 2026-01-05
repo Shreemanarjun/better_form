@@ -1,8 +1,8 @@
-export 'better_form.dart';
+export 'formix.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'better_form.dart';
+import 'formix.dart';
 import '../controllers/riverpod_controller.dart';
 import '../controllers/field_id.dart';
 import 'form_group.dart';
@@ -16,22 +16,19 @@ class RiverpodCheckboxFormField extends ConsumerWidget {
     this.controllerProvider,
   });
 
-  final BetterFormFieldID<bool> fieldId;
+  final FormixFieldID<bool> fieldId;
   final Widget? title;
-  final AutoDisposeStateNotifierProvider<
-    RiverpodFormController,
-    BetterFormState
-  >?
+  final AutoDisposeStateNotifierProvider<RiverpodFormController, FormixState>?
   controllerProvider;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final controllerProvider =
         this.controllerProvider ??
-        BetterForm.of(context) ??
-        formControllerProvider(const BetterFormParameter(initialValue: {}));
+        Formix.of(context) ??
+        formControllerProvider(const FormixParameter(initialValue: {}));
 
-    final resolvedId = BetterFormGroup.resolve(context, fieldId);
+    final resolvedId = FormixGroup.resolve(context, fieldId);
 
     return ProviderScope(
       overrides: [
@@ -85,23 +82,20 @@ class RiverpodDropdownFormField<T> extends ConsumerWidget {
     this.controllerProvider,
   });
 
-  final BetterFormFieldID<T> fieldId;
+  final FormixFieldID<T> fieldId;
   final List<DropdownMenuItem<T>> items;
   final InputDecoration? decoration;
-  final AutoDisposeStateNotifierProvider<
-    RiverpodFormController,
-    BetterFormState
-  >?
+  final AutoDisposeStateNotifierProvider<RiverpodFormController, FormixState>?
   controllerProvider;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final controllerProvider =
         this.controllerProvider ??
-        BetterForm.of(context) ??
-        formControllerProvider(const BetterFormParameter(initialValue: {}));
+        Formix.of(context) ??
+        formControllerProvider(const FormixParameter(initialValue: {}));
 
-    final resolvedId = BetterFormGroup.resolve(context, fieldId);
+    final resolvedId = FormixGroup.resolve(context, fieldId);
 
     return ProviderScope(
       overrides: [
@@ -148,18 +142,15 @@ class RiverpodDropdownFormField<T> extends ConsumerWidget {
 class RiverpodFormStatus extends ConsumerWidget {
   const RiverpodFormStatus({super.key, this.controllerProvider});
 
-  final AutoDisposeStateNotifierProvider<
-    RiverpodFormController,
-    BetterFormState
-  >?
+  final AutoDisposeStateNotifierProvider<RiverpodFormController, FormixState>?
   controllerProvider;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final controllerProvider =
         this.controllerProvider ??
-        BetterForm.of(context) ??
-        formControllerProvider(const BetterFormParameter(initialValue: {}));
+        Formix.of(context) ??
+        formControllerProvider(const FormixParameter(initialValue: {}));
 
     return ProviderScope(
       overrides: [

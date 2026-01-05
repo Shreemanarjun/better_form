@@ -1,10 +1,10 @@
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 import 'package:flutter/material.dart';
 
 /// A highly optimized, declarative widget that rebuilds only when a specific field changes
 /// Provides granular performance and detailed change information
-class BetterFormFieldSelector<T> extends StatefulWidget {
-  const BetterFormFieldSelector({
+class FormixFieldSelector<T> extends StatefulWidget {
+  const FormixFieldSelector({
     super.key,
     required this.fieldId,
     required this.builder,
@@ -15,27 +15,25 @@ class BetterFormFieldSelector<T> extends StatefulWidget {
     this.child,
   });
 
-  final BetterFormFieldID<T> fieldId;
+  final FormixFieldID<T> fieldId;
   final Widget Function(
     BuildContext context,
     FieldChangeInfo<T> info,
     Widget? child,
   )
   builder;
-  final BetterFormController? controller;
+  final FormixController? controller;
   final bool listenToValue;
   final bool listenToValidation;
   final bool listenToDirty;
   final Widget? child;
 
   @override
-  State<BetterFormFieldSelector<T>> createState() =>
-      _BetterFormFieldSelectorState<T>();
+  State<FormixFieldSelector<T>> createState() => _FormixFieldSelectorState<T>();
 }
 
-class _BetterFormFieldSelectorState<T>
-    extends State<BetterFormFieldSelector<T>> {
-  late BetterFormController _controller;
+class _FormixFieldSelectorState<T> extends State<FormixFieldSelector<T>> {
+  late FormixController _controller;
   late T? _currentValue;
   late ValidationResult _currentValidation;
   late bool _currentIsDirty;
@@ -48,7 +46,7 @@ class _BetterFormFieldSelectorState<T>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _controller = widget.controller ?? BetterForm.controllerOf(context)!;
+    _controller = widget.controller ?? Formix.controllerOf(context)!;
 
     // Initialize current state
     _updateCurrentState();
@@ -58,7 +56,7 @@ class _BetterFormFieldSelectorState<T>
   }
 
   @override
-  void didUpdateWidget(BetterFormFieldSelector<T> oldWidget) {
+  void didUpdateWidget(FormixFieldSelector<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.controller != widget.controller ||
@@ -73,7 +71,7 @@ class _BetterFormFieldSelectorState<T>
       );
 
       // Add new listener
-      _controller = widget.controller ?? BetterForm.controllerOf(context)!;
+      _controller = widget.controller ?? Formix.controllerOf(context)!;
       _controller.addFieldListener(widget.fieldId, _onFieldChanged);
 
       // Update state

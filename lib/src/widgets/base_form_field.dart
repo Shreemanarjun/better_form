@@ -9,8 +9,8 @@ import 'riverpod_form_fields.dart';
 
 /// Base class for custom form field widgets that automatically handles
 /// controller management, listeners, and value synchronization
-abstract class BetterFormFieldWidget<T> extends StatefulWidget {
-  const BetterFormFieldWidget({
+abstract class FormixFieldWidget<T> extends StatefulWidget {
+  const FormixFieldWidget({
     super.key,
     required this.fieldId,
     this.controller,
@@ -18,19 +18,18 @@ abstract class BetterFormFieldWidget<T> extends StatefulWidget {
     this.initialValue,
   });
 
-  final BetterFormFieldID<T> fieldId;
-  final BetterFormController? controller;
+  final FormixFieldID<T> fieldId;
+  final FormixController? controller;
   final String? Function(T value)? validator;
   final T? initialValue;
 
   @override
-  BetterFormFieldWidgetState<T> createState();
+  FormixFieldWidgetState<T> createState();
 }
 
 /// State class that provides simplified APIs for form field management
-abstract class BetterFormFieldWidgetState<T>
-    extends State<BetterFormFieldWidget<T>> {
-  late BetterFormController _controller;
+abstract class FormixFieldWidgetState<T> extends State<FormixFieldWidget<T>> {
+  late FormixController _controller;
   T? _currentValue;
   late FocusNode _focusNode;
   bool _isMounted = false;
@@ -42,7 +41,7 @@ abstract class BetterFormFieldWidgetState<T>
   FocusNode get focusNode => _focusNode;
 
   /// Get the controller
-  BetterFormController get controller => _controller;
+  FormixController get controller => _controller;
 
   /// Check if the field is dirty
   bool get isDirty => _controller.isFieldDirty(widget.fieldId);
@@ -68,7 +67,7 @@ abstract class BetterFormFieldWidgetState<T>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _controller = widget.controller ?? BetterForm.controllerOf(context)!;
+    _controller = widget.controller ?? Formix.controllerOf(context)!;
 
     // Auto-register the field if it's not already registered
     _ensureFieldRegistered();
@@ -93,7 +92,7 @@ abstract class BetterFormFieldWidgetState<T>
 
       // Allow null initial values - the field can start with null
       _controller.registerField(
-        BetterFormField<T>(
+        FormixField<T>(
           id: widget.fieldId,
           initialValue: initialValue,
           validator: widget.validator,
@@ -103,12 +102,12 @@ abstract class BetterFormFieldWidgetState<T>
   }
 
   @override
-  void didUpdateWidget(BetterFormFieldWidget<T> oldWidget) {
+  void didUpdateWidget(FormixFieldWidget<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.controller != oldWidget.controller ||
         widget.fieldId != oldWidget.fieldId) {
       _controller.removeFieldListener(oldWidget.fieldId, _onFieldChanged);
-      _controller = widget.controller ?? BetterForm.controllerOf(context)!;
+      _controller = widget.controller ?? Formix.controllerOf(context)!;
       _controller.registerFocusNode(widget.fieldId, _focusNode);
       _controller.addFieldListener(widget.fieldId, _onFieldChanged);
       _currentValue =
@@ -157,7 +156,7 @@ abstract class BetterFormFieldWidgetState<T>
 
   /// Patch multiple field values at once
   /// Useful for complex form fields that control multiple values
-  void patchValue(Map<BetterFormFieldID<dynamic>, dynamic> updates) {
+  void patchValue(Map<FormixFieldID<dynamic>, dynamic> updates) {
     for (final entry in updates.entries) {
       _controller.setValue(entry.key, entry.value);
     }
@@ -186,7 +185,7 @@ abstract class BetterFormFieldWidgetState<T>
 }
 
 /// Mixin for form fields that need text input capabilities
-mixin BetterFormFieldTextMixin<T> on BetterFormFieldWidgetState<T> {
+mixin FormixFieldTextMixin<T> on FormixFieldWidgetState<T> {
   late final TextEditingController _textController;
 
   TextEditingController get textController => _textController;
@@ -201,7 +200,7 @@ mixin BetterFormFieldTextMixin<T> on BetterFormFieldWidgetState<T> {
   }
 
   @override
-  void didUpdateWidget(BetterFormFieldWidget<T> oldWidget) {
+  void didUpdateWidget(FormixFieldWidget<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
     final newText = _currentValue != null
         ? valueToString(_currentValue as T)
@@ -248,8 +247,8 @@ mixin BetterFormFieldTextMixin<T> on BetterFormFieldWidgetState<T> {
 }
 
 /// Simplified text form field base class
-abstract class BetterTextFormFieldWidget extends BetterFormFieldWidget<String> {
-  const BetterTextFormFieldWidget({
+abstract class FormixTextFormFieldWidget extends FormixFieldWidget<String> {
+  const FormixTextFormFieldWidget({
     super.key,
     required super.fieldId,
     super.controller,
@@ -269,12 +268,12 @@ abstract class BetterTextFormFieldWidget extends BetterFormFieldWidget<String> {
   final bool? enabled;
 
   @override
-  BetterTextFormFieldWidgetState createState();
+  FormixTextFormFieldWidgetState createState();
 }
 
-abstract class BetterTextFormFieldWidgetState
-    extends BetterFormFieldWidgetState<String>
-    with BetterFormFieldTextMixin<String> {
+abstract class FormixTextFormFieldWidgetState
+    extends FormixFieldWidgetState<String>
+    with FormixFieldTextMixin<String> {
   @override
   String valueToString(String? value) => value ?? '';
 
@@ -283,7 +282,7 @@ abstract class BetterTextFormFieldWidgetState
 
   @override
   Widget build(BuildContext context) {
-    final widget = this.widget as BetterTextFormFieldWidget;
+    final widget = this.widget as FormixTextFormFieldWidget;
 
     return ValueListenableBuilder<ValidationResult>(
       valueListenable: _controller.fieldValidationNotifier(widget.fieldId),
@@ -331,8 +330,8 @@ abstract class BetterTextFormFieldWidgetState
 }
 
 /// Simplified number form field base class
-abstract class BetterNumberFormFieldWidget extends BetterFormFieldWidget<int> {
-  const BetterNumberFormFieldWidget({
+abstract class FormixNumberFormFieldWidget extends FormixFieldWidget<int> {
+  const FormixNumberFormFieldWidget({
     super.key,
     required super.fieldId,
     super.controller,
@@ -346,12 +345,12 @@ abstract class BetterNumberFormFieldWidget extends BetterFormFieldWidget<int> {
   final bool? enabled;
 
   @override
-  BetterNumberFormFieldWidgetState createState();
+  FormixNumberFormFieldWidgetState createState();
 }
 
-abstract class BetterNumberFormFieldWidgetState
-    extends BetterFormFieldWidgetState<int>
-    with BetterFormFieldTextMixin<int> {
+abstract class FormixNumberFormFieldWidgetState
+    extends FormixFieldWidgetState<int>
+    with FormixFieldTextMixin<int> {
   @override
   String valueToString(int? value) => value?.toString() ?? '';
 
@@ -360,7 +359,7 @@ abstract class BetterNumberFormFieldWidgetState
 
   @override
   Widget build(BuildContext context) {
-    final widget = this.widget as BetterNumberFormFieldWidget;
+    final widget = this.widget as FormixNumberFormFieldWidget;
 
     return ValueListenableBuilder<ValidationResult>(
       valueListenable: _controller.fieldValidationNotifier(widget.fieldId),

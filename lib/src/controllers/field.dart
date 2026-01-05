@@ -3,8 +3,8 @@ import '../enums.dart';
 import 'form_state.dart';
 
 /// Form field definition with validation and type information
-class BetterFormField<T> {
-  const BetterFormField({
+class FormixField<T> {
+  const FormixField({
     required this.id,
     required this.initialValue,
     this.validator,
@@ -16,11 +16,11 @@ class BetterFormField<T> {
     this.asyncValidator,
     this.debounceDuration,
     this.emptyValue,
-    this.validationMode = BetterAutovalidateMode.always,
+    this.validationMode = FormixAutovalidateMode.always,
   });
 
   /// Unique identifier for this field
-  final BetterFormFieldID<T> id;
+  final FormixFieldID<T> id;
 
   /// Initial value of the field
   final T? initialValue;
@@ -32,10 +32,10 @@ class BetterFormField<T> {
   final String? Function(T value)? validator;
 
   /// Cross-field validator that can access the entire form state
-  final String? Function(T value, BetterFormState state)? crossFieldValidator;
+  final String? Function(T value, FormixState state)? crossFieldValidator;
 
   /// List of fields that this field depends on for validation
-  final List<BetterFormFieldID<dynamic>> dependsOn;
+  final List<FormixFieldID<dynamic>> dependsOn;
 
   /// Label for the field (UI hint)
   final String? label;
@@ -53,7 +53,7 @@ class BetterFormField<T> {
   final Duration? debounceDuration;
 
   /// Validation mode for this field
-  final BetterAutovalidateMode validationMode;
+  final FormixAutovalidateMode validationMode;
 
   /// Returns a wrapped version of the validator that accepts dynamic input.
   String? Function(dynamic)? get wrappedValidator {
@@ -63,10 +63,10 @@ class BetterFormField<T> {
   }
 
   /// Returns a wrapped version of the cross-field validator that accepts dynamic input.
-  String? Function(dynamic, BetterFormState)? get wrappedCrossFieldValidator {
+  String? Function(dynamic, FormixState)? get wrappedCrossFieldValidator {
     final v = crossFieldValidator;
     if (v == null) return null;
-    return (dynamic value, BetterFormState state) => v(value as T, state);
+    return (dynamic value, FormixState state) => v(value as T, state);
   }
 
   /// Returns a wrapped version of the async validator that accepts dynamic input.

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart' hide FormState;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 
 // Test implementations of the abstract classes
-class TestFormFieldWidget extends BetterFormFieldWidget<String> {
+class TestFormFieldWidget extends FormixFieldWidget<String> {
   const TestFormFieldWidget({
     super.key,
     required super.fieldId,
@@ -17,7 +17,7 @@ class TestFormFieldWidget extends BetterFormFieldWidget<String> {
   TestFormFieldWidgetState createState() => TestFormFieldWidgetState();
 }
 
-class TestFormFieldWidgetState extends BetterFormFieldWidgetState<String> {
+class TestFormFieldWidgetState extends FormixFieldWidgetState<String> {
   int buildCount = 0;
   String? lastChangedValue;
 
@@ -34,7 +34,7 @@ class TestFormFieldWidgetState extends BetterFormFieldWidgetState<String> {
   }
 }
 
-class TestTextFormFieldWidget extends BetterTextFormFieldWidget {
+class TestTextFormFieldWidget extends FormixTextFormFieldWidget {
   const TestTextFormFieldWidget({
     super.key,
     required super.fieldId,
@@ -52,7 +52,7 @@ class TestTextFormFieldWidget extends BetterTextFormFieldWidget {
   TestTextFormFieldWidgetState createState() => TestTextFormFieldWidgetState();
 }
 
-class TestTextFormFieldWidgetState extends BetterTextFormFieldWidgetState {
+class TestTextFormFieldWidgetState extends FormixTextFormFieldWidgetState {
   @override
   Widget build(BuildContext context) {
     // Use the parent build method but wrap it for testing
@@ -63,7 +63,7 @@ class TestTextFormFieldWidgetState extends BetterTextFormFieldWidgetState {
   }
 }
 
-class TestNumberFormFieldWidget extends BetterNumberFormFieldWidget {
+class TestNumberFormFieldWidget extends FormixNumberFormFieldWidget {
   const TestNumberFormFieldWidget({
     super.key,
     required super.fieldId,
@@ -79,7 +79,7 @@ class TestNumberFormFieldWidget extends BetterNumberFormFieldWidget {
       TestNumberFormFieldWidgetState();
 }
 
-class TestNumberFormFieldWidgetState extends BetterNumberFormFieldWidgetState {
+class TestNumberFormFieldWidgetState extends FormixNumberFormFieldWidgetState {
   @override
   Widget build(BuildContext context) {
     // Use the parent build method but wrap it for testing
@@ -91,16 +91,16 @@ class TestNumberFormFieldWidgetState extends BetterNumberFormFieldWidgetState {
 }
 
 void main() {
-  group('BetterFormFieldWidget', () {
-    late BetterFormFieldID<String> testField;
+  group('FormixFieldWidget', () {
+    late FormixFieldID<String> testField;
 
     setUp(() {
-      testField = BetterFormFieldID<String>('test_field');
+      testField = FormixFieldID<String>('test_field');
     });
 
     testWidgets('constructor initializes correctly', (tester) async {
       const widget = TestFormFieldWidget(
-        fieldId: BetterFormFieldID<String>('test'),
+        fieldId: FormixFieldID<String>('test'),
       );
 
       expect(widget.fieldId.key, 'test');
@@ -116,9 +116,9 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 fields: [
-                  BetterFormFieldConfig(id: testField, initialValue: 'initial'),
+                  FormixFieldConfig(id: testField, initialValue: 'initial'),
                 ],
                 child: TestFormFieldWidget(fieldId: testField),
               ),
@@ -142,9 +142,9 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 fields: [
-                  BetterFormFieldConfig(id: testField, initialValue: 'initial'),
+                  FormixFieldConfig(id: testField, initialValue: 'initial'),
                 ],
                 child: TestFormFieldWidget(fieldId: testField),
               ),
@@ -167,7 +167,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 child: TestFormFieldWidget(
                   fieldId: testField,
                   initialValue: 'auto_registered',
@@ -186,7 +186,7 @@ void main() {
     });
 
     testWidgets('uses custom controller when provided', (tester) async {
-      final customController = BetterFormController(
+      final customController = FormixController(
         initialValue: {'custom_field': 'custom_value'},
       );
 
@@ -195,7 +195,7 @@ void main() {
           child: MaterialApp(
             home: Scaffold(
               body: TestFormFieldWidget(
-                fieldId: BetterFormFieldID<String>('custom_field'),
+                fieldId: FormixFieldID<String>('custom_field'),
                 controller: customController,
               ),
             ),
@@ -210,44 +210,43 @@ void main() {
       expect(state.value, 'custom_value');
     });
 
-    testWidgets(
-      'falls back to BetterForm.controllerOf when no custom controller',
-      (tester) async {
-        await tester.pumpWidget(
-          ProviderScope(
-            child: MaterialApp(
-              home: Scaffold(
-                body: BetterForm(
-                  initialValue: {'fallback_field': 'fallback_value'},
-                  fields: [
-                    BetterFormFieldConfig(
-                      id: BetterFormFieldID<String>('fallback_field'),
-                      initialValue: 'fallback_value',
-                    ),
-                  ],
-                  child: TestFormFieldWidget(
-                    fieldId: BetterFormFieldID<String>('fallback_field'),
+    testWidgets('falls back to Formix.controllerOf when no custom controller', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: Formix(
+                initialValue: {'fallback_field': 'fallback_value'},
+                fields: [
+                  FormixFieldConfig(
+                    id: FormixFieldID<String>('fallback_field'),
+                    initialValue: 'fallback_value',
                   ),
+                ],
+                child: TestFormFieldWidget(
+                  fieldId: FormixFieldID<String>('fallback_field'),
                 ),
               ),
             ),
           ),
-        );
+        ),
+      );
 
-        final state = tester.state<TestFormFieldWidgetState>(
-          find.byType(TestFormFieldWidget),
-        );
-        expect(state.value, 'fallback_value');
-      },
-    );
+      final state = tester.state<TestFormFieldWidgetState>(
+        find.byType(TestFormFieldWidget),
+      );
+      expect(state.value, 'fallback_value');
+    });
 
     testWidgets('didChange updates field value', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
-                fields: [BetterFormFieldConfig(id: testField)],
+              body: Formix(
+                fields: [FormixFieldConfig(id: testField)],
                 child: TestFormFieldWidget(fieldId: testField),
               ),
             ),
@@ -269,8 +268,8 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
-                fields: [BetterFormFieldConfig(id: testField)],
+              body: Formix(
+                fields: [FormixFieldConfig(id: testField)],
                 child: TestFormFieldWidget(fieldId: testField),
               ),
             ),
@@ -287,17 +286,17 @@ void main() {
     });
 
     testWidgets('patchValue updates multiple fields', (tester) async {
-      final field1 = BetterFormFieldID<String>('field1');
-      final field2 = BetterFormFieldID<String>('field2');
+      final field1 = FormixFieldID<String>('field1');
+      final field2 = FormixFieldID<String>('field2');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 fields: [
-                  BetterFormFieldConfig(id: field1),
-                  BetterFormFieldConfig(id: field2),
+                  FormixFieldConfig(id: field1),
+                  FormixFieldConfig(id: field2),
                 ],
                 child: TestFormFieldWidget(fieldId: field1),
               ),
@@ -320,8 +319,8 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
-                fields: [BetterFormFieldConfig(id: testField)],
+              body: Formix(
+                fields: [FormixFieldConfig(id: testField)],
                 child: TestFormFieldWidget(fieldId: testField),
               ),
             ),
@@ -345,8 +344,8 @@ void main() {
           ProviderScope(
             child: MaterialApp(
               home: Scaffold(
-                body: BetterForm(
-                  fields: [BetterFormFieldConfig(id: testField)],
+                body: Formix(
+                  fields: [FormixFieldConfig(id: testField)],
                   child: TestFormFieldWidget(fieldId: testField),
                 ),
               ),
@@ -368,8 +367,8 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
-                fields: [BetterFormFieldConfig(id: testField)],
+              body: Formix(
+                fields: [FormixFieldConfig(id: testField)],
                 child: TestFormFieldWidget(fieldId: testField),
               ),
             ),
@@ -389,18 +388,18 @@ void main() {
     testWidgets('didUpdateWidget handles controller and fieldId changes', (
       tester,
     ) async {
-      final field1 = BetterFormFieldID<String>('field1');
-      final field2 = BetterFormFieldID<String>('field2');
+      final field1 = FormixFieldID<String>('field1');
+      final field2 = FormixFieldID<String>('field2');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: {'field1': 'value1', 'field2': 'value2'},
                 fields: [
-                  BetterFormFieldConfig(id: field1, initialValue: 'value1'),
-                  BetterFormFieldConfig(id: field2, initialValue: 'value2'),
+                  FormixFieldConfig(id: field1, initialValue: 'value1'),
+                  FormixFieldConfig(id: field2, initialValue: 'value2'),
                 ],
                 child: TestFormFieldWidget(fieldId: field1),
               ),
@@ -419,11 +418,11 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: {'field1': 'value1', 'field2': 'value2'},
                 fields: [
-                  BetterFormFieldConfig(id: field1, initialValue: 'value1'),
-                  BetterFormFieldConfig(id: field2, initialValue: 'value2'),
+                  FormixFieldConfig(id: field1, initialValue: 'value1'),
+                  FormixFieldConfig(id: field2, initialValue: 'value2'),
                 ],
                 child: TestFormFieldWidget(fieldId: field2),
               ),
@@ -436,7 +435,7 @@ void main() {
     });
   });
 
-  group('BetterFormFieldTextMixin', () {
+  group('FormixFieldTextMixin', () {
     // Test the mixin functionality through unit tests rather than widget tests
     // to avoid complex widget lifecycle issues
     test('valueToString converts values to strings', () {

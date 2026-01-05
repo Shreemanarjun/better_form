@@ -1,9 +1,9 @@
-name: better_form
+name: formix
 description: "An elite, type-safe, and ultra-reactive form engine for Flutter powered by Riverpod."
 version: 0.0.1
 homepage: https://www.shreeman.dev
-repository: https://github.com/Shreemanarjun/better_form
-issue_tracker: https://github.com/Shreemanarjun/better_form/issues
+repository: https://github.com/Shreemanarjun/formix
+issue_tracker: https://github.com/Shreemanarjun/formix/issues
 topics:
   - form
   - validation

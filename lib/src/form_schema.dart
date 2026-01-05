@@ -29,7 +29,7 @@ abstract class FormFieldSchema<T> {
   });
 
   /// Unique identifier for the field
-  final BetterFormFieldID<T> id;
+  final FormixFieldID<T> id;
 
   /// Initial value for the field
   final T initialValue;
@@ -49,8 +49,8 @@ abstract class FormFieldSchema<T> {
   /// Custom widget builder
   final Widget Function(
     BuildContext context,
-    BetterFormController controller,
-    BetterFormField<T> field,
+    FormixController controller,
+    FormixField<T> field,
   )?
   builder;
 
@@ -73,11 +73,11 @@ abstract class FormFieldSchema<T> {
   final bool isVisible;
 
   /// Fields that this field depends on for visibility/validation
-  final List<BetterFormFieldID<dynamic>> dependencies;
+  final List<FormixFieldID<dynamic>> dependencies;
 
   /// Create the actual field definition
-  BetterFormField<T> toFieldDefinition() {
-    return BetterFormField<T>(
+  FormixField<T> toFieldDefinition() {
+    return FormixField<T>(
       id: id,
       initialValue: initialValue,
       validator: validator,
@@ -99,7 +99,7 @@ abstract class FormFieldSchema<T> {
   Future<List<String>> validate(
     T value,
     Map<String, dynamic> formState, {
-    BetterFormMessages messages = const DefaultBetterFormMessages(),
+    FormixMessages messages = const DefaultFormixMessages(),
   }) async {
     final errors = <String>[];
 
@@ -184,7 +184,7 @@ class TextFieldSchema extends FormFieldSchema<String> {
   Future<List<String>> validate(
     String value,
     Map<String, dynamic> formState, {
-    BetterFormMessages messages = const DefaultBetterFormMessages(),
+    FormixMessages messages = const DefaultFormixMessages(),
   }) async {
     final errors = await super.validate(value, formState, messages: messages);
 
@@ -233,7 +233,7 @@ class NumberFieldSchema extends FormFieldSchema<num> {
   Future<List<String>> validate(
     num value,
     Map<String, dynamic> formState, {
-    BetterFormMessages messages = const DefaultBetterFormMessages(),
+    FormixMessages messages = const DefaultFormixMessages(),
   }) async {
     final errors = await super.validate(value, formState, messages: messages);
 
@@ -295,7 +295,7 @@ class DateFieldSchema extends FormFieldSchema<DateTime> {
   Future<List<String>> validate(
     DateTime value,
     Map<String, dynamic> formState, {
-    BetterFormMessages messages = const DefaultBetterFormMessages(),
+    FormixMessages messages = const DefaultFormixMessages(),
   }) async {
     final errors = await super.validate(value, formState, messages: messages);
 
@@ -336,7 +336,7 @@ class SelectionFieldSchema<T> extends FormFieldSchema<T> {
   Future<List<String>> validate(
     T value,
     Map<String, dynamic> formState, {
-    BetterFormMessages messages = const DefaultBetterFormMessages(),
+    FormixMessages messages = const DefaultFormixMessages(),
   }) async {
     final errors = await super.validate(value, formState, messages: messages);
 
@@ -385,11 +385,11 @@ class FormSchema {
     this.resetButtonText = 'Reset',
     this.onSubmit,
     this.onValidate,
-    this.messages = const DefaultBetterFormMessages(),
+    this.messages = const DefaultFormixMessages(),
   });
 
   /// Translation messages for validation
-  final BetterFormMessages messages;
+  final FormixMessages messages;
 
   /// Name of the form
   final String? name;
@@ -413,7 +413,7 @@ class FormSchema {
   final Future<List<String>> Function(Map<String, dynamic> values)? onValidate;
 
   /// Get a field schema by ID
-  FormFieldSchema<T>? getField<T>(BetterFormFieldID<T> fieldId) {
+  FormFieldSchema<T>? getField<T>(FormixFieldID<T> fieldId) {
     try {
       return fields.firstWhere((field) => field.id == fieldId)
           as FormFieldSchema<T>;
@@ -432,10 +432,10 @@ class FormSchema {
   /// Validate the given values against the schema
   Future<FormValidationResult> validate(
     Map<String, dynamic> values, {
-    BetterFormMessages? customMessages,
+    FormixMessages? customMessages,
   }) async {
     final actualMessages = customMessages ?? messages;
-    final results = <BetterFormFieldID<dynamic>, List<String>>{};
+    final results = <FormixFieldID<dynamic>, List<String>>{};
 
     for (final field in fields) {
       final value = values[field.id.key];
@@ -496,7 +496,7 @@ class FormValidationResult {
   });
 
   final bool isValid;
-  final Map<BetterFormFieldID<dynamic>, List<String>> fieldErrors;
+  final Map<FormixFieldID<dynamic>, List<String>> fieldErrors;
   final List<String> customErrors;
 
   /// Get all error messages
@@ -510,7 +510,7 @@ class FormValidationResult {
   }
 
   /// Get errors for a specific field
-  List<String> getFieldErrors(BetterFormFieldID<dynamic> fieldId) {
+  List<String> getFieldErrors(FormixFieldID<dynamic> fieldId) {
     return fieldErrors[fieldId] ?? [];
   }
 }
@@ -546,7 +546,7 @@ class FormSubmissionResult {
 }
 
 /// Enhanced controller that works with form schemas
-class SchemaBasedFormController extends BetterFormController {
+class SchemaBasedFormController extends FormixController {
   SchemaBasedFormController({
     required this.schema,
     Map<String, dynamic> initialValue = const {},
@@ -611,8 +611,7 @@ class SchemaBasedFormController extends BetterFormController {
   bool get isFormDirty => isDirty;
 
   /// Check if a specific field is dirty
-  bool isFieldModified<T>(BetterFormFieldID<T> fieldId) =>
-      isFieldDirty(fieldId);
+  bool isFieldModified<T>(FormixFieldID<T> fieldId) => isFieldDirty(fieldId);
 
   static Map<String, dynamic> _buildInitialValue(
     FormSchema schema,

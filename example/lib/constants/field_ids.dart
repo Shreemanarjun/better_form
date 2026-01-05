@@ -1,10 +1,10 @@
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 
 // Field IDs for type safety
-final nameField = BetterFormFieldID<String>('name');
-final emailField = BetterFormFieldID<String>('email');
-final ageField = BetterFormFieldID<int>('age');
-final newsletterField = BetterFormFieldID<bool>('newsletter');
-final passwordField = BetterFormFieldID<String>('password');
-final confirmPasswordField = BetterFormFieldID<String>('confirmPassword');
-final dobField = BetterFormFieldID<DateTime>('dob');
+final nameField = FormixFieldID<String>('name');
+final emailField = FormixFieldID<String>('email');
+final ageField = FormixFieldID<int>('age');
+final newsletterField = FormixFieldID<bool>('newsletter');
+final passwordField = FormixFieldID<String>('password');
+final confirmPasswordField = FormixFieldID<String>('confirmPassword');
+final dobField = FormixFieldID<DateTime>('dob');

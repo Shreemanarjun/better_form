@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 
 // Test-specific helper for waiting (mimics async behavior)
 Future<void> pumpAsync(WidgetTester tester) async {
@@ -13,20 +13,20 @@ Future<void> pumpAsync(WidgetTester tester) async {
 
 void main() {
   group('Advanced Features', () {
-    testWidgets('BetterDependentField responds to dependency changes', (
+    testWidgets('FormixDependentField responds to dependency changes', (
       tester,
     ) async {
-      final visibilityField = BetterFormFieldID<bool>('visible');
+      final visibilityField = FormixFieldID<bool>('visible');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {'name': 'John', 'visible': false},
                 child: Column(
                   children: [
-                    BetterDependentField<bool>(
+                    FormixDependentField<bool>(
                       fieldId: visibilityField,
                       builder: (context, value) {
                         return value == true
@@ -58,7 +58,7 @@ void main() {
     });
 
     testWidgets('Async validation shows loading indicator', (tester) async {
-      final usernameField = BetterFormFieldID<String>('username');
+      final usernameField = FormixFieldID<String>('username');
 
       // Mock async validator
       Future<String?> asyncValidator(String? value) async {
@@ -72,9 +72,9 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 fields: [
-                  BetterFormFieldConfig<String>(
+                  FormixFieldConfig<String>(
                     id: usernameField,
                     label: 'Username',
                     initialValue: '',
@@ -115,7 +115,7 @@ void main() {
       // Use in-memory persistence
       final persistence = InMemoryFormPersistence();
       final formId = 'test_form';
-      final nameField = BetterFormFieldID<String>('name');
+      final nameField = FormixFieldID<String>('name');
 
       // Pre-save state
       await persistence.saveFormState(formId, {'name': 'Saved Name'});
@@ -124,13 +124,13 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 formId: formId,
                 persistence: persistence,
                 initialValue: const {'name': 'Initial'},
                 // We must register the field to populate it
                 fields: [
-                  BetterFormFieldConfig<String>(
+                  FormixFieldConfig<String>(
                     id: nameField,
                     initialValue: 'Initial',
                   ),

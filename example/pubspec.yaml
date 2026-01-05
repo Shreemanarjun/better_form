@@ -9,7 +9,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  better_form:
+  formix:
     path: ../
   flutter_riverpod: ^2.5.1
 

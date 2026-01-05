@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart' hide FormState;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() {
   group('FormArray Logic', () {
     test('addArrayItem adds item to list', () {
       final controller = RiverpodFormController();
-      final arrayId = BetterFormArrayID<String>('tags');
+      final arrayId = FormixArrayID<String>('tags');
 
       controller.addArrayItem(arrayId, 'tag1');
       expect(controller.getValue(arrayId), ['tag1']);
@@ -22,7 +22,7 @@ void main() {
 
     test('removeArrayItemAt removes correct item', () {
       final controller = RiverpodFormController();
-      final arrayId = BetterFormArrayID<String>('tags');
+      final arrayId = FormixArrayID<String>('tags');
 
       controller.setValue(arrayId, ['tag1', 'tag2', 'tag3']);
 
@@ -32,7 +32,7 @@ void main() {
 
     test('replaceArrayItem replaces item at index', () {
       final controller = RiverpodFormController();
-      final arrayId = BetterFormArrayID<String>('tags');
+      final arrayId = FormixArrayID<String>('tags');
 
       controller.setValue(arrayId, ['tag1', 'tag2']);
 
@@ -42,7 +42,7 @@ void main() {
 
     test('moveArrayItem reorders items', () {
       final controller = RiverpodFormController();
-      final arrayId = BetterFormArrayID<String>('tags');
+      final arrayId = FormixArrayID<String>('tags');
 
       controller.setValue(arrayId, ['tag1', 'tag2', 'tag3']);
 
@@ -51,19 +51,19 @@ void main() {
     });
   });
 
-  group('BetterFormArray Widget', () {
+  group('FormixArray Widget', () {
     testWidgets('renders items and handles adding/removing', (tester) async {
-      final arrayId = BetterFormArrayID<String>('hobbies');
+      final arrayId = FormixArrayID<String>('hobbies');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
-            home: BetterForm(
+            home: Formix(
               initialValue: const {
                 'hobbies': ['A', 'B'],
               },
               child: Scaffold(
-                body: BetterFormArray<String>(
+                body: FormixArray<String>(
                   id: arrayId,
                   itemBuilder: (context, index, itemId, scope) {
                     return ListTile(
@@ -76,7 +76,7 @@ void main() {
                     );
                   },
                 ),
-                floatingActionButton: BetterFormBuilder(
+                floatingActionButton: FormixBuilder(
                   builder: (context, scope) => FloatingActionButton(
                     onPressed: () => scope.addArrayItem(arrayId, 'C'),
                     child: const Icon(Icons.add),

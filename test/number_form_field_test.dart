@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart' hide FormState;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 
 void main() {
   group('RiverpodNumberFormField', () {
-    late BetterFormFieldID<num> numField;
-    late BetterFormFieldID<int> intField;
-    late BetterFormFieldID<double> doubleField;
+    late FormixFieldID<num> numField;
+    late FormixFieldID<int> intField;
+    late FormixFieldID<double> doubleField;
 
     setUp(() {
-      numField = BetterFormFieldID<num>('num_field');
-      intField = BetterFormFieldID<int>('int_field');
-      doubleField = BetterFormFieldID<double>('double_field');
+      numField = FormixFieldID<num>('num_field');
+      intField = FormixFieldID<int>('int_field');
+      doubleField = FormixFieldID<double>('double_field');
     });
 
     testWidgets('renders with initial numeric value', (tester) async {
@@ -20,11 +20,9 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {'num_field': 42.5},
-                fields: [
-                  BetterFormFieldConfig(id: numField, initialValue: 42.5),
-                ],
+                fields: [FormixFieldConfig(id: numField, initialValue: 42.5)],
                 child: RiverpodNumberFormField(
                   fieldId: numField,
                   decoration: const InputDecoration(labelText: 'Number'),
@@ -45,9 +43,9 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {'int_field': 42},
-                fields: [BetterFormFieldConfig(id: intField, initialValue: 42)],
+                fields: [FormixFieldConfig(id: intField, initialValue: 42)],
                 child: RiverpodNumberFormField(fieldId: intField),
               ),
             ),
@@ -63,10 +61,10 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {'double_field': 42.7},
                 fields: [
-                  BetterFormFieldConfig(id: doubleField, initialValue: 42.7),
+                  FormixFieldConfig(id: doubleField, initialValue: 42.7),
                 ],
                 child: RiverpodNumberFormField(fieldId: doubleField),
               ),
@@ -83,9 +81,9 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {'num_field': 0},
-                fields: [BetterFormFieldConfig(id: numField, initialValue: 0)],
+                fields: [FormixFieldConfig(id: numField, initialValue: 0)],
                 child: RiverpodNumberFormField(fieldId: numField),
               ),
             ),
@@ -99,14 +97,11 @@ void main() {
       expect(find.text('123'), findsOneWidget);
 
       // Check that the controller has the updated value
-      final provider = BetterForm.of(
-        tester.element(find.byType(TextFormField)),
-      )!;
+      final provider = Formix.of(tester.element(find.byType(TextFormField)))!;
       final container = ProviderScope.containerOf(
         tester.element(find.byType(TextFormField)),
       );
-      final controller =
-          container.read(provider.notifier) as BetterFormController;
+      final controller = container.read(provider.notifier) as FormixController;
       expect(controller.getValue(numField), 123);
     });
 
@@ -115,11 +110,9 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {'num_field': 0.0}, // Start with double
-                fields: [
-                  BetterFormFieldConfig(id: numField, initialValue: 0.0),
-                ],
+                fields: [FormixFieldConfig(id: numField, initialValue: 0.0)],
                 child: RiverpodNumberFormField(fieldId: numField),
               ),
             ),
@@ -132,14 +125,11 @@ void main() {
 
       expect(find.text('123.45'), findsOneWidget);
 
-      final provider = BetterForm.of(
-        tester.element(find.byType(TextFormField)),
-      )!;
+      final provider = Formix.of(tester.element(find.byType(TextFormField)))!;
       final container = ProviderScope.containerOf(
         tester.element(find.byType(TextFormField)),
       );
-      final controller =
-          container.read(provider.notifier) as BetterFormController;
+      final controller = container.read(provider.notifier) as FormixController;
       expect(controller.getValue(numField), 123.45);
     });
 
@@ -148,9 +138,9 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {'num_field': 50},
-                fields: [BetterFormFieldConfig(id: numField, initialValue: 50)],
+                fields: [FormixFieldConfig(id: numField, initialValue: 50)],
                 child: RiverpodNumberFormField(fieldId: numField, min: 10),
               ),
             ),
@@ -166,14 +156,11 @@ void main() {
       expect(find.text('5'), findsOneWidget);
 
       // But the controller value should remain unchanged
-      final provider = BetterForm.of(
-        tester.element(find.byType(TextFormField)),
-      )!;
+      final provider = Formix.of(tester.element(find.byType(TextFormField)))!;
       final container = ProviderScope.containerOf(
         tester.element(find.byType(TextFormField)),
       );
-      final controller =
-          container.read(provider.notifier) as BetterFormController;
+      final controller = container.read(provider.notifier) as FormixController;
       expect(controller.getValue(numField), 50); // Should still be 50
     });
 
@@ -182,9 +169,9 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {'num_field': 50},
-                fields: [BetterFormFieldConfig(id: numField, initialValue: 50)],
+                fields: [FormixFieldConfig(id: numField, initialValue: 50)],
                 child: RiverpodNumberFormField(fieldId: numField, max: 100),
               ),
             ),
@@ -200,14 +187,11 @@ void main() {
       expect(find.text('150'), findsOneWidget);
 
       // But the controller value should remain unchanged
-      final provider = BetterForm.of(
-        tester.element(find.byType(TextFormField)),
-      )!;
+      final provider = Formix.of(tester.element(find.byType(TextFormField)))!;
       final container = ProviderScope.containerOf(
         tester.element(find.byType(TextFormField)),
       );
-      final controller =
-          container.read(provider.notifier) as BetterFormController;
+      final controller = container.read(provider.notifier) as FormixController;
       expect(controller.getValue(numField), 50);
     });
 
@@ -216,9 +200,9 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {'num_field': 42},
-                fields: [BetterFormFieldConfig(id: numField, initialValue: 42)],
+                fields: [FormixFieldConfig(id: numField, initialValue: 42)],
                 child: RiverpodNumberFormField(fieldId: numField),
               ),
             ),
@@ -231,14 +215,11 @@ void main() {
       await tester.pump();
 
       // Should use the current value as default (42.0)
-      final provider = BetterForm.of(
-        tester.element(find.byType(TextFormField)),
-      )!;
+      final provider = Formix.of(tester.element(find.byType(TextFormField)))!;
       final container = ProviderScope.containerOf(
         tester.element(find.byType(TextFormField)),
       );
-      final controller =
-          container.read(provider.notifier) as BetterFormController;
+      final controller = container.read(provider.notifier) as FormixController;
       expect(controller.getValue(numField), 42.0);
     });
 
@@ -247,9 +228,9 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {'num_field': 42},
-                fields: [BetterFormFieldConfig(id: numField, initialValue: 42)],
+                fields: [FormixFieldConfig(id: numField, initialValue: 42)],
                 child: RiverpodNumberFormField(fieldId: numField),
               ),
             ),
@@ -265,14 +246,11 @@ void main() {
       expect(find.text('not-a-number'), findsOneWidget);
 
       // Controller value should remain unchanged
-      final provider = BetterForm.of(
-        tester.element(find.byType(TextFormField)),
-      )!;
+      final provider = Formix.of(tester.element(find.byType(TextFormField)))!;
       final container = ProviderScope.containerOf(
         tester.element(find.byType(TextFormField)),
       );
-      final controller =
-          container.read(provider.notifier) as BetterFormController;
+      final controller = container.read(provider.notifier) as FormixController;
       expect(controller.getValue(numField), 42);
     });
 
@@ -281,9 +259,9 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {'num_field': 42},
-                fields: [BetterFormFieldConfig(id: numField, initialValue: 42)],
+                fields: [FormixFieldConfig(id: numField, initialValue: 42)],
                 child: RiverpodNumberFormField(fieldId: numField),
               ),
             ),
@@ -294,14 +272,11 @@ void main() {
       expect(find.text('42'), findsOneWidget);
 
       // Change value externally
-      final provider = BetterForm.of(
-        tester.element(find.byType(TextFormField)),
-      )!;
+      final provider = Formix.of(tester.element(find.byType(TextFormField)))!;
       final container = ProviderScope.containerOf(
         tester.element(find.byType(TextFormField)),
       );
-      final controller =
-          container.read(provider.notifier) as BetterFormController;
+      final controller = container.read(provider.notifier) as FormixController;
       controller.setValue(numField, 99);
       await tester.pump();
 
@@ -313,9 +288,9 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 fields: [
-                  BetterFormFieldConfig(
+                  FormixFieldConfig(
                     id: numField,
                     validator: (value) =>
                         (value ?? 0) < 10 ? 'Must be at least 10' : null,
@@ -342,9 +317,9 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 fields: [
-                  BetterFormFieldConfig(
+                  FormixFieldConfig(
                     id: numField,
                     asyncValidator: (value) async {
                       await Future.delayed(const Duration(milliseconds: 100));
@@ -371,9 +346,9 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {'num_field': 42},
-                fields: [BetterFormFieldConfig(id: numField, initialValue: 42)],
+                fields: [FormixFieldConfig(id: numField, initialValue: 42)],
                 child: RiverpodNumberFormField(fieldId: numField),
               ),
             ),
@@ -396,9 +371,9 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {'num_field': 42},
-                fields: [BetterFormFieldConfig(id: numField, initialValue: 42)],
+                fields: [FormixFieldConfig(id: numField, initialValue: 42)],
                 child: RiverpodNumberFormField(fieldId: numField),
               ),
             ),
@@ -418,7 +393,7 @@ void main() {
       final customProvider =
           StateNotifierProvider.autoDispose<
             RiverpodFormController,
-            BetterFormState
+            FormixState
           >((ref) {
             return RiverpodFormController(initialValue: {'num_field': 99});
           });
@@ -444,9 +419,9 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {'num_field': 42},
-                fields: [BetterFormFieldConfig(id: numField, initialValue: 42)],
+                fields: [FormixFieldConfig(id: numField, initialValue: 42)],
                 child: RiverpodNumberFormField(
                   fieldId: numField,
                   decoration: const InputDecoration(
@@ -471,9 +446,9 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {'int_field': 42},
-                fields: [BetterFormFieldConfig(id: intField, initialValue: 42)],
+                fields: [FormixFieldConfig(id: intField, initialValue: 42)],
                 child: RiverpodNumberFormField(fieldId: intField),
               ),
             ),
@@ -484,14 +459,11 @@ void main() {
       await tester.enterText(find.byType(TextFormField), '123.7');
       await tester.pump();
 
-      final provider = BetterForm.of(
-        tester.element(find.byType(TextFormField)),
-      )!;
+      final provider = Formix.of(tester.element(find.byType(TextFormField)))!;
       final container = ProviderScope.containerOf(
         tester.element(find.byType(TextFormField)),
       );
-      final controller =
-          container.read(provider.notifier) as BetterFormController;
+      final controller = container.read(provider.notifier) as FormixController;
       final value = controller.getValue(intField);
 
       expect(value, isA<int>());
@@ -503,10 +475,10 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {'double_field': 42.0},
                 fields: [
-                  BetterFormFieldConfig(id: doubleField, initialValue: 42.0),
+                  FormixFieldConfig(id: doubleField, initialValue: 42.0),
                 ],
                 child: RiverpodNumberFormField(fieldId: doubleField),
               ),
@@ -518,14 +490,11 @@ void main() {
       await tester.enterText(find.byType(TextFormField), '123');
       await tester.pump();
 
-      final provider = BetterForm.of(
-        tester.element(find.byType(TextFormField)),
-      )!;
+      final provider = Formix.of(tester.element(find.byType(TextFormField)))!;
       final container = ProviderScope.containerOf(
         tester.element(find.byType(TextFormField)),
       );
-      final controller =
-          container.read(provider.notifier) as BetterFormController;
+      final controller = container.read(provider.notifier) as FormixController;
       final value = controller.getValue(doubleField);
 
       expect(value, isA<double>());
@@ -537,8 +506,8 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
-                fields: [BetterFormFieldConfig(id: numField)],
+              body: Formix(
+                fields: [FormixFieldConfig(id: numField)],
                 child: RiverpodNumberFormField(fieldId: numField),
               ),
             ),
@@ -549,14 +518,11 @@ void main() {
       // Should display empty text
       expect(find.text(''), findsOneWidget);
 
-      final provider = BetterForm.of(
-        tester.element(find.byType(TextFormField)),
-      )!;
+      final provider = Formix.of(tester.element(find.byType(TextFormField)))!;
       final container = ProviderScope.containerOf(
         tester.element(find.byType(TextFormField)),
       );
-      final controller =
-          container.read(provider.notifier) as BetterFormController;
+      final controller = container.read(provider.notifier) as FormixController;
       expect(controller.getValue(numField), isNull);
     });
 
@@ -565,9 +531,9 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {'num_field': 42},
-                fields: [BetterFormFieldConfig(id: numField, initialValue: 42)],
+                fields: [FormixFieldConfig(id: numField, initialValue: 42)],
                 child: RiverpodNumberFormField(fieldId: numField),
               ),
             ),

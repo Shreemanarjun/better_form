@@ -8,32 +8,32 @@ import 'field_id.dart';
 import 'validation.dart';
 import 'form_state.dart';
 import 'field_config.dart';
-import 'better_form_controller.dart';
+import 'formix_controller.dart';
 import '../i18n.dart';
 import '../enums.dart';
 import '../persistence/form_persistence.dart';
 
 export 'form_state.dart';
 export 'field_config.dart';
-export 'better_form_controller.dart';
+export 'formix_controller.dart';
 
 /// Core logic for managing form state using Riverpod.
 ///
 /// This controller handles field registration, value updates, sync/async validation,
 /// cross-field dependencies, and state persistence.
-class RiverpodFormController extends StateNotifier<BetterFormState> {
+class RiverpodFormController extends StateNotifier<FormixState> {
   /// Internationalization messages for validation errors
-  final BetterFormMessages messages;
+  final FormixMessages messages;
   @protected
   final Map<String, dynamic> initialValueMap = {};
   final Map<String, Timer> _debouncers = {};
   Timer? _submitDebounceTimer;
   DateTime? _lastSubmitTime;
-  final Map<String, BetterFormField<dynamic>> _fieldDefinitions = {};
+  final Map<String, FormixField<dynamic>> _fieldDefinitions = {};
 
-  static BetterFormState _createInitialState(
+  static FormixState _createInitialState(
     Map<String, dynamic> initialValues,
-    List<BetterFormField> fields,
+    List<FormixField> fields,
   ) {
     final values = Map<String, dynamic>.from(initialValues);
     final validations = <String, ValidationResult>{};
@@ -52,7 +52,7 @@ class RiverpodFormController extends StateNotifier<BetterFormState> {
       final mode = field.validationMode;
       final validator = field.wrappedValidator;
 
-      if (mode == BetterAutovalidateMode.always &&
+      if (mode == FormixAutovalidateMode.always &&
           validator != null &&
           val != null) {
         try {
@@ -71,7 +71,7 @@ class RiverpodFormController extends StateNotifier<BetterFormState> {
       }
     }
 
-    return BetterFormState(
+    return FormixState(
       values: values,
       validations: validations,
       dirtyStates: dirtyStates,
@@ -80,7 +80,7 @@ class RiverpodFormController extends StateNotifier<BetterFormState> {
   }
 
   /// The persistence handler for this form
-  final BetterFormPersistence? persistence;
+  final FormixPersistence? persistence;
 
   /// Unique identifier for this form (required for persistence)
   final String? formId;
@@ -93,16 +93,16 @@ class RiverpodFormController extends StateNotifier<BetterFormState> {
   /// [persistence] and [formId] enable state restoration across app restarts.
   RiverpodFormController({
     Map<String, dynamic> initialValue = const {},
-    List<BetterFormField<dynamic>> fields = const [],
-    this.messages = const DefaultBetterFormMessages(),
+    List<FormixField<dynamic>> fields = const [],
+    this.messages = const DefaultFormixMessages(),
     this.persistence,
     this.formId,
   }) : super(_createInitialState(initialValue, fields)) {
     initialValueMap.addAll(initialValue);
     for (final field in fields) {
       final key = field.id.key;
-      _fieldDefinitions[key] = BetterFormField<dynamic>(
-        id: BetterFormFieldID<dynamic>(key),
+      _fieldDefinitions[key] = FormixField<dynamic>(
+        id: FormixFieldID<dynamic>(key),
         initialValue: field.initialValue,
         validator: field.wrappedValidator,
         label: field.label,
@@ -123,14 +123,14 @@ class RiverpodFormController extends StateNotifier<BetterFormState> {
   // --- Array Manipulation ---
 
   /// Adds an item to a form array
-  void addArrayItem<T>(BetterFormArrayID<T> id, T item) {
+  void addArrayItem<T>(FormixArrayID<T> id, T item) {
     final currentList = getValue(id) ?? [];
     final newList = List<T>.from(currentList)..add(item);
     setValue(id, newList);
   }
 
   /// Removes an item at a specific index from a form array
-  void removeArrayItemAt<T>(BetterFormArrayID<T> id, int index) {
+  void removeArrayItemAt<T>(FormixArrayID<T> id, int index) {
     final currentList = getValue(id);
     if (currentList == null || index < 0 || index >= currentList.length) return;
 
@@ -139,7 +139,7 @@ class RiverpodFormController extends StateNotifier<BetterFormState> {
   }
 
   /// Replaces an item at a specific index in a form array
-  void replaceArrayItem<T>(BetterFormArrayID<T> id, int index, T item) {
+  void replaceArrayItem<T>(FormixArrayID<T> id, int index, T item) {
     final currentList = getValue(id);
     if (currentList == null || index < 0 || index >= currentList.length) return;
 
@@ -151,7 +151,7 @@ class RiverpodFormController extends StateNotifier<BetterFormState> {
   /// Reorders items in a form array.
   ///
   /// Moves the item at [oldIndex] to [newIndex].
-  void moveArrayItem<T>(BetterFormArrayID<T> id, int oldIndex, int newIndex) {
+  void moveArrayItem<T>(FormixArrayID<T> id, int oldIndex, int newIndex) {
     final currentList = getValue(id);
     if (currentList == null ||
         oldIndex < 0 ||
@@ -168,7 +168,7 @@ class RiverpodFormController extends StateNotifier<BetterFormState> {
   }
 
   /// Clears all items from a form array
-  void clearArray<T>(BetterFormArrayID<T> id) {
+  void clearArray<T>(FormixArrayID<T> id) {
     setValue(id, <T>[]);
   }
 
@@ -180,7 +180,7 @@ class RiverpodFormController extends StateNotifier<BetterFormState> {
   }
 
   /// Get the current state of the form.
-  BetterFormState get currentState => state;
+  FormixState get currentState => state;
 
   Future<void> _loadPersistedState() async {
     if (persistence != null && formId != null) {
@@ -233,7 +233,7 @@ class RiverpodFormController extends StateNotifier<BetterFormState> {
 
   /// Check if a field is registered
   /// Returns true if a field with [fieldId] is currently registered.
-  bool isFieldRegistered<T>(BetterFormFieldID<T> fieldId) {
+  bool isFieldRegistered<T>(FormixFieldID<T> fieldId) {
     return _fieldDefinitions.containsKey(fieldId.key);
   }
 
@@ -246,12 +246,12 @@ class RiverpodFormController extends StateNotifier<BetterFormState> {
   }
 
   /// Get field value with type safety
-  T? getValue<T>(BetterFormFieldID<T> fieldId) {
+  T? getValue<T>(FormixFieldID<T> fieldId) {
     return state.getValue(fieldId);
   }
 
   /// Set field value with type safety and validation
-  void setValue<T>(BetterFormFieldID<T> fieldId, T value) {
+  void setValue<T>(FormixFieldID<T> fieldId, T value) {
     // Type check
     final expectedInitialValue = initialValueMap[fieldId.key];
     if (expectedInitialValue != null &&
@@ -288,9 +288,9 @@ class RiverpodFormController extends StateNotifier<BetterFormState> {
 
     // 2. Determine fields to validate (self + dependents)
     final fieldsToValidate = <String>{};
-    final mode = fieldDef?.validationMode ?? BetterAutovalidateMode.always;
-    if (mode == BetterAutovalidateMode.always ||
-        (mode == BetterAutovalidateMode.onUserInteraction && isDirty)) {
+    final mode = fieldDef?.validationMode ?? FormixAutovalidateMode.always;
+    if (mode == FormixAutovalidateMode.always ||
+        (mode == FormixAutovalidateMode.onUserInteraction && isDirty)) {
       fieldsToValidate.add(fieldId.key);
     }
 
@@ -299,8 +299,8 @@ class RiverpodFormController extends StateNotifier<BetterFormState> {
       final depDef = _fieldDefinitions[depKey];
       if (depDef != null) {
         final depMode = depDef.validationMode;
-        if (depMode == BetterAutovalidateMode.always ||
-            depMode == BetterAutovalidateMode.onUserInteraction) {
+        if (depMode == FormixAutovalidateMode.always ||
+            depMode == FormixAutovalidateMode.onUserInteraction) {
           fieldsToValidate.add(depKey);
         }
       }
@@ -366,8 +366,8 @@ class RiverpodFormController extends StateNotifier<BetterFormState> {
     final crossValidator = fieldDef.crossFieldValidator;
     if (crossValidator != null) {
       try {
-        // We create a temporary BetterFormState for the cross validator to see the NEW values
-        final tempState = BetterFormState(
+        // We create a temporary FormixState for the cross validator to see the NEW values
+        final tempState = FormixState(
           values: currentValues,
           validations: state.validations,
           dirtyStates: state.dirtyStates,
@@ -449,7 +449,7 @@ class RiverpodFormController extends StateNotifier<BetterFormState> {
   }
 
   /// Register multiple fields at once
-  void registerFields(List<BetterFormField> fields) {
+  void registerFields(List<FormixField> fields) {
     if (fields.isEmpty) return;
 
     final newValues = Map<String, dynamic>.from(state.values);
@@ -462,8 +462,8 @@ class RiverpodFormController extends StateNotifier<BetterFormState> {
     for (final field in fields) {
       final key = field.id.key;
 
-      _fieldDefinitions[key] = BetterFormField<dynamic>(
-        id: BetterFormFieldID<dynamic>(field.id.key),
+      _fieldDefinitions[key] = FormixField<dynamic>(
+        id: FormixFieldID<dynamic>(field.id.key),
         initialValue: field.initialValue,
         validator: field.wrappedValidator,
         label: field.label,
@@ -525,11 +525,11 @@ class RiverpodFormController extends StateNotifier<BetterFormState> {
   }
 
   /// Register a field
-  void registerField<T>(BetterFormField<T> field) {
+  void registerField<T>(FormixField<T> field) {
     final key = field.id.key;
 
-    _fieldDefinitions[key] = BetterFormField<dynamic>(
-      id: BetterFormFieldID<dynamic>(field.id.key),
+    _fieldDefinitions[key] = FormixField<dynamic>(
+      id: FormixFieldID<dynamic>(field.id.key),
       initialValue: field.initialValue,
       validator: field.wrappedValidator,
       label: field.label,
@@ -599,7 +599,7 @@ class RiverpodFormController extends StateNotifier<BetterFormState> {
   }
 
   /// Unregister multiple fields at once
-  void unregisterFields(List<BetterFormFieldID> fieldIds) {
+  void unregisterFields(List<FormixFieldID> fieldIds) {
     if (fieldIds.isEmpty) return;
 
     final newValues = Map<String, dynamic>.from(state.values);
@@ -631,7 +631,7 @@ class RiverpodFormController extends StateNotifier<BetterFormState> {
   }
 
   /// Unregister a field
-  void unregisterField<T>(BetterFormFieldID<T> fieldId) {
+  void unregisterField<T>(FormixFieldID<T> fieldId) {
     final key = fieldId.key;
     _fieldDefinitions.remove(key);
 
@@ -712,7 +712,7 @@ class RiverpodFormController extends StateNotifier<BetterFormState> {
 
   /// Reset specific fields
   void resetFields(
-    List<BetterFormFieldID> fieldIds, {
+    List<FormixFieldID> fieldIds, {
     ResetStrategy strategy = ResetStrategy.initialValues,
   }) {
     final newValues = Map<String, dynamic>.from(state.values);
@@ -774,22 +774,22 @@ class RiverpodFormController extends StateNotifier<BetterFormState> {
   }
 
   /// Get validation result for field
-  ValidationResult getValidation<T>(BetterFormFieldID<T> fieldId) {
+  ValidationResult getValidation<T>(FormixFieldID<T> fieldId) {
     return state.getValidation(fieldId);
   }
 
   /// Check if field is dirty
-  bool isFieldDirty<T>(BetterFormFieldID<T> fieldId) {
+  bool isFieldDirty<T>(FormixFieldID<T> fieldId) {
     return state.isFieldDirty(fieldId);
   }
 
   /// Check if field is touched
-  bool isFieldTouched<T>(BetterFormFieldID<T> fieldId) {
+  bool isFieldTouched<T>(FormixFieldID<T> fieldId) {
     return state.isFieldTouched(fieldId);
   }
 
   /// Mark field as touched. Triggers validation if mode is onBlur.
-  void markAsTouched<T>(BetterFormFieldID<T> fieldId) {
+  void markAsTouched<T>(FormixFieldID<T> fieldId) {
     if (state.touchedStates[fieldId.key] == true) return;
 
     final key = fieldId.key;
@@ -797,7 +797,7 @@ class RiverpodFormController extends StateNotifier<BetterFormState> {
     newTouchedStates[key] = true;
 
     final fieldDef = _fieldDefinitions[key];
-    if (fieldDef?.validationMode == BetterAutovalidateMode.onBlur) {
+    if (fieldDef?.validationMode == FormixAutovalidateMode.onBlur) {
       final newValids = Map<String, ValidationResult>.from(state.validations);
       final value = state.values[key];
       newValids[key] = _performSyncValidation(key, value, state.values);
@@ -868,7 +868,7 @@ class RiverpodFormController extends StateNotifier<BetterFormState> {
       setSubmitting(true);
 
       Map<String, dynamic>? previousInitialValues;
-      BetterFormState? previousState;
+      FormixState? previousState;
 
       if (optimistic) {
         previousInitialValues = Map.from(initialValueMap);
@@ -906,7 +906,7 @@ class RiverpodFormController extends StateNotifier<BetterFormState> {
     state = state.copyWith(isSubmitting: submitting);
   }
 
-  dynamic _getDefaultEmptyValue(BetterFormField<dynamic> field) {
+  dynamic _getDefaultEmptyValue(FormixField<dynamic> field) {
     final initialValue = field.initialValue;
     if (initialValue is String) return '';
     if (initialValue is num) return 0;
@@ -917,15 +917,15 @@ class RiverpodFormController extends StateNotifier<BetterFormState> {
   }
 }
 
-/// Provider for form messages
-final betterFormMessagesProvider = Provider<BetterFormMessages>((ref) {
-  return const DefaultBetterFormMessages();
-});
+/// Provider for formix messages
+final formixMessagesProvider = Provider.autoDispose<FormixMessages>((ref) {
+  return const DefaultFormixMessages();
+}, name: 'formixMessagesProvider');
 
 /// Parameter for form controller provider family
 @immutable
-class BetterFormParameter {
-  const BetterFormParameter({
+class FormixParameter {
+  const FormixParameter({
     this.initialValue = const {},
     this.fields = const [],
     this.persistence,
@@ -933,14 +933,14 @@ class BetterFormParameter {
   });
 
   final Map<String, dynamic> initialValue;
-  final List<BetterFormFieldConfig> fields;
-  final BetterFormPersistence? persistence;
+  final List<FormixFieldConfig> fields;
+  final FormixPersistence? persistence;
   final String? formId;
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is BetterFormParameter &&
+      other is FormixParameter &&
           const MapEquality().equals(initialValue, other.initialValue) &&
           const ListEquality().equals(fields, other.fields) &&
           persistence == other.persistence &&
@@ -956,141 +956,179 @@ class BetterFormParameter {
 
 /// Provider for form controller with auto-disposal
 final formControllerProvider = StateNotifierProvider.autoDispose
-    .family<RiverpodFormController, BetterFormState, BetterFormParameter>((
-      ref,
-      param,
-    ) {
-      final messages = ref.watch(betterFormMessagesProvider);
-      return BetterFormController(
+    .family<RiverpodFormController, FormixState, FormixParameter>((ref, param) {
+      final messages = ref.watch(formixMessagesProvider);
+      return FormixController(
         initialValue: param.initialValue,
         fields: param.fields.map((f) => f.toField()).toList(),
         messages: messages,
         persistence: param.persistence,
         formId: param.formId,
       );
-    });
+    }, name: 'formControllerProvider');
 
 /// Provider for the current controller provider (can be overridden)
 final currentControllerProvider =
-    Provider<
-      AutoDisposeStateNotifierProvider<RiverpodFormController, BetterFormState>
+    Provider.autoDispose<
+      AutoDisposeStateNotifierProvider<RiverpodFormController, FormixState>
     >((ref) {
-      return formControllerProvider(
-        const BetterFormParameter(initialValue: {}),
-      );
-    });
+      return formControllerProvider(const FormixParameter(initialValue: {}));
+    }, name: 'currentControllerProvider');
 
 /// Provider for field value with selector for performance
-final fieldValueProvider = Provider.family<dynamic, BetterFormFieldID<dynamic>>(
-  (ref, fieldId) {
-    final controllerProvider = ref.watch(currentControllerProvider);
-    return ref.watch(
-      controllerProvider.select((formState) => formState.getValue(fieldId)),
+final fieldValueProvider = Provider.autoDispose
+    .family<dynamic, FormixFieldID<dynamic>>(
+      (ref, fieldId) {
+        final controllerProvider = ref.watch(currentControllerProvider);
+        return ref.watch(
+          controllerProvider.select((formState) => formState.getValue(fieldId)),
+        );
+      },
+      dependencies: [currentControllerProvider],
+      name: 'fieldValueProvider',
     );
-  },
-  dependencies: [currentControllerProvider],
-);
 
 /// Provider for field validation with selector for performance
-final fieldValidationProvider =
-    Provider.family<ValidationResult, BetterFormFieldID<dynamic>>((
-      ref,
-      fieldId,
-    ) {
-      final controllerProvider = ref.watch(currentControllerProvider);
-      return ref.watch(
-        controllerProvider.select(
-          (formState) => formState.getValidation(fieldId),
-        ),
-      );
-    }, dependencies: [currentControllerProvider]);
+final fieldValidationProvider = Provider.autoDispose
+    .family<ValidationResult, FormixFieldID<dynamic>>(
+      (ref, fieldId) {
+        final controllerProvider = ref.watch(currentControllerProvider);
+        return ref.watch(
+          controllerProvider.select(
+            (formState) => formState.getValidation(fieldId),
+          ),
+        );
+      },
+      dependencies: [currentControllerProvider],
+      name: 'fieldValidationProvider',
+    );
 
 /// Provider for field error message with selector for performance
-final fieldErrorProvider = Provider.family<String?, BetterFormFieldID<dynamic>>(
-  (ref, fieldId) {
+final fieldErrorProvider = Provider.autoDispose
+    .family<String?, FormixFieldID<dynamic>>(
+      (ref, fieldId) {
+        final controllerProvider = ref.watch(currentControllerProvider);
+        return ref.watch(
+          controllerProvider.select(
+            (formState) => formState.getValidation(fieldId).errorMessage,
+          ),
+        );
+      },
+      dependencies: [currentControllerProvider],
+      name: 'fieldErrorProvider',
+    );
+
+final groupValidProvider = Provider.autoDispose.family<bool, String>(
+  (ref, prefix) {
+    final controllerProvider = ref.watch(currentControllerProvider);
+    return ref.watch(controllerProvider.select((s) => s.isGroupValid(prefix)));
+  },
+  dependencies: [currentControllerProvider],
+  name: 'groupValidProvider',
+);
+
+/// Provider for watching if a field name group contains any modifications.
+final groupDirtyProvider = Provider.autoDispose.family<bool, String>(
+  (ref, prefix) {
+    final controllerProvider = ref.watch(currentControllerProvider);
+    return ref.watch(controllerProvider.select((s) => s.isGroupDirty(prefix)));
+  },
+  dependencies: [currentControllerProvider],
+  name: 'groupDirtyProvider',
+);
+
+/// Provider for field 'isValidating' state with selector for performance
+final fieldValidatingProvider = Provider.autoDispose
+    .family<bool, FormixFieldID<dynamic>>(
+      (ref, fieldId) {
+        final controllerProvider = ref.watch(currentControllerProvider);
+        return ref.watch(
+          controllerProvider.select(
+            (formState) => formState.getValidation(fieldId).isValidating,
+          ),
+        );
+      },
+      dependencies: [currentControllerProvider],
+      name: 'fieldValidatingProvider',
+    );
+
+/// Provider for field 'isValid' state with selector for performance
+final fieldIsValidProvider = Provider.autoDispose
+    .family<bool, FormixFieldID<dynamic>>(
+      (ref, fieldId) {
+        final controllerProvider = ref.watch(currentControllerProvider);
+        return ref.watch(
+          controllerProvider.select(
+            (formState) => formState.getValidation(fieldId).isValid,
+          ),
+        );
+      },
+      dependencies: [currentControllerProvider],
+      name: 'fieldIsValidProvider',
+    );
+
+/// Provider for field dirty state with selector for performance
+final fieldDirtyProvider = Provider.autoDispose
+    .family<bool, FormixFieldID<dynamic>>(
+      (ref, fieldId) {
+        final controllerProvider = ref.watch(currentControllerProvider);
+        return ref.watch(
+          controllerProvider.select(
+            (formState) => formState.isFieldDirty(fieldId),
+          ),
+        );
+      },
+      dependencies: [currentControllerProvider],
+      name: 'fieldDirtyProvider',
+    );
+
+/// Provider for field touched state with selector for performance
+final fieldTouchedProvider = Provider.autoDispose
+    .family<bool, FormixFieldID<dynamic>>(
+      (ref, fieldId) {
+        final controllerProvider = ref.watch(currentControllerProvider);
+        return ref.watch(
+          controllerProvider.select(
+            (formState) => formState.isFieldTouched(fieldId),
+          ),
+        );
+      },
+      dependencies: [currentControllerProvider],
+      name: 'fieldTouchedProvider',
+    );
+
+/// Provider for form validity with selector for performance
+final formValidProvider = Provider.autoDispose<bool>(
+  (ref) {
     final controllerProvider = ref.watch(currentControllerProvider);
     return ref.watch(
-      controllerProvider.select(
-        (formState) => formState.getValidation(fieldId).errorMessage,
-      ),
+      controllerProvider.select((formState) => formState.isValid),
     );
   },
   dependencies: [currentControllerProvider],
+  name: 'formValidProvider',
 );
 
-final groupValidProvider = Provider.family<bool, String>((ref, prefix) {
-  final controllerProvider = ref.watch(currentControllerProvider);
-  return ref.watch(controllerProvider.select((s) => s.isGroupValid(prefix)));
-}, dependencies: [currentControllerProvider]);
-
-/// Provider for watching if a field name group contains any modifications.
-final groupDirtyProvider = Provider.family<bool, String>((ref, prefix) {
-  final controllerProvider = ref.watch(currentControllerProvider);
-  return ref.watch(controllerProvider.select((s) => s.isGroupDirty(prefix)));
-}, dependencies: [currentControllerProvider]);
-
-/// Provider for field 'isValidating' state with selector for performance
-final fieldValidatingProvider =
-    Provider.family<bool, BetterFormFieldID<dynamic>>((ref, fieldId) {
-      final controllerProvider = ref.watch(currentControllerProvider);
-      return ref.watch(
-        controllerProvider.select(
-          (formState) => formState.getValidation(fieldId).isValidating,
-        ),
-      );
-    }, dependencies: [currentControllerProvider]);
-
-/// Provider for field 'isValid' state with selector for performance
-final fieldIsValidProvider = Provider.family<bool, BetterFormFieldID<dynamic>>((
-  ref,
-  fieldId,
-) {
-  final controllerProvider = ref.watch(currentControllerProvider);
-  return ref.watch(
-    controllerProvider.select(
-      (formState) => formState.getValidation(fieldId).isValid,
-    ),
-  );
-}, dependencies: [currentControllerProvider]);
-
-/// Provider for field dirty state with selector for performance
-final fieldDirtyProvider = Provider.family<bool, BetterFormFieldID<dynamic>>((
-  ref,
-  fieldId,
-) {
-  final controllerProvider = ref.watch(currentControllerProvider);
-  return ref.watch(
-    controllerProvider.select((formState) => formState.isFieldDirty(fieldId)),
-  );
-}, dependencies: [currentControllerProvider]);
-
-/// Provider for field touched state with selector for performance
-final fieldTouchedProvider = Provider.family<bool, BetterFormFieldID<dynamic>>((
-  ref,
-  fieldId,
-) {
-  final controllerProvider = ref.watch(currentControllerProvider);
-  return ref.watch(
-    controllerProvider.select((formState) => formState.isFieldTouched(fieldId)),
-  );
-}, dependencies: [currentControllerProvider]);
-
-/// Provider for form validity with selector for performance
-final formValidProvider = Provider<bool>((ref) {
-  final controllerProvider = ref.watch(currentControllerProvider);
-  return ref.watch(controllerProvider.select((formState) => formState.isValid));
-}, dependencies: [currentControllerProvider]);
-
 /// Provider for form dirty state with selector for performance
-final formDirtyProvider = Provider<bool>((ref) {
-  final controllerProvider = ref.watch(currentControllerProvider);
-  return ref.watch(controllerProvider.select((formState) => formState.isDirty));
-}, dependencies: [currentControllerProvider]);
+final formDirtyProvider = Provider.autoDispose<bool>(
+  (ref) {
+    final controllerProvider = ref.watch(currentControllerProvider);
+    return ref.watch(
+      controllerProvider.select((formState) => formState.isDirty),
+    );
+  },
+  dependencies: [currentControllerProvider],
+  name: 'formDirtyProvider',
+);
 
 /// Provider for form submitting state with selector for performance
-final formSubmittingProvider = Provider<bool>((ref) {
-  final controllerProvider = ref.watch(currentControllerProvider);
-  return ref.watch(
-    controllerProvider.select((formState) => formState.isSubmitting),
-  );
-}, dependencies: [currentControllerProvider]);
+final formSubmittingProvider = Provider.autoDispose<bool>(
+  (ref) {
+    final controllerProvider = ref.watch(currentControllerProvider);
+    return ref.watch(
+      controllerProvider.select((formState) => formState.isSubmitting),
+    );
+  },
+  dependencies: [currentControllerProvider],
+  name: 'formSubmittingProvider',
+);

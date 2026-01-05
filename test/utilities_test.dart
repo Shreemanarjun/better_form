@@ -1,12 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 
 void main() {
   group('Form Utilities', () {
-    late BetterFormController controller;
+    late FormixController controller;
 
     setUp(() {
-      controller = BetterFormController(
+      controller = FormixController(
         initialValue: {
           'name': 'John',
           'email': 'john@example.com',
@@ -17,30 +17,27 @@ void main() {
 
       // Register fields
       controller.registerField(
-        BetterFormField<String>(
-          id: BetterFormFieldID<String>('name'),
+        FormixField<String>(
+          id: FormixFieldID<String>('name'),
           initialValue: 'John',
         ),
       );
 
       controller.registerField(
-        BetterFormField<String>(
-          id: BetterFormFieldID<String>('email'),
+        FormixField<String>(
+          id: FormixFieldID<String>('email'),
           initialValue: 'john@example.com',
           validator: (value) => value.contains('@') ? null : 'Invalid email',
         ),
       );
 
       controller.registerField(
-        BetterFormField<num>(
-          id: BetterFormFieldID<num>('age'),
-          initialValue: 25,
-        ),
+        FormixField<num>(id: FormixFieldID<num>('age'), initialValue: 25),
       );
 
       controller.registerField(
-        BetterFormField<bool>(
-          id: BetterFormFieldID<bool>('active'),
+        FormixField<bool>(
+          id: FormixFieldID<bool>('active'),
           initialValue: true,
         ),
       );
@@ -58,8 +55,8 @@ void main() {
 
       test('should return only changed values when form is dirty', () {
         // Modify some fields
-        controller.setValue(BetterFormFieldID<String>('name'), 'Jane');
-        controller.setValue(BetterFormFieldID<num>('age'), 30);
+        controller.setValue(FormixFieldID<String>('name'), 'Jane');
+        controller.setValue(FormixFieldID<num>('age'), 30);
 
         final changedValues = controller.getChangedValues();
 
@@ -72,19 +69,19 @@ void main() {
 
       test('should detect when field changes back to initial value', () {
         // Modify field
-        controller.setValue(BetterFormFieldID<String>('name'), 'Jane');
+        controller.setValue(FormixFieldID<String>('name'), 'Jane');
         expect(controller.getChangedValues()['name'], 'Jane');
 
         // Change back to initial value
-        controller.setValue(BetterFormFieldID<String>('name'), 'John');
+        controller.setValue(FormixFieldID<String>('name'), 'John');
         final changedValues = controller.getChangedValues();
         expect(changedValues.containsKey('name'), false);
       });
 
       test('should handle different data types', () {
-        controller.setValue(BetterFormFieldID<String>('name'), 'Jane');
-        controller.setValue(BetterFormFieldID<num>('age'), 30);
-        controller.setValue(BetterFormFieldID<bool>('active'), false);
+        controller.setValue(FormixFieldID<String>('name'), 'Jane');
+        controller.setValue(FormixFieldID<num>('age'), 30);
+        controller.setValue(FormixFieldID<bool>('active'), false);
 
         final changedValues = controller.getChangedValues();
 
@@ -97,57 +94,54 @@ void main() {
     group('Reset Options', () {
       test('should reset to initial values by default', () {
         // Modify fields
-        controller.setValue(BetterFormFieldID<String>('name'), 'Jane');
-        controller.setValue(BetterFormFieldID<num>('age'), 30);
-        controller.setValue(BetterFormFieldID<bool>('active'), false);
+        controller.setValue(FormixFieldID<String>('name'), 'Jane');
+        controller.setValue(FormixFieldID<num>('age'), 30);
+        controller.setValue(FormixFieldID<bool>('active'), false);
 
         expect(controller.isDirty, true);
 
         // Reset to initial values
         controller.reset();
 
-        expect(controller.getValue(BetterFormFieldID<String>('name')), 'John');
-        expect(controller.getValue(BetterFormFieldID<num>('age')), 25);
-        expect(controller.getValue(BetterFormFieldID<bool>('active')), true);
+        expect(controller.getValue(FormixFieldID<String>('name')), 'John');
+        expect(controller.getValue(FormixFieldID<num>('age')), 25);
+        expect(controller.getValue(FormixFieldID<bool>('active')), true);
         expect(controller.isDirty, false);
       });
 
       test('should reset to initial values when explicitly specified', () {
         // Modify fields
-        controller.setValue(BetterFormFieldID<String>('name'), 'Jane');
+        controller.setValue(FormixFieldID<String>('name'), 'Jane');
 
         // Reset with explicit strategy
         controller.reset(strategy: ResetStrategy.initialValues);
 
-        expect(controller.getValue(BetterFormFieldID<String>('name')), 'John');
+        expect(controller.getValue(FormixFieldID<String>('name')), 'John');
         expect(controller.isDirty, false);
       });
 
       test('should clear all fields when using clear strategy', () {
         // Modify fields
-        controller.setValue(BetterFormFieldID<String>('name'), 'Jane');
-        controller.setValue(BetterFormFieldID<num>('age'), 30);
+        controller.setValue(FormixFieldID<String>('name'), 'Jane');
+        controller.setValue(FormixFieldID<num>('age'), 30);
 
         // Reset with clear strategy
         controller.reset(strategy: ResetStrategy.clear);
 
         // Fields should be cleared to their empty values
-        expect(controller.getValue(BetterFormFieldID<String>('name')), '');
-        expect(controller.getValue(BetterFormFieldID<num>('age')), 0);
-        expect(controller.getValue(BetterFormFieldID<bool>('active')), false);
+        expect(controller.getValue(FormixFieldID<String>('name')), '');
+        expect(controller.getValue(FormixFieldID<num>('age')), 0);
+        expect(controller.getValue(FormixFieldID<bool>('active')), false);
         expect(controller.isDirty, false);
       });
 
       test('should reset validation state when resetting', () {
         // Set invalid value
-        controller.setValue(
-          BetterFormFieldID<String>('email'),
-          'invalid-email',
-        );
+        controller.setValue(FormixFieldID<String>('email'), 'invalid-email');
 
         // Should be invalid
         expect(
-          controller.getValidation(BetterFormFieldID<String>('email')).isValid,
+          controller.getValidation(FormixFieldID<String>('email')).isValid,
           false,
         );
 
@@ -156,13 +150,13 @@ void main() {
 
         // Should be valid again (back to initial valid value)
         expect(
-          controller.getValidation(BetterFormFieldID<String>('email')).isValid,
+          controller.getValidation(FormixFieldID<String>('email')).isValid,
           true,
         );
       });
 
       test('should reset touched state when resetting', () {
-        final nameField = BetterFormFieldID<String>('name');
+        final nameField = FormixFieldID<String>('name');
 
         // Mark as touched
         controller.markAsTouched(nameField);
@@ -178,7 +172,7 @@ void main() {
 
     group('Dirty State Tracking', () {
       test('should track dirty state correctly', () {
-        final nameField = BetterFormFieldID<String>('name');
+        final nameField = FormixFieldID<String>('name');
 
         expect(controller.isFieldDirty(nameField), false);
         expect(controller.isDirty, false);
@@ -198,9 +192,9 @@ void main() {
 
       test('should handle null vs non-null changes', () {
         // Add a field that can be null
-        final optionalField = BetterFormFieldID<String?>('optional');
+        final optionalField = FormixFieldID<String?>('optional');
         controller.registerField(
-          BetterFormField<String?>(id: optionalField, initialValue: null),
+          FormixField<String?>(id: optionalField, initialValue: null),
         );
 
         expect(controller.isFieldDirty(optionalField), false);

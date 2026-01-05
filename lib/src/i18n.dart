@@ -1,9 +1,9 @@
 // No imports needed for this file as of now.
 
-/// Interface for all validation messages used in the better_form library.
+/// Interface for all validation messages used in the formix library.
 /// Developers can implement this class to provide translations.
-abstract class BetterFormMessages {
-  const BetterFormMessages();
+abstract class FormixMessages {
+  const FormixMessages();
 
   /// Default error message for required fields
   String required(String label);
@@ -39,9 +39,9 @@ abstract class BetterFormMessages {
   String validating();
 }
 
-/// Default implementation of [BetterFormMessages] in English.
-class DefaultBetterFormMessages extends BetterFormMessages {
-  const DefaultBetterFormMessages();
+/// Default implementation of [FormixMessages] in English.
+class DefaultFormixMessages extends FormixMessages {
+  const DefaultFormixMessages();
 
   @override
   String required(String label) => '$label is required';

@@ -4,8 +4,8 @@ import '../enums.dart';
 import 'form_state.dart';
 
 /// Configuration for a form field
-class BetterFormFieldConfig<T> {
-  const BetterFormFieldConfig({
+class FormixFieldConfig<T> {
+  const FormixFieldConfig({
     required this.id,
     this.initialValue,
     this.validator,
@@ -15,11 +15,11 @@ class BetterFormFieldConfig<T> {
     this.hint,
     this.asyncValidator,
     this.debounceDuration,
-    this.validationMode = BetterAutovalidateMode.always,
+    this.validationMode = FormixAutovalidateMode.always,
   });
 
   /// Unique identifier for this field
-  final BetterFormFieldID<T> id;
+  final FormixFieldID<T> id;
 
   /// Initial value of the field
   final T? initialValue;
@@ -28,10 +28,10 @@ class BetterFormFieldConfig<T> {
   final String? Function(T value)? validator;
 
   /// Cross-field validator that can access the entire form state
-  final String? Function(T value, BetterFormState state)? crossFieldValidator;
+  final String? Function(T value, FormixState state)? crossFieldValidator;
 
   /// List of fields that this field depends on for validation
-  final List<BetterFormFieldID<dynamic>> dependsOn;
+  final List<FormixFieldID<dynamic>> dependsOn;
 
   /// Label for the field (UI hint)
   final String? label;
@@ -46,15 +46,15 @@ class BetterFormFieldConfig<T> {
   final Duration? debounceDuration;
 
   /// Validation mode for this field
-  final BetterAutovalidateMode validationMode;
+  final FormixAutovalidateMode validationMode;
 
-  BetterFormField<T> toField() {
+  FormixField<T> toField() {
     // Capture values to avoid type inference issues
     final localValidator = validator;
     final localCrossFieldValidator = crossFieldValidator;
     final localAsyncValidator = asyncValidator;
 
-    return BetterFormField<T>(
+    return FormixField<T>(
       id: id,
       initialValue: initialValue,
       validator: localValidator,
@@ -73,7 +73,7 @@ class BetterFormFieldConfig<T> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is BetterFormFieldConfig<T> &&
+      other is FormixFieldConfig<T> &&
           runtimeType == other.runtimeType &&
           id == other.id &&
           initialValue == other.initialValue &&

@@ -1,16 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 
 void main() {
   group('Cross-field Validation', () {
     test('crossFieldValidator works and reacts to dependencies', () async {
-      final passwordId = BetterFormFieldID<String>('password');
-      final confirmPasswordId = BetterFormFieldID<String>('confirmPassword');
+      final passwordId = FormixFieldID<String>('password');
+      final confirmPasswordId = FormixFieldID<String>('confirmPassword');
 
       final controller = RiverpodFormController(
         fields: [
-          BetterFormField(id: passwordId, initialValue: ''),
-          BetterFormField(
+          FormixField(id: passwordId, initialValue: ''),
+          FormixField(
             id: confirmPasswordId,
             initialValue: '',
             dependsOn: [passwordId],
@@ -39,14 +39,14 @@ void main() {
       expect(controller.getValidation(confirmPasswordId).isValid, true);
     });
 
-    test('BetterAutovalidateMode.onBlur only validates on touch', () {
-      final fieldId = BetterFormFieldID<String>('email');
+    test('FormixAutovalidateMode.onBlur only validates on touch', () {
+      final fieldId = FormixFieldID<String>('email');
       final controller = RiverpodFormController(
         fields: [
-          BetterFormField(
+          FormixField(
             id: fieldId,
             initialValue: '',
-            validationMode: BetterAutovalidateMode.onBlur,
+            validationMode: FormixAutovalidateMode.onBlur,
             validator: (value) => value.isEmpty ? 'Required' : null,
           ),
         ],

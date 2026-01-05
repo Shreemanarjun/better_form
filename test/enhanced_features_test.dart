@@ -1,13 +1,13 @@
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // Create a mock controller for testing
-class TestController extends BetterFormController {
+class TestController extends FormixController {
   TestController({super.initialValue, super.messages});
 }
 
 // Custom messages for testing
-class SpanishMessages extends DefaultBetterFormMessages {
+class SpanishMessages extends DefaultFormixMessages {
   const SpanishMessages();
   @override
   String required(String label) => '$label es requerido';
@@ -16,8 +16,8 @@ class SpanishMessages extends DefaultBetterFormMessages {
 void main() {
   group('Enhanced Features', () {
     test('Input Transformer transforms value', () {
-      final id = BetterFormFieldID<String>('name');
-      final field = BetterFormField<String>(
+      final id = FormixFieldID<String>('name');
+      final field = FormixField<String>(
         id: id,
         initialValue: '',
         transformer: (val) => (val as String).toUpperCase(),
@@ -32,8 +32,8 @@ void main() {
     });
 
     test('Cross-Field Validation (via Schema)', () async {
-      final passwordId = BetterFormFieldID<String>('password');
-      final confirmId = BetterFormFieldID<String>('confirm');
+      final passwordId = FormixFieldID<String>('password');
+      final confirmId = FormixFieldID<String>('confirm');
 
       final schema = FormSchema(
         fields: [
@@ -75,10 +75,10 @@ void main() {
     });
 
     test('Async Validation (Manual simulation)', () async {
-      final id = BetterFormFieldID<String>('username');
+      final id = FormixFieldID<String>('username');
       bool asyncCalled = false;
 
-      final field = BetterFormField<String>(
+      final field = FormixField<String>(
         id: id,
         initialValue: '',
         asyncValidator: (val) async {
@@ -110,8 +110,8 @@ void main() {
     });
 
     test('Touched State', () {
-      final id = BetterFormFieldID<String>('email');
-      final field = BetterFormField<String>(id: id, initialValue: '');
+      final id = FormixFieldID<String>('email');
+      final field = FormixField<String>(id: id, initialValue: '');
 
       final controller = TestController();
       controller.registerField(field);
@@ -124,16 +124,16 @@ void main() {
     });
 
     test('Serialization and Bulk Update', () {
-      final id1 = BetterFormFieldID<String>('name');
-      final id2 = BetterFormFieldID<int>('age');
+      final id1 = FormixFieldID<String>('name');
+      final id2 = FormixFieldID<int>('age');
 
       final controller = TestController(
         initialValue: {'name': 'John', 'age': 30},
       );
       controller.registerField(
-        BetterFormField<String>(id: id1, initialValue: 'John'),
+        FormixField<String>(id: id1, initialValue: 'John'),
       );
-      controller.registerField(BetterFormField<int>(id: id2, initialValue: 30));
+      controller.registerField(FormixField<int>(id: id2, initialValue: 30));
 
       // toMap
       expect(controller.toMap(), {'name': 'John', 'age': 30});
@@ -149,17 +149,17 @@ void main() {
     });
 
     test('Flexible Reset Options (resetFields)', () {
-      final id1 = BetterFormFieldID<String>('name');
-      final id2 = BetterFormFieldID<String>('city');
+      final id1 = FormixFieldID<String>('name');
+      final id2 = FormixFieldID<String>('city');
 
       final controller = TestController(
         initialValue: {'name': 'John', 'city': 'NY'},
       );
       controller.registerField(
-        BetterFormField<String>(id: id1, initialValue: 'John'),
+        FormixField<String>(id: id1, initialValue: 'John'),
       );
       controller.registerField(
-        BetterFormField<String>(id: id2, initialValue: 'NY'),
+        FormixField<String>(id: id2, initialValue: 'NY'),
       );
 
       controller.setValue(id1, 'Jane');
@@ -176,11 +176,11 @@ void main() {
     });
 
     test('i18n Messages in Validation', () {
-      final id = BetterFormFieldID<String>('required_field');
+      final id = FormixFieldID<String>('required_field');
 
       final controller = TestController(messages: const SpanishMessages());
       controller.registerField(
-        BetterFormField<String>(
+        FormixField<String>(
           id: id,
           initialValue: '',
           label: 'Nombre',

@@ -1,5 +1,5 @@
 /// Auto validation modes for the entire form or specific fields.
-enum BetterAutovalidateMode {
+enum FormixAutovalidateMode {
   /// Validation is only performed manually via [validate()].
   disabled,
 

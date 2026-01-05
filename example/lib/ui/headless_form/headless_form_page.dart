@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 
 // Headless Form Example
 class HeadlessFormExample extends ConsumerWidget {
@@ -24,7 +24,7 @@ class _HeadlessFormExampleContentState
     extends ConsumerState<HeadlessFormExampleContent> {
   @override
   Widget build(BuildContext context) {
-    return BetterForm(
+    return Formix(
       initialValue: {
         'rating': 3,
         'feedback': '',
@@ -32,16 +32,16 @@ class _HeadlessFormExampleContentState
         'satisfaction': 5,
       },
       fields: [
-        BetterFormFieldConfig<int>(
-          id: BetterFormFieldID<int>('rating'),
+        FormixFieldConfig<int>(
+          id: FormixFieldID<int>('rating'),
           initialValue: 3,
           validator: (value) {
             if (value < 1 || value > 5) return 'Rating must be between 1 and 5';
             return null;
           },
         ),
-        BetterFormFieldConfig<String>(
-          id: BetterFormFieldID<String>('feedback'),
+        FormixFieldConfig<String>(
+          id: FormixFieldID<String>('feedback'),
           initialValue: '',
           validator: (value) {
             if (value.isEmpty) return 'Please provide feedback';
@@ -51,12 +51,12 @@ class _HeadlessFormExampleContentState
             return null;
           },
         ),
-        BetterFormFieldConfig<bool>(
-          id: BetterFormFieldID<bool>('wouldRecommend'),
+        FormixFieldConfig<bool>(
+          id: FormixFieldID<bool>('wouldRecommend'),
           initialValue: false,
         ),
-        BetterFormFieldConfig<int>(
-          id: BetterFormFieldID<int>('satisfaction'),
+        FormixFieldConfig<int>(
+          id: FormixFieldID<int>('satisfaction'),
           initialValue: 5,
         ),
       ],
@@ -82,8 +82,8 @@ class _HeadlessFormExampleContentState
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 8),
-            BetterFormFieldSelector<int>(
-              fieldId: BetterFormFieldID<int>('rating'),
+            FormixFieldSelector<int>(
+              fieldId: FormixFieldID<int>('rating'),
               builder: (context, info, child) {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -93,9 +93,9 @@ class _HeadlessFormExampleContentState
                         final starValue = index + 1;
                         return IconButton(
                           onPressed: () {
-                            final controller = BetterForm.controllerOf(context);
+                            final controller = Formix.controllerOf(context);
                             controller?.setValue(
-                              BetterFormFieldID<int>('rating'),
+                              FormixFieldID<int>('rating'),
                               starValue,
                             );
                           },
@@ -132,8 +132,8 @@ class _HeadlessFormExampleContentState
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 8),
-            BetterRawTextField<String>(
-              fieldId: BetterFormFieldID<String>('feedback'),
+            FormixRawTextField<String>(
+              fieldId: FormixFieldID<String>('feedback'),
               valueToString: (value) => value ?? '',
               stringToValue: (text) => text,
               builder: (context, snapshot) {
@@ -194,8 +194,8 @@ class _HeadlessFormExampleContentState
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 8),
-            BetterFormFieldSelector<bool>(
-              fieldId: BetterFormFieldID<bool>('wouldRecommend'),
+            FormixFieldSelector<bool>(
+              fieldId: FormixFieldID<bool>('wouldRecommend'),
               builder: (context, info, child) {
                 return Container(
                   padding: const EdgeInsets.all(16),
@@ -226,9 +226,9 @@ class _HeadlessFormExampleContentState
                       Switch(
                         value: info.value ?? false,
                         onChanged: (value) {
-                          final controller = BetterForm.controllerOf(context);
+                          final controller = Formix.controllerOf(context);
                           controller?.setValue(
-                            BetterFormFieldID<bool>('wouldRecommend'),
+                            FormixFieldID<bool>('wouldRecommend'),
                             value,
                           );
                         },
@@ -247,8 +247,8 @@ class _HeadlessFormExampleContentState
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 8),
-            BetterFormFieldSelector<int>(
-              fieldId: BetterFormFieldID<int>('satisfaction'),
+            FormixFieldSelector<int>(
+              fieldId: FormixFieldID<int>('satisfaction'),
               builder: (context, info, child) {
                 final value = info.value ?? 5;
                 return Column(
@@ -267,11 +267,9 @@ class _HeadlessFormExampleContentState
                             max: 10,
                             divisions: 9,
                             onChanged: (newValue) {
-                              final controller = BetterForm.controllerOf(
-                                context,
-                              );
+                              final controller = Formix.controllerOf(context);
                               controller?.setValue(
-                                BetterFormFieldID<int>('satisfaction'),
+                                FormixFieldID<int>('satisfaction'),
                                 newValue.round(),
                               );
                             },
@@ -303,7 +301,7 @@ class _HeadlessFormExampleContentState
 
             Consumer(
               builder: (context, ref, child) {
-                final controllerProvider = BetterForm.of(context)!;
+                final controllerProvider = Formix.of(context)!;
                 ref.read(controllerProvider.notifier);
                 final formState = ref.watch(controllerProvider);
 

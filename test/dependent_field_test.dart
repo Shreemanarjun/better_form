@@ -1,27 +1,24 @@
 import 'package:flutter/material.dart' hide FormState;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 
 void main() {
-  group('BetterDependentField', () {
+  group('FormixDependentField', () {
     testWidgets('rebuilds when watched field value changes', (tester) async {
-      final watchedField = BetterFormFieldID<String>('watched_field');
+      final watchedField = FormixFieldID<String>('watched_field');
       int buildCount = 0;
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {'watched_field': 'initial'},
                 fields: [
-                  BetterFormFieldConfig(
-                    id: watchedField,
-                    initialValue: 'initial',
-                  ),
+                  FormixFieldConfig(id: watchedField, initialValue: 'initial'),
                 ],
-                child: BetterDependentField<String>(
+                child: FormixDependentField<String>(
                   fieldId: watchedField,
                   builder: (context, value) {
                     buildCount++;
@@ -38,9 +35,7 @@ void main() {
       expect(buildCount, 1);
 
       // Change the watched field value
-      final provider = BetterForm.of(
-        tester.element(find.text('Value: initial')),
-      )!;
+      final provider = Formix.of(tester.element(find.text('Value: initial')))!;
       final container = ProviderScope.containerOf(
         tester.element(find.text('Value: initial')),
       );
@@ -62,27 +57,24 @@ void main() {
     testWidgets('does not rebuild when unwatched field changes', (
       tester,
     ) async {
-      final watchedField = BetterFormFieldID<String>('watched_field');
-      final otherField = BetterFormFieldID<String>('other_field');
+      final watchedField = FormixFieldID<String>('watched_field');
+      final otherField = FormixFieldID<String>('other_field');
       int buildCount = 0;
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {
                   'watched_field': 'initial',
                   'other_field': 'other',
                 },
                 fields: [
-                  BetterFormFieldConfig(
-                    id: watchedField,
-                    initialValue: 'initial',
-                  ),
-                  BetterFormFieldConfig(id: otherField, initialValue: 'other'),
+                  FormixFieldConfig(id: watchedField, initialValue: 'initial'),
+                  FormixFieldConfig(id: otherField, initialValue: 'other'),
                 ],
-                child: BetterDependentField<String>(
+                child: FormixDependentField<String>(
                   fieldId: watchedField,
                   builder: (context, value) {
                     buildCount++;
@@ -99,7 +91,7 @@ void main() {
       expect(buildCount, 1);
 
       // Change the unwatched field
-      final provider = BetterForm.of(
+      final provider = Formix.of(
         tester.element(find.text('Watched: initial')),
       )!;
       final container = ProviderScope.containerOf(
@@ -115,16 +107,16 @@ void main() {
     });
 
     testWidgets('works with different field types - int', (tester) async {
-      final intField = BetterFormFieldID<int>('int_field');
+      final intField = FormixFieldID<int>('int_field');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {'int_field': 42},
-                fields: [BetterFormFieldConfig(id: intField, initialValue: 42)],
-                child: BetterDependentField<int>(
+                fields: [FormixFieldConfig(id: intField, initialValue: 42)],
+                child: FormixDependentField<int>(
                   fieldId: intField,
                   builder: (context, value) {
                     return Text('Number: $value');
@@ -139,7 +131,7 @@ void main() {
       expect(find.text('Number: 42'), findsOneWidget);
 
       // Change value
-      final provider = BetterForm.of(tester.element(find.text('Number: 42')))!;
+      final provider = Formix.of(tester.element(find.text('Number: 42')))!;
       final container = ProviderScope.containerOf(
         tester.element(find.text('Number: 42')),
       );
@@ -151,18 +143,16 @@ void main() {
     });
 
     testWidgets('works with different field types - bool', (tester) async {
-      final boolField = BetterFormFieldID<bool>('bool_field');
+      final boolField = FormixFieldID<bool>('bool_field');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {'bool_field': true},
-                fields: [
-                  BetterFormFieldConfig(id: boolField, initialValue: true),
-                ],
-                child: BetterDependentField<bool>(
+                fields: [FormixFieldConfig(id: boolField, initialValue: true)],
+                child: FormixDependentField<bool>(
                   fieldId: boolField,
                   builder: (context, value) {
                     return Text('Boolean: $value');
@@ -177,9 +167,7 @@ void main() {
       expect(find.text('Boolean: true'), findsOneWidget);
 
       // Change value
-      final provider = BetterForm.of(
-        tester.element(find.text('Boolean: true')),
-      )!;
+      final provider = Formix.of(tester.element(find.text('Boolean: true')))!;
       final container = ProviderScope.containerOf(
         tester.element(find.text('Boolean: true')),
       );
@@ -191,18 +179,18 @@ void main() {
     });
 
     testWidgets('works with different field types - double', (tester) async {
-      final doubleField = BetterFormFieldID<double>('double_field');
+      final doubleField = FormixFieldID<double>('double_field');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {'double_field': 3.14},
                 fields: [
-                  BetterFormFieldConfig(id: doubleField, initialValue: 3.14),
+                  FormixFieldConfig(id: doubleField, initialValue: 3.14),
                 ],
-                child: BetterDependentField<double>(
+                child: FormixDependentField<double>(
                   fieldId: doubleField,
                   builder: (context, value) {
                     return Text('Double: $value');
@@ -217,9 +205,7 @@ void main() {
       expect(find.text('Double: 3.14'), findsOneWidget);
 
       // Change value
-      final provider = BetterForm.of(
-        tester.element(find.text('Double: 3.14')),
-      )!;
+      final provider = Formix.of(tester.element(find.text('Double: 3.14')))!;
       final container = ProviderScope.containerOf(
         tester.element(find.text('Double: 3.14')),
       );
@@ -231,15 +217,15 @@ void main() {
     });
 
     testWidgets('handles null values correctly', (tester) async {
-      final nullableField = BetterFormFieldID<String>('nullable_field');
+      final nullableField = FormixFieldID<String>('nullable_field');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
-                fields: [BetterFormFieldConfig(id: nullableField)],
-                child: BetterDependentField<String>(
+              body: Formix(
+                fields: [FormixFieldConfig(id: nullableField)],
+                child: FormixDependentField<String>(
                   fieldId: nullableField,
                   builder: (context, value) {
                     return Text('Value: ${value ?? "null"}');
@@ -254,7 +240,7 @@ void main() {
       expect(find.text('Value: null'), findsOneWidget);
 
       // Set a value
-      final provider = BetterForm.of(tester.element(find.text('Value: null')))!;
+      final provider = Formix.of(tester.element(find.text('Value: null')))!;
       final container = ProviderScope.containerOf(
         tester.element(find.text('Value: null')),
       );
@@ -275,11 +261,11 @@ void main() {
     testWidgets('uses custom controller provider when provided', (
       tester,
     ) async {
-      final customField = BetterFormFieldID<String>('custom_field');
+      final customField = FormixFieldID<String>('custom_field');
       final customProvider =
           StateNotifierProvider.autoDispose<
             RiverpodFormController,
-            BetterFormState
+            FormixState
           >((ref) {
             return RiverpodFormController(
               initialValue: {'custom_field': 'custom_value'},
@@ -290,7 +276,7 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterDependentField<String>(
+              body: FormixDependentField<String>(
                 fieldId: customField,
                 controllerProvider: customProvider,
                 builder: (context, value) {
@@ -306,23 +292,23 @@ void main() {
     });
 
     testWidgets(
-      'falls back to BetterForm.of(context) when no controller provider',
+      'falls back to Formix.of(context) when no controller provider',
       (tester) async {
-        final contextField = BetterFormFieldID<String>('context_field');
+        final contextField = FormixFieldID<String>('context_field');
 
         await tester.pumpWidget(
           ProviderScope(
             child: MaterialApp(
               home: Scaffold(
-                body: BetterForm(
+                body: Formix(
                   initialValue: const {'context_field': 'from_context'},
                   fields: [
-                    BetterFormFieldConfig(
+                    FormixFieldConfig(
                       id: contextField,
                       initialValue: 'from_context',
                     ),
                   ],
-                  child: BetterDependentField<String>(
+                  child: FormixDependentField<String>(
                     fieldId: contextField,
                     builder: (context, value) {
                       return Text('Context: $value');
@@ -341,13 +327,13 @@ void main() {
     testWidgets(
       'falls back to default provider when no context or custom provider',
       (tester) async {
-        final defaultField = BetterFormFieldID<String>('default_field');
+        final defaultField = FormixFieldID<String>('default_field');
 
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
               formControllerProvider(
-                const BetterFormParameter(initialValue: {}),
+                const FormixParameter(initialValue: {}),
               ).overrideWith((ref) {
                 return RiverpodFormController(
                   initialValue: {'default_field': 'from_default'},
@@ -356,7 +342,7 @@ void main() {
             ],
             child: MaterialApp(
               home: Scaffold(
-                body: BetterDependentField<String>(
+                body: FormixDependentField<String>(
                   fieldId: defaultField,
                   builder: (context, value) {
                     return Text('Default: $value');
@@ -372,18 +358,18 @@ void main() {
     );
 
     testWidgets('builder receives correct BuildContext', (tester) async {
-      final contextField = BetterFormFieldID<String>('context_field');
+      final contextField = FormixFieldID<String>('context_field');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {'context_field': 'test'},
                 fields: [
-                  BetterFormFieldConfig(id: contextField, initialValue: 'test'),
+                  FormixFieldConfig(id: contextField, initialValue: 'test'),
                 ],
-                child: BetterDependentField<String>(
+                child: FormixDependentField<String>(
                   fieldId: contextField,
                   builder: (context, value) {
                     final mediaQuery = MediaQuery.maybeOf(context);
@@ -404,23 +390,23 @@ void main() {
     });
 
     testWidgets('handles complex data types', (tester) async {
-      final listField = BetterFormFieldID<List<String>>('list_field');
+      final listField = FormixFieldID<List<String>>('list_field');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {
                   'list_field': ['a', 'b', 'c'],
                 },
                 fields: [
-                  BetterFormFieldConfig(
+                  FormixFieldConfig(
                     id: listField,
                     initialValue: ['a', 'b', 'c'],
                   ),
                 ],
-                child: BetterDependentField<List<String>>(
+                child: FormixDependentField<List<String>>(
                   fieldId: listField,
                   builder: (context, value) {
                     return Text('List length: ${value?.length ?? 0}');
@@ -435,9 +421,7 @@ void main() {
       expect(find.text('List length: 3'), findsOneWidget);
 
       // Change the list
-      final provider = BetterForm.of(
-        tester.element(find.text('List length: 3')),
-      )!;
+      final provider = Formix.of(tester.element(find.text('List length: 3')))!;
       final container = ProviderScope.containerOf(
         tester.element(find.text('List length: 3')),
       );
@@ -449,21 +433,18 @@ void main() {
     });
 
     testWidgets('works with enum-like string values', (tester) async {
-      final statusField = BetterFormFieldID<String>('status');
+      final statusField = FormixFieldID<String>('status');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {'status': 'active'},
                 fields: [
-                  BetterFormFieldConfig(
-                    id: statusField,
-                    initialValue: 'active',
-                  ),
+                  FormixFieldConfig(id: statusField, initialValue: 'active'),
                 ],
-                child: BetterDependentField<String>(
+                child: FormixDependentField<String>(
                   fieldId: statusField,
                   builder: (context, value) {
                     return Text('Status: ${value?.toUpperCase()}');
@@ -478,9 +459,7 @@ void main() {
       expect(find.text('Status: ACTIVE'), findsOneWidget);
 
       // Change status
-      final provider = BetterForm.of(
-        tester.element(find.text('Status: ACTIVE')),
-      )!;
+      final provider = Formix.of(tester.element(find.text('Status: ACTIVE')))!;
       final container = ProviderScope.containerOf(
         tester.element(find.text('Status: ACTIVE')),
       );
@@ -492,19 +471,17 @@ void main() {
     });
 
     testWidgets('handles rapid consecutive changes', (tester) async {
-      final counterField = BetterFormFieldID<int>('counter');
+      final counterField = FormixFieldID<int>('counter');
       int buildCount = 0;
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {'counter': 0},
-                fields: [
-                  BetterFormFieldConfig(id: counterField, initialValue: 0),
-                ],
-                child: BetterDependentField<int>(
+                fields: [FormixFieldConfig(id: counterField, initialValue: 0)],
+                child: FormixDependentField<int>(
                   fieldId: counterField,
                   builder: (context, value) {
                     buildCount++;
@@ -521,7 +498,7 @@ void main() {
       expect(buildCount, 1);
 
       // Make rapid changes
-      final provider = BetterForm.of(tester.element(find.text('Count: 0')))!;
+      final provider = Formix.of(tester.element(find.text('Count: 0')))!;
       final container = ProviderScope.containerOf(
         tester.element(find.text('Count: 0')),
       );
@@ -542,20 +519,20 @@ void main() {
     });
 
     testWidgets('works with validation state changes', (tester) async {
-      final validatedField = BetterFormFieldID<String>('validated_field');
+      final validatedField = FormixFieldID<String>('validated_field');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 fields: [
-                  BetterFormFieldConfig(
+                  FormixFieldConfig(
                     id: validatedField,
                     validator: (v) => (v?.length ?? 0) < 3 ? 'Too short' : null,
                   ),
                 ],
-                child: BetterDependentField<String>(
+                child: FormixDependentField<String>(
                   fieldId: validatedField,
                   builder: (context, value) {
                     return Text('Value: ${value ?? "null"}');
@@ -570,7 +547,7 @@ void main() {
       expect(find.text('Value: null'), findsOneWidget);
 
       // Set invalid value
-      final provider = BetterForm.of(tester.element(find.text('Value: null')))!;
+      final provider = Formix.of(tester.element(find.text('Value: null')))!;
       final container = ProviderScope.containerOf(
         tester.element(find.text('Value: null')),
       );
@@ -591,8 +568,8 @@ void main() {
     testWidgets(
       'works with multiple dependent fields watching different fields',
       (tester) async {
-        final field1 = BetterFormFieldID<String>('field1');
-        final field2 = BetterFormFieldID<String>('field2');
+        final field1 = FormixFieldID<String>('field1');
+        final field2 = FormixFieldID<String>('field2');
 
         int buildCount1 = 0;
         int buildCount2 = 0;
@@ -601,22 +578,22 @@ void main() {
           ProviderScope(
             child: MaterialApp(
               home: Scaffold(
-                body: BetterForm(
+                body: Formix(
                   initialValue: const {'field1': 'value1', 'field2': 'value2'},
                   fields: [
-                    BetterFormFieldConfig(id: field1, initialValue: 'value1'),
-                    BetterFormFieldConfig(id: field2, initialValue: 'value2'),
+                    FormixFieldConfig(id: field1, initialValue: 'value1'),
+                    FormixFieldConfig(id: field2, initialValue: 'value2'),
                   ],
                   child: Column(
                     children: [
-                      BetterDependentField<String>(
+                      FormixDependentField<String>(
                         fieldId: field1,
                         builder: (context, value) {
                           buildCount1++;
                           return Text('Field1: $value');
                         },
                       ),
-                      BetterDependentField<String>(
+                      FormixDependentField<String>(
                         fieldId: field2,
                         builder: (context, value) {
                           buildCount2++;
@@ -637,7 +614,7 @@ void main() {
         expect(buildCount2, 1);
 
         // Change field1
-        final provider = BetterForm.of(
+        final provider = Formix.of(
           tester.element(find.text('Field1: value1')),
         )!;
         final container = ProviderScope.containerOf(
@@ -655,18 +632,18 @@ void main() {
     );
 
     testWidgets('handles field removal gracefully', (tester) async {
-      final tempField = BetterFormFieldID<String>('temp_field');
+      final tempField = FormixFieldID<String>('temp_field');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {'temp_field': 'exists'},
                 fields: [
-                  BetterFormFieldConfig(id: tempField, initialValue: 'exists'),
+                  FormixFieldConfig(id: tempField, initialValue: 'exists'),
                 ],
-                child: BetterDependentField<String>(
+                child: FormixDependentField<String>(
                   fieldId: tempField,
                   builder: (context, value) {
                     return Text('Temp: ${value ?? "gone"}');
@@ -681,14 +658,13 @@ void main() {
       expect(find.text('Temp: exists'), findsOneWidget);
 
       // Remove the field
-      final provider = BetterForm.of(
-        tester.element(find.text('Temp: exists')),
-      )!;
+      final provider = Formix.of(tester.element(find.text('Temp: exists')))!;
       final container = ProviderScope.containerOf(
         tester.element(find.text('Temp: exists')),
       );
-      (container.read(provider.notifier) as BetterFormController)
-          .unregisterField(tempField);
+      (container.read(provider.notifier) as FormixController).unregisterField(
+        tempField,
+      );
 
       await tester.pump();
 

@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'better_form.dart';
+import 'formix.dart';
 import 'form_builder.dart';
 import '../controllers/field_id.dart';
-import '../controllers/better_form_controller.dart';
+import '../controllers/formix_controller.dart';
 import '../controllers/riverpod_controller.dart';
 import 'form_group.dart';
 
 /// A widget for managing dynamic lists of items in a form.
 ///
-/// Use [BetterFormArray] when you need to render a list of fields that can be
+/// Use [FormixArray] when you need to render a list of fields that can be
 /// dynamically added or removed.
-class BetterFormArray<T> extends ConsumerWidget {
+class FormixArray<T> extends ConsumerWidget {
   /// Creates a form array widget.
-  const BetterFormArray({
+  const FormixArray({
     super.key,
     required this.id,
     required this.itemBuilder,
@@ -22,7 +22,7 @@ class BetterFormArray<T> extends ConsumerWidget {
   });
 
   /// The unique identifier for this array.
-  final BetterFormArrayID<T> id;
+  final FormixArrayID<T> id;
 
   /// Builder function for individual items.
   ///
@@ -31,37 +31,33 @@ class BetterFormArray<T> extends ConsumerWidget {
   final Widget Function(
     BuildContext context,
     int index,
-    BetterFormFieldID<T> itemId,
-    BetterFormScope scope,
+    FormixFieldID<T> itemId,
+    FormixScope scope,
   )
   itemBuilder;
 
   /// Optional builder when the array is empty.
-  final Widget Function(BuildContext context, BetterFormScope scope)?
-  emptyBuilder;
+  final Widget Function(BuildContext context, FormixScope scope)? emptyBuilder;
 
   /// Whether to use a [ListView] instead of a [Column].
   final bool scrollable;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final provider = BetterForm.of(context);
+    final provider = Formix.of(context);
     if (provider == null) {
-      throw FlutterError(
-        'BetterFormArray must be placed inside a BetterForm widget',
-      );
+      throw FlutterError('FormixArray must be placed inside a Formix widget');
     }
 
-    final controller = ref.read(provider.notifier) as BetterFormController;
-    final scope = BetterFormScope(
+    final controller = ref.read(provider.notifier) as FormixController;
+    final scope = FormixScope(
       context: context,
       ref: ref,
       controller: controller,
     );
 
     // Resolve the array ID based on surrounding form groups
-    final resolvedId =
-        BetterFormGroup.resolve(context, id) as BetterFormArrayID<T>;
+    final resolvedId = FormixGroup.resolve(context, id) as FormixArrayID<T>;
 
     // Watch the array value reactively
     final items = scope.watchArray(resolvedId);
@@ -72,7 +68,7 @@ class BetterFormArray<T> extends ConsumerWidget {
 
     Widget buildItem(int index) {
       final itemId = resolvedId.item(index);
-      return BetterFormGroup(
+      return FormixGroup(
         prefix: '${id.key}[$index]',
         child: itemBuilder(context, index, itemId, scope),
       );

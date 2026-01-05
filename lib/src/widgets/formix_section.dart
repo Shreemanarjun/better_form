@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../controllers/riverpod_controller.dart';
 import '../controllers/field_id.dart';
-import 'riverpod_form_fields.dart'; // For BetterForm.of
+import 'riverpod_form_fields.dart'; // For Formix.of
 
-/// A widget that registers a specific set of fields with the parent [BetterForm].
+/// A widget that registers a specific set of fields with the parent [Formix].
 ///
 /// This is useful for:
 /// 1. Organizing large forms into logical sections
@@ -13,15 +13,15 @@ import 'riverpod_form_fields.dart'; // For BetterForm.of
 ///
 /// Example:
 /// ```dart
-/// BetterForm(
+/// Formix(
 ///   child: ListView(
 ///     children: [
-///       BetterFormSection(
+///       FormixSection(
 ///         fields: [ConfigA, ConfigB],
 ///         child: SectionA(),
 ///       ),
 ///       // SectionB fields are not registered until scrolled into view
-///       BetterFormSection(
+///       FormixSection(
 ///         fields: [ConfigC, ConfigD],
 ///         child: SectionB(),
 ///       ),
@@ -29,8 +29,8 @@ import 'riverpod_form_fields.dart'; // For BetterForm.of
 ///   ),
 /// )
 /// ```
-class BetterFormSection extends ConsumerWidget {
-  const BetterFormSection({
+class FormixSection extends ConsumerWidget {
+  const FormixSection({
     super.key,
     required this.fields,
     required this.child,
@@ -38,7 +38,7 @@ class BetterFormSection extends ConsumerWidget {
   });
 
   /// The fields to register when this section is built
-  final List<BetterFormFieldConfig<dynamic>> fields;
+  final List<FormixFieldConfig<dynamic>> fields;
 
   /// The child widget containing the form fields
   final Widget child;
@@ -51,12 +51,10 @@ class BetterFormSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final controllerProvider = BetterForm.of(context);
+    final controllerProvider = Formix.of(context);
 
     if (controllerProvider == null) {
-      throw FlutterError(
-        'BetterFormSection must be placed inside a BetterForm widget',
-      );
+      throw FlutterError('FormixSection must be placed inside a Formix widget');
     }
 
     // Use batch registration
@@ -91,12 +89,9 @@ class _DisposableSection extends ConsumerStatefulWidget {
     required this.child,
   });
 
-  final AutoDisposeStateNotifierProvider<
-    RiverpodFormController,
-    BetterFormState
-  >
+  final AutoDisposeStateNotifierProvider<RiverpodFormController, FormixState>
   controllerProvider;
-  final List<BetterFormFieldID<dynamic>> fieldIds;
+  final List<FormixFieldID<dynamic>> fieldIds;
   final Widget child;
 
   @override

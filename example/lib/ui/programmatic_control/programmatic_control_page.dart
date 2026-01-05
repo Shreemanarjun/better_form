@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 
-final field1Id = BetterFormFieldID<String>('field_1');
-final field2Id = BetterFormFieldID<String>('field_2');
-final field3Id = BetterFormFieldID<String>('field_3');
-final field4Id = BetterFormFieldID<String>('field_4');
-final field5Id = BetterFormFieldID<String>('field_5');
+final field1Id = FormixFieldID<String>('field_1');
+final field2Id = FormixFieldID<String>('field_2');
+final field3Id = FormixFieldID<String>('field_3');
+final field4Id = FormixFieldID<String>('field_4');
+final field5Id = FormixFieldID<String>('field_5');
 
 class ProgrammaticControlPage extends StatelessWidget {
   const ProgrammaticControlPage({super.key});
@@ -14,18 +14,18 @@ class ProgrammaticControlPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Programmatic Control')),
-      body: BetterForm(
+      body: Formix(
         fields: [
-          BetterFormFieldConfig<String>(id: field1Id),
-          BetterFormFieldConfig<String>(id: field2Id),
-          BetterFormFieldConfig<String>(
+          FormixFieldConfig<String>(id: field1Id),
+          FormixFieldConfig<String>(id: field2Id),
+          FormixFieldConfig<String>(
             id: field3Id,
             validator: (val) => val.isEmpty ? 'Required' : null,
           ),
-          BetterFormFieldConfig<String>(id: field4Id),
-          BetterFormFieldConfig<String>(id: field5Id),
+          FormixFieldConfig<String>(id: field4Id),
+          FormixFieldConfig<String>(id: field5Id),
         ],
-        child: BetterFormBuilder(
+        child: FormixBuilder(
           builder: (context, scope) {
             return Column(
               children: [
@@ -79,7 +79,7 @@ class ProgrammaticControlPage extends StatelessWidget {
     );
   }
 
-  Widget _buildField(BetterFormFieldID<String> id, String label) {
+  Widget _buildField(FormixFieldID<String> id, String label) {
     return RiverpodTextFormField(
       fieldId: id,
       decoration: InputDecoration(

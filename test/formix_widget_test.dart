@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 
 void main() {
-  group('BetterForm Widget Tests', () {
+  group('Formix Widget Tests', () {
     testWidgets('should render child and provide controller', (tester) async {
-      final nameField = BetterFormFieldID<String>('name');
+      final nameField = FormixFieldID<String>('name');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: {'name': 'Default Name'},
                 child: Column(
                   children: [
@@ -22,7 +22,7 @@ void main() {
                     ),
                     Consumer(
                       builder: (context, ref, child) {
-                        final controller = BetterForm.controllerOf(context);
+                        final controller = Formix.controllerOf(context);
                         return Text('Controller Ready: ${controller != null}');
                       },
                     ),
@@ -39,18 +39,18 @@ void main() {
       expect(find.text('Controller Ready: true'), findsOneWidget);
     });
 
-    testWidgets('should register fields passed to BetterForm constructor', (
+    testWidgets('should register fields passed to Formix constructor', (
       tester,
     ) async {
-      final emailField = BetterFormFieldID<String>('email');
+      final emailField = FormixFieldID<String>('email');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 fields: [
-                  BetterFormFieldConfig<String>(
+                  FormixFieldConfig<String>(
                     id: emailField,
                     initialValue: '',
                     validator: (value) =>
@@ -65,7 +65,7 @@ void main() {
                     ),
                     Consumer(
                       builder: (context, ref, child) {
-                        final provider = BetterForm.of(context);
+                        final provider = Formix.of(context);
                         if (provider == null) return const Text('No Provider');
                         final formState = ref.watch(provider);
                         return Text('Is Valid: ${formState.isValid}');
@@ -89,16 +89,16 @@ void main() {
       expect(find.text('Is Valid: true'), findsOneWidget);
     });
 
-    testWidgets('should handle reset via controller from BetterForm.of', (
+    testWidgets('should handle reset via controller from Formix.of', (
       tester,
     ) async {
-      final nameField = BetterFormFieldID<String>('name');
+      final nameField = FormixFieldID<String>('name');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: {'name': 'Original'},
                 child: Column(
                   children: [
@@ -107,7 +107,7 @@ void main() {
                       builder: (context, ref, child) {
                         return ElevatedButton(
                           onPressed: () {
-                            final provider = BetterForm.of(context);
+                            final provider = Formix.of(context);
                             if (provider != null) {
                               ref.read(provider.notifier).reset();
                             }
@@ -137,11 +137,11 @@ void main() {
       expect(find.text('Original'), findsOneWidget);
     });
 
-    testWidgets('should support nested BetterForms with independent states', (
+    testWidgets('should support nested Formixs with independent states', (
       tester,
     ) async {
-      final fieldA = BetterFormFieldID<String>('field');
-      final fieldB = BetterFormFieldID<String>('field');
+      final fieldA = FormixFieldID<String>('field');
+      final fieldB = FormixFieldID<String>('field');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -149,7 +149,7 @@ void main() {
             home: Scaffold(
               body: Column(
                 children: [
-                  BetterForm(
+                  Formix(
                     key: const Key('form_a'),
                     initialValue: {'field': 'Form A'},
                     child: Column(
@@ -160,7 +160,7 @@ void main() {
                     ),
                   ),
                   const Divider(),
-                  BetterForm(
+                  Formix(
                     key: const Key('form_b'),
                     initialValue: {'field': 'Form B'},
                     child: Column(

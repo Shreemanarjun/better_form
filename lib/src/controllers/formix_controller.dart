@@ -8,16 +8,16 @@ import '../i18n.dart';
 
 /// A controller for managing form state that is compatible with vanilla Flutter.
 ///
-/// While [RiverpodFormController] is pure Riverpod, [BetterFormController] adds
+/// While [RiverpodFormController] is pure Riverpod, [FormixController] adds
 /// a compatibility layer that exposes [ValueNotifier]s and [ValueListenable]s.
 /// This allows non-Riverpod widgets within your app to react to form changes
 /// without needing access to [WidgetRef].
-class BetterFormController extends RiverpodFormController {
-  /// Creates a [BetterFormController].
-  BetterFormController({
+class FormixController extends RiverpodFormController {
+  /// Creates a [FormixController].
+  FormixController({
     super.initialValue,
     super.fields,
-    super.messages = const DefaultBetterFormMessages(),
+    super.messages = const DefaultFormixMessages(),
     super.persistence,
     super.formId,
   }) {
@@ -34,7 +34,7 @@ class BetterFormController extends RiverpodFormController {
   ValueNotifier<bool>? _isValidNotifier;
   ValueNotifier<bool>? _isSubmittingNotifier;
 
-  void _onStateChanged(BetterFormState state) {
+  void _onStateChanged(FormixState state) {
     // Update value notifiers
     for (final key in _valueNotifiers.keys) {
       final notifier = _valueNotifiers[key];
@@ -131,7 +131,7 @@ class BetterFormController extends RiverpodFormController {
   }
 
   /// Returns a [ValueNotifier] for the value of the specified field.
-  ValueNotifier<T?> getFieldNotifier<T>(BetterFormFieldID<T> fieldId) {
+  ValueNotifier<T?> getFieldNotifier<T>(FormixFieldID<T> fieldId) {
     if (_valueNotifiers.containsKey(fieldId.key)) {
       return _valueNotifiers[fieldId.key] as ValueNotifier<T?>;
     }
@@ -141,13 +141,13 @@ class BetterFormController extends RiverpodFormController {
   }
 
   /// Returns a [ValueListenable] for the value of the specified field.
-  ValueListenable<T?> fieldValueListenable<T>(BetterFormFieldID<T> fieldId) {
+  ValueListenable<T?> fieldValueListenable<T>(FormixFieldID<T> fieldId) {
     return getFieldNotifier(fieldId);
   }
 
   /// Returns a [ValueNotifier] for the validation result of the specified field.
   ValueNotifier<ValidationResult> fieldValidationNotifier<T>(
-    BetterFormFieldID<T> fieldId,
+    FormixFieldID<T> fieldId,
   ) {
     if (_validationNotifiers.containsKey(fieldId.key)) {
       return _validationNotifiers[fieldId.key]!;
@@ -158,7 +158,7 @@ class BetterFormController extends RiverpodFormController {
   }
 
   /// Returns a [ValueNotifier] for the dirty status of the specified field.
-  ValueNotifier<bool> fieldDirtyNotifier<T>(BetterFormFieldID<T> fieldId) {
+  ValueNotifier<bool> fieldDirtyNotifier<T>(FormixFieldID<T> fieldId) {
     if (_dirtyNotifiers.containsKey(fieldId.key)) {
       return _dirtyNotifiers[fieldId.key]!;
     }
@@ -168,7 +168,7 @@ class BetterFormController extends RiverpodFormController {
   }
 
   /// Returns a [ValueNotifier] for the touched status of the specified field.
-  ValueNotifier<bool> fieldTouchedNotifier<T>(BetterFormFieldID<T> fieldId) {
+  ValueNotifier<bool> fieldTouchedNotifier<T>(FormixFieldID<T> fieldId) {
     if (_touchedNotifiers.containsKey(fieldId.key)) {
       return _touchedNotifiers[fieldId.key]!;
     }
@@ -200,25 +200,25 @@ class BetterFormController extends RiverpodFormController {
 
   /// Registers a [FocusNode] to be associated with a specific field.
   /// Typically called by field widgets in their `initState`.
-  void registerFocusNode<T>(BetterFormFieldID<T> fieldId, FocusNode node) {
+  void registerFocusNode<T>(FormixFieldID<T> fieldId, FocusNode node) {
     _focusNodes[fieldId.key] = node;
   }
 
   /// Requests focus for the specified field.
-  void focusField<T>(BetterFormFieldID<T> id) {
+  void focusField<T>(FormixFieldID<T> id) {
     _focusNodes[id.key]?.requestFocus();
   }
 
   final Map<String, BuildContext> _contexts = {};
 
   /// Registers a [BuildContext] for a field, primarily for programmatic scrolling.
-  void registerContext<T>(BetterFormFieldID<T> id, BuildContext context) {
+  void registerContext<T>(FormixFieldID<T> id, BuildContext context) {
     _contexts[id.key] = context;
   }
 
   /// Scrolls the UI to ensure the specified field is visible.
   void scrollToField<T>(
-    BetterFormFieldID<T> id, {
+    FormixFieldID<T> id, {
     Duration duration = const Duration(milliseconds: 300),
     Curve curve = Curves.easeInOut,
     double alignment = 0.5,
@@ -265,7 +265,7 @@ class BetterFormController extends RiverpodFormController {
   /// This triggers validation for updated fields.
   void updateFromMap(Map<String, dynamic> data) {
     for (final entry in data.entries) {
-      final fieldId = BetterFormFieldID<dynamic>(entry.key);
+      final fieldId = FormixFieldID<dynamic>(entry.key);
       if (isFieldRegistered(fieldId)) {
         setValue(fieldId, entry.value);
       }
@@ -287,18 +287,12 @@ class BetterFormController extends RiverpodFormController {
   final _dirtyListeners = <void Function(bool)>{};
 
   /// Adds a listener that will be called whenever any field value changes.
-  void addFieldListener<T>(
-    BetterFormFieldID<T> fieldId,
-    VoidCallback listener,
-  ) {
+  void addFieldListener<T>(FormixFieldID<T> fieldId, VoidCallback listener) {
     _fieldListeners.add(listener);
   }
 
   /// Removes a field listener.
-  void removeFieldListener<T>(
-    BetterFormFieldID<T> fieldId,
-    VoidCallback listener,
-  ) {
+  void removeFieldListener<T>(FormixFieldID<T> fieldId, VoidCallback listener) {
     _fieldListeners.remove(listener);
   }
 

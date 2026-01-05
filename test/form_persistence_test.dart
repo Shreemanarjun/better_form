@@ -1,13 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 
 void main() {
-  group('BetterFormPersistence Interface', () {
-    test('BetterFormPersistence is abstract and cannot be instantiated', () {
+  group('FormixPersistence Interface', () {
+    test('FormixPersistence is abstract and cannot be instantiated', () {
       // This should not compile if we try to instantiate it directly
       // We test this by ensuring the concrete implementation works
       final persistence = InMemoryFormPersistence();
-      expect(persistence, isA<BetterFormPersistence>());
+      expect(persistence, isA<FormixPersistence>());
     });
   });
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 
 // Performance Examples
 class PerformanceExamples extends ConsumerWidget {
@@ -24,7 +24,7 @@ class _PerformanceExamplesContentState
     extends ConsumerState<PerformanceExamplesContent> {
   @override
   Widget build(BuildContext context) {
-    return BetterForm(
+    return Formix(
       initialValue: {
         'firstName': '',
         'lastName': '',
@@ -34,28 +34,25 @@ class _PerformanceExamplesContentState
         'country': 'US',
       },
       fields: [
-        BetterFormFieldConfig<String>(
-          id: BetterFormFieldID<String>('firstName'),
+        FormixFieldConfig<String>(
+          id: FormixFieldID<String>('firstName'),
           initialValue: '',
         ),
-        BetterFormFieldConfig<String>(
-          id: BetterFormFieldID<String>('lastName'),
+        FormixFieldConfig<String>(
+          id: FormixFieldID<String>('lastName'),
           initialValue: '',
         ),
-        BetterFormFieldConfig<String>(
-          id: BetterFormFieldID<String>('email'),
+        FormixFieldConfig<String>(
+          id: FormixFieldID<String>('email'),
           initialValue: '',
         ),
-        BetterFormFieldConfig<num>(
-          id: BetterFormFieldID<num>('age'),
-          initialValue: 25,
-        ),
-        BetterFormFieldConfig<bool>(
-          id: BetterFormFieldID<bool>('newsletter'),
+        FormixFieldConfig<num>(id: FormixFieldID<num>('age'), initialValue: 25),
+        FormixFieldConfig<bool>(
+          id: FormixFieldID<bool>('newsletter'),
           initialValue: false,
         ),
-        BetterFormFieldConfig<String>(
-          id: BetterFormFieldID<String>('country'),
+        FormixFieldConfig<String>(
+          id: FormixFieldID<String>('country'),
           initialValue: 'US',
         ),
       ],
@@ -81,8 +78,8 @@ class _PerformanceExamplesContentState
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 8),
-            BetterFormFieldPerformanceMonitor<String>(
-              fieldId: BetterFormFieldID<String>('firstName'),
+            FormixFieldPerformanceMonitor<String>(
+              fieldId: FormixFieldID<String>('firstName'),
               builder: (context, info, rebuildCount) {
                 return Container(
                   padding: const EdgeInsets.all(12),
@@ -118,8 +115,8 @@ class _PerformanceExamplesContentState
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 8),
-            BetterFormFieldValueSelector<String>(
-              fieldId: BetterFormFieldID<String>('lastName'),
+            FormixFieldValueSelector<String>(
+              fieldId: FormixFieldID<String>('lastName'),
               builder: (context, value, child) {
                 return Container(
                   padding: const EdgeInsets.all(12),
@@ -143,8 +140,8 @@ class _PerformanceExamplesContentState
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 8),
-            BetterFormFieldConditionalSelector<bool>(
-              fieldId: BetterFormFieldID<bool>('newsletter'),
+            FormixFieldConditionalSelector<bool>(
+              fieldId: FormixFieldID<bool>('newsletter'),
               shouldRebuild: (info) =>
                   info.valueChanged, // Only rebuild on value changes
               builder: (context, info, child) {
@@ -190,7 +187,7 @@ class _PerformanceExamplesContentState
             ),
             const SizedBox(height: 8),
             RiverpodTextFormField(
-              fieldId: BetterFormFieldID<String>('firstName'),
+              fieldId: FormixFieldID<String>('firstName'),
               decoration: const InputDecoration(
                 labelText: 'First Name',
                 prefixIcon: Icon(Icons.person),
@@ -198,7 +195,7 @@ class _PerformanceExamplesContentState
             ),
             const SizedBox(height: 16),
             RiverpodTextFormField(
-              fieldId: BetterFormFieldID<String>('lastName'),
+              fieldId: FormixFieldID<String>('lastName'),
               decoration: const InputDecoration(
                 labelText: 'Last Name',
                 prefixIcon: Icon(Icons.person_outline),
@@ -206,7 +203,7 @@ class _PerformanceExamplesContentState
             ),
             const SizedBox(height: 16),
             RiverpodTextFormField(
-              fieldId: BetterFormFieldID<String>('email'),
+              fieldId: FormixFieldID<String>('email'),
               keyboardType: TextInputType.emailAddress,
               decoration: const InputDecoration(
                 labelText: 'Email',
@@ -215,7 +212,7 @@ class _PerformanceExamplesContentState
             ),
             const SizedBox(height: 16),
             RiverpodNumberFormField(
-              fieldId: BetterFormFieldID<num>('age'),
+              fieldId: FormixFieldID<num>('age'),
               decoration: const InputDecoration(
                 labelText: 'Age',
                 prefixIcon: Icon(Icons.calendar_today),
@@ -223,12 +220,12 @@ class _PerformanceExamplesContentState
             ),
             const SizedBox(height: 16),
             RiverpodCheckboxFormField(
-              fieldId: BetterFormFieldID<bool>('newsletter'),
+              fieldId: FormixFieldID<bool>('newsletter'),
               title: const Text('Subscribe to newsletter'),
             ),
             const SizedBox(height: 16),
             RiverpodDropdownFormField<String>(
-              fieldId: BetterFormFieldID<String>('country'),
+              fieldId: FormixFieldID<String>('country'),
               items: const [
                 DropdownMenuItem(value: 'US', child: Text('United States')),
                 DropdownMenuItem(value: 'CA', child: Text('Canada')),
@@ -247,7 +244,7 @@ class _PerformanceExamplesContentState
 
             Consumer(
               builder: (context, ref, child) {
-                final controllerProvider = BetterForm.of(context)!;
+                final controllerProvider = Formix.of(context)!;
                 ref.read(controllerProvider.notifier);
                 final formState = ref.watch(controllerProvider);
 

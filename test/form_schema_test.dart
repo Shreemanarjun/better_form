@@ -1,16 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 
 void main() {
   group('FormFieldSchema', () {
-    late BetterFormFieldID<String> nameField;
-    late BetterFormFieldID<num> ageField;
-    late BetterFormFieldID<bool> newsletterField;
+    late FormixFieldID<String> nameField;
+    late FormixFieldID<num> ageField;
+    late FormixFieldID<bool> newsletterField;
 
     setUp(() {
-      nameField = BetterFormFieldID<String>('name');
-      ageField = BetterFormFieldID<num>('age');
-      newsletterField = BetterFormFieldID<bool>('newsletter');
+      nameField = FormixFieldID<String>('name');
+      ageField = FormixFieldID<num>('age');
+      newsletterField = FormixFieldID<bool>('newsletter');
     });
 
     group('TextFieldSchema', () {
@@ -168,7 +168,7 @@ void main() {
     group('SelectionFieldSchema', () {
       test('should validate selection from options', () async {
         final schema = SelectionFieldSchema<String>(
-          id: BetterFormFieldID<String>('priority'),
+          id: FormixFieldID<String>('priority'),
           initialValue: 'medium',
           options: ['low', 'medium', 'high'],
         );
@@ -217,7 +217,7 @@ void main() {
         expect(field!.id, nameField);
 
         final nonExistent = formSchema.getField<String>(
-          BetterFormFieldID<String>('email'),
+          FormixFieldID<String>('email'),
         );
         expect(nonExistent, isNull);
       });

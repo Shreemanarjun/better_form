@@ -5,7 +5,7 @@ import 'field_id.dart';
 ///
 /// This includes all field values, validation results, and metadata like
 /// dirty and touched states.
-class BetterFormState {
+class FormixState {
   /// Map of field keys to their current values.
   final Map<String, dynamic> values;
 
@@ -22,7 +22,7 @@ class BetterFormState {
   final bool isSubmitting;
 
   /// Creates a new form state.
-  const BetterFormState({
+  const FormixState({
     this.values = const {},
     this.validations = const {},
     this.dirtyStates = const {},
@@ -31,14 +31,14 @@ class BetterFormState {
   });
 
   /// Creates a copy of this state with some properties replaced.
-  BetterFormState copyWith({
+  FormixState copyWith({
     Map<String, dynamic>? values,
     Map<String, ValidationResult>? validations,
     Map<String, bool>? dirtyStates,
     Map<String, bool>? touchedStates,
     bool? isSubmitting,
   }) {
-    return BetterFormState(
+    return FormixState(
       values: values ?? this.values,
       validations: validations ?? this.validations,
       dirtyStates: dirtyStates ?? this.dirtyStates,
@@ -54,23 +54,23 @@ class BetterFormState {
   bool get isDirty => dirtyStates.values.any((d) => d);
 
   /// Retrieves the current value for a specific field with type safety.
-  T? getValue<T>(BetterFormFieldID<T> fieldId) {
+  T? getValue<T>(FormixFieldID<T> fieldId) {
     final value = values[fieldId.key];
     return value is T ? value : null;
   }
 
   /// Retrieves the current validation result for a specific field.
-  ValidationResult getValidation<T>(BetterFormFieldID<T> fieldId) {
+  ValidationResult getValidation<T>(FormixFieldID<T> fieldId) {
     return validations[fieldId.key] ?? ValidationResult.valid;
   }
 
   /// Returns `true` if the field has been modified.
-  bool isFieldDirty<T>(BetterFormFieldID<T> fieldId) {
+  bool isFieldDirty<T>(FormixFieldID<T> fieldId) {
     return dirtyStates[fieldId.key] ?? false;
   }
 
   /// Returns `true` if the field has been interacted with.
-  bool isFieldTouched<T>(BetterFormFieldID<T> id) {
+  bool isFieldTouched<T>(FormixFieldID<T> id) {
     return touchedStates[id.key] ?? false;
   }
 

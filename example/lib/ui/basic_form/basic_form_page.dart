@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 import '../../constants/field_ids.dart';
 
 // Basic Form Example with Declarative API
@@ -9,31 +9,31 @@ class BasicFormExample extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return BetterForm(
+    return Formix(
       initialValue: {'name': '', 'email': '', 'age': 18, 'newsletter': false},
       fields: [
-        BetterFormFieldConfig<String>(
+        FormixFieldConfig<String>(
           id: nameField,
           initialValue: '',
           validator: _validateName,
           label: 'Full Name',
           hint: 'Enter your full name',
         ),
-        BetterFormFieldConfig<String>(
+        FormixFieldConfig<String>(
           id: emailField,
           initialValue: '',
           validator: _validateEmail,
           label: 'Email',
           hint: 'Enter your email',
         ),
-        BetterFormFieldConfig<num>(
+        FormixFieldConfig<num>(
           id: ageField,
           initialValue: 18,
           validator: _validateAge,
           label: 'Age',
           hint: 'Enter your age',
         ),
-        BetterFormFieldConfig<bool>(
+        FormixFieldConfig<bool>(
           id: newsletterField,
           initialValue: false,
           label: 'Newsletter',
@@ -83,7 +83,7 @@ class BasicFormExample extends ConsumerWidget {
             const SizedBox(height: 16),
             Consumer(
               builder: (context, ref, child) {
-                final controllerProvider = BetterForm.of(context)!;
+                final controllerProvider = Formix.of(context)!;
                 final controller = ref.read(controllerProvider.notifier);
                 final formState = ref.watch(controllerProvider);
 

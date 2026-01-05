@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart' hide FormState;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 
 // Test-specific providers for easier testing
 final testControllerProvider =
-    StateNotifierProvider.autoDispose<RiverpodFormController, BetterFormState>((
+    StateNotifierProvider.autoDispose<RiverpodFormController, FormixState>((
       ref,
     ) {
       return RiverpodFormController(initialValue: {});
@@ -14,7 +14,7 @@ final testControllerProvider =
 void main() {
   group('RiverpodTextFormField', () {
     testWidgets('should render with initial value', (tester) async {
-      final nameField = BetterFormFieldID<String>('name');
+      final nameField = FormixFieldID<String>('name');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -40,7 +40,7 @@ void main() {
     });
 
     testWidgets('should update value when typing', (tester) async {
-      final nameField = BetterFormFieldID<String>('name');
+      final nameField = FormixFieldID<String>('name');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -69,7 +69,7 @@ void main() {
     });
 
     testWidgets('should show validation error', (tester) async {
-      final emailField = BetterFormFieldID<String>('email');
+      final emailField = FormixFieldID<String>('email');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -78,7 +78,7 @@ void main() {
               final controller = RiverpodFormController(
                 initialValue: {'email': ''},
                 fields: [
-                  BetterFormField<String>(
+                  FormixField<String>(
                     id: emailField,
                     initialValue: '',
                     validator: (value) =>
@@ -112,13 +112,13 @@ void main() {
 
   group('RiverpodNumberFormField', () {
     testWidgets('should render with initial numeric value', (tester) async {
-      final ageField = BetterFormFieldID<num>('age');
+      final ageField = FormixFieldID<num>('age');
 
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
             formControllerProvider(
-              const BetterFormParameter(initialValue: {}),
+              const FormixParameter(initialValue: {}),
             ).overrideWith((ref) {
               return RiverpodFormController(initialValue: {'age': 25});
             }),
@@ -139,13 +139,13 @@ void main() {
     });
 
     testWidgets('should accept numeric input', (tester) async {
-      final ageField = BetterFormFieldID<num>('age');
+      final ageField = FormixFieldID<num>('age');
 
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
             formControllerProvider(
-              const BetterFormParameter(initialValue: {}),
+              const FormixParameter(initialValue: {}),
             ).overrideWith((ref) {
               return RiverpodFormController(initialValue: {'age': 0});
             }),
@@ -168,13 +168,13 @@ void main() {
     });
 
     testWidgets('should enforce min/max constraints', (tester) async {
-      final ageField = BetterFormFieldID<num>('age');
+      final ageField = FormixFieldID<num>('age');
 
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
             formControllerProvider(
-              const BetterFormParameter(initialValue: {}),
+              const FormixParameter(initialValue: {}),
             ).overrideWith((ref) {
               return RiverpodFormController(initialValue: {'age': 25});
             }),
@@ -205,13 +205,13 @@ void main() {
 
   group('RiverpodCheckboxFormField', () {
     testWidgets('should render with initial boolean value', (tester) async {
-      final newsletterField = BetterFormFieldID<bool>('newsletter');
+      final newsletterField = FormixFieldID<bool>('newsletter');
 
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
             formControllerProvider(
-              const BetterFormParameter(initialValue: {}),
+              const FormixParameter(initialValue: {}),
             ).overrideWith((ref) {
               return RiverpodFormController(initialValue: {'newsletter': true});
             }),
@@ -236,13 +236,13 @@ void main() {
     });
 
     testWidgets('should toggle value when tapped', (tester) async {
-      final newsletterField = BetterFormFieldID<bool>('newsletter');
+      final newsletterField = FormixFieldID<bool>('newsletter');
 
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
             formControllerProvider(
-              const BetterFormParameter(initialValue: {}),
+              const FormixParameter(initialValue: {}),
             ).overrideWith((ref) {
               return RiverpodFormController(
                 initialValue: {'newsletter': false},
@@ -276,18 +276,18 @@ void main() {
     });
 
     testWidgets('should show validation error', (tester) async {
-      final agreeField = BetterFormFieldID<bool>('agree');
+      final agreeField = FormixFieldID<bool>('agree');
 
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
             formControllerProvider(
-              const BetterFormParameter(initialValue: {}),
+              const FormixParameter(initialValue: {}),
             ).overrideWith((ref) {
               final controller = RiverpodFormController(
                 initialValue: {'agree': false},
                 fields: [
-                  BetterFormField<bool>(
+                  FormixField<bool>(
                     id: agreeField,
                     initialValue: false,
                     validator: (value) =>
@@ -315,13 +315,13 @@ void main() {
 
   group('RiverpodDropdownFormField', () {
     testWidgets('should render with initial value', (tester) async {
-      final priorityField = BetterFormFieldID<String>('priority');
+      final priorityField = FormixFieldID<String>('priority');
 
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
             formControllerProvider(
-              const BetterFormParameter(initialValue: {}),
+              const FormixParameter(initialValue: {}),
             ).overrideWith((ref) {
               return RiverpodFormController(
                 initialValue: {'priority': 'medium'},
@@ -349,13 +349,13 @@ void main() {
     });
 
     testWidgets('should change value when selected', (tester) async {
-      final priorityField = BetterFormFieldID<String>('priority');
+      final priorityField = FormixFieldID<String>('priority');
 
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
             formControllerProvider(
-              const BetterFormParameter(initialValue: {}),
+              const FormixParameter(initialValue: {}),
             ).overrideWith((ref) {
               return RiverpodFormController(
                 initialValue: {'priority': 'medium'},
@@ -392,7 +392,7 @@ void main() {
         ProviderScope(
           overrides: [
             formControllerProvider(
-              const BetterFormParameter(initialValue: {}),
+              const FormixParameter(initialValue: {}),
             ).overrideWith((ref) {
               return RiverpodFormController(initialValue: {'name': 'John'});
             }),
@@ -409,13 +409,13 @@ void main() {
     testWidgets('should show dirty state when form is modified', (
       tester,
     ) async {
-      final nameField = BetterFormFieldID<String>('name');
+      final nameField = FormixFieldID<String>('name');
 
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
             formControllerProvider(
-              const BetterFormParameter(initialValue: {}),
+              const FormixParameter(initialValue: {}),
             ).overrideWith((ref) {
               final controller = RiverpodFormController(
                 initialValue: {'name': 'John'},

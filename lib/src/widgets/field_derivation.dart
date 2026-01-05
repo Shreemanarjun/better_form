@@ -13,7 +13,7 @@ import 'riverpod_form_fields.dart';
 ///
 /// Example usage:
 /// ```dart
-/// BetterFormFieldDerivation(
+/// FormixFieldDerivation(
 ///   dependencies: [dobField],
 ///   derive: (values) {
 ///     final dob = values[dobField] as DateTime?;
@@ -30,14 +30,14 @@ import 'riverpod_form_fields.dart';
 ///   targetField: ageField,
 /// )
 /// ```
-class BetterFormFieldDerivation extends StatefulWidget {
+class FormixFieldDerivation extends StatefulWidget {
   /// Creates a field derivation widget.
   ///
   /// [dependencies] - List of fields this derivation depends on
   /// [derive] - Function that computes the derived value from dependency values
   /// [targetField] - The field to update with the derived value
   /// [key] - Optional widget key
-  const BetterFormFieldDerivation({
+  const FormixFieldDerivation({
     super.key,
     required this.dependencies,
     required this.derive,
@@ -46,22 +46,21 @@ class BetterFormFieldDerivation extends StatefulWidget {
 
   /// The fields that this derivation depends on.
   /// When any of these fields change, the derivation will be recalculated.
-  final List<BetterFormFieldID<dynamic>> dependencies;
+  final List<FormixFieldID<dynamic>> dependencies;
 
   /// Function that computes the derived value.
   /// Receives a map of current field values and returns the computed value.
-  final dynamic Function(Map<BetterFormFieldID<dynamic>, dynamic>) derive;
+  final dynamic Function(Map<FormixFieldID<dynamic>, dynamic>) derive;
 
   /// The field to update with the derived value.
-  final BetterFormFieldID<dynamic> targetField;
+  final FormixFieldID<dynamic> targetField;
 
   @override
-  State<BetterFormFieldDerivation> createState() =>
-      _BetterFormFieldDerivationState();
+  State<FormixFieldDerivation> createState() => _FormixFieldDerivationState();
 }
 
-class _BetterFormFieldDerivationState extends State<BetterFormFieldDerivation> {
-  BetterFormController? _controller;
+class _FormixFieldDerivationState extends State<FormixFieldDerivation> {
+  FormixController? _controller;
   late VoidCallback _listener;
 
   @override
@@ -74,7 +73,7 @@ class _BetterFormFieldDerivationState extends State<BetterFormFieldDerivation> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    final newController = BetterForm.controllerOf(context);
+    final newController = Formix.controllerOf(context);
     if (newController != _controller) {
       // Remove listeners from old controller
       if (_controller != null) {
@@ -104,7 +103,7 @@ class _BetterFormFieldDerivationState extends State<BetterFormFieldDerivation> {
   }
 
   @override
-  void didUpdateWidget(BetterFormFieldDerivation oldWidget) {
+  void didUpdateWidget(FormixFieldDerivation oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     // If dependencies changed, update listeners
@@ -140,7 +139,7 @@ class _BetterFormFieldDerivationState extends State<BetterFormFieldDerivation> {
     super.dispose();
   }
 
-  void _ensureFieldRegistered(BetterFormFieldID<dynamic> fieldId) {
+  void _ensureFieldRegistered(FormixFieldID<dynamic> fieldId) {
     // For derivations, we don't require pre-registration since fields may be
     // registered later in the widget tree. The derivation will work as long
     // as the field exists when the derivation runs.
@@ -155,7 +154,7 @@ class _BetterFormFieldDerivationState extends State<BetterFormFieldDerivation> {
 
     try {
       // Get current values of all dependencies
-      final values = <BetterFormFieldID<dynamic>, dynamic>{};
+      final values = <FormixFieldID<dynamic>, dynamic>{};
       for (final fieldId in widget.dependencies) {
         values[fieldId] = _controller!.getValue(fieldId);
       }
@@ -190,31 +189,29 @@ class _BetterFormFieldDerivationState extends State<BetterFormFieldDerivation> {
 }
 
 /// A more advanced version that supports multiple derivations and more complex logic.
-class BetterFormFieldDerivations extends StatefulWidget {
+class FormixFieldDerivations extends StatefulWidget {
   /// Creates multiple field derivations.
   ///
   /// [derivations] - List of derivation configurations
   /// [key] - Optional widget key
-  const BetterFormFieldDerivations({super.key, required this.derivations});
+  const FormixFieldDerivations({super.key, required this.derivations});
 
   /// List of derivation configurations.
   final List<FieldDerivationConfig> derivations;
 
   @override
-  State<BetterFormFieldDerivations> createState() =>
-      _BetterFormFieldDerivationsState();
+  State<FormixFieldDerivations> createState() => _FormixFieldDerivationsState();
 }
 
-class _BetterFormFieldDerivationsState
-    extends State<BetterFormFieldDerivations> {
-  BetterFormController? _controller;
+class _FormixFieldDerivationsState extends State<FormixFieldDerivations> {
+  FormixController? _controller;
   final Map<String, VoidCallback> _listeners = {};
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    final newController = BetterForm.controllerOf(context);
+    final newController = Formix.controllerOf(context);
     if (newController != _controller) {
       // Clean up old listeners
       _removeAllListeners();
@@ -230,7 +227,7 @@ class _BetterFormFieldDerivationsState
   }
 
   @override
-  void didUpdateWidget(BetterFormFieldDerivations oldWidget) {
+  void didUpdateWidget(FormixFieldDerivations oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     if (!listEquals(oldWidget.derivations, widget.derivations)) {
@@ -284,7 +281,7 @@ class _BetterFormFieldDerivationsState
 
     try {
       // Get current values of all dependencies
-      final values = <BetterFormFieldID<dynamic>, dynamic>{};
+      final values = <FormixFieldID<dynamic>, dynamic>{};
       for (final fieldId in config.dependencies) {
         values[fieldId] = _controller!.getValue(fieldId);
       }
@@ -335,13 +332,13 @@ class FieldDerivationConfig {
   });
 
   /// The fields that this derivation depends on.
-  final List<BetterFormFieldID<dynamic>> dependencies;
+  final List<FormixFieldID<dynamic>> dependencies;
 
   /// Function that computes the derived value from dependency values.
-  final dynamic Function(Map<BetterFormFieldID<dynamic>, dynamic>) derive;
+  final dynamic Function(Map<FormixFieldID<dynamic>, dynamic>) derive;
 
   /// The field to update with the derived value.
-  final BetterFormFieldID<dynamic> targetField;
+  final FormixFieldID<dynamic> targetField;
 
   @override
   bool operator ==(Object other) {

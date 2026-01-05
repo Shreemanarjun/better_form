@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 
 void main() {
   group('Golden Tests', () {
     testWidgets('TextFormField Appearance', (tester) async {
-      final field = BetterFormFieldID<String>('text');
+      final field = FormixFieldID<String>('text');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -16,7 +16,7 @@ void main() {
               body: Center(
                 child: Padding(
                   padding: const EdgeInsets.all(20.0),
-                  child: BetterForm(
+                  child: Formix(
                     initialValue: const {'text': 'Initial Value'},
                     child: RiverpodTextFormField(
                       fieldId: field,
@@ -49,7 +49,7 @@ void main() {
               body: Center(
                 child: Padding(
                   padding: const EdgeInsets.all(20.0),
-                  child: BetterForm(
+                  child: Formix(
                     initialValue: const {'text': 'Something'},
                     child: const RiverpodFormStatus(),
                   ),

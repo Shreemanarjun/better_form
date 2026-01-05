@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 
 // Validation Examples
 class ValidationExamples extends ConsumerWidget {
@@ -24,7 +24,7 @@ class _ValidationExamplesContentState
     extends ConsumerState<ValidationExamplesContent> {
   @override
   Widget build(BuildContext context) {
-    return BetterForm(
+    return Formix(
       initialValue: {
         'email': '',
         'password': '',
@@ -38,8 +38,8 @@ class _ValidationExamplesContentState
         'bio': '',
       },
       fields: [
-        BetterFormFieldConfig<String>(
-          id: BetterFormFieldID<String>('email'),
+        FormixFieldConfig<String>(
+          id: FormixFieldID<String>('email'),
           initialValue: '',
           validator: (value) {
             if (value.isEmpty) return 'Email is required';
@@ -48,8 +48,8 @@ class _ValidationExamplesContentState
             return null;
           },
         ),
-        BetterFormFieldConfig<String>(
-          id: BetterFormFieldID<String>('password'),
+        FormixFieldConfig<String>(
+          id: FormixFieldID<String>('password'),
           initialValue: '',
           validator: (value) {
             if (value.isEmpty) return 'Password is required';
@@ -68,20 +68,20 @@ class _ValidationExamplesContentState
             return null;
           },
         ),
-        BetterFormFieldConfig<String>(
-          id: BetterFormFieldID<String>('confirmPassword'),
+        FormixFieldConfig<String>(
+          id: FormixFieldID<String>('confirmPassword'),
           initialValue: '',
           validator: (value) {
-            final password = BetterForm.controllerOf(
+            final password = Formix.controllerOf(
               context,
-            )?.getValue(BetterFormFieldID<String>('password'));
+            )?.getValue(FormixFieldID<String>('password'));
             if (value.isEmpty) return 'Please confirm your password';
             if (value != password) return 'Passwords do not match';
             return null;
           },
         ),
-        BetterFormFieldConfig<num>(
-          id: BetterFormFieldID<num>('age'),
+        FormixFieldConfig<num>(
+          id: FormixFieldID<num>('age'),
           initialValue: 18,
           validator: (value) {
             if (value < 13) return 'Must be at least 13 years old';
@@ -89,8 +89,8 @@ class _ValidationExamplesContentState
             return null;
           },
         ),
-        BetterFormFieldConfig<String>(
-          id: BetterFormFieldID<String>('phone'),
+        FormixFieldConfig<String>(
+          id: FormixFieldID<String>('phone'),
           initialValue: '',
           validator: (value) {
             if (value.isEmpty) return 'Phone number is required';
@@ -101,8 +101,8 @@ class _ValidationExamplesContentState
             return null;
           },
         ),
-        BetterFormFieldConfig<String>(
-          id: BetterFormFieldID<String>('url'),
+        FormixFieldConfig<String>(
+          id: FormixFieldID<String>('url'),
           initialValue: '',
           validator: (value) {
             if (value.isEmpty) return null; // Optional field
@@ -111,8 +111,8 @@ class _ValidationExamplesContentState
             return null;
           },
         ),
-        BetterFormFieldConfig<String>(
-          id: BetterFormFieldID<String>('creditCard'),
+        FormixFieldConfig<String>(
+          id: FormixFieldID<String>('creditCard'),
           initialValue: '',
           validator: (value) {
             if (value.isEmpty) return null; // Optional field
@@ -128,8 +128,8 @@ class _ValidationExamplesContentState
             return null;
           },
         ),
-        BetterFormFieldConfig<String>(
-          id: BetterFormFieldID<String>('zipCode'),
+        FormixFieldConfig<String>(
+          id: FormixFieldID<String>('zipCode'),
           initialValue: '',
           validator: (value) {
             if (value.isEmpty) return 'ZIP code is required';
@@ -140,8 +140,8 @@ class _ValidationExamplesContentState
             return null;
           },
         ),
-        BetterFormFieldConfig<String>(
-          id: BetterFormFieldID<String>('username'),
+        FormixFieldConfig<String>(
+          id: FormixFieldID<String>('username'),
           initialValue: '',
           validator: (value) {
             if (value.isEmpty) return 'Username is required';
@@ -157,8 +157,8 @@ class _ValidationExamplesContentState
             return null;
           },
         ),
-        BetterFormFieldConfig<String>(
-          id: BetterFormFieldID<String>('bio'),
+        FormixFieldConfig<String>(
+          id: FormixFieldID<String>('bio'),
           initialValue: '',
           validator: (value) {
             if (value.length > 500) {
@@ -191,7 +191,7 @@ class _ValidationExamplesContentState
             ),
             const SizedBox(height: 8),
             RiverpodTextFormField(
-              fieldId: BetterFormFieldID<String>('email'),
+              fieldId: FormixFieldID<String>('email'),
               keyboardType: TextInputType.emailAddress,
               decoration: const InputDecoration(
                 labelText: 'Email Address',
@@ -208,7 +208,7 @@ class _ValidationExamplesContentState
             ),
             const SizedBox(height: 8),
             RiverpodTextFormField(
-              fieldId: BetterFormFieldID<String>('password'),
+              fieldId: FormixFieldID<String>('password'),
               decoration: const InputDecoration(
                 labelText: 'Password',
                 hintText:
@@ -220,7 +220,7 @@ class _ValidationExamplesContentState
 
             // Confirm Password
             RiverpodTextFormField(
-              fieldId: BetterFormFieldID<String>('confirmPassword'),
+              fieldId: FormixFieldID<String>('confirmPassword'),
               decoration: const InputDecoration(
                 labelText: 'Confirm Password',
                 prefixIcon: Icon(Icons.lock_outline),
@@ -235,7 +235,7 @@ class _ValidationExamplesContentState
             ),
             const SizedBox(height: 8),
             RiverpodNumberFormField(
-              fieldId: BetterFormFieldID<num>('age'),
+              fieldId: FormixFieldID<num>('age'),
               min: 0,
               max: 150,
               decoration: const InputDecoration(
@@ -253,7 +253,7 @@ class _ValidationExamplesContentState
             ),
             const SizedBox(height: 8),
             RiverpodTextFormField(
-              fieldId: BetterFormFieldID<String>('phone'),
+              fieldId: FormixFieldID<String>('phone'),
               keyboardType: TextInputType.phone,
               decoration: const InputDecoration(
                 labelText: 'Phone Number',
@@ -270,7 +270,7 @@ class _ValidationExamplesContentState
             ),
             const SizedBox(height: 8),
             RiverpodTextFormField(
-              fieldId: BetterFormFieldID<String>('url'),
+              fieldId: FormixFieldID<String>('url'),
               keyboardType: TextInputType.url,
               decoration: const InputDecoration(
                 labelText: 'Website URL',
@@ -287,7 +287,7 @@ class _ValidationExamplesContentState
             ),
             const SizedBox(height: 8),
             RiverpodTextFormField(
-              fieldId: BetterFormFieldID<String>('creditCard'),
+              fieldId: FormixFieldID<String>('creditCard'),
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
                 labelText: 'Credit Card Number',
@@ -304,7 +304,7 @@ class _ValidationExamplesContentState
             ),
             const SizedBox(height: 8),
             RiverpodTextFormField(
-              fieldId: BetterFormFieldID<String>('zipCode'),
+              fieldId: FormixFieldID<String>('zipCode'),
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
                 labelText: 'ZIP Code',
@@ -321,7 +321,7 @@ class _ValidationExamplesContentState
             ),
             const SizedBox(height: 8),
             RiverpodTextFormField(
-              fieldId: BetterFormFieldID<String>('username'),
+              fieldId: FormixFieldID<String>('username'),
               decoration: const InputDecoration(
                 labelText: 'Username',
                 hintText: '3-20 characters, letters/numbers/underscores',
@@ -337,7 +337,7 @@ class _ValidationExamplesContentState
             ),
             const SizedBox(height: 8),
             RiverpodTextFormField(
-              fieldId: BetterFormFieldID<String>('bio'),
+              fieldId: FormixFieldID<String>('bio'),
               maxLength: 500,
               decoration: const InputDecoration(
                 labelText: 'Bio',
@@ -352,7 +352,7 @@ class _ValidationExamplesContentState
 
             Consumer(
               builder: (context, ref, child) {
-                final controllerProvider = BetterForm.of(context)!;
+                final controllerProvider = Formix.of(context)!;
                 final controller = ref.read(controllerProvider.notifier);
                 ref.watch(controllerProvider);
 

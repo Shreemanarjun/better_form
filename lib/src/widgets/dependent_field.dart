@@ -3,18 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../controllers/field_id.dart';
 import '../controllers/riverpod_controller.dart';
-import 'better_form.dart';
+import 'formix.dart';
 import 'riverpod_form_fields.dart';
 
 /// A widget that rebuilds when a dependent field's value changes.
 ///
-/// Use [BetterDependentField] to conditionally show or hide parts of your UI
+/// Use [FormixDependentField] to conditionally show or hide parts of your UI
 /// based on the current value of another field. This is highly optimized and
 /// only rebuilds when the specific dependent field changes.
 ///
 /// Example:
 /// ```dart
-/// BetterDependentField<bool>(
+/// FormixDependentField<bool>(
 ///   fieldId: hasPetField,
 ///   builder: (context, hasPet) {
 ///     if (hasPet == true) {
@@ -24,9 +24,9 @@ import 'riverpod_form_fields.dart';
 ///   },
 /// )
 /// ```
-class BetterDependentField<T> extends ConsumerWidget {
+class FormixDependentField<T> extends ConsumerWidget {
   /// Creates a dependent field widget.
-  const BetterDependentField({
+  const FormixDependentField({
     super.key,
     required this.fieldId,
     required this.builder,
@@ -34,24 +34,21 @@ class BetterDependentField<T> extends ConsumerWidget {
   });
 
   /// The ID of the field to watch for changes.
-  final BetterFormFieldID<T> fieldId;
+  final FormixFieldID<T> fieldId;
 
   /// Builder function that receives the current [value] of the dependent field.
   final Widget Function(BuildContext context, T? value) builder;
 
-  /// Optional explicit controller provider. If null, it looks up the nearest [BetterForm].
-  final AutoDisposeStateNotifierProvider<
-    RiverpodFormController,
-    BetterFormState
-  >?
+  /// Optional explicit controller provider. If null, it looks up the nearest [Formix].
+  final AutoDisposeStateNotifierProvider<RiverpodFormController, FormixState>?
   controllerProvider;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final provider =
         controllerProvider ??
-        BetterForm.of(context) ??
-        formControllerProvider(const BetterFormParameter(initialValue: {}));
+        Formix.of(context) ??
+        formControllerProvider(const FormixParameter(initialValue: {}));
 
     // We use ProviderScope override to ensure we are watching the correct controller
     // if we are using the global fieldValueProvider

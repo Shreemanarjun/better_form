@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 
 void main() {
-  testWidgets('BetterFormFieldConditionalSelector simple test', (tester) async {
-    final fieldId = const BetterFormFieldID<String>('name');
+  testWidgets('FormixFieldConditionalSelector simple test', (tester) async {
+    final fieldId = const FormixFieldID<String>('name');
     int buildCount = 0;
 
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
           home: Scaffold(
-            body: BetterForm(
+            body: Formix(
               initialValue: const {'name': 'A'},
-              fields: [BetterFormFieldConfig(id: fieldId)],
-              child: BetterFormFieldConditionalSelector<String>(
+              fields: [FormixFieldConfig(id: fieldId)],
+              child: FormixFieldConditionalSelector<String>(
                 fieldId: fieldId,
                 shouldRebuild: (info) => true,
                 builder: (context, info, child) {

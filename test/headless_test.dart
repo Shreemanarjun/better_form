@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 
 void main() {
-  group('BetterFieldStateSnapshot', () {
+  group('FormixFieldStateSnapshot', () {
     test('shouldShowError returns true when touched and invalid', () {
       final focusNode = FocusNode();
-      final snapshot = BetterFieldStateSnapshot<String>(
+      final snapshot = FormixFieldStateSnapshot<String>(
         value: 'test',
         validation: ValidationResult(isValid: false, errorMessage: 'Error'),
         isDirty: true,
@@ -24,7 +24,7 @@ void main() {
 
     test('shouldShowError returns true when submitting and invalid', () {
       final focusNode = FocusNode();
-      final snapshot = BetterFieldStateSnapshot<String>(
+      final snapshot = FormixFieldStateSnapshot<String>(
         value: 'test',
         validation: ValidationResult(isValid: false, errorMessage: 'Error'),
         isDirty: true,
@@ -41,7 +41,7 @@ void main() {
 
     test('shouldShowError returns false when valid', () {
       final focusNode = FocusNode();
-      final snapshot = BetterFieldStateSnapshot<String>(
+      final snapshot = FormixFieldStateSnapshot<String>(
         value: 'test',
         validation: ValidationResult.valid,
         isDirty: true,
@@ -60,7 +60,7 @@ void main() {
       'shouldShowError returns true when valid but touched/submitting and invalid',
       () {
         final focusNode = FocusNode();
-        final snapshot = BetterFieldStateSnapshot<String>(
+        final snapshot = FormixFieldStateSnapshot<String>(
           value: 'test',
           validation: ValidationResult(isValid: false, errorMessage: 'Error'),
           isDirty: true,
@@ -78,7 +78,7 @@ void main() {
 
     test('shouldShowError returns false when validating', () {
       final focusNode = FocusNode();
-      final snapshot = BetterFieldStateSnapshot<String>(
+      final snapshot = FormixFieldStateSnapshot<String>(
         value: 'test',
         validation: ValidationResult.validating,
         isDirty: true,
@@ -95,7 +95,7 @@ void main() {
 
     test('hasError returns true when validation is invalid', () {
       final focusNode = FocusNode();
-      final snapshot = BetterFieldStateSnapshot<String>(
+      final snapshot = FormixFieldStateSnapshot<String>(
         value: 'test',
         validation: ValidationResult(isValid: false, errorMessage: 'Error'),
         isDirty: true,
@@ -112,7 +112,7 @@ void main() {
 
     test('hasError returns false when validation is valid', () {
       final focusNode = FocusNode();
-      final snapshot = BetterFieldStateSnapshot<String>(
+      final snapshot = FormixFieldStateSnapshot<String>(
         value: 'test',
         validation: ValidationResult.valid,
         isDirty: true,
@@ -128,21 +128,19 @@ void main() {
     });
   });
 
-  group('BetterRawFormField', () {
+  group('FormixRawFormField', () {
     testWidgets('provides snapshot with correct initial state', (tester) async {
-      final id = BetterFormFieldID<String>('test_field');
-      BetterFieldStateSnapshot<String>? capturedSnapshot;
+      final id = FormixFieldID<String>('test_field');
+      FormixFieldStateSnapshot<String>? capturedSnapshot;
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {'test_field': 'initial'},
-                fields: [
-                  BetterFormFieldConfig(id: id, initialValue: 'initial'),
-                ],
-                child: BetterRawFormField<String>(
+                fields: [FormixFieldConfig(id: id, initialValue: 'initial')],
+                child: FormixRawFormField<String>(
                   fieldId: id,
                   initialValue: 'initial',
                   builder: (context, snapshot) {
@@ -168,19 +166,17 @@ void main() {
     });
 
     testWidgets('snapshot updates when value changes', (tester) async {
-      final id = BetterFormFieldID<String>('test_field');
-      BetterFieldStateSnapshot<String>? capturedSnapshot;
+      final id = FormixFieldID<String>('test_field');
+      FormixFieldStateSnapshot<String>? capturedSnapshot;
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {'test_field': 'initial'},
-                fields: [
-                  BetterFormFieldConfig(id: id, initialValue: 'initial'),
-                ],
-                child: BetterRawFormField<String>(
+                fields: [FormixFieldConfig(id: id, initialValue: 'initial')],
+                child: FormixRawFormField<String>(
                   fieldId: id,
                   initialValue: 'initial',
                   builder: (context, snapshot) {
@@ -205,25 +201,25 @@ void main() {
     });
 
     testWidgets('snapshot updates when validation changes', (tester) async {
-      final id = BetterFormFieldID<String>('test_field');
-      BetterFieldStateSnapshot<String>? capturedSnapshot;
+      final id = FormixFieldID<String>('test_field');
+      FormixFieldStateSnapshot<String>? capturedSnapshot;
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {
                   'test_field': '',
                 }, // Start with empty string
                 fields: [
-                  BetterFormFieldConfig(
+                  FormixFieldConfig(
                     id: id,
                     initialValue: '',
                     validator: (v) => (v?.isEmpty ?? true) ? 'Required' : null,
                   ),
                 ],
-                child: BetterRawFormField<String>(
+                child: FormixRawFormField<String>(
                   fieldId: id,
                   initialValue: '',
                   builder: (context, snapshot) {
@@ -250,16 +246,16 @@ void main() {
     });
 
     testWidgets('snapshot updates when touched state changes', (tester) async {
-      final id = BetterFormFieldID<String>('test_field');
-      BetterFieldStateSnapshot<String>? capturedSnapshot;
+      final id = FormixFieldID<String>('test_field');
+      FormixFieldStateSnapshot<String>? capturedSnapshot;
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
-                fields: [BetterFormFieldConfig(id: id)],
-                child: BetterRawFormField<String>(
+              body: Formix(
+                fields: [FormixFieldConfig(id: id)],
+                child: FormixRawFormField<String>(
                   fieldId: id,
                   builder: (context, snapshot) {
                     capturedSnapshot = snapshot;
@@ -286,16 +282,16 @@ void main() {
     testWidgets('snapshot updates when submitting state changes', (
       tester,
     ) async {
-      final id = BetterFormFieldID<String>('test_field');
-      BetterFieldStateSnapshot<String>? capturedSnapshot;
+      final id = FormixFieldID<String>('test_field');
+      FormixFieldStateSnapshot<String>? capturedSnapshot;
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
-                fields: [BetterFormFieldConfig(id: id)],
-                child: BetterRawFormField<String>(
+              body: Formix(
+                fields: [FormixFieldConfig(id: id)],
+                child: FormixRawFormField<String>(
                   fieldId: id,
                   builder: (context, snapshot) {
                     capturedSnapshot = snapshot;
@@ -313,13 +309,13 @@ void main() {
       expect(capturedSnapshot!.isSubmitting, false);
 
       // Set submitting
-      final provider = BetterForm.of(
+      final provider = Formix.of(
         tester.element(find.text('Submitting: false')),
       )!;
       final container = ProviderScope.containerOf(
         tester.element(find.text('Submitting: false')),
       );
-      (container.read(provider.notifier) as BetterFormController).setSubmitting(
+      (container.read(provider.notifier) as FormixController).setSubmitting(
         true,
       );
       await tester.pump();
@@ -328,23 +324,21 @@ void main() {
     });
   });
 
-  group('BetterRawTextField', () {
+  group('FormixRawTextField', () {
     testWidgets('provides text snapshot with correct initial state', (
       tester,
     ) async {
-      final id = BetterFormFieldID<String>('text_field');
-      BetterTextFieldStateSnapshot<String>? capturedSnapshot;
+      final id = FormixFieldID<String>('text_field');
+      FormixTextFieldStateSnapshot<String>? capturedSnapshot;
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {'text_field': 'initial'},
-                fields: [
-                  BetterFormFieldConfig(id: id, initialValue: 'initial'),
-                ],
-                child: BetterRawTextField<String>(
+                fields: [FormixFieldConfig(id: id, initialValue: 'initial')],
+                child: FormixRawTextField<String>(
                   fieldId: id,
                   initialValue: 'initial',
                   valueToString: (v) => v ?? '',
@@ -371,19 +365,17 @@ void main() {
     testWidgets('text controller updates when value changes externally', (
       tester,
     ) async {
-      final id = BetterFormFieldID<String>('text_field');
-      BetterTextFieldStateSnapshot<String>? capturedSnapshot;
+      final id = FormixFieldID<String>('text_field');
+      FormixTextFieldStateSnapshot<String>? capturedSnapshot;
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {'text_field': 'initial'},
-                fields: [
-                  BetterFormFieldConfig(id: id, initialValue: 'initial'),
-                ],
-                child: BetterRawTextField<String>(
+                fields: [FormixFieldConfig(id: id, initialValue: 'initial')],
+                child: FormixRawTextField<String>(
                   fieldId: id,
                   initialValue: 'initial',
                   valueToString: (v) => v ?? '',
@@ -404,7 +396,7 @@ void main() {
       expect(capturedSnapshot!.textController.text, 'initial');
 
       // Change value externally
-      final provider = BetterForm.of(
+      final provider = Formix.of(
         tester.element(find.text('Controller: initial')),
       )!;
       final container = ProviderScope.containerOf(
@@ -417,19 +409,17 @@ void main() {
     });
 
     testWidgets('value updates when text controller changes', (tester) async {
-      final id = BetterFormFieldID<String>('text_field');
-      BetterTextFieldStateSnapshot<String>? capturedSnapshot;
+      final id = FormixFieldID<String>('text_field');
+      FormixTextFieldStateSnapshot<String>? capturedSnapshot;
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {'text_field': 'initial'},
-                fields: [
-                  BetterFormFieldConfig(id: id, initialValue: 'initial'),
-                ],
-                child: BetterRawTextField<String>(
+                fields: [FormixFieldConfig(id: id, initialValue: 'initial')],
+                child: FormixRawTextField<String>(
                   fieldId: id,
                   initialValue: 'initial',
                   valueToString: (v) => v ?? '',
@@ -459,17 +449,17 @@ void main() {
     testWidgets('custom valueToString and stringToValue work correctly', (
       tester,
     ) async {
-      final id = BetterFormFieldID<int>('number_field');
-      BetterTextFieldStateSnapshot<int>? capturedSnapshot;
+      final id = FormixFieldID<int>('number_field');
+      FormixTextFieldStateSnapshot<int>? capturedSnapshot;
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {'number_field': 42},
-                fields: [BetterFormFieldConfig(id: id, initialValue: 42)],
-                child: BetterRawTextField<int>(
+                fields: [FormixFieldConfig(id: id, initialValue: 42)],
+                child: FormixRawTextField<int>(
                   fieldId: id,
                   initialValue: 42,
                   valueToString: (v) => v?.toString() ?? '',
@@ -498,16 +488,16 @@ void main() {
     });
 
     testWidgets('handles null values correctly', (tester) async {
-      final id = BetterFormFieldID<String>('nullable_field');
-      BetterTextFieldStateSnapshot<String>? capturedSnapshot;
+      final id = FormixFieldID<String>('nullable_field');
+      FormixTextFieldStateSnapshot<String>? capturedSnapshot;
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
-                fields: [BetterFormFieldConfig(id: id)],
-                child: BetterRawTextField<String>(
+              body: Formix(
+                fields: [FormixFieldConfig(id: id)],
+                child: FormixRawTextField<String>(
                   fieldId: id,
                   valueToString: (v) => v ?? '',
                   stringToValue: (s) => s.isEmpty ? null : s,
@@ -544,24 +534,21 @@ void main() {
   });
 
   group('Headless Widgets (Standalone)', () {
-    testWidgets('BetterRawTextField finds child after registration', (
+    testWidgets('FormixRawTextField finds child after registration', (
       tester,
     ) async {
-      final id = BetterFormFieldID<String>('standalone');
+      final id = FormixFieldID<String>('standalone');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {'standalone': 'Initial'},
-                fields: <BetterFormFieldConfig<dynamic>>[
-                  BetterFormFieldConfig<String>(
-                    id: id,
-                    initialValue: 'Initial',
-                  ),
+                fields: <FormixFieldConfig<dynamic>>[
+                  FormixFieldConfig<String>(id: id, initialValue: 'Initial'),
                 ],
-                child: BetterRawTextField<String>(
+                child: FormixRawTextField<String>(
                   fieldId: id,
                   initialValue: 'Initial',
                   valueToString: (v) => v ?? '',
@@ -592,7 +579,7 @@ void main() {
       final element = tester.element(
         find.byKey(const Key('my_headless_container')),
       );
-      final controller = BetterForm.controllerOf(element)!;
+      final controller = Formix.controllerOf(element)!;
 
       controller.setValue(id, 'Alex');
       await tester.pump();

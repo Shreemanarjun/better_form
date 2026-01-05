@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'better_form.dart';
+import 'formix.dart';
 
 /// A widget that prevents navigation if the form is dirty.
 ///
 /// This widget wraps [PopScope] and checks the form's dirty state before allowing
 /// a pop action. If the form is dirty, it can show a confirmation dialog.
-class BetterFormNavigationGuard extends ConsumerStatefulWidget {
+class FormixNavigationGuard extends ConsumerStatefulWidget {
   /// The child widget.
   final Widget child;
 
@@ -25,7 +25,7 @@ class BetterFormNavigationGuard extends ConsumerStatefulWidget {
   /// Should return `true` if the user confirms discarding changes.
   final Future<bool> Function(BuildContext context)? showDirtyDialog;
 
-  const BetterFormNavigationGuard({
+  const FormixNavigationGuard({
     super.key,
     required this.child,
     this.enabled = true,
@@ -34,19 +34,18 @@ class BetterFormNavigationGuard extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<BetterFormNavigationGuard> createState() =>
-      _BetterFormNavigationGuardState();
+  ConsumerState<FormixNavigationGuard> createState() =>
+      _FormixNavigationGuardState();
 }
 
-class _BetterFormNavigationGuardState
-    extends ConsumerState<BetterFormNavigationGuard> {
+class _FormixNavigationGuardState extends ConsumerState<FormixNavigationGuard> {
   bool _isExiting = false;
 
   @override
   Widget build(BuildContext context) {
     if (!widget.enabled) return widget.child;
 
-    final controllerProvider = BetterForm.of(context);
+    final controllerProvider = Formix.of(context);
     if (controllerProvider == null) {
       return widget.child;
     }

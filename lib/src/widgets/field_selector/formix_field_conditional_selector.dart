@@ -1,12 +1,12 @@
-import 'package:better_form/src/controllers/field_id.dart';
-import 'package:better_form/src/controllers/riverpod_controller.dart';
-import 'package:better_form/src/widgets/field_selector.dart';
-import 'package:better_form/src/widgets/field_selector/better_form_field_selector.dart';
+import 'package:formix/src/controllers/field_id.dart';
+import 'package:formix/src/controllers/riverpod_controller.dart';
+import 'package:formix/src/widgets/field_selector.dart';
+import 'package:formix/src/widgets/field_selector/formix_field_selector.dart';
 import 'package:flutter/material.dart';
 
 /// A widget that provides granular listening control with custom conditions
-class BetterFormFieldConditionalSelector<T> extends StatelessWidget {
-  const BetterFormFieldConditionalSelector({
+class FormixFieldConditionalSelector<T> extends StatelessWidget {
+  const FormixFieldConditionalSelector({
     super.key,
     required this.fieldId,
     required this.builder,
@@ -15,7 +15,7 @@ class BetterFormFieldConditionalSelector<T> extends StatelessWidget {
     this.child,
   });
 
-  final BetterFormFieldID<T> fieldId;
+  final FormixFieldID<T> fieldId;
   final Widget Function(
     BuildContext context,
     FieldChangeInfo<T> info,
@@ -23,12 +23,12 @@ class BetterFormFieldConditionalSelector<T> extends StatelessWidget {
   )
   builder;
   final bool Function(FieldChangeInfo<T> info) shouldRebuild;
-  final BetterFormController? controller;
+  final FormixController? controller;
   final Widget? child;
 
   @override
   Widget build(BuildContext context) {
-    return BetterFormFieldSelector<T>(
+    return FormixFieldSelector<T>(
       fieldId: fieldId,
       controller: controller,
       builder: (context, info, child) {

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../controllers/field_id.dart';
 import '../controllers/riverpod_controller.dart';
-import 'better_form.dart';
+import 'formix.dart';
 import 'form_group.dart';
 import 'riverpod_form_fields.dart';
 
@@ -19,14 +19,11 @@ class RiverpodTextFormField extends ConsumerStatefulWidget {
     this.focusNode,
   });
 
-  final BetterFormFieldID<String> fieldId;
+  final FormixFieldID<String> fieldId;
   final InputDecoration? decoration;
   final TextInputType? keyboardType;
   final int? maxLength;
-  final AutoDisposeStateNotifierProvider<
-    RiverpodFormController,
-    BetterFormState
-  >?
+  final AutoDisposeStateNotifierProvider<RiverpodFormController, FormixState>?
   controllerProvider;
   final FocusNode? focusNode;
 
@@ -55,13 +52,13 @@ class _RiverpodTextFormFieldState extends ConsumerState<RiverpodTextFormField> {
     super.didChangeDependencies();
     final provider =
         widget.controllerProvider ??
-        BetterForm.of(context) ??
-        formControllerProvider(const BetterFormParameter(initialValue: {}));
+        Formix.of(context) ??
+        formControllerProvider(const FormixParameter(initialValue: {}));
 
     final controller = ref.read(provider.notifier);
-    final resolvedId = BetterFormGroup.resolve(context, widget.fieldId);
+    final resolvedId = FormixGroup.resolve(context, widget.fieldId);
 
-    if (controller is BetterFormController) {
+    if (controller is FormixController) {
       controller.registerFocusNode(resolvedId, _focusNode);
       controller.registerContext(resolvedId, context);
     }
@@ -78,10 +75,10 @@ class _RiverpodTextFormFieldState extends ConsumerState<RiverpodTextFormField> {
   Widget build(BuildContext context) {
     final controllerProvider =
         widget.controllerProvider ??
-        BetterForm.of(context) ??
-        formControllerProvider(const BetterFormParameter(initialValue: {}));
+        Formix.of(context) ??
+        formControllerProvider(const FormixParameter(initialValue: {}));
 
-    final resolvedId = BetterFormGroup.resolve(context, widget.fieldId);
+    final resolvedId = FormixGroup.resolve(context, widget.fieldId);
 
     return ProviderScope(
       overrides: [

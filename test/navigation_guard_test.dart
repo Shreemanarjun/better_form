@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 
 void main() {
-  testWidgets('BetterFormNavigationGuard prevents navigation when dirty', (
+  testWidgets('FormixNavigationGuard prevents navigation when dirty', (
     tester,
   ) async {
     bool confirmedDiscard = false;
 
-    final nameField = BetterFormFieldID<String>('name');
+    final nameField = FormixFieldID<String>('name');
 
     await tester.pumpWidget(
       ProviderScope(
@@ -20,23 +20,23 @@ void main() {
                 child: ElevatedButton(
                   onPressed: () => Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => BetterForm(
-                        child: BetterFormNavigationGuard(
+                      builder: (context) => Formix(
+                        child: FormixNavigationGuard(
                           showDirtyDialog: (context) async {
                             confirmedDiscard = true;
                             return true; // Confirm discard
                           },
                           child: Scaffold(
                             appBar: AppBar(title: const Text('Form Page')),
-                            body: BetterFormBuilder(
+                            body: FormixBuilder(
                               builder: (context, scope) {
                                 final isDirty = scope.watchIsFormDirty;
                                 return Column(
                                   children: [
                                     Text('Dirty: $isDirty'),
-                                    BetterFormSection(
+                                    FormixSection(
                                       fields: [
-                                        BetterFormFieldConfig(id: nameField),
+                                        FormixFieldConfig(id: nameField),
                                       ],
                                       child: RiverpodTextFormField(
                                         fieldId: nameField,
@@ -93,12 +93,12 @@ void main() {
     expect(find.text('Go to Form'), findsOneWidget);
   });
 
-  testWidgets('BetterFormNavigationGuard allows navigation when not dirty', (
+  testWidgets('FormixNavigationGuard allows navigation when not dirty', (
     tester,
   ) async {
     bool dialogShown = false;
 
-    final nameField = BetterFormFieldID<String>('name');
+    final nameField = FormixFieldID<String>('name');
 
     await tester.pumpWidget(
       ProviderScope(
@@ -108,8 +108,8 @@ void main() {
               body: ElevatedButton(
                 onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context) => BetterForm(
-                      child: BetterFormNavigationGuard(
+                    builder: (context) => Formix(
+                      child: FormixNavigationGuard(
                         showDirtyDialog: (context) async {
                           dialogShown = true;
                           return true;
@@ -117,8 +117,8 @@ void main() {
                         child: Scaffold(
                           body: Column(
                             children: [
-                              BetterFormSection(
-                                fields: [BetterFormFieldConfig(id: nameField)],
+                              FormixSection(
+                                fields: [FormixFieldConfig(id: nameField)],
                                 child: RiverpodTextFormField(
                                   fieldId: nameField,
                                 ),
@@ -153,71 +153,68 @@ void main() {
     expect(find.text('Go to Form'), findsOneWidget);
   });
 
-  testWidgets(
-    'BetterFormNavigationGuard prevents pop if dialog returns false',
-    (tester) async {
-      final nameField = BetterFormFieldID<String>('name');
+  testWidgets('FormixNavigationGuard prevents pop if dialog returns false', (
+    tester,
+  ) async {
+    final nameField = FormixFieldID<String>('name');
 
-      await tester.pumpWidget(
-        ProviderScope(
-          child: MaterialApp(
-            home: Builder(
-              builder: (context) => Scaffold(
-                body: ElevatedButton(
-                  onPressed: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => BetterForm(
-                        child: BetterFormNavigationGuard(
-                          showDirtyDialog: (context) async =>
-                              false, // Don't discard
-                          child: Scaffold(
-                            body: Column(
-                              children: [
-                                BetterFormSection(
-                                  fields: [
-                                    BetterFormFieldConfig(id: nameField),
-                                  ],
-                                  child: RiverpodTextFormField(
-                                    fieldId: nameField,
-                                  ),
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: ElevatedButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => Formix(
+                      child: FormixNavigationGuard(
+                        showDirtyDialog: (context) async =>
+                            false, // Don't discard
+                        child: Scaffold(
+                          body: Column(
+                            children: [
+                              FormixSection(
+                                fields: [FormixFieldConfig(id: nameField)],
+                                child: RiverpodTextFormField(
+                                  fieldId: nameField,
                                 ),
-                                ElevatedButton(
-                                  onPressed: () =>
-                                      Navigator.of(context).maybePop(),
-                                  child: const Text('Back'),
-                                ),
-                              ],
-                            ),
+                              ),
+                              ElevatedButton(
+                                onPressed: () =>
+                                    Navigator.of(context).maybePop(),
+                                child: const Text('Back'),
+                              ),
+                            ],
                           ),
                         ),
                       ),
                     ),
                   ),
-                  child: const Text('Go to Form'),
                 ),
+                child: const Text('Go to Form'),
               ),
             ),
           ),
         ),
-      );
+      ),
+    );
 
-      await tester.tap(find.text('Go to Form'));
-      await tester.pumpAndSettle();
+    await tester.tap(find.text('Go to Form'));
+    await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(TextField), 'John');
-      await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'John');
+    await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Back'));
+    await tester.tap(find.text('Back'));
 
-      await tester.runAsync(() async {
-        await tester.pump();
-        await Future.delayed(const Duration(milliseconds: 100));
-        await tester.pump();
-      });
+    await tester.runAsync(() async {
+      await tester.pump();
+      await Future.delayed(const Duration(milliseconds: 100));
+      await tester.pump();
+    });
 
-      await tester.pumpAndSettle();
+    await tester.pumpAndSettle();
 
-      expect(find.text('Back'), findsOneWidget);
-    },
-  );
+    expect(find.text('Back'), findsOneWidget);
+  });
 }

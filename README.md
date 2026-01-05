@@ -1,36 +1,36 @@
-# Better Form 🚀
+# Formix 🚀
 
 <p align="center">
-  <img src="assets/better_form.png" alt="Better Form Logo" width="200"/>
+  <img src="assets/formix.png" alt="Formix Logo" width="200"/>
 </p>
 
 <p align="center">
-<a href="https://pub.dev/packages/better_form"><img src="https://img.shields.io/pub/v/better_form.svg" alt="Pub"></a>
-<a href="https://github.com/Shreemanarjun/better_form/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a>
+<a href="https://pub.dev/packages/formix"><img src="https://img.shields.io/pub/v/formix.svg" alt="Pub"></a>
+<a href="https://github.com/Shreemanarjun/formix/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a>
 <img src="https://img.shields.io/badge/coverage-93%25-brightgreen" alt="Code Coverage">
 <img src="https://img.shields.io/badge/tests-1000%2B-brightgreen" alt="Tests">
 <img src="https://img.shields.io/badge/version-0.0.1-blue" alt="Version">
 </p>
 
 <p align="center">
-  <a href="https://betterform.shreeman.dev"><strong>Full Documentation</strong></a>
+  <a href="https://formix.shreeman.dev"><strong>Full Documentation</strong></a>
 </p>
 
-An elite, type-safe, and ultra-reactive form engine for Flutter. Powered by Riverpod, Better Form delivers lightning-fast performance and effortless memory management, whether you're building a simple contact form or a massive, multi-section enterprise dashboard.
+An elite, type-safe, and ultra-reactive form engine for Flutter. Powered by Riverpod, Formix delivers lightning-fast performance and effortless memory management, whether you're building a simple contact form or a massive, multi-section enterprise dashboard.
 
 ## 📦 Installation
 
-Add `better_form` to your `pubspec.yaml`:
+Add `formix` to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  better_form: ^1.0.1
+  formix: ^1.0.1
   flutter_riverpod: ^2.5.1
 ```
 
 Or run:
 ```bash
-flutter pub add better_form
+flutter pub add formix
 ```
 
 ---
@@ -41,8 +41,8 @@ The fastest way to build a type-safe form in 3 minutes.
 
 ### 1. Define your fields
 ```dart
-final emailField = BetterFormFieldID<String>('email');
-final ageField = BetterFormFieldID<int>('age');
+final emailField = FormixFieldID<String>('email');
+final ageField = FormixFieldID<int>('age');
 ```
 
 ### 2. Wrap your app in a Scope
@@ -54,7 +54,7 @@ void main() {
 
 ### 3. Build the Form
 ```dart
-BetterForm(
+Formix(
   child: Column(
     children: [
       RiverpodTextFormField(
@@ -65,7 +65,7 @@ BetterForm(
         fieldId: ageField,
         decoration: InputDecoration(labelText: 'Age'),
       ),
-      BetterFormBuilder(
+      FormixBuilder(
         builder: (context, scope) => ElevatedButton(
           onPressed: () => scope.submit(
             onValid: (values) => print('Saving: $values'),
@@ -82,7 +82,7 @@ BetterForm(
 
 ## ✨ Features
 
-- 🔒 **True Type Safety**: No more `map['key'] as String`. Use `BetterFormFieldID<T>`.
+- 🔒 **True Type Safety**: No more `map['key'] as String`. Use `FormixFieldID<T>`.
 - 🚀 **Extreme Performance**: Only the specific field widget rebuilds when its value changes.
 - 🗑️ **Zero Memory Leaks**: Controllers are automatically disposed via Riverpod's `autoDispose`.
 - 🚥 **Flexible Validation**: Sync, Async, Debounced, and Cross-field rules.
@@ -95,12 +95,12 @@ BetterForm(
 ## 📖 Essential Guide
 
 ### Defining Field Configuration
-While `BetterForm` works with zero setup, you can define rules globally or locally using `BetterFormFieldConfig`.
+While `Formix` works with zero setup, you can define rules globally or locally using `FormixFieldConfig`.
 
 ```dart
-BetterForm(
+Formix(
   fields: [
-    BetterFormFieldConfig<String>(
+    FormixFieldConfig<String>(
       id: emailField,
       label: 'User Email',
       validator: (val) => val.contains('@') ? null : 'Invalid email',
@@ -112,10 +112,10 @@ BetterForm(
 ```
 
 ### Accessing Values & State
-Use `BetterFormScope` (via `BetterFormBuilder` or `BetterFormWidget`) for the cleanest API.
+Use `FormixScope` (via `FormixBuilder` or `FormixWidget`) for the cleanest API.
 
 ```dart
-BetterFormBuilder(
+FormixBuilder(
   builder: (context, scope) {
     // Reactive: Rebuilds whenever 'age' changes
     final age = scope.watchValue(ageField);
@@ -133,14 +133,14 @@ BetterFormBuilder(
 ## 🛠️ Professional Guide
 
 ### 1. Custom Field Implementation
-Extend `BetterFormFieldWidget` to create pixel-perfect custom inputs with zero boilerplate.
+Extend `FormixFieldWidget` to create pixel-perfect custom inputs with zero boilerplate.
 
 ```dart
-class CustomToggleField extends BetterFormFieldWidget<bool> {
+class CustomToggleField extends FormixFieldWidget<bool> {
   const CustomToggleField({required super.fieldId});
 
   @override
-  Widget buildForm(BuildContext context, BetterFormScope scope) {
+  Widget buildForm(BuildContext context, FormixScope scope) {
     final value = scope.watchValue(fieldId) ?? false;
 
     return SwitchListTile(
@@ -153,11 +153,11 @@ class CustomToggleField extends BetterFormFieldWidget<bool> {
 ```
 
 ### 2. Data Loss Prevention
-Use `BetterFormNavigationGuard` to stop users from accidentally navigating away after they've spent time filling out a form.
+Use `FormixNavigationGuard` to stop users from accidentally navigating away after they've spent time filling out a form.
 
 ```dart
-BetterForm(
-  child: BetterFormNavigationGuard(
+Formix(
+  child: FormixNavigationGuard(
     // Shows a default confirmation dialog if form is dirty
     child: MyFormBody(),
   ),
@@ -165,16 +165,16 @@ BetterForm(
 ```
 
 ### 3. Sectional & Lazy Scaling
-For huge forms, use `BetterFormSection`. Fields are only registered when they enter the widget tree.
+For huge forms, use `FormixSection`. Fields are only registered when they enter the widget tree.
 
 ```dart
 ListView(
   children: [
-    BetterFormSection(
+    FormixSection(
       fields: [ /* Section 1 Configs */ ],
       child: StepOneWidgets(),
     ),
-    BetterFormSection(
+    FormixSection(
       fields: [ /* Section 2 Configs */ ],
       child: StepTwoWidgets(),
     ),
@@ -183,10 +183,10 @@ ListView(
 ```
 
 ### 4. Performance Monitoring
-During development, use `BetterFormFieldPerformanceMonitor` to ensure your custom widgets aren't rebuilding too often.
+During development, use `FormixFieldPerformanceMonitor` to ensure your custom widgets aren't rebuilding too often.
 
 ```dart
-BetterFormFieldPerformanceMonitor<String>(
+FormixFieldPerformanceMonitor<String>(
   fieldId: nameField,
   builder: (context, info, rebuildCount) {
     return Column(
@@ -200,11 +200,11 @@ BetterFormFieldPerformanceMonitor<String>(
 ```
 
 ### 4. Simplified Usage with Builders or Base Classes
-Custom widgets can leverage `BetterFormScope` for an effortless development experience. `BetterFormScope` provides high-performance reactive accessors and a powerful `submit` helper.
+Custom widgets can leverage `FormixScope` for an effortless development experience. `FormixScope` provides high-performance reactive accessors and a powerful `submit` helper.
 
-#### Using `BetterFormBuilder`
+#### Using `FormixBuilder`
 ```dart
-BetterFormBuilder(
+FormixBuilder(
   builder: (context, scope) {
     final isValid = scope.watchIsValid;
     final isSubmitting = scope.watchIsSubmitting;
@@ -219,13 +219,13 @@ BetterFormBuilder(
 )
 ```
 
-#### Extending `BetterFormWidget`
+#### Extending `FormixWidget`
 ```dart
-class FormStatusPanel extends BetterFormWidget {
+class FormStatusPanel extends FormixWidget {
   const FormStatusPanel({super.key});
 
   @override
-  Widget buildForm(BuildContext context, BetterFormScope scope) {
+  Widget buildForm(BuildContext context, FormixScope scope) {
     // Rebuilds ONLY when 'name' or validation for 'email' changes
     final name = scope.watchValue(nameField);
     final emailError = scope.watchError(emailField);
@@ -243,12 +243,12 @@ class FormStatusPanel extends BetterFormWidget {
 ```
 
 ### 5. Dynamic Form Arrays
-Manage lists of dynamic inputs easily with `BetterFormArray`.
+Manage lists of dynamic inputs easily with `FormixArray`.
 
 ```dart
-final friendsArray = BetterFormArrayID<String>('friends');
+final friendsArray = FormixArrayID<String>('friends');
 
-BetterFormArray<String>(
+FormixArray<String>(
   id: friendsArray,
   builder: (context, index, friendId, scope) {
     return Row(
@@ -272,20 +272,20 @@ scope.addArrayItem(friendsArray, 'New Friend');
 ## 🧠 Advanced Features
 
 ### 1. Lazy Loading & Sectional Forms
-For massive forms (100+ fields), you can organize fields into sections using `BetterFormSection`. This allows:
+For massive forms (100+ fields), you can organize fields into sections using `FormixSection`. This allows:
 - **Optimization**: Fields are only registered when the section is built (e.g., when scrolled into view in a `ListView`).
 - **Organization**: Cleanly group logical parts of your form.
 - **Dynamic Forms**: Easily add/remove entire sets of fields based on user interaction.
 
 ```dart
-BetterForm(
+Formix(
   child: ListView(
     children: [
       // Standard header
       const Text('Profile Information'),
 
       // Registered immediately
-      BetterFormSection(
+      FormixSection(
         fields: [ firstNameConfig, lastNameConfig ],
         child: Column(children: [ ... ]),
       ),
@@ -293,7 +293,7 @@ BetterForm(
       const SizedBox(height: 1000), // Long gap
 
       // Only registered when user scrolls down
-      BetterFormSection(
+      FormixSection(
         fields: [ bioConfig, websiteConfig ],
         keepAlive: true, // Keep values even if scrolled out of view
         child: ProfileBioSection(),
@@ -304,11 +304,11 @@ BetterForm(
 ```
 
 ### 2. Cross-Field Dependencies
-Use `BetterDependentField` to conditionally render UI based on other field values. This is much more efficient than rebuilding the whole form.
+Use `FormixDependentField` to conditionally render UI based on other field values. This is much more efficient than rebuilding the whole form.
 
 ```dart
 // Only show the "Spouse Name" field if "Marital Status" is "Married"
-BetterDependentField<String>(
+FormixDependentField<String>(
   fieldId: maritalStatusField,
   builder: (context, status) {
     if (status == 'Married') {
@@ -323,10 +323,10 @@ BetterDependentField<String>(
 ```
 
 ### 3. Programmatic Control
-Directly control focus and scrolling within your form through the `BetterFormScope`.
+Directly control focus and scrolling within your form through the `FormixScope`.
 
 ```dart
-BetterFormBuilder(
+FormixBuilder(
   builder: (context, scope) {
     return Column(
       children: [
@@ -351,10 +351,10 @@ BetterFormBuilder(
 ### 2. State Persistence
 Automatically save form progress to local storage (or any other source) so users don't lose data on app restart or crash.
 
-Implement the simple `BetterFormPersistence` interface:
+Implement the simple `FormixPersistence` interface:
 
 ```dart
-class MyPrefsPersistence implements BetterFormPersistence {
+class MyPrefsPersistence implements FormixPersistence {
   @override
   Future<void> saveFormState(String formId, Map<String, dynamic> values) async {
     // Save to SharedPreferences / Hive / Database
@@ -367,7 +367,7 @@ class MyPrefsPersistence implements BetterFormPersistence {
 Then attach it to your form:
 
 ```dart
-BetterForm(
+Formix(
   formId: 'registration_wizard', // Unique ID for this form
   persistence: MyPrefsPersistence(),
   child: ...
@@ -400,10 +400,10 @@ scope.submit(
 ```
 
 ### Handling Async Validation
-Better Form automatically handles the "Validating" state. You can customize the loading UI:
+Formix automatically handles the "Validating" state. You can customize the loading UI:
 
 ```dart
-BetterFormFieldConfig<String>(
+FormixFieldConfig<String>(
   id: usernameField,
   asyncValidator: (val) => checkRepo(val),
   // debouncing is default to 300ms
@@ -415,29 +415,29 @@ BetterFormFieldConfig<String>(
 
 | Issue | Solution |
 | :--- | :--- |
-| **"No BetterForm found"** | Ensure all fields are descendants of a `BetterForm` widget. |
+| **"No Formix found"** | Ensure all fields are descendants of a `Formix` widget. |
 | **"No Material widget found"** | `RiverpodTextFormField` and others require a `Material` / `Scaffold` ancestor. |
 | **Field doesn't rebuild** | Ensure you are using `scope.watchValue(id)` or `ref.watch(fieldValueProvider(id))`. |
-| **Custom field not registering** | If using `BetterFormFieldWidget`, it registers itself. If building from scratch, use `BetterFormSection` or `controller.registerField`. |
+| **Custom field not registering** | If using `FormixFieldWidget`, it registers itself. If building from scratch, use `FormixSection` or `controller.registerField`. |
 
 ---
 
 ### Widgets
-- **`BetterForm`**: Root widget context.
-- **`BetterFormBuilder`**: Builder widget with controller and state.
-- **`BetterFormWidget`**: Base class for custom form widgets.
-- **`BetterFormSection`**: Lazy field registration and sectional organization.
+- **`Formix`**: Root widget context.
+- **`FormixBuilder`**: Builder widget with controller and state.
+- **`FormixWidget`**: Base class for custom form widgets.
+- **`FormixSection`**: Lazy field registration and sectional organization.
 - **`RiverpodTextFormField`**: Text input.
 - **`RiverpodNumberFormField`**: Numeric input (int/double).
 - **`RiverpodCheckboxFormField`**: Boolean checkbox.
 - **`RiverpodDropdownFormField`**: Selection from list.
-- **`BetterDependentField`**: Reactive builder for dependencies.
+- **`FormixDependentField`**: Reactive builder for dependencies.
 - **`RiverpodFormStatus`**: Debug/Status display.
 
 ### Classes
-- **`BetterFormFieldID<T>`**: Typed identifier key.
-- **`BetterFormFieldConfig<T>`**: Configuration (validator, label, initialValue, etc).
-- **`BetterFormState`**: The immutable state containing all field values and errors.
+- **`FormixFieldID<T>`**: Typed identifier key.
+- **`FormixFieldConfig<T>`**: Configuration (validator, label, initialValue, etc).
+- **`FormixState`**: The immutable state containing all field values and errors.
 - **`RiverpodFormController`**: The brain ensuring state management.
 
 ---

@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 
-class _TestWidget extends BetterFormWidget {
+class _TestWidget extends FormixWidget {
   const _TestWidget();
   @override
-  Widget buildForm(BuildContext context, BetterFormScope scope) => Container();
+  Widget buildForm(BuildContext context, FormixScope scope) => Container();
 }
 
-class MyCustomField extends BetterFormFieldWidget<String> {
+class MyCustomField extends FormixFieldWidget<String> {
   const MyCustomField({super.key, required super.fieldId, super.initialValue});
   @override
   MyCustomFieldState createState() => MyCustomFieldState();
 }
 
-class MyCustomFieldState extends BetterFormFieldWidgetState<String> {
+class MyCustomFieldState extends FormixFieldWidgetState<String> {
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -29,8 +29,7 @@ class MyCustomFieldState extends BetterFormFieldWidgetState<String> {
         Text('Touched: $isTouched'),
         Text('Valid: ${validation.isValid}'),
         ElevatedButton(
-          onPressed: () =>
-              patchValue({const BetterFormFieldID<int>('age'): 25}),
+          onPressed: () => patchValue({const FormixFieldID<int>('age'): 25}),
           child: const Text('Patch'),
         ),
         ElevatedButton(onPressed: resetField, child: const Text('Reset')),
@@ -40,50 +39,50 @@ class MyCustomFieldState extends BetterFormFieldWidgetState<String> {
   }
 }
 
-class MyNumberField extends BetterNumberFormFieldWidget {
+class MyNumberField extends FormixNumberFormFieldWidget {
   const MyNumberField({super.key, required super.fieldId, super.initialValue});
   @override
   MyNumberFieldState createState() => MyNumberFieldState();
 }
 
-class MyNumberFieldState extends BetterNumberFormFieldWidgetState {}
+class MyNumberFieldState extends FormixNumberFormFieldWidgetState {}
 
-class MyTextField extends BetterTextFormFieldWidget {
+class MyTextField extends FormixTextFormFieldWidget {
   const MyTextField({super.key, required super.fieldId, super.initialValue});
   @override
   MyTextFieldState createState() => MyTextFieldState();
 }
 
-class MyTextFieldState extends BetterTextFormFieldWidgetState {}
+class MyTextFieldState extends FormixTextFormFieldWidgetState {}
 
 void main() {
   group('FieldID Coverage', () {
-    test('BetterFormFieldID methods', () {
-      final id = const BetterFormFieldID<String>('user.profile.name');
+    test('FormixFieldID methods', () {
+      final id = const FormixFieldID<String>('user.profile.name');
       expect(id.parentKey, 'user.profile');
       expect(id.localName, 'name');
       expect(
         id.toString(),
-        contains('BetterFormFieldID<String>(user.profile.name)'),
+        contains('FormixFieldID<String>(user.profile.name)'),
       );
 
-      final rootId = const BetterFormFieldID<String>('name');
+      final rootId = const FormixFieldID<String>('name');
       expect(rootId.parentKey, isNull);
       expect(rootId.localName, 'name');
     });
 
-    test('BetterFormArrayID methods', () {
-      final arrayId = const BetterFormArrayID<String>('items');
+    test('FormixArrayID methods', () {
+      final arrayId = const FormixArrayID<String>('items');
       final itemId = arrayId.item(0);
       expect(itemId.key, 'items[0]');
       expect(arrayId.withPrefix('group').key, 'group.items');
-      expect(arrayId.toString(), contains('BetterFormArrayID<String>(items)'));
+      expect(arrayId.toString(), contains('FormixArrayID<String>(items)'));
     });
   });
 
-  group('BetterFormState Coverage', () {
+  group('FormixState Coverage', () {
     test('isGroupValid and isGroupDirty', () {
-      final state = BetterFormState(
+      final state = FormixState(
         values: const {'user.name': 'John', 'user.age': 30, 'other': 'value'},
         validations: {
           'user.name': ValidationResult.valid,
@@ -106,7 +105,7 @@ void main() {
     });
 
     test('toNestedMap with dot notation', () {
-      final state = const BetterFormState(
+      final state = const FormixState(
         values: {
           'user.name': 'John',
           'user.profile.bio': 'Developer',
@@ -123,33 +122,33 @@ void main() {
     });
 
     test('getValue type mismatch', () {
-      final state = const BetterFormState(
+      final state = const FormixState(
         values: {'age': '30'}, // String value
       );
-      final ageId = const BetterFormFieldID<int>('age');
+      final ageId = const FormixFieldID<int>('age');
       expect(state.getValue(ageId), isNull); // Type mismatch returns null
     });
   });
 
-  group('BetterFormScope Coverage', () {
+  group('FormixScope Coverage', () {
     testWidgets('Granular watchers and non-reactive methods', (tester) async {
-      final nameField = const BetterFormFieldID<String>('name');
-      final arrayField = const BetterFormArrayID<String>('items');
+      final nameField = const FormixFieldID<String>('name');
+      final arrayField = const FormixArrayID<String>('items');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {
                   'name': 'Initial',
                   'items': ['Item 1'],
                 },
                 fields: [
-                  BetterFormFieldConfig(id: nameField),
-                  BetterFormFieldConfig(id: arrayField),
+                  FormixFieldConfig(id: nameField),
+                  FormixFieldConfig(id: arrayField),
                 ],
-                child: BetterFormBuilder(
+                child: FormixBuilder(
                   builder: (context, scope) {
                     // Watchers
                     scope.watchValue(nameField);
@@ -209,32 +208,30 @@ void main() {
     });
   });
 
-  group('BetterFormNavigationGuard Extra Coverage', () {
-    testWidgets('Guard without BetterForm ancestor', (tester) async {
+  group('FormixNavigationGuard Extra Coverage', () {
+    testWidgets('Guard without Formix ancestor', (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(
-          home: BetterFormNavigationGuard(child: Text('Child')),
-        ),
+        const MaterialApp(home: FormixNavigationGuard(child: Text('Child'))),
       );
       expect(find.text('Child'), findsOneWidget);
     });
 
     testWidgets('Guard with onDirtyPop', (tester) async {
       bool onDirtyPopCalled = false;
-      final nameField = const BetterFormFieldID<String>('name');
+      final nameField = const FormixFieldID<String>('name');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
-            home: BetterForm(
-              fields: [BetterFormFieldConfig(id: nameField)],
-              child: BetterFormNavigationGuard(
+            home: Formix(
+              fields: [FormixFieldConfig(id: nameField)],
+              child: FormixNavigationGuard(
                 onDirtyPop: (context) async {
                   onDirtyPopCalled = true;
                   return true;
                 },
                 child: Scaffold(
-                  body: BetterFormBuilder(
+                  body: FormixBuilder(
                     builder: (context, scope) {
                       return Column(
                         children: [
@@ -263,7 +260,7 @@ void main() {
     });
 
     testWidgets('Guard default dialog - Discard', (tester) async {
-      final nameField = const BetterFormFieldID<String>('name');
+      final nameField = const FormixFieldID<String>('name');
       bool popped = false;
 
       await tester.pumpWidget(
@@ -275,11 +272,11 @@ void main() {
                   onPressed: () async {
                     await Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => BetterForm(
-                          fields: [BetterFormFieldConfig(id: nameField)],
-                          child: BetterFormNavigationGuard(
+                        builder: (context) => Formix(
+                          fields: [FormixFieldConfig(id: nameField)],
+                          child: FormixNavigationGuard(
                             child: Scaffold(
-                              body: BetterFormBuilder(
+                              body: FormixBuilder(
                                 builder: (context, scope) {
                                   return Column(
                                     children: [
@@ -325,7 +322,7 @@ void main() {
     });
 
     testWidgets('Guard default dialog - Cancel', (tester) async {
-      final nameField = const BetterFormFieldID<String>('name');
+      final nameField = const FormixFieldID<String>('name');
       bool popped = false;
 
       await tester.pumpWidget(
@@ -337,11 +334,11 @@ void main() {
                   onPressed: () async {
                     await Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => BetterForm(
-                          fields: [BetterFormFieldConfig(id: nameField)],
-                          child: BetterFormNavigationGuard(
+                        builder: (context) => Formix(
+                          fields: [FormixFieldConfig(id: nameField)],
+                          child: FormixNavigationGuard(
                             child: Scaffold(
-                              body: BetterFormBuilder(
+                              body: FormixBuilder(
                                 builder: (context, scope) {
                                   return Column(
                                     children: [
@@ -386,31 +383,31 @@ void main() {
       expect(popped, isFalse);
     });
 
-    testWidgets('BetterFormBuilder outside BetterForm', (tester) async {
+    testWidgets('FormixBuilder outside Formix', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: BetterFormBuilder(builder: (context, scope) => Container()),
+          home: FormixBuilder(builder: (context, scope) => Container()),
         ),
       );
       expect(tester.takeException(), isInstanceOf<FlutterError>());
     });
 
-    testWidgets('BetterFormWidget outside BetterForm', (tester) async {
+    testWidgets('FormixWidget outside Formix', (tester) async {
       await tester.pumpWidget(const MaterialApp(home: _TestWidget()));
       expect(tester.takeException(), isInstanceOf<FlutterError>());
     });
 
-    testWidgets('BetterFormFieldConditionalSelector', (tester) async {
-      final fieldId = const BetterFormFieldID<String>('name');
+    testWidgets('FormixFieldConditionalSelector', (tester) async {
+      final fieldId = const FormixFieldID<String>('name');
       int buildCount = 0;
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
-            home: BetterForm(
+            home: Formix(
               initialValue: const {'name': 'A'},
-              fields: [BetterFormFieldConfig(id: fieldId)],
-              child: BetterFormFieldConditionalSelector<String>(
+              fields: [FormixFieldConfig(id: fieldId)],
+              child: FormixFieldConditionalSelector<String>(
                 fieldId: fieldId,
                 shouldRebuild: (info) => true, // Ensure it builds
                 builder: (context, info, child) {
@@ -426,20 +423,20 @@ void main() {
       expect(buildCount, 1);
     });
 
-    testWidgets('BetterFormFieldPerformanceMonitor', (tester) async {
-      final fieldId = const BetterFormFieldID<String>('name');
+    testWidgets('FormixFieldPerformanceMonitor', (tester) async {
+      final fieldId = const FormixFieldID<String>('name');
       int lastCount = 0;
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
-            home: BetterForm(
+            home: Formix(
               initialValue: const {'name': 'A'},
-              fields: [BetterFormFieldConfig(id: fieldId)],
-              child: BetterFormBuilder(
+              fields: [FormixFieldConfig(id: fieldId)],
+              child: FormixBuilder(
                 builder: (context, scope) => Column(
                   children: [
-                    BetterFormFieldPerformanceMonitor<String>(
+                    FormixFieldPerformanceMonitor<String>(
                       fieldId: fieldId,
                       builder: (context, info, count) {
                         lastCount = count;
@@ -467,21 +464,21 @@ void main() {
 
   group('RiverpodFormController Extra Coverage', () {
     testWidgets('resetToValues and focusFirstError', (tester) async {
-      final nameField = const BetterFormFieldID<String>('name');
-      late BetterFormController controller;
+      final nameField = const FormixFieldID<String>('name');
+      late FormixController controller;
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 fields: [
-                  BetterFormFieldConfig(
+                  FormixFieldConfig(
                     id: nameField,
                     validator: (val) => val == 'error' ? 'Error' : null,
                   ),
                 ],
-                child: BetterFormBuilder(
+                child: FormixBuilder(
                   builder: (context, scope) {
                     controller = scope.controller;
                     return RiverpodTextFormField(fieldId: nameField);
@@ -506,15 +503,15 @@ void main() {
     });
   });
 
-  group('BetterFormFieldWidget Extra Coverage', () {
+  group('FormixFieldWidget Extra Coverage', () {
     testWidgets('Custom field interactions', (tester) async {
-      final nameField = const BetterFormFieldID<String>('name');
+      final nameField = const FormixFieldID<String>('name');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {'name': 'Initial', 'age': 20},
                 child: Column(children: [MyCustomField(fieldId: nameField)]),
               ),
@@ -540,17 +537,17 @@ void main() {
       expect(find.text('Dirty: false'), findsOneWidget);
     });
 
-    testWidgets('BetterNumberFormFieldWidget and BetterTextFormFieldWidget', (
+    testWidgets('FormixNumberFormFieldWidget and FormixTextFormFieldWidget', (
       tester,
     ) async {
-      final numberField = const BetterFormFieldID<int>('count');
-      final textField = const BetterFormFieldID<String>('desc');
+      final numberField = const FormixFieldID<int>('count');
+      final textField = const FormixFieldID<String>('desc');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {'count': 10, 'desc': 'Hello'},
                 child: Column(
                   children: [
@@ -579,13 +576,13 @@ void main() {
 
     testWidgets('didUpdateWidget coverage', (tester) async {
       // Just testing manual field register if not already there
-      final fieldId = const BetterFormFieldID<String>('manual');
+      final fieldId = const FormixFieldID<String>('manual');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 child: MyCustomField(fieldId: fieldId, initialValue: 'Initial'),
               ),
             ),
@@ -597,16 +594,16 @@ void main() {
     });
   });
 
-  group('BetterFormArray and FormGroup Extra Coverage', () {
+  group('FormixArray and FormGroup Extra Coverage', () {
     testWidgets('Empty array builder', (tester) async {
-      final arrayId = const BetterFormArrayID<String>('items');
+      final arrayId = const FormixArrayID<String>('items');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
-                child: BetterFormArray<String>(
+              body: Formix(
+                child: FormixArray<String>(
                   id: arrayId,
                   emptyBuilder: (context, scope) => const Text('Empty'),
                   itemBuilder: (context, index, id, scope) => Container(),
@@ -621,17 +618,17 @@ void main() {
     });
 
     testWidgets('Scrollable array', (tester) async {
-      final arrayId = const BetterFormArrayID<String>('items');
+      final arrayId = const FormixArrayID<String>('items');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: const {
                   'items': ['A', 'B'],
                 },
-                child: BetterFormArray<String>(
+                child: FormixArray<String>(
                   id: arrayId,
                   scrollable: true,
                   itemBuilder: (context, index, id, scope) =>
@@ -654,14 +651,14 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
-                child: BetterFormGroup(
+              body: Formix(
+                child: FormixGroup(
                   prefix: 'user',
-                  child: BetterFormGroup(
+                  child: FormixGroup(
                     prefix: 'profile',
                     child: Builder(
                       builder: (context) {
-                        resolvedPrefix = BetterFormGroup.prefixOf(context);
+                        resolvedPrefix = FormixGroup.prefixOf(context);
                         return Container();
                       },
                     ),
@@ -676,11 +673,11 @@ void main() {
       expect(resolvedPrefix, 'user.profile');
     });
 
-    testWidgets('BetterFormArray outside BetterForm', (tester) async {
-      final arrayId = const BetterFormArrayID<String>('items');
+    testWidgets('FormixArray outside Formix', (tester) async {
+      final arrayId = const FormixArrayID<String>('items');
       await tester.pumpWidget(
         MaterialApp(
-          home: BetterFormArray<String>(
+          home: FormixArray<String>(
             id: arrayId,
             itemBuilder: (context, index, id, scope) => Container(),
           ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 
 void main() {
   group('Complete Form Integration Tests', () {
@@ -9,17 +9,17 @@ void main() {
       tester,
     ) async {
       // Define form fields
-      final nameField = BetterFormFieldID<String>('name');
-      final emailField = BetterFormFieldID<String>('email');
-      final ageField = BetterFormFieldID<num>('age');
-      final newsletterField = BetterFormFieldID<bool>('newsletter');
-      final agreeField = BetterFormFieldID<bool>('agree');
+      final nameField = FormixFieldID<String>('name');
+      final emailField = FormixFieldID<String>('email');
+      final ageField = FormixFieldID<num>('age');
+      final newsletterField = FormixFieldID<bool>('newsletter');
+      final agreeField = FormixFieldID<bool>('agree');
 
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
             formControllerProvider(
-              const BetterFormParameter(initialValue: {}),
+              const FormixParameter(initialValue: {}),
             ).overrideWith((ref) {
               final controller = RiverpodFormController(
                 initialValue: {
@@ -30,25 +30,25 @@ void main() {
                   'agree': false,
                 },
                 fields: [
-                  BetterFormField<String>(
+                  FormixField<String>(
                     id: nameField,
                     initialValue: '',
                     validator: (value) =>
                         value.isEmpty ? 'Name is required' : null,
                   ),
-                  BetterFormField<String>(
+                  FormixField<String>(
                     id: emailField,
                     initialValue: '',
                     validator: (value) =>
                         value.contains('@') ? null : 'Invalid email',
                   ),
-                  BetterFormField<num>(
+                  FormixField<num>(
                     id: ageField,
                     initialValue: 18,
                     validator: (value) =>
                         value >= 18 ? null : 'Must be 18 or older',
                   ),
-                  BetterFormField<bool>(
+                  FormixField<bool>(
                     id: agreeField,
                     initialValue: false,
                     validator: (value) =>
@@ -106,7 +106,7 @@ void main() {
                       builder: (context, ref, child) {
                         final formState = ref.watch(
                           formControllerProvider(
-                            const BetterFormParameter(initialValue: {}),
+                            const FormixParameter(initialValue: {}),
                           ),
                         );
                         final isValid = formState.isValid;
@@ -127,7 +127,7 @@ void main() {
                                       final values = ref
                                           .read(
                                             formControllerProvider(
-                                              const BetterFormParameter(
+                                              const FormixParameter(
                                                 initialValue: {},
                                               ),
                                             ),
@@ -193,14 +193,14 @@ void main() {
     });
 
     testWidgets('should handle form reset functionality', (tester) async {
-      final nameField = BetterFormFieldID<String>('name');
-      final emailField = BetterFormFieldID<String>('email');
+      final nameField = FormixFieldID<String>('name');
+      final emailField = FormixFieldID<String>('email');
 
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
             formControllerProvider(
-              const BetterFormParameter(initialValue: {}),
+              const FormixParameter(initialValue: {}),
             ).overrideWith((ref) {
               return RiverpodFormController(
                 initialValue: {
@@ -229,7 +229,7 @@ void main() {
                           ref
                               .read(
                                 formControllerProvider(
-                                  const BetterFormParameter(initialValue: {}),
+                                  const FormixParameter(initialValue: {}),
                                 ).notifier,
                               )
                               .reset();
@@ -272,20 +272,20 @@ void main() {
     });
 
     testWidgets('should handle complex validation scenarios', (tester) async {
-      final passwordField = BetterFormFieldID<String>('password');
-      final confirmPasswordField = BetterFormFieldID<String>('confirmPassword');
+      final passwordField = FormixFieldID<String>('password');
+      final confirmPasswordField = FormixFieldID<String>('confirmPassword');
 
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
             formControllerProvider(
-              const BetterFormParameter(initialValue: {}),
+              const FormixParameter(initialValue: {}),
             ).overrideWith((ref) {
               late final RiverpodFormController controller;
               controller = RiverpodFormController(
                 initialValue: {'password': '', 'confirmPassword': ''},
                 fields: [
-                  BetterFormField<String>(
+                  FormixField<String>(
                     id: passwordField,
                     initialValue: '',
                     validator: (value) {
@@ -295,7 +295,7 @@ void main() {
                       return null;
                     },
                   ),
-                  BetterFormField<String>(
+                  FormixField<String>(
                     id: confirmPasswordField,
                     initialValue: '',
                     validator: (value) {
@@ -331,7 +331,7 @@ void main() {
                     builder: (context, ref, child) {
                       final formState = ref.watch(
                         formControllerProvider(
-                          const BetterFormParameter(initialValue: {}),
+                          const FormixParameter(initialValue: {}),
                         ),
                       );
                       return Text('Form Valid: ${formState.isValid}');
@@ -368,23 +368,20 @@ void main() {
     });
 
     testWidgets('should handle dynamic field visibility', (tester) async {
-      final showExtraField = BetterFormFieldID<bool>('showExtra');
-      final extraField = BetterFormFieldID<String>('extra');
+      final showExtraField = FormixFieldID<bool>('showExtra');
+      final extraField = FormixFieldID<String>('extra');
 
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
             formControllerProvider(
-              const BetterFormParameter(initialValue: {}),
+              const FormixParameter(initialValue: {}),
             ).overrideWith((ref) {
               return RiverpodFormController(
                 initialValue: {'showExtra': false, 'extra': ''},
                 fields: [
-                  BetterFormField<bool>(
-                    id: showExtraField,
-                    initialValue: false,
-                  ),
-                  BetterFormField<String>(id: extraField, initialValue: ''),
+                  FormixField<bool>(id: showExtraField, initialValue: false),
+                  FormixField<String>(id: extraField, initialValue: ''),
                 ],
               );
             }),
@@ -395,7 +392,7 @@ void main() {
                 builder: (context, ref, child) {
                   final formState = ref.watch(
                     formControllerProvider(
-                      const BetterFormParameter(initialValue: {}),
+                      const FormixParameter(initialValue: {}),
                     ),
                   );
                   final showExtra = formState.getValue(showExtraField) ?? false;
@@ -443,24 +440,24 @@ void main() {
     });
   });
 
-  group('BetterForm Widget Integration', () {
-    testWidgets('should work with dedicated BetterForm widget', (tester) async {
-      final nameField = BetterFormFieldID<String>('name');
-      final emailField = BetterFormFieldID<String>('email');
+  group('Formix Widget Integration', () {
+    testWidgets('should work with dedicated Formix widget', (tester) async {
+      final nameField = FormixFieldID<String>('name');
+      final emailField = FormixFieldID<String>('email');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: {'name': 'Jane Doe', 'email': 'jane@example.com'},
                 fields: [
-                  BetterFormFieldConfig<String>(
+                  FormixFieldConfig<String>(
                     id: nameField,
                     initialValue: '',
                     validator: (value) => value.isEmpty ? 'Required' : null,
                   ),
-                  BetterFormFieldConfig<String>(
+                  FormixFieldConfig<String>(
                     id: emailField,
                     initialValue: '',
                     validator: (value) =>
@@ -479,7 +476,7 @@ void main() {
                     ),
                     Consumer(
                       builder: (context, ref, child) {
-                        final provider = BetterForm.of(context)!;
+                        final provider = Formix.of(context)!;
                         final formState = ref.watch(provider);
                         return Text('Form Valid: ${formState.isValid}');
                       },

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 
 void main() {
   testWidgets('Submission throttles multiple calls', (tester) async {
@@ -11,8 +11,8 @@ void main() {
       ProviderScope(
         child: MaterialApp(
           home: Scaffold(
-            body: BetterForm(
-              child: BetterFormBuilder(
+            body: Formix(
+              child: FormixBuilder(
                 builder: (context, scope) {
                   return ElevatedButton(
                     onPressed: () => scope.submit(
@@ -53,24 +53,24 @@ void main() {
   });
 
   testWidgets('Optimistic submission works correctly', (tester) async {
-    final nameField = BetterFormFieldID<String>('name');
+    final nameField = FormixFieldID<String>('name');
     bool shouldFail = false;
 
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
           home: Scaffold(
-            body: BetterForm(
+            body: Formix(
               initialValue: const {'name': 'Initial'},
-              child: BetterFormBuilder(
+              child: FormixBuilder(
                 builder: (context, scope) {
                   final isDirty = scope.watchIsFormDirty;
                   return SingleChildScrollView(
                     child: Column(
                       children: [
                         Text('Dirty: $isDirty'),
-                        BetterFormSection(
-                          fields: [BetterFormFieldConfig(id: nameField)],
+                        FormixSection(
+                          fields: [FormixFieldConfig(id: nameField)],
                           child: RiverpodTextFormField(fieldId: nameField),
                         ),
                         ElevatedButton(

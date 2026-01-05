@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 
 /// Custom Date Form Field for the example
-class BetterDateFormField extends BetterFormFieldWidget<DateTime> {
-  const BetterDateFormField({
+class FormixDateFormField extends FormixFieldWidget<DateTime> {
+  const FormixDateFormField({
     super.key,
     required super.fieldId,
     super.controller,
@@ -15,15 +15,14 @@ class BetterDateFormField extends BetterFormFieldWidget<DateTime> {
   final String? label;
 
   @override
-  BetterFormFieldWidgetState<DateTime> createState() =>
-      _BetterDateFormFieldState();
+  FormixFieldWidgetState<DateTime> createState() => _FormixDateFormFieldState();
 }
 
-class _BetterDateFormFieldState extends BetterFormFieldWidgetState<DateTime> {
+class _FormixDateFormFieldState extends FormixFieldWidgetState<DateTime> {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      title: Text((widget as BetterDateFormField).label ?? 'Select Date'),
+      title: Text((widget as FormixDateFormField).label ?? 'Select Date'),
       subtitle: Text(value.toString().split(' ')[0]),
       trailing: const Icon(Icons.calendar_today),
       shape: RoundedRectangleBorder(

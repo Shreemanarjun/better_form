@@ -6,20 +6,20 @@
 ///
 /// Example:
 /// ```dart
-/// final nameField = BetterFormFieldID<String>('name');
-/// final ageField = BetterFormFieldID<int>('age');
+/// final nameField = FormixFieldID<String>('name');
+/// final ageField = FormixFieldID<int>('age');
 /// ```
-class BetterFormFieldID<T> {
+class FormixFieldID<T> {
   /// Creates a new field identifier with the given [key].
-  const BetterFormFieldID(this.key);
+  const FormixFieldID(this.key);
 
   /// The unique string key for this field.
   final String key;
 
   /// Returns a new identifier with the given [prefix] prepended to the key.
   /// Useful for namespacing fields within groups.
-  BetterFormFieldID<T> withPrefix(String prefix) =>
-      BetterFormFieldID<T>('$prefix.$key');
+  FormixFieldID<T> withPrefix(String prefix) =>
+      FormixFieldID<T>('$prefix.$key');
 
   /// Returns the parent path if this is a nested field, null otherwise.
   String? get parentKey {
@@ -35,29 +35,29 @@ class BetterFormFieldID<T> {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is BetterFormFieldID && key == other.key;
+      identical(this, other) || other is FormixFieldID && key == other.key;
 
   @override
   int get hashCode => key.hashCode;
 
   @override
-  String toString() => 'BetterFormFieldID<$T>($key)';
+  String toString() => 'FormixFieldID<$T>($key)';
 }
 
 /// A specialized identifier for form fields that store a list of items.
 ///
 /// This provides extra context for array-specific operations.
-class BetterFormArrayID<T> extends BetterFormFieldID<List<T>> {
+class FormixArrayID<T> extends FormixFieldID<List<T>> {
   /// Creates a new array identifier with the given [key].
-  const BetterFormArrayID(super.key);
+  const FormixArrayID(super.key);
 
   /// Get a field ID for a specific item in the array.
-  BetterFormFieldID<T> item(int index) => BetterFormFieldID<T>('$key[$index]');
+  FormixFieldID<T> item(int index) => FormixFieldID<T>('$key[$index]');
 
   @override
-  BetterFormArrayID<T> withPrefix(String prefix) =>
-      BetterFormArrayID<T>('$prefix.$key');
+  FormixArrayID<T> withPrefix(String prefix) =>
+      FormixArrayID<T>('$prefix.$key');
 
   @override
-  String toString() => 'BetterFormArrayID<$T>($key)';
+  String toString() => 'FormixArrayID<$T>($key)';
 }

@@ -8,11 +8,11 @@ import '../persistence/form_persistence.dart';
 /// A form widget that automatically manages a Riverpod controller provider
 /// and makes it available to all child Riverpod form fields.
 ///
-/// It provides a [BetterFormController] through an [InheritedWidget] and
+/// It provides a [FormixController] through an [InheritedWidget] and
 /// overrides the [currentControllerProvider] for its descendants.
-class BetterForm extends ConsumerWidget {
-  /// Creates a [BetterForm].
-  const BetterForm({
+class Formix extends ConsumerWidget {
+  /// Creates a [Formix].
+  const Formix({
     super.key,
     this.initialValue = const {},
     this.fields = const [],
@@ -25,10 +25,10 @@ class BetterForm extends ConsumerWidget {
   final Map<String, dynamic> initialValue;
 
   /// Configuration for the fields in this form.
-  final List<BetterFormFieldConfig<dynamic>> fields;
+  final List<FormixFieldConfig<dynamic>> fields;
 
   /// Optional persistence handler.
-  final BetterFormPersistence? persistence;
+  final FormixPersistence? persistence;
 
   /// Unique identifier for this form (required for persistence).
   final String? formId;
@@ -40,7 +40,7 @@ class BetterForm extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Create a unique controller provider for this form instance
     final controllerProvider = formControllerProvider(
-      BetterFormParameter(
+      FormixParameter(
         initialValue: initialValue,
         fields: fields,
         persistence: persistence,
@@ -50,7 +50,7 @@ class BetterForm extends ConsumerWidget {
 
     // We watch the notifier once to get the instance
     final controller =
-        ref.watch(controllerProvider.notifier) as BetterFormController;
+        ref.watch(controllerProvider.notifier) as FormixController;
 
     return ProviderScope(
       overrides: [
@@ -59,7 +59,7 @@ class BetterForm extends ConsumerWidget {
       child: _FieldRegistrar(
         controllerProvider: controllerProvider,
         fields: fields,
-        child: _BetterFormScope(
+        child: _FormixScope(
           controller: controller,
           controllerProvider: controllerProvider,
           fields: fields,
@@ -69,43 +69,37 @@ class BetterForm extends ConsumerWidget {
     );
   }
 
-  /// Get the controller provider from the nearest [BetterForm] ancestor.
-  static AutoDisposeStateNotifierProvider<
-    RiverpodFormController,
-    BetterFormState
-  >?
+  /// Get the controller provider from the nearest [Formix] ancestor.
+  static AutoDisposeStateNotifierProvider<RiverpodFormController, FormixState>?
   of(BuildContext context) {
-    final _BetterFormScope? scope = context
-        .dependOnInheritedWidgetOfExactType<_BetterFormScope>();
+    final _FormixScope? scope = context
+        .dependOnInheritedWidgetOfExactType<_FormixScope>();
     return scope?.controllerProvider;
   }
 
-  /// Get the [BetterFormController] instance from the nearest [BetterForm] ancestor.
-  static BetterFormController? controllerOf(BuildContext context) {
-    final _BetterFormScope? scope = context
-        .dependOnInheritedWidgetOfExactType<_BetterFormScope>();
+  /// Get the [FormixController] instance from the nearest [Formix] ancestor.
+  static FormixController? controllerOf(BuildContext context) {
+    final _FormixScope? scope = context
+        .dependOnInheritedWidgetOfExactType<_FormixScope>();
     return scope?.controller;
   }
 }
 
-class _BetterFormScope extends InheritedWidget {
-  const _BetterFormScope({
+class _FormixScope extends InheritedWidget {
+  const _FormixScope({
     required super.child,
     required this.controller,
     required this.controllerProvider,
     required this.fields,
   });
 
-  final BetterFormController controller;
-  final AutoDisposeStateNotifierProvider<
-    RiverpodFormController,
-    BetterFormState
-  >
+  final FormixController controller;
+  final AutoDisposeStateNotifierProvider<RiverpodFormController, FormixState>
   controllerProvider;
-  final List<BetterFormFieldConfig<dynamic>> fields;
+  final List<FormixFieldConfig<dynamic>> fields;
 
   @override
-  bool updateShouldNotify(_BetterFormScope oldWidget) {
+  bool updateShouldNotify(_FormixScope oldWidget) {
     return controller != oldWidget.controller ||
         controllerProvider != oldWidget.controllerProvider ||
         !const ListEquality().equals(fields, oldWidget.fields);
@@ -119,12 +113,9 @@ class _FieldRegistrar extends ConsumerWidget {
     required this.child,
   });
 
-  final AutoDisposeStateNotifierProvider<
-    RiverpodFormController,
-    BetterFormState
-  >
+  final AutoDisposeStateNotifierProvider<RiverpodFormController, FormixState>
   controllerProvider;
-  final List<BetterFormFieldConfig<dynamic>> fields;
+  final List<FormixFieldConfig<dynamic>> fields;
   final Widget child;
 
   @override

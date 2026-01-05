@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 
 // Conditional Fields Example
 class ConditionalFormExample extends ConsumerWidget {
@@ -24,7 +24,7 @@ class _ConditionalFormExampleContentState
     extends ConsumerState<ConditionalFormExampleContent> {
   @override
   Widget build(BuildContext context) {
-    return BetterForm(
+    return Formix(
       initialValue: {
         'accountType': 'personal',
         'companyName': '',
@@ -38,71 +38,71 @@ class _ConditionalFormExampleContentState
         'preferredTime': 'morning',
       },
       fields: [
-        BetterFormFieldConfig<String>(
-          id: BetterFormFieldID<String>('accountType'),
+        FormixFieldConfig<String>(
+          id: FormixFieldID<String>('accountType'),
           initialValue: 'personal',
         ),
-        BetterFormFieldConfig<String>(
-          id: BetterFormFieldID<String>('companyName'),
+        FormixFieldConfig<String>(
+          id: FormixFieldID<String>('companyName'),
           initialValue: '',
           validator: (value) {
-            final accountType = BetterForm.controllerOf(
+            final accountType = Formix.controllerOf(
               context,
-            )?.getValue(BetterFormFieldID<String>('accountType'));
+            )?.getValue(FormixFieldID<String>('accountType'));
             if (accountType == 'business' && value.isEmpty) {
               return 'Company name is required for business accounts';
             }
             return null;
           },
         ),
-        BetterFormFieldConfig<String>(
-          id: BetterFormFieldID<String>('taxId'),
+        FormixFieldConfig<String>(
+          id: FormixFieldID<String>('taxId'),
           initialValue: '',
           validator: (value) {
-            final accountType = BetterForm.controllerOf(
+            final accountType = Formix.controllerOf(
               context,
-            )?.getValue(BetterFormFieldID<String>('accountType'));
+            )?.getValue(FormixFieldID<String>('accountType'));
             if (accountType == 'business' && value.isEmpty) {
               return 'Tax ID is required for business accounts';
             }
             return null;
           },
         ),
-        BetterFormFieldConfig<String>(
-          id: BetterFormFieldID<String>('firstName'),
+        FormixFieldConfig<String>(
+          id: FormixFieldID<String>('firstName'),
           initialValue: '',
           validator: (value) {
             if (value.isEmpty) return 'First name is required';
             return null;
           },
         ),
-        BetterFormFieldConfig<String>(
-          id: BetterFormFieldID<String>('lastName'),
+        FormixFieldConfig<String>(
+          id: FormixFieldID<String>('lastName'),
           initialValue: '',
           validator: (value) {
             if (value.isEmpty) return 'Last name is required';
             return null;
           },
         ),
-        BetterFormFieldConfig<bool>(
-          id: BetterFormFieldID<bool>('hasNewsletter'),
+        FormixFieldConfig<bool>(
+          id: FormixFieldID<bool>('hasNewsletter'),
           initialValue: false,
         ),
-        BetterFormFieldConfig<String>(
-          id: BetterFormFieldID<String>('newsletterFrequency'),
+        FormixFieldConfig<String>(
+          id: FormixFieldID<String>('newsletterFrequency'),
           initialValue: 'weekly',
         ),
-        BetterFormFieldConfig<String>(
-          id: BetterFormFieldID<String>('contactMethod'),
+        FormixFieldConfig<String>(
+          id: FormixFieldID<String>('contactMethod'),
           initialValue: 'email',
         ),
-        BetterFormFieldConfig<String>(
-          id: BetterFormFieldID<String>('phoneNumber'),
+        FormixFieldConfig<String>(
+          id: FormixFieldID<String>('phoneNumber'),
           initialValue: '',
           validator: (value) {
-            final contactMethod = BetterForm.controllerOf(
+            final contactMethod = Formix.controllerOf(
               context,
-            )?.getValue(BetterFormFieldID<String>('contactMethod'));
+            )?.getValue(FormixFieldID<String>('contactMethod'));
             if ((contactMethod == 'phone' || contactMethod == 'sms') &&
                 value.isEmpty) {
               return 'Phone number is required for ${contactMethod == 'phone' ? 'phone' : 'SMS'} contact';
@@ -110,8 +110,8 @@ class _ConditionalFormExampleContentState
             return null;
           },
         ),
-        BetterFormFieldConfig<String>(
-          id: BetterFormFieldID<String>('preferredTime'),
+        FormixFieldConfig<String>(
+          id: FormixFieldID<String>('preferredTime'),
           initialValue: 'morning',
         ),
       ],
@@ -135,7 +135,7 @@ class _ConditionalFormExampleContentState
             const Text('Account Type'),
             const SizedBox(height: 8),
             RiverpodDropdownFormField<String>(
-              fieldId: BetterFormFieldID<String>('accountType'),
+              fieldId: FormixFieldID<String>('accountType'),
               items: const [
                 DropdownMenuItem(
                   value: 'personal',
@@ -156,7 +156,7 @@ class _ConditionalFormExampleContentState
             Consumer(
               builder: (context, ref, child) {
                 final accountType = ref.watch(
-                  fieldValueProvider(BetterFormFieldID<String>('accountType')),
+                  fieldValueProvider(FormixFieldID<String>('accountType')),
                 );
                 if (accountType == 'business') {
                   return Column(
@@ -171,7 +171,7 @@ class _ConditionalFormExampleContentState
                       ),
                       const SizedBox(height: 8),
                       RiverpodTextFormField(
-                        fieldId: BetterFormFieldID<String>('companyName'),
+                        fieldId: FormixFieldID<String>('companyName'),
                         decoration: const InputDecoration(
                           labelText: 'Company Name',
                           prefixIcon: Icon(Icons.business_center),
@@ -179,7 +179,7 @@ class _ConditionalFormExampleContentState
                       ),
                       const SizedBox(height: 16),
                       RiverpodTextFormField(
-                        fieldId: BetterFormFieldID<String>('taxId'),
+                        fieldId: FormixFieldID<String>('taxId'),
                         decoration: const InputDecoration(
                           labelText: 'Tax ID',
                           prefixIcon: Icon(Icons.account_balance),
@@ -200,7 +200,7 @@ class _ConditionalFormExampleContentState
             ),
             const SizedBox(height: 8),
             RiverpodTextFormField(
-              fieldId: BetterFormFieldID<String>('firstName'),
+              fieldId: FormixFieldID<String>('firstName'),
               decoration: const InputDecoration(
                 labelText: 'First Name',
                 prefixIcon: Icon(Icons.person),
@@ -208,7 +208,7 @@ class _ConditionalFormExampleContentState
             ),
             const SizedBox(height: 16),
             RiverpodTextFormField(
-              fieldId: BetterFormFieldID<String>('lastName'),
+              fieldId: FormixFieldID<String>('lastName'),
               decoration: const InputDecoration(
                 labelText: 'Last Name',
                 prefixIcon: Icon(Icons.person_outline),
@@ -218,7 +218,7 @@ class _ConditionalFormExampleContentState
 
             // Newsletter Subscription
             RiverpodCheckboxFormField(
-              fieldId: BetterFormFieldID<bool>('hasNewsletter'),
+              fieldId: FormixFieldID<bool>('hasNewsletter'),
               title: const Text('Subscribe to newsletter'),
             ),
             const SizedBox(height: 16),
@@ -227,7 +227,7 @@ class _ConditionalFormExampleContentState
             Consumer(
               builder: (context, ref, child) {
                 final hasNewsletter = ref.watch(
-                  fieldValueProvider(BetterFormFieldID<bool>('hasNewsletter')),
+                  fieldValueProvider(FormixFieldID<bool>('hasNewsletter')),
                 );
                 if (hasNewsletter == true) {
                   return Column(
@@ -236,9 +236,7 @@ class _ConditionalFormExampleContentState
                       const Text('Newsletter Frequency'),
                       const SizedBox(height: 8),
                       RiverpodDropdownFormField<String>(
-                        fieldId: BetterFormFieldID<String>(
-                          'newsletterFrequency',
-                        ),
+                        fieldId: FormixFieldID<String>('newsletterFrequency'),
                         items: const [
                           DropdownMenuItem(
                             value: 'daily',
@@ -269,7 +267,7 @@ class _ConditionalFormExampleContentState
             const Text('Preferred Contact Method'),
             const SizedBox(height: 8),
             RiverpodDropdownFormField<String>(
-              fieldId: BetterFormFieldID<String>('contactMethod'),
+              fieldId: FormixFieldID<String>('contactMethod'),
               items: const [
                 DropdownMenuItem(value: 'email', child: Text('Email')),
                 DropdownMenuItem(value: 'phone', child: Text('Phone')),
@@ -285,16 +283,14 @@ class _ConditionalFormExampleContentState
             Consumer(
               builder: (context, ref, child) {
                 final contactMethod = ref.watch(
-                  fieldValueProvider(
-                    BetterFormFieldID<String>('contactMethod'),
-                  ),
+                  fieldValueProvider(FormixFieldID<String>('contactMethod')),
                 );
                 if (contactMethod == 'phone' || contactMethod == 'sms') {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       RiverpodTextFormField(
-                        fieldId: BetterFormFieldID<String>('phoneNumber'),
+                        fieldId: FormixFieldID<String>('phoneNumber'),
                         decoration: const InputDecoration(
                           labelText: 'Phone Number',
                           prefixIcon: Icon(Icons.phone),
@@ -308,7 +304,7 @@ class _ConditionalFormExampleContentState
                         const Text('Preferred Call Time'),
                         const SizedBox(height: 8),
                         RiverpodDropdownFormField<String>(
-                          fieldId: BetterFormFieldID<String>('preferredTime'),
+                          fieldId: FormixFieldID<String>('preferredTime'),
                           items: const [
                             DropdownMenuItem(
                               value: 'morning',
@@ -342,7 +338,7 @@ class _ConditionalFormExampleContentState
 
             Consumer(
               builder: (context, ref, child) {
-                final controllerProvider = BetterForm.of(context)!;
+                final controllerProvider = Formix.of(context)!;
                 ref.read(controllerProvider.notifier);
                 final formState = ref.watch(controllerProvider);
 

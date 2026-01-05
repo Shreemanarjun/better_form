@@ -1,18 +1,18 @@
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 import 'package:flutter/material.dart' hide FormState;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('BetterFormSection registers fields when built', (tester) async {
-    final field1 = BetterFormFieldConfig(
-      id: BetterFormFieldID<String>('field1'),
+  testWidgets('FormixSection registers fields when built', (tester) async {
+    final field1 = FormixFieldConfig(
+      id: FormixFieldID<String>('field1'),
       initialValue: 'value1',
       label: 'Field 1',
     );
 
-    final field2 = BetterFormFieldConfig(
-      id: BetterFormFieldID<String>('field2'),
+    final field2 = FormixFieldConfig(
+      id: FormixFieldID<String>('field2'),
       initialValue: 'value2',
       label: 'Field 2',
     );
@@ -21,7 +21,7 @@ void main() {
       ProviderScope(
         child: MaterialApp(
           home: Scaffold(
-            body: BetterForm(
+            body: Formix(
               fields: [field1], // Only field1 is registered initially
               child: Column(
                 children: [
@@ -46,7 +46,7 @@ void main() {
       ProviderScope(
         child: MaterialApp(
           home: Scaffold(
-            body: BetterForm(
+            body: Formix(
               fields: [field1],
               child: Column(
                 children: [
@@ -54,7 +54,7 @@ void main() {
                     fieldId: field1.id,
                     decoration: const InputDecoration(labelText: 'Field 1'),
                   ),
-                  BetterFormSection(
+                  FormixSection(
                     fields: [field2],
                     child: RiverpodTextFormField(
                       fieldId: field2.id,
@@ -75,11 +75,11 @@ void main() {
     expect(find.widgetWithText(TextFormField, 'value2'), findsOneWidget);
   });
 
-  testWidgets('BetterFormSection with keepAlive=false unregisters fields', (
+  testWidgets('FormixSection with keepAlive=false unregisters fields', (
     tester,
   ) async {
-    final field1 = BetterFormFieldConfig(
-      id: BetterFormFieldID<String>('field1'),
+    final field1 = FormixFieldConfig(
+      id: FormixFieldID<String>('field1'),
       initialValue: 'one',
     );
 
@@ -87,8 +87,8 @@ void main() {
       ProviderScope(
         child: MaterialApp(
           home: Scaffold(
-            body: BetterForm(
-              child: BetterFormSection(
+            body: Formix(
+              child: FormixSection(
                 keepAlive: false,
                 fields: [field1],
                 child: RiverpodTextFormField(fieldId: field1.id),
@@ -107,7 +107,7 @@ void main() {
       ProviderScope(
         child: MaterialApp(
           home: Scaffold(
-            body: BetterForm(
+            body: Formix(
               child: Container(), // Empty
             ),
           ),
@@ -123,8 +123,8 @@ void main() {
       ProviderScope(
         child: MaterialApp(
           home: Scaffold(
-            body: BetterForm(
-              child: BetterFormSection(
+            body: Formix(
+              child: FormixSection(
                 keepAlive: false,
                 fields: [field1],
                 child: RiverpodTextFormField(fieldId: field1.id),

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart' hide FormState;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 
 // Mock persistence for testing
-class MockPersistence implements BetterFormPersistence {
+class MockPersistence implements FormixPersistence {
   @override
   Future<Map<String, dynamic>?> getSavedState(String formId) async => null;
 
@@ -18,7 +18,7 @@ class MockPersistence implements BetterFormPersistence {
 void main() {
   group('FormState', () {
     test('constructor creates correct initial state', () {
-      final state = BetterFormState(
+      final state = FormixState(
         values: {'field1': 'value1'},
         validations: {'field1': ValidationResult.valid},
         dirtyStates: {'field1': false},
@@ -34,7 +34,7 @@ void main() {
     });
 
     test('copyWith creates new instance with updated values', () {
-      final original = BetterFormState(
+      final original = FormixState(
         values: {'field1': 'value1'},
         validations: {'field1': ValidationResult.valid},
         dirtyStates: {'field1': false},
@@ -53,7 +53,7 @@ void main() {
     });
 
     test('isValid returns true when all validations pass', () {
-      final state = BetterFormState(
+      final state = FormixState(
         validations: {
           'field1': ValidationResult.valid,
           'field2': ValidationResult.valid,
@@ -64,7 +64,7 @@ void main() {
     });
 
     test('isValid returns false when any validation fails', () {
-      final state = BetterFormState(
+      final state = FormixState(
         validations: {
           'field1': ValidationResult.valid,
           'field2': ValidationResult(isValid: false, errorMessage: 'Error'),
@@ -75,15 +75,13 @@ void main() {
     });
 
     test('isDirty returns true when any field is dirty', () {
-      final state = BetterFormState(
-        dirtyStates: {'field1': false, 'field2': true},
-      );
+      final state = FormixState(dirtyStates: {'field1': false, 'field2': true});
 
       expect(state.isDirty, true);
     });
 
     test('isDirty returns false when no fields are dirty', () {
-      final state = BetterFormState(
+      final state = FormixState(
         dirtyStates: {'field1': false, 'field2': false},
       );
 
@@ -91,18 +89,15 @@ void main() {
     });
 
     test('getValue returns typed value when type matches', () {
-      final state = BetterFormState(values: {'field1': 'test'});
+      final state = FormixState(values: {'field1': 'test'});
 
-      expect(
-        state.getValue<String>(BetterFormFieldID<String>('field1')),
-        'test',
-      );
+      expect(state.getValue<String>(FormixFieldID<String>('field1')), 'test');
     });
 
     test('getValue returns null when type does not match', () {
-      final state = BetterFormState(values: {'field1': 'test'});
+      final state = FormixState(values: {'field1': 'test'});
 
-      expect(state.getValue<int>(BetterFormFieldID<int>('field1')), null);
+      expect(state.getValue<int>(FormixFieldID<int>('field1')), null);
     });
 
     test('getValidation returns validation result for field', () {
@@ -110,42 +105,39 @@ void main() {
         isValid: false,
         errorMessage: 'Error',
       );
-      final state = BetterFormState(validations: {'field1': validation});
+      final state = FormixState(validations: {'field1': validation});
 
-      expect(
-        state.getValidation(BetterFormFieldID<String>('field1')),
-        validation,
-      );
+      expect(state.getValidation(FormixFieldID<String>('field1')), validation);
     });
 
     test('getValidation returns valid result for unregistered field', () {
-      final state = BetterFormState();
+      final state = FormixState();
 
       expect(
-        state.getValidation(BetterFormFieldID<String>('field1')).isValid,
+        state.getValidation(FormixFieldID<String>('field1')).isValid,
         true,
       );
     });
 
     test('isFieldDirty returns dirty state for field', () {
-      final state = BetterFormState(dirtyStates: {'field1': true});
+      final state = FormixState(dirtyStates: {'field1': true});
 
-      expect(state.isFieldDirty(BetterFormFieldID<String>('field1')), true);
-      expect(state.isFieldDirty(BetterFormFieldID<String>('field2')), false);
+      expect(state.isFieldDirty(FormixFieldID<String>('field1')), true);
+      expect(state.isFieldDirty(FormixFieldID<String>('field2')), false);
     });
 
     test('isFieldTouched returns touched state for field', () {
-      final state = BetterFormState(touchedStates: {'field1': true});
+      final state = FormixState(touchedStates: {'field1': true});
 
-      expect(state.isFieldTouched(BetterFormFieldID<String>('field1')), true);
-      expect(state.isFieldTouched(BetterFormFieldID<String>('field2')), false);
+      expect(state.isFieldTouched(FormixFieldID<String>('field1')), true);
+      expect(state.isFieldTouched(FormixFieldID<String>('field2')), false);
     });
   });
 
-  group('BetterFormFieldConfig', () {
+  group('FormixFieldConfig', () {
     test('constructor creates config correctly', () {
-      final id = BetterFormFieldID<String>('test');
-      final config = BetterFormFieldConfig<String>(
+      final id = FormixFieldID<String>('test');
+      final config = FormixFieldConfig<String>(
         id: id,
         initialValue: 'initial',
         validator: (v) => v.isEmpty ? 'Required' : null,
@@ -162,8 +154,8 @@ void main() {
     });
 
     test('toField converts config to field correctly', () {
-      final id = BetterFormFieldID<String>('test');
-      final config = BetterFormFieldConfig<String>(
+      final id = FormixFieldID<String>('test');
+      final config = FormixFieldConfig<String>(
         id: id,
         initialValue: 'initial',
         validator: (v) => v.isEmpty ? 'Required' : null,
@@ -179,18 +171,12 @@ void main() {
     });
 
     test('equality works correctly', () {
-      final id1 = BetterFormFieldID<String>('test');
-      final id2 = BetterFormFieldID<String>('test');
+      final id1 = FormixFieldID<String>('test');
+      final id2 = FormixFieldID<String>('test');
 
-      final config1 = BetterFormFieldConfig<String>(
-        id: id1,
-        initialValue: 'test',
-      );
-      final config2 = BetterFormFieldConfig<String>(
-        id: id2,
-        initialValue: 'test',
-      );
-      final config3 = BetterFormFieldConfig<String>(
+      final config1 = FormixFieldConfig<String>(id: id1, initialValue: 'test');
+      final config2 = FormixFieldConfig<String>(id: id2, initialValue: 'test');
+      final config3 = FormixFieldConfig<String>(
         id: id1,
         initialValue: 'different',
       );
@@ -200,35 +186,29 @@ void main() {
     });
 
     test('hashCode works correctly', () {
-      final id = BetterFormFieldID<String>('test');
-      final config1 = BetterFormFieldConfig<String>(
-        id: id,
-        initialValue: 'test',
-      );
-      final config2 = BetterFormFieldConfig<String>(
-        id: id,
-        initialValue: 'test',
-      );
+      final id = FormixFieldID<String>('test');
+      final config1 = FormixFieldConfig<String>(id: id, initialValue: 'test');
+      final config2 = FormixFieldConfig<String>(id: id, initialValue: 'test');
 
       expect(config1.hashCode, config2.hashCode);
     });
   });
 
   group('RiverpodFormController', () {
-    late BetterFormFieldID<String> stringField;
-    late BetterFormFieldID<int> intField;
+    late FormixFieldID<String> stringField;
+    late FormixFieldID<int> intField;
 
     setUp(() {
-      stringField = BetterFormFieldID<String>('string_field');
-      intField = BetterFormFieldID<int>('int_field');
+      stringField = FormixFieldID<String>('string_field');
+      intField = FormixFieldID<int>('int_field');
     });
 
     test('constructor initializes with correct state', () {
       final controller = RiverpodFormController(
         initialValue: {'field1': 'value1'},
         fields: [
-          BetterFormField<String>(
-            id: BetterFormFieldID<String>('field1'),
+          FormixField<String>(
+            id: FormixFieldID<String>('field1'),
             initialValue: 'value1',
           ),
         ],
@@ -237,7 +217,7 @@ void main() {
       expect(controller.state.values['field1'], 'value1');
       expect(controller.initialValue['field1'], 'value1');
       expect(
-        controller.isFieldRegistered(BetterFormFieldID<String>('field1')),
+        controller.isFieldRegistered(FormixFieldID<String>('field1')),
         true,
       );
     });
@@ -247,13 +227,13 @@ void main() {
         initialValue: {'field1': 'test'},
       );
 
-      expect(controller.getValue(BetterFormFieldID<String>('field1')), 'test');
+      expect(controller.getValue(FormixFieldID<String>('field1')), 'test');
     });
 
     test('setValue updates value and triggers validation', () {
       final controller = RiverpodFormController(
         fields: [
-          BetterFormField<String>(
+          FormixField<String>(
             id: stringField,
             initialValue: '',
             validator: (v) => v.isEmpty ? 'Required' : null,
@@ -274,7 +254,7 @@ void main() {
       );
 
       expect(
-        () => controller.setValue(BetterFormFieldID<int>('field1'), 123),
+        () => controller.setValue(FormixFieldID<int>('field1'), 123),
         throwsA(isA<ArgumentError>()),
       );
     });
@@ -282,7 +262,7 @@ void main() {
     test('registerField adds field definition and initializes state', () {
       final controller = RiverpodFormController();
 
-      final field = BetterFormField<String>(
+      final field = FormixField<String>(
         id: stringField,
         initialValue: 'initial',
         validator: (v) => v.isEmpty ? 'Required' : null,
@@ -297,9 +277,7 @@ void main() {
 
     test('unregisterField removes field from state', () {
       final controller = RiverpodFormController(
-        fields: [
-          BetterFormField<String>(id: stringField, initialValue: 'test'),
-        ],
+        fields: [FormixField<String>(id: stringField, initialValue: 'test')],
       );
 
       expect(controller.isFieldRegistered(stringField), true);
@@ -333,12 +311,12 @@ void main() {
     test('validate runs validation on all fields', () {
       final controller = RiverpodFormController(
         fields: [
-          BetterFormField<String>(
+          FormixField<String>(
             id: stringField,
             initialValue: '',
             validator: (v) => v.isEmpty ? 'Required' : null,
           ),
-          BetterFormField<int>(
+          FormixField<int>(
             id: intField,
             initialValue: 5,
             validator: (v) => (v) < 10 ? 'Must be at least 10' : null,
@@ -357,40 +335,31 @@ void main() {
       final controller = RiverpodFormController(
         initialValue: {'field1': 'initial'},
         fields: [
-          BetterFormField<String>(
-            id: BetterFormFieldID<String>('field1'),
+          FormixField<String>(
+            id: FormixFieldID<String>('field1'),
             initialValue: 'initial',
           ),
         ],
       );
 
-      controller.setValue(BetterFormFieldID<String>('field1'), 'changed');
-      expect(
-        controller.getValue(BetterFormFieldID<String>('field1')),
-        'changed',
-      );
+      controller.setValue(FormixFieldID<String>('field1'), 'changed');
+      expect(controller.getValue(FormixFieldID<String>('field1')), 'changed');
 
       controller.reset();
 
-      expect(
-        controller.getValue(BetterFormFieldID<String>('field1')),
-        'initial',
-      );
-      expect(
-        controller.isFieldDirty(BetterFormFieldID<String>('field1')),
-        false,
-      );
+      expect(controller.getValue(FormixFieldID<String>('field1')), 'initial');
+      expect(controller.isFieldDirty(FormixFieldID<String>('field1')), false);
     });
 
     test('resetFields resets specific fields', () {
-      final field1 = BetterFormFieldID<String>('field1');
-      final field2 = BetterFormFieldID<String>('field2');
+      final field1 = FormixFieldID<String>('field1');
+      final field2 = FormixFieldID<String>('field2');
 
       final controller = RiverpodFormController(
         initialValue: {'field1': 'initial1', 'field2': 'initial2'},
         fields: [
-          BetterFormField<String>(id: field1, initialValue: 'initial1'),
-          BetterFormField<String>(id: field2, initialValue: 'initial2'),
+          FormixField<String>(id: field1, initialValue: 'initial1'),
+          FormixField<String>(id: field2, initialValue: 'initial2'),
         ],
       );
 
@@ -406,7 +375,7 @@ void main() {
     test('async validation works with debouncing', () async {
       final controller = RiverpodFormController(
         fields: [
-          BetterFormField<String>(
+          FormixField<String>(
             id: stringField,
             initialValue: '',
             asyncValidator: (v) async {
@@ -430,11 +399,9 @@ void main() {
     });
   });
 
-  group('BetterFormController', () {
+  group('FormixController', () {
     test('extends RiverpodFormController correctly', () {
-      final controller = BetterFormController(
-        initialValue: {'field1': 'value1'},
-      );
+      final controller = FormixController(initialValue: {'field1': 'value1'});
 
       expect(controller.values, {'field1': 'value1'});
       expect(controller.isDirty, false);
@@ -442,8 +409,8 @@ void main() {
     });
 
     test('getFieldNotifier creates and caches notifiers', () {
-      final controller = BetterFormController();
-      final fieldId = BetterFormFieldID<String>('test');
+      final controller = FormixController();
+      final fieldId = FormixFieldID<String>('test');
 
       final notifier1 = controller.getFieldNotifier(fieldId);
       final notifier2 = controller.getFieldNotifier(fieldId);
@@ -453,8 +420,8 @@ void main() {
     });
 
     test('fieldValidationNotifier creates and caches notifiers', () {
-      final controller = BetterFormController();
-      final fieldId = BetterFormFieldID<String>('test');
+      final controller = FormixController();
+      final fieldId = FormixFieldID<String>('test');
 
       final notifier1 = controller.fieldValidationNotifier(fieldId);
       final notifier2 = controller.fieldValidationNotifier(fieldId);
@@ -464,8 +431,8 @@ void main() {
     });
 
     test('fieldDirtyNotifier creates and caches notifiers', () {
-      final controller = BetterFormController();
-      final fieldId = BetterFormFieldID<String>('test');
+      final controller = FormixController();
+      final fieldId = FormixFieldID<String>('test');
 
       final notifier1 = controller.fieldDirtyNotifier(fieldId);
       final notifier2 = controller.fieldDirtyNotifier(fieldId);
@@ -475,8 +442,8 @@ void main() {
     });
 
     test('fieldTouchedNotifier creates and caches notifiers', () {
-      final controller = BetterFormController();
-      final fieldId = BetterFormFieldID<String>('test');
+      final controller = FormixController();
+      final fieldId = FormixFieldID<String>('test');
 
       final notifier1 = controller.fieldTouchedNotifier(fieldId);
       final notifier2 = controller.fieldTouchedNotifier(fieldId);
@@ -486,7 +453,7 @@ void main() {
     });
 
     test('global notifiers are created lazily', () {
-      final controller = BetterFormController();
+      final controller = FormixController();
 
       expect(controller.isDirtyNotifier.value, false);
       expect(controller.isValidNotifier.value, true);
@@ -494,9 +461,7 @@ void main() {
     });
 
     test('toMap returns unmodifiable copy of values', () {
-      final controller = BetterFormController(
-        initialValue: {'field1': 'value1'},
-      );
+      final controller = FormixController(initialValue: {'field1': 'value1'});
 
       final map = controller.toMap();
       expect(map, {'field1': 'value1'});
@@ -506,14 +471,14 @@ void main() {
     });
 
     test('getChangedValues returns only dirty fields', () {
-      final field1 = BetterFormFieldID<String>('field1');
-      final field2 = BetterFormFieldID<String>('field2');
+      final field1 = FormixFieldID<String>('field1');
+      final field2 = FormixFieldID<String>('field2');
 
-      final controller = BetterFormController(
+      final controller = FormixController(
         initialValue: {'field1': 'initial1', 'field2': 'initial2'},
         fields: [
-          BetterFormField<String>(id: field1, initialValue: 'initial1'),
-          BetterFormField<String>(id: field2, initialValue: 'initial2'),
+          FormixField<String>(id: field1, initialValue: 'initial1'),
+          FormixField<String>(id: field2, initialValue: 'initial2'),
         ],
       );
 
@@ -525,13 +490,13 @@ void main() {
     });
 
     test('updateFromMap updates registered fields', () {
-      final field1 = BetterFormFieldID<String>('field1');
-      final field2 = BetterFormFieldID<String>('field2');
+      final field1 = FormixFieldID<String>('field1');
+      final field2 = FormixFieldID<String>('field2');
 
-      final controller = BetterFormController(
+      final controller = FormixController(
         fields: [
-          BetterFormField<String>(id: field1, initialValue: ''),
-          BetterFormField<String>(id: field2, initialValue: ''),
+          FormixField<String>(id: field1, initialValue: ''),
+          FormixField<String>(id: field2, initialValue: ''),
         ],
       );
 
@@ -542,17 +507,17 @@ void main() {
     });
 
     test('resetToValues updates initial values and resets', () {
-      final controller = BetterFormController(initialValue: {'field1': 'old'});
+      final controller = FormixController(initialValue: {'field1': 'old'});
 
       controller.resetToValues({'field1': 'new'});
 
       expect(controller.initialValue['field1'], 'new');
-      expect(controller.getValue(BetterFormFieldID<String>('field1')), 'new');
+      expect(controller.getValue(FormixFieldID<String>('field1')), 'new');
     });
 
     test('focus management registers focus nodes', () {
-      final controller = BetterFormController();
-      final fieldId = BetterFormFieldID<String>('test');
+      final controller = FormixController();
+      final fieldId = FormixFieldID<String>('test');
       final focusNode = FocusNode();
 
       controller.registerFocusNode(fieldId, focusNode);
@@ -565,17 +530,17 @@ void main() {
     });
 
     test('focusFirstError works with registered nodes', () {
-      final field1 = BetterFormFieldID<String>('field1');
-      final field2 = BetterFormFieldID<String>('field2');
+      final field1 = FormixFieldID<String>('field1');
+      final field2 = FormixFieldID<String>('field2');
 
-      final controller = BetterFormController(
+      final controller = FormixController(
         fields: [
-          BetterFormField<String>(
+          FormixField<String>(
             id: field1,
             initialValue: '',
             validator: (v) => v.isEmpty ? 'Required' : null,
           ),
-          BetterFormField<String>(
+          FormixField<String>(
             id: field2,
             initialValue: '',
             validator: (v) => v.isEmpty ? 'Required' : null,
@@ -599,24 +564,22 @@ void main() {
     });
 
     test('dispose works without errors', () {
-      final controller = BetterFormController();
+      final controller = FormixController();
 
       // Create some notifiers
-      controller.getFieldNotifier(BetterFormFieldID<String>('test'));
-      controller.fieldValidationNotifier(BetterFormFieldID<String>('test'));
+      controller.getFieldNotifier(FormixFieldID<String>('test'));
+      controller.fieldValidationNotifier(FormixFieldID<String>('test'));
 
       // Dispose should work without errors
       expect(() => controller.dispose(), returnsNormally);
     });
   });
 
-  group('BetterFormParameter', () {
+  group('FormixParameter', () {
     test('constructor creates parameter correctly', () {
-      final param = BetterFormParameter(
+      final param = FormixParameter(
         initialValue: {'field1': 'value1'},
-        fields: [
-          BetterFormFieldConfig(id: BetterFormFieldID<String>('field1')),
-        ],
+        fields: [FormixFieldConfig(id: FormixFieldID<String>('field1'))],
         persistence: MockPersistence(),
         formId: 'test_form',
       );
@@ -627,29 +590,25 @@ void main() {
     });
 
     test('equality works correctly', () {
-      final param1 = BetterFormParameter(
+      final param1 = FormixParameter(
         initialValue: {'field1': 'value1'},
-        fields: [
-          BetterFormFieldConfig(id: BetterFormFieldID<String>('field1')),
-        ],
+        fields: [FormixFieldConfig(id: FormixFieldID<String>('field1'))],
       );
 
-      final param2 = BetterFormParameter(
+      final param2 = FormixParameter(
         initialValue: {'field1': 'value1'},
-        fields: [
-          BetterFormFieldConfig(id: BetterFormFieldID<String>('field1')),
-        ],
+        fields: [FormixFieldConfig(id: FormixFieldID<String>('field1'))],
       );
 
-      final param3 = BetterFormParameter(initialValue: {'field1': 'value2'});
+      final param3 = FormixParameter(initialValue: {'field1': 'value2'});
 
       expect(param1 == param2, true);
       expect(param1 == param3, false);
     });
 
     test('hashCode works correctly', () {
-      final param1 = BetterFormParameter(initialValue: {'field1': 'value1'});
-      final param2 = BetterFormParameter(initialValue: {'field1': 'value1'});
+      final param1 = FormixParameter(initialValue: {'field1': 'value1'});
+      final param2 = FormixParameter(initialValue: {'field1': 'value1'});
 
       expect(param1.hashCode, param2.hashCode);
     });
@@ -657,21 +616,16 @@ void main() {
 
   group('Providers', () {
     test('formControllerProvider creates controller correctly', () {
-      final param = BetterFormParameter(
+      final param = FormixParameter(
         initialValue: {'field1': 'value1'},
-        fields: [
-          BetterFormFieldConfig(id: BetterFormFieldID<String>('field1')),
-        ],
+        fields: [FormixFieldConfig(id: FormixFieldID<String>('field1'))],
       );
 
       final container = ProviderContainer();
       final provider = formControllerProvider(param);
       final controller = container.read(provider.notifier);
 
-      expect(
-        controller.getValue(BetterFormFieldID<String>('field1')),
-        'value1',
-      );
+      expect(controller.getValue(FormixFieldID<String>('field1')), 'value1');
       container.dispose();
     });
 

@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 
 void main() {
   group('Programmatic Control Tests', () {
     testWidgets('Focusing a field programmatically', (tester) async {
-      final fieldA = BetterFormFieldID<String>('a');
-      final fieldB = BetterFormFieldID<String>('b');
+      final fieldA = FormixFieldID<String>('a');
+      final fieldB = FormixFieldID<String>('b');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
-                child: BetterFormBuilder(
+              body: Formix(
+                child: FormixBuilder(
                   builder: (context, scope) {
                     return Column(
                       children: [
@@ -57,14 +57,14 @@ void main() {
     });
 
     testWidgets('Scrolling to a field programmatically', (tester) async {
-      final fieldB = BetterFormFieldID<String>('b');
+      final fieldB = FormixFieldID<String>('b');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
-                child: BetterFormBuilder(
+              body: Formix(
+                child: FormixBuilder(
                   builder: (context, scope) {
                     return Column(
                       children: [
@@ -112,27 +112,27 @@ void main() {
     });
 
     testWidgets('Focusing first error', (tester) async {
-      final fieldA = BetterFormFieldID<String>('a');
-      final fieldB = BetterFormFieldID<String>('b');
+      final fieldA = FormixFieldID<String>('a');
+      final fieldB = FormixFieldID<String>('b');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 fields: [
-                  BetterFormFieldConfig<String>(
+                  FormixFieldConfig<String>(
                     id: fieldA,
                     initialValue: '',
                     validator: (v) => v.isEmpty ? 'Required' : null,
                   ),
-                  BetterFormFieldConfig<String>(
+                  FormixFieldConfig<String>(
                     id: fieldB,
                     initialValue: '',
                     validator: (v) => v.isEmpty ? 'Required' : null,
                   ),
                 ],
-                child: BetterFormBuilder(
+                child: FormixBuilder(
                   builder: (context, scope) {
                     return Column(
                       children: [

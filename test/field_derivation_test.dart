@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:better_form/src/controllers/field_id.dart';
-import 'package:better_form/src/controllers/riverpod_controller.dart';
-import 'package:better_form/src/widgets/field_derivation.dart';
-import 'package:better_form/src/widgets/riverpod_form_fields.dart';
+import 'package:formix/src/controllers/field_id.dart';
+import 'package:formix/src/controllers/riverpod_controller.dart';
+import 'package:formix/src/widgets/field_derivation.dart';
+import 'package:formix/src/widgets/riverpod_form_fields.dart';
 
 void main() {
   group('FieldDerivationConfig', () {
     test('equality works correctly', () {
-      final fieldId1 = BetterFormFieldID<String>('field1');
-      final fieldId2 = BetterFormFieldID<String>('field2');
-      final targetId = BetterFormFieldID<String>('target');
+      final fieldId1 = FormixFieldID<String>('field1');
+      final fieldId2 = FormixFieldID<String>('field2');
+      final targetId = FormixFieldID<String>('target');
 
       final config1 = FieldDerivationConfig(
         dependencies: [fieldId1, fieldId2],
@@ -36,9 +36,9 @@ void main() {
     });
 
     test('hashCode works correctly', () {
-      final fieldId1 = BetterFormFieldID<String>('field1');
-      final fieldId2 = BetterFormFieldID<String>('field2');
-      final targetId = BetterFormFieldID<String>('target');
+      final fieldId1 = FormixFieldID<String>('field1');
+      final fieldId2 = FormixFieldID<String>('field2');
+      final targetId = FormixFieldID<String>('target');
 
       final config1 = FieldDerivationConfig(
         dependencies: [fieldId1, fieldId2],
@@ -56,21 +56,21 @@ void main() {
     });
   });
 
-  group('BetterFormFieldDerivation', () {
-    late BetterFormFieldID<String> sourceField;
-    late BetterFormFieldID<String> targetField;
-    late BetterFormFieldID<int> ageField;
-    late BetterFormFieldID<DateTime> dobField;
+  group('FormixFieldDerivation', () {
+    late FormixFieldID<String> sourceField;
+    late FormixFieldID<String> targetField;
+    late FormixFieldID<int> ageField;
+    late FormixFieldID<DateTime> dobField;
 
     setUp(() {
-      sourceField = BetterFormFieldID<String>('source');
-      targetField = BetterFormFieldID<String>('target');
-      ageField = BetterFormFieldID<int>('age');
-      dobField = BetterFormFieldID<DateTime>('dob');
+      sourceField = FormixFieldID<String>('source');
+      targetField = FormixFieldID<String>('target');
+      ageField = FormixFieldID<int>('age');
+      dobField = FormixFieldID<DateTime>('dob');
     });
 
     testWidgets('build returns SizedBox.shrink', (tester) async {
-      final widget = BetterFormFieldDerivation(
+      final widget = FormixFieldDerivation(
         dependencies: [sourceField],
         derive: (values) => values[sourceField]?.toUpperCase(),
         targetField: targetField,
@@ -79,14 +79,14 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
-            home: BetterForm(
+            home: Formix(
               initialValue: const {
                 'source': 'initial',
                 'target': 'target_initial',
               },
               fields: [
-                BetterFormFieldConfig(id: sourceField),
-                BetterFormFieldConfig(id: targetField),
+                FormixFieldConfig(id: sourceField),
+                FormixFieldConfig(id: targetField),
               ],
               child: widget,
             ),
@@ -100,7 +100,7 @@ void main() {
     });
 
     testWidgets('derives value on dependency change', (tester) async {
-      final widget = BetterFormFieldDerivation(
+      final widget = FormixFieldDerivation(
         dependencies: [sourceField],
         derive: (values) => values[sourceField]?.toUpperCase(),
         targetField: targetField,
@@ -109,14 +109,14 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
-            home: BetterForm(
+            home: Formix(
               initialValue: const {
                 'source': 'initial',
                 'target': 'target_initial',
               },
               fields: [
-                BetterFormFieldConfig(id: sourceField),
-                BetterFormFieldConfig(id: targetField),
+                FormixFieldConfig(id: sourceField),
+                FormixFieldConfig(id: targetField),
               ],
               child: widget,
             ),
@@ -125,14 +125,13 @@ void main() {
       );
 
       // Get controller to check values
-      final provider = BetterForm.of(
-        tester.element(find.byType(BetterFormFieldDerivation)),
+      final provider = Formix.of(
+        tester.element(find.byType(FormixFieldDerivation)),
       )!;
       final container = ProviderScope.containerOf(
-        tester.element(find.byType(BetterFormFieldDerivation)),
+        tester.element(find.byType(FormixFieldDerivation)),
       );
-      final controller =
-          container.read(provider.notifier) as BetterFormController;
+      final controller = container.read(provider.notifier) as FormixController;
 
       // Initial value should be derived
       expect(controller.getValue(targetField), 'INITIAL');
@@ -145,11 +144,11 @@ void main() {
     });
 
     testWidgets('handles multiple dependencies', (tester) async {
-      final firstNameField = BetterFormFieldID<String>('firstName');
-      final lastNameField = BetterFormFieldID<String>('lastName');
-      final fullNameField = BetterFormFieldID<String>('fullName');
+      final firstNameField = FormixFieldID<String>('firstName');
+      final lastNameField = FormixFieldID<String>('lastName');
+      final fullNameField = FormixFieldID<String>('fullName');
 
-      final widget = BetterFormFieldDerivation(
+      final widget = FormixFieldDerivation(
         dependencies: [firstNameField, lastNameField],
         derive: (values) =>
             '${values[firstNameField]} ${values[lastNameField]}',
@@ -159,16 +158,16 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
-            home: BetterForm(
+            home: Formix(
               initialValue: const {
                 'firstName': 'John',
                 'lastName': 'Doe',
                 'fullName': '',
               },
               fields: [
-                BetterFormFieldConfig(id: firstNameField),
-                BetterFormFieldConfig(id: lastNameField),
-                BetterFormFieldConfig(id: fullNameField),
+                FormixFieldConfig(id: firstNameField),
+                FormixFieldConfig(id: lastNameField),
+                FormixFieldConfig(id: fullNameField),
               ],
               child: widget,
             ),
@@ -176,14 +175,13 @@ void main() {
         ),
       );
 
-      final provider = BetterForm.of(
-        tester.element(find.byType(BetterFormFieldDerivation)),
+      final provider = Formix.of(
+        tester.element(find.byType(FormixFieldDerivation)),
       )!;
       final container = ProviderScope.containerOf(
-        tester.element(find.byType(BetterFormFieldDerivation)),
+        tester.element(find.byType(FormixFieldDerivation)),
       );
-      final controller =
-          container.read(provider.notifier) as BetterFormController;
+      final controller = container.read(provider.notifier) as FormixController;
 
       expect(controller.getValue(fullNameField), 'John Doe');
 
@@ -193,7 +191,7 @@ void main() {
     });
 
     testWidgets('handles age calculation from date of birth', (tester) async {
-      final widget = BetterFormFieldDerivation(
+      final widget = FormixFieldDerivation(
         dependencies: [dobField],
         derive: (values) {
           final dob = values[dobField] as DateTime?;
@@ -213,14 +211,14 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
-            home: BetterForm(
+            home: Formix(
               initialValue: const {'age': 0},
               fields: [
-                BetterFormFieldConfig(
+                FormixFieldConfig(
                   id: dobField,
                   initialValue: DateTime(2000, 1, 1),
                 ),
-                BetterFormFieldConfig(id: ageField),
+                FormixFieldConfig(id: ageField),
               ],
               child: widget,
             ),
@@ -228,21 +226,20 @@ void main() {
         ),
       );
 
-      final provider = BetterForm.of(
-        tester.element(find.byType(BetterFormFieldDerivation)),
+      final provider = Formix.of(
+        tester.element(find.byType(FormixFieldDerivation)),
       )!;
       final container = ProviderScope.containerOf(
-        tester.element(find.byType(BetterFormFieldDerivation)),
+        tester.element(find.byType(FormixFieldDerivation)),
       );
-      final controller =
-          container.read(provider.notifier) as BetterFormController;
+      final controller = container.read(provider.notifier) as FormixController;
 
       final expectedAge = DateTime.now().year - 2000;
       expect(controller.getValue(ageField), expectedAge);
     });
 
     testWidgets('handles errors gracefully in debug mode', (tester) async {
-      final widget = BetterFormFieldDerivation(
+      final widget = FormixFieldDerivation(
         dependencies: [sourceField],
         derive: (values) {
           throw Exception('Test error');
@@ -253,14 +250,14 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
-            home: BetterForm(
+            home: Formix(
               initialValue: const {
                 'source': 'initial',
                 'target': 'target_initial',
               },
               fields: [
-                BetterFormFieldConfig(id: sourceField),
-                BetterFormFieldConfig(id: targetField),
+                FormixFieldConfig(id: sourceField),
+                FormixFieldConfig(id: targetField),
               ],
               child: widget,
             ),
@@ -268,23 +265,22 @@ void main() {
         ),
       );
 
-      final provider = BetterForm.of(
-        tester.element(find.byType(BetterFormFieldDerivation)),
+      final provider = Formix.of(
+        tester.element(find.byType(FormixFieldDerivation)),
       )!;
       final container = ProviderScope.containerOf(
-        tester.element(find.byType(BetterFormFieldDerivation)),
+        tester.element(find.byType(FormixFieldDerivation)),
       );
-      final controller =
-          container.read(provider.notifier) as BetterFormController;
+      final controller = container.read(provider.notifier) as FormixController;
 
       // Should not crash, target field should keep its initial value
       expect(controller.getValue(targetField), 'target_initial');
     });
 
     testWidgets('updates listeners when dependencies change', (tester) async {
-      final newSourceField = BetterFormFieldID<String>('newSource');
+      final newSourceField = FormixFieldID<String>('newSource');
 
-      final widget = BetterFormFieldDerivation(
+      final widget = FormixFieldDerivation(
         dependencies: [sourceField],
         derive: (values) => values[sourceField]?.toUpperCase(),
         targetField: targetField,
@@ -293,16 +289,16 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
-            home: BetterForm(
+            home: Formix(
               initialValue: const {
                 'source': 'initial',
                 'target': 'target_initial',
                 'newSource': 'new source',
               },
               fields: [
-                BetterFormFieldConfig(id: sourceField),
-                BetterFormFieldConfig(id: targetField),
-                BetterFormFieldConfig(id: newSourceField),
+                FormixFieldConfig(id: sourceField),
+                FormixFieldConfig(id: targetField),
+                FormixFieldConfig(id: newSourceField),
               ],
               child: widget,
             ),
@@ -310,14 +306,13 @@ void main() {
         ),
       );
 
-      final provider = BetterForm.of(
-        tester.element(find.byType(BetterFormFieldDerivation)),
+      final provider = Formix.of(
+        tester.element(find.byType(FormixFieldDerivation)),
       )!;
       final container = ProviderScope.containerOf(
-        tester.element(find.byType(BetterFormFieldDerivation)),
+        tester.element(find.byType(FormixFieldDerivation)),
       );
-      final controller =
-          container.read(provider.notifier) as BetterFormController;
+      final controller = container.read(provider.notifier) as FormixController;
 
       expect(controller.getValue(targetField), 'INITIAL');
 
@@ -325,18 +320,18 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
-            home: BetterForm(
+            home: Formix(
               initialValue: const {
                 'source': 'initial',
                 'target': 'target_initial',
                 'newSource': 'new source',
               },
               fields: [
-                BetterFormFieldConfig(id: sourceField),
-                BetterFormFieldConfig(id: targetField),
-                BetterFormFieldConfig(id: newSourceField),
+                FormixFieldConfig(id: sourceField),
+                FormixFieldConfig(id: targetField),
+                FormixFieldConfig(id: newSourceField),
               ],
-              child: BetterFormFieldDerivation(
+              child: FormixFieldDerivation(
                 dependencies: [newSourceField],
                 derive: (values) => values[newSourceField]?.toUpperCase(),
                 targetField: targetField,
@@ -350,19 +345,19 @@ void main() {
     });
   });
 
-  group('BetterFormFieldDerivations', () {
-    late BetterFormFieldID<String> firstNameField;
-    late BetterFormFieldID<String> lastNameField;
-    late BetterFormFieldID<String> fullNameField;
-    late BetterFormFieldID<String> emailField;
-    late BetterFormFieldID<String> displayNameField;
+  group('FormixFieldDerivations', () {
+    late FormixFieldID<String> firstNameField;
+    late FormixFieldID<String> lastNameField;
+    late FormixFieldID<String> fullNameField;
+    late FormixFieldID<String> emailField;
+    late FormixFieldID<String> displayNameField;
 
     setUp(() {
-      firstNameField = BetterFormFieldID<String>('firstName');
-      lastNameField = BetterFormFieldID<String>('lastName');
-      fullNameField = BetterFormFieldID<String>('fullName');
-      emailField = BetterFormFieldID<String>('email');
-      displayNameField = BetterFormFieldID<String>('displayName');
+      firstNameField = FormixFieldID<String>('firstName');
+      lastNameField = FormixFieldID<String>('lastName');
+      fullNameField = FormixFieldID<String>('fullName');
+      emailField = FormixFieldID<String>('email');
+      displayNameField = FormixFieldID<String>('displayName');
     });
 
     testWidgets('handles multiple derivations', (tester) async {
@@ -381,12 +376,12 @@ void main() {
         ),
       ];
 
-      final widget = BetterFormFieldDerivations(derivations: configs);
+      final widget = FormixFieldDerivations(derivations: configs);
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
-            home: BetterForm(
+            home: Formix(
               initialValue: const {
                 'firstName': 'John',
                 'lastName': 'Doe',
@@ -395,11 +390,11 @@ void main() {
                 'displayName': '',
               },
               fields: [
-                BetterFormFieldConfig(id: firstNameField),
-                BetterFormFieldConfig(id: lastNameField),
-                BetterFormFieldConfig(id: fullNameField),
-                BetterFormFieldConfig(id: emailField),
-                BetterFormFieldConfig(id: displayNameField),
+                FormixFieldConfig(id: firstNameField),
+                FormixFieldConfig(id: lastNameField),
+                FormixFieldConfig(id: fullNameField),
+                FormixFieldConfig(id: emailField),
+                FormixFieldConfig(id: displayNameField),
               ],
               child: widget,
             ),
@@ -407,14 +402,13 @@ void main() {
         ),
       );
 
-      final provider = BetterForm.of(
-        tester.element(find.byType(BetterFormFieldDerivations)),
+      final provider = Formix.of(
+        tester.element(find.byType(FormixFieldDerivations)),
       )!;
       final container = ProviderScope.containerOf(
-        tester.element(find.byType(BetterFormFieldDerivations)),
+        tester.element(find.byType(FormixFieldDerivations)),
       );
-      final controller =
-          container.read(provider.notifier) as BetterFormController;
+      final controller = container.read(provider.notifier) as FormixController;
 
       expect(controller.getValue(fullNameField), 'John Doe');
       expect(controller.getValue(displayNameField), 'John <john@example.com>');
@@ -427,12 +421,12 @@ void main() {
     });
 
     testWidgets('build returns SizedBox.shrink', (tester) async {
-      final widget = BetterFormFieldDerivations(derivations: []);
+      final widget = FormixFieldDerivations(derivations: []);
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
-            home: BetterForm(initialValue: const {}, fields: [], child: widget),
+            home: Formix(initialValue: const {}, fields: [], child: widget),
           ),
         ),
       );

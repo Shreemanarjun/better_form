@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart' hide FormState;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 
 // Test implementations for the selectors
-class TestFieldSelector<T> extends BetterFormFieldSelector<T> {
+class TestFieldSelector<T> extends FormixFieldSelector<T> {
   const TestFieldSelector({
     super.key,
     required super.fieldId,
@@ -17,7 +17,7 @@ class TestFieldSelector<T> extends BetterFormFieldSelector<T> {
   });
 }
 
-class TestValueSelector<T> extends BetterFormFieldValueSelector<T> {
+class TestValueSelector<T> extends FormixFieldValueSelector<T> {
   const TestValueSelector({
     super.key,
     required super.fieldId,
@@ -27,7 +27,7 @@ class TestValueSelector<T> extends BetterFormFieldValueSelector<T> {
   });
 }
 
-class TestConditionalSelector<T> extends BetterFormFieldConditionalSelector<T> {
+class TestConditionalSelector<T> extends FormixFieldConditionalSelector<T> {
   const TestConditionalSelector({
     super.key,
     required super.fieldId,
@@ -38,7 +38,7 @@ class TestConditionalSelector<T> extends BetterFormFieldConditionalSelector<T> {
   });
 }
 
-class TestPerformanceMonitor<T> extends BetterFormFieldPerformanceMonitor<T> {
+class TestPerformanceMonitor<T> extends FormixFieldPerformanceMonitor<T> {
   const TestPerformanceMonitor({
     super.key,
     required super.fieldId,
@@ -49,12 +49,12 @@ class TestPerformanceMonitor<T> extends BetterFormFieldPerformanceMonitor<T> {
 
 void main() {
   group('FieldChangeInfo', () {
-    late BetterFormFieldID<String> testField;
+    late FormixFieldID<String> testField;
     late ValidationResult validResult;
     late ValidationResult invalidResult;
 
     setUp(() {
-      testField = BetterFormFieldID<String>('test_field');
+      testField = FormixFieldID<String>('test_field');
       validResult = ValidationResult.valid;
       invalidResult = ValidationResult(isValid: false, errorMessage: 'Error');
     });
@@ -291,16 +291,16 @@ void main() {
     });
   });
 
-  group('BetterFormFieldSelector', () {
-    late BetterFormFieldID<String> testField;
+  group('FormixFieldSelector', () {
+    late FormixFieldID<String> testField;
 
     setUp(() {
-      testField = BetterFormFieldID<String>('test_field');
+      testField = FormixFieldID<String>('test_field');
     });
 
     testWidgets('constructor initializes correctly', (tester) async {
       final selector = TestFieldSelector<String>(
-        fieldId: BetterFormFieldID<String>('test'),
+        fieldId: FormixFieldID<String>('test'),
         builder: _testBuilder,
         listenToValue: false,
         listenToValidation: true,
@@ -316,7 +316,7 @@ void main() {
     });
 
     testWidgets('uses custom controller when provided', (tester) async {
-      final customController = BetterFormController(
+      final customController = FormixController(
         initialValue: {'custom_field': 'custom_value'},
       );
 
@@ -325,7 +325,7 @@ void main() {
           child: MaterialApp(
             home: Scaffold(
               body: TestFieldSelector<String>(
-                fieldId: BetterFormFieldID<String>('custom_field'),
+                fieldId: FormixFieldID<String>('custom_field'),
                 controller: customController,
                 builder: (context, info, child) {
                   return Text('Value: ${info.value}');
@@ -344,8 +344,8 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
-                fields: [BetterFormFieldConfig(id: testField)],
+              body: Formix(
+                fields: [FormixFieldConfig(id: testField)],
                 child: TestFieldSelector<String>(
                   fieldId: testField,
                   builder: _testBuilder,
@@ -362,20 +362,20 @@ void main() {
     });
   });
 
-  group('BetterFormFieldValueSelector', () {
-    late BetterFormFieldID<String> stringField;
-    late BetterFormFieldID<int> intField;
-    late BetterFormFieldID<bool> boolField;
+  group('FormixFieldValueSelector', () {
+    late FormixFieldID<String> stringField;
+    late FormixFieldID<int> intField;
+    late FormixFieldID<bool> boolField;
 
     setUp(() {
-      stringField = BetterFormFieldID<String>('string_field');
-      intField = BetterFormFieldID<int>('int_field');
-      boolField = BetterFormFieldID<bool>('bool_field');
+      stringField = FormixFieldID<String>('string_field');
+      intField = FormixFieldID<int>('int_field');
+      boolField = FormixFieldID<bool>('bool_field');
     });
 
     test('can be instantiated with required parameters', () {
       final selector = TestValueSelector<String>(
-        fieldId: BetterFormFieldID<String>('test'),
+        fieldId: FormixFieldID<String>('test'),
         builder: (context, value, child) => Text('Value: $value'),
       );
 
@@ -385,7 +385,7 @@ void main() {
 
     test('constructor accepts optional parameters', () {
       const childWidget = Text('Child');
-      final customController = BetterFormController();
+      final customController = FormixController();
 
       final selector = TestValueSelector<String>(
         key: const Key('test_key'),
@@ -406,10 +406,10 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: {'string_field': 'initial_value'},
                 fields: [
-                  BetterFormFieldConfig(
+                  FormixFieldConfig(
                     id: stringField,
                     initialValue: 'initial_value',
                   ),
@@ -436,8 +436,8 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
-                fields: [BetterFormFieldConfig(id: stringField)],
+              body: Formix(
+                fields: [FormixFieldConfig(id: stringField)],
                 child: TestValueSelector<String>(
                   fieldId: stringField,
                   builder: (context, value, child) {
@@ -460,8 +460,8 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
-                fields: [BetterFormFieldConfig(id: stringField)],
+              body: Formix(
+                fields: [FormixFieldConfig(id: stringField)],
                 child: TestValueSelector<String>(
                   fieldId: stringField,
                   builder: (context, value, child) {
@@ -481,10 +481,10 @@ void main() {
       expect(buildCount, 1);
 
       // Change field value
-      final controller = BetterForm.controllerOf(
+      final controller = Formix.controllerOf(
         tester.element(
           find.byWidgetPredicate(
-            (widget) => widget is BetterFormFieldValueSelector<String>,
+            (widget) => widget is FormixFieldValueSelector<String>,
           ),
         ),
       )!;
@@ -497,8 +497,8 @@ void main() {
     });
 
     test('only rebuilds when field value changes', () {
-      // This is tested implicitly by the fact that BetterFormFieldValueSelector
-      // extends BetterFormFieldSelector with listenToValue=true and other flags=false
+      // This is tested implicitly by the fact that FormixFieldValueSelector
+      // extends FormixFieldSelector with listenToValue=true and other flags=false
       final selector = TestValueSelector<String>(
         fieldId: stringField,
         builder: (context, value, child) => Text('Value: $value'),
@@ -514,9 +514,9 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: {'int_field': 42},
-                fields: [BetterFormFieldConfig(id: intField, initialValue: 42)],
+                fields: [FormixFieldConfig(id: intField, initialValue: 42)],
                 child: TestValueSelector<int>(
                   fieldId: intField,
                   builder: (context, value, child) {
@@ -532,10 +532,10 @@ void main() {
       expect(find.text('Number: 42'), findsOneWidget);
 
       // Change value
-      final controller = BetterForm.controllerOf(
+      final controller = Formix.controllerOf(
         tester.element(
           find.byWidgetPredicate(
-            (widget) => widget is BetterFormFieldValueSelector<int>,
+            (widget) => widget is FormixFieldValueSelector<int>,
           ),
         ),
       )!;
@@ -551,11 +551,9 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: {'bool_field': true},
-                fields: [
-                  BetterFormFieldConfig(id: boolField, initialValue: true),
-                ],
+                fields: [FormixFieldConfig(id: boolField, initialValue: true)],
                 child: TestValueSelector<bool>(
                   fieldId: boolField,
                   builder: (context, value, child) {
@@ -571,10 +569,10 @@ void main() {
       expect(find.text('Boolean: true'), findsOneWidget);
 
       // Change value
-      final controller = BetterForm.controllerOf(
+      final controller = Formix.controllerOf(
         tester.element(
           find.byWidgetPredicate(
-            (widget) => widget is BetterFormFieldValueSelector<bool>,
+            (widget) => widget is FormixFieldValueSelector<bool>,
           ),
         ),
       )!;
@@ -590,8 +588,8 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
-                fields: [BetterFormFieldConfig(id: stringField)],
+              body: Formix(
+                fields: [FormixFieldConfig(id: stringField)],
                 child: TestValueSelector<String>(
                   fieldId: stringField,
                   builder: (context, value, child) {
@@ -607,10 +605,10 @@ void main() {
       expect(find.text('Value: is_null'), findsOneWidget);
 
       // Set a value
-      final controller = BetterForm.controllerOf(
+      final controller = Formix.controllerOf(
         tester.element(
           find.byWidgetPredicate(
-            (widget) => widget is BetterFormFieldValueSelector<String>,
+            (widget) => widget is FormixFieldValueSelector<String>,
           ),
         ),
       )!;
@@ -635,8 +633,8 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
-                fields: [BetterFormFieldConfig(id: stringField)],
+              body: Formix(
+                fields: [FormixFieldConfig(id: stringField)],
                 child: TestValueSelector<String>(
                   fieldId: stringField,
                   child: childWidget,
@@ -657,7 +655,7 @@ void main() {
     });
 
     testWidgets('uses custom controller when provided', (tester) async {
-      final customController = BetterFormController(
+      final customController = FormixController(
         initialValue: {'custom_field': 'custom_value'},
       );
 
@@ -666,7 +664,7 @@ void main() {
           child: MaterialApp(
             home: Scaffold(
               body: TestValueSelector<String>(
-                fieldId: BetterFormFieldID<String>('custom_field'),
+                fieldId: FormixFieldID<String>('custom_field'),
                 controller: customController,
                 builder: (context, value, child) => Text('Value: $value'),
               ),
@@ -685,8 +683,8 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
-                fields: [BetterFormFieldConfig(id: intField)],
+              body: Formix(
+                fields: [FormixFieldConfig(id: intField)],
                 child: TestValueSelector<int>(
                   fieldId: intField,
                   builder: (context, value, child) {
@@ -704,10 +702,10 @@ void main() {
       expect(buildCount, 1);
 
       // Rapid changes
-      final controller = BetterForm.controllerOf(
+      final controller = Formix.controllerOf(
         tester.element(
           find.byWidgetPredicate(
-            (widget) => widget is BetterFormFieldValueSelector<int>,
+            (widget) => widget is FormixFieldValueSelector<int>,
           ),
         ),
       )!;
@@ -727,8 +725,8 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
-                fields: [BetterFormFieldConfig(id: stringField)],
+              body: Formix(
+                fields: [FormixFieldConfig(id: stringField)],
                 child: TestValueSelector<String>(
                   fieldId: stringField,
                   builder: (context, value, child) =>
@@ -746,18 +744,18 @@ void main() {
     });
 
     testWidgets('works with complex object types', (tester) async {
-      final listField = BetterFormFieldID<List<String>>('list_field');
+      final listField = FormixFieldID<List<String>>('list_field');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: {
                   'list_field': ['a', 'b', 'c'],
                 },
                 fields: [
-                  BetterFormFieldConfig(
+                  FormixFieldConfig(
                     id: listField,
                     initialValue: ['a', 'b', 'c'],
                   ),
@@ -777,10 +775,10 @@ void main() {
       expect(find.text('Length: 3'), findsOneWidget);
 
       // Change the list
-      final controller = BetterForm.controllerOf(
+      final controller = Formix.controllerOf(
         tester.element(
           find.byWidgetPredicate(
-            (widget) => widget is BetterFormFieldValueSelector<List<String>>,
+            (widget) => widget is FormixFieldValueSelector<List<String>>,
           ),
         ),
       )!;
@@ -796,8 +794,8 @@ void main() {
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
-                fields: [BetterFormFieldConfig(id: stringField)],
+              body: Formix(
+                fields: [FormixFieldConfig(id: stringField)],
                 child: TestValueSelector<String>(
                   fieldId: stringField,
                   builder: (context, value, child) {
@@ -813,10 +811,10 @@ void main() {
       expect(find.text('Value: "null"'), findsOneWidget);
 
       // Set empty string
-      final controller = BetterForm.controllerOf(
+      final controller = Formix.controllerOf(
         tester.element(
           find.byWidgetPredicate(
-            (widget) => widget is BetterFormFieldValueSelector<String>,
+            (widget) => widget is FormixFieldValueSelector<String>,
           ),
         ),
       )!;
@@ -828,18 +826,18 @@ void main() {
     });
 
     testWidgets('multiple value selectors work independently', (tester) async {
-      final field1 = BetterFormFieldID<String>('field1');
-      final field2 = BetterFormFieldID<String>('field2');
+      final field1 = FormixFieldID<String>('field1');
+      final field2 = FormixFieldID<String>('field2');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: BetterForm(
+              body: Formix(
                 initialValue: {'field1': 'value1', 'field2': 'value2'},
                 fields: [
-                  BetterFormFieldConfig(id: field1, initialValue: 'value1'),
-                  BetterFormFieldConfig(id: field2, initialValue: 'value2'),
+                  FormixFieldConfig(id: field1, initialValue: 'value1'),
+                  FormixFieldConfig(id: field2, initialValue: 'value2'),
                 ],
                 child: Column(
                   children: [
@@ -865,7 +863,7 @@ void main() {
       expect(find.text('Field2: value2'), findsOneWidget);
 
       // Change only field1
-      final controller = BetterForm.controllerOf(
+      final controller = Formix.controllerOf(
         tester.element(find.byType(Column)),
       )!;
       controller.setValue(field1, 'updated1');
@@ -877,12 +875,12 @@ void main() {
     });
   });
 
-  group('BetterFormFieldConditionalSelector', () {
+  group('FormixFieldConditionalSelector', () {
     test('can be instantiated with shouldRebuild function', () {
       bool shouldRebuildCalled = false;
 
       final selector = TestConditionalSelector<int>(
-        fieldId: BetterFormFieldID<int>('counter'),
+        fieldId: FormixFieldID<int>('counter'),
         shouldRebuild: (info) {
           shouldRebuildCalled = true;
           return (info.value ?? 0) > 5;
@@ -895,7 +893,7 @@ void main() {
 
       // Test that the shouldRebuild function works
       final testInfo = FieldChangeInfo<int>(
-        fieldId: BetterFormFieldID<int>('counter'),
+        fieldId: FormixFieldID<int>('counter'),
         value: 7,
         validation: ValidationResult.valid,
         isDirty: false,
@@ -911,10 +909,10 @@ void main() {
     });
   });
 
-  group('BetterFormFieldPerformanceMonitor', () {
+  group('FormixFieldPerformanceMonitor', () {
     test('can be instantiated with rebuild counting builder', () {
       final monitor = TestPerformanceMonitor<String>(
-        fieldId: BetterFormFieldID<String>('test'),
+        fieldId: FormixFieldID<String>('test'),
         builder: (context, info, count) => Text('Count: $count'),
       );
 

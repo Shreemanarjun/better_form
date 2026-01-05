@@ -14,7 +14,7 @@ class FieldChangeInfo<T> {
     required this.previousIsDirty,
   });
 
-  final BetterFormFieldID<T> fieldId;
+  final FormixFieldID<T> fieldId;
   final T? value;
   final ValidationResult validation;
   final bool isDirty;

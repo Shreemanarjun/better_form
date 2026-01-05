@@ -1,27 +1,27 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 
 void main() {
-  group('BetterFormMessages Interface', () {
-    test('BetterFormMessages is abstract and cannot be instantiated', () {
+  group('FormixMessages Interface', () {
+    test('FormixMessages is abstract and cannot be instantiated', () {
       // This should not compile if we try to instantiate it directly
       // We test this by ensuring the concrete implementation works
-      final messages = DefaultBetterFormMessages();
-      expect(messages, isA<BetterFormMessages>());
+      final messages = DefaultFormixMessages();
+      expect(messages, isA<FormixMessages>());
     });
   });
 
-  group('DefaultBetterFormMessages', () {
-    late DefaultBetterFormMessages messages;
+  group('DefaultFormixMessages', () {
+    late DefaultFormixMessages messages;
 
     setUp(() {
-      messages = const DefaultBetterFormMessages();
+      messages = const DefaultFormixMessages();
     });
 
     test('constructor creates instance correctly', () {
       expect(messages, isNotNull);
-      expect(messages, isA<DefaultBetterFormMessages>());
-      expect(messages, isA<BetterFormMessages>());
+      expect(messages, isA<DefaultFormixMessages>());
+      expect(messages, isA<FormixMessages>());
     });
 
     test('required returns correct message with label', () {
@@ -228,10 +228,10 @@ void main() {
     });
   });
 
-  group('Custom BetterFormMessages Implementation', () {
+  group('Custom FormixMessages Implementation', () {
     test('can create custom implementation', () {
       final customMessages = CustomTestMessages();
-      expect(customMessages, isA<BetterFormMessages>());
+      expect(customMessages, isA<FormixMessages>());
       expect(customMessages.required('Test'), 'CUSTOM: Test is required!');
       expect(customMessages.invalidFormat(), 'CUSTOM: Invalid format!');
     });
@@ -265,9 +265,9 @@ void main() {
     });
   });
 
-  group('BetterFormMessages Integration', () {
-    test('DefaultBetterFormMessages can be used as BetterFormMessages', () {
-      BetterFormMessages messages = const DefaultBetterFormMessages();
+  group('FormixMessages Integration', () {
+    test('DefaultFormixMessages can be used as FormixMessages', () {
+      FormixMessages messages = const DefaultFormixMessages();
 
       expect(messages.required('Field'), contains('Field'));
       expect(messages.invalidFormat(), equals('Invalid format'));
@@ -275,8 +275,8 @@ void main() {
     });
 
     test('messages are consistent across instances', () {
-      final messages1 = const DefaultBetterFormMessages();
-      final messages2 = const DefaultBetterFormMessages();
+      final messages1 = const DefaultFormixMessages();
+      final messages2 = const DefaultFormixMessages();
 
       expect(messages1.required('Test'), equals(messages2.required('Test')));
       expect(messages1.minLength(5), equals(messages2.minLength(5)));
@@ -284,7 +284,7 @@ void main() {
     });
 
     test('messages handle null or empty parameters gracefully', () {
-      final messages = const DefaultBetterFormMessages();
+      final messages = const DefaultFormixMessages();
 
       // These should not crash
       expect(() => messages.required(''), returnsNormally);
@@ -298,7 +298,7 @@ void main() {
 }
 
 /// Custom implementation for testing purposes
-class CustomTestMessages extends BetterFormMessages {
+class CustomTestMessages extends FormixMessages {
   const CustomTestMessages();
 
   @override

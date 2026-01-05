@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:better_form/better_form.dart';
+import 'package:formix/formix.dart';
 
-final hobbiesId = BetterFormArrayID<String>('hobbies');
+final hobbiesId = FormixArrayID<String>('hobbies');
 
 class DynamicArrayPage extends StatelessWidget {
   const DynamicArrayPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BetterForm(
+    return Formix(
       initialValue: const {
         'hobbies': ['Coding', 'Music'],
       },
@@ -23,7 +23,7 @@ class DynamicArrayPage extends StatelessWidget {
               const SizedBox(height: 16),
               Expanded(
                 child: SingleChildScrollView(
-                  child: BetterFormArray<String>(
+                  child: FormixArray<String>(
                     id: hobbiesId,
                     itemBuilder: (context, index, itemId, scope) {
                       return ListTile(
@@ -49,7 +49,7 @@ class DynamicArrayPage extends StatelessWidget {
             ],
           ),
         ),
-        floatingActionButton: BetterFormBuilder(
+        floatingActionButton: FormixBuilder(
           builder: (context, scope) => FloatingActionButton(
             onPressed: () => scope.addArrayItem(hobbiesId, 'New Hobby'),
             child: const Icon(Icons.add),
