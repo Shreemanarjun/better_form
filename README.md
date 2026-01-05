@@ -4,6 +4,18 @@
   <img src="assets/better_form.png" alt="Better Form Logo" width="200"/>
 </p>
 
+<p align="center">
+<a href="https://pub.dev/packages/better_form"><img src="https://img.shields.io/pub/v/better_form.svg" alt="Pub"></a>
+<a href="https://github.com/Shreemanarjun/better_form/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a>
+<img src="https://img.shields.io/badge/coverage-93%25-brightgreen" alt="Code Coverage">
+<img src="https://img.shields.io/badge/tests-1000%2B-brightgreen" alt="Tests">
+<img src="https://img.shields.io/badge/version-1.0.2-blue" alt="Version">
+</p>
+
+<p align="center">
+  <a href="https://betterform.shreeman.dev"><strong>Full Documentation</strong></a>
+</p>
+
 An elite, type-safe, and ultra-reactive form engine for Flutter. Powered by Riverpod, Better Form delivers lightning-fast performance and effortless memory management, whether you're building a simple contact form or a massive, multi-section enterprise dashboard.
 
 ## 📦 Installation
@@ -12,7 +24,7 @@ Add `better_form` to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  better_form: ^0.0.1
+  better_form: ^1.0.1
   flutter_riverpod: ^2.5.1
 ```
 

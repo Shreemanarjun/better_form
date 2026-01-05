@@ -1,6 +1,6 @@
 name: better_form
 description: "An elite, type-safe, and ultra-reactive form engine for Flutter powered by Riverpod."
-version: 0.0.1
+version: 1.0.1
 homepage: https://www.shreeman.dev
 repository: https://github.com/Shreemanarjun/better_form
 issue_tracker: https://github.com/Shreemanarjun/better_form/issues
