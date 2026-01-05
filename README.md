@@ -1,7 +1,7 @@
 # Formix 🚀
 
 <p align="center">
-  <img src="assets/formix.png" alt="Formix Logo" width="200"/>
+  <img src="https://zmozkivkhopoeutpnnum.supabase.co/storage/v1/object/public/images/formix.png" alt="Formix Logo" width="200"/>
 </p>
 
 <p align="center">
