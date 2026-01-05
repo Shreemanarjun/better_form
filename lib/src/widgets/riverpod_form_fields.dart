@@ -1,124 +1,11 @@
-import 'package:collection/collection.dart';
-import 'package:flutter/material.dart' hide FormState;
+export 'better_form.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'better_form.dart';
 import '../controllers/riverpod_controller.dart';
 import '../controllers/field_id.dart';
-import '../persistence/form_persistence.dart';
-
-/// A form widget that automatically manages a Riverpod controller provider
-/// and makes it available to all child Riverpod form fields
-class BetterForm extends ConsumerWidget {
-  const BetterForm({
-    super.key,
-    this.initialValue = const {},
-    this.fields = const [],
-    this.persistence,
-    this.formId,
-    required this.child,
-  });
-
-  final Map<String, dynamic> initialValue;
-  final List<BetterFormFieldConfig<dynamic>> fields;
-  final BetterFormPersistence? persistence;
-  final String? formId;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Create a unique controller provider for this form instance
-    final controllerProvider = formControllerProvider(
-      BetterFormParameter(
-        initialValue: initialValue,
-        fields: fields,
-        persistence: persistence,
-        formId: formId,
-      ),
-    );
-    final controller =
-        ref.watch(controllerProvider.notifier) as BetterFormController;
-
-    return ProviderScope(
-      overrides: [
-        currentControllerProvider.overrideWithValue(controllerProvider),
-      ],
-      child: _FieldRegistrar(
-        controllerProvider: controllerProvider,
-        fields: fields,
-        child: _BetterFormScope(
-          controller: controller,
-          controllerProvider: controllerProvider,
-          fields: fields,
-          child: child,
-        ),
-      ),
-    );
-  }
-
-  /// Get the controller provider from the nearest BetterForm ancestor
-  static AutoDisposeStateNotifierProvider<RiverpodFormController, FormState>?
-  of(BuildContext context) {
-    final _BetterFormScope? scope = context
-        .dependOnInheritedWidgetOfExactType<_BetterFormScope>();
-    return scope?.controllerProvider;
-  }
-
-  /// Get the controller from the nearest BetterForm ancestor (for compatibility)
-  static BetterFormController? controllerOf(BuildContext context) {
-    final _BetterFormScope? scope = context
-        .dependOnInheritedWidgetOfExactType<_BetterFormScope>();
-    return scope?.controller;
-  }
-}
-
-class _BetterFormScope extends InheritedWidget {
-  const _BetterFormScope({
-    required super.child,
-    required this.controller,
-    required this.controllerProvider,
-    required this.fields,
-  });
-
-  final BetterFormController controller;
-  final AutoDisposeStateNotifierProvider<RiverpodFormController, FormState>
-  controllerProvider;
-  final List<BetterFormFieldConfig<dynamic>> fields;
-
-  @override
-  bool updateShouldNotify(_BetterFormScope oldWidget) {
-    return controller != oldWidget.controller ||
-        controllerProvider != oldWidget.controllerProvider ||
-        !const ListEquality().equals(fields, oldWidget.fields);
-  }
-}
-
-/// Automatically registers fields with the controller
-class _FieldRegistrar extends ConsumerWidget {
-  const _FieldRegistrar({
-    required this.controllerProvider,
-    required this.fields,
-    required this.child,
-  });
-
-  final AutoDisposeStateNotifierProvider<RiverpodFormController, FormState>
-  controllerProvider;
-  final List<BetterFormFieldConfig<dynamic>> fields;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final controller = ref.read(controllerProvider.notifier);
-
-    // Register all fields with the controller
-    for (final fieldConfig in fields) {
-      if (!controller.isFieldRegistered(fieldConfig.id)) {
-        controller.registerField(fieldConfig.toField());
-      }
-    }
-
-    return child;
-  }
-}
+import 'form_group.dart';
 
 /// Riverpod-based checkbox form field
 class RiverpodCheckboxFormField extends ConsumerWidget {
@@ -131,7 +18,10 @@ class RiverpodCheckboxFormField extends ConsumerWidget {
 
   final BetterFormFieldID<bool> fieldId;
   final Widget? title;
-  final AutoDisposeStateNotifierProvider<RiverpodFormController, FormState>?
+  final AutoDisposeStateNotifierProvider<
+    RiverpodFormController,
+    BetterFormState
+  >?
   controllerProvider;
 
   @override
@@ -141,6 +31,8 @@ class RiverpodCheckboxFormField extends ConsumerWidget {
         BetterForm.of(context) ??
         formControllerProvider(const BetterFormParameter(initialValue: {}));
 
+    final resolvedId = BetterFormGroup.resolve(context, fieldId);
+
     return ProviderScope(
       overrides: [
         currentControllerProvider.overrideWithValue(controllerProvider),
@@ -148,9 +40,9 @@ class RiverpodCheckboxFormField extends ConsumerWidget {
       child: Consumer(
         builder: (context, ref, child) {
           final controller = ref.read(controllerProvider.notifier);
-          final value = ref.watch(fieldValueProvider(fieldId));
-          final validation = ref.watch(fieldValidationProvider(fieldId));
-          final isDirty = ref.watch(fieldDirtyProvider(fieldId));
+          final value = ref.watch(fieldValueProvider(resolvedId));
+          final validation = ref.watch(fieldValidationProvider(resolvedId));
+          final isDirty = ref.watch(fieldDirtyProvider(resolvedId));
 
           return CheckboxListTile(
             value: value ?? false,
@@ -175,7 +67,7 @@ class RiverpodCheckboxFormField extends ConsumerWidget {
                           ),
                         )),
             onChanged: (newValue) =>
-                controller.setValue(fieldId, newValue ?? false),
+                controller.setValue(resolvedId, newValue ?? false),
           );
         },
       ),
@@ -196,7 +88,10 @@ class RiverpodDropdownFormField<T> extends ConsumerWidget {
   final BetterFormFieldID<T> fieldId;
   final List<DropdownMenuItem<T>> items;
   final InputDecoration? decoration;
-  final AutoDisposeStateNotifierProvider<RiverpodFormController, FormState>?
+  final AutoDisposeStateNotifierProvider<
+    RiverpodFormController,
+    BetterFormState
+  >?
   controllerProvider;
 
   @override
@@ -206,6 +101,8 @@ class RiverpodDropdownFormField<T> extends ConsumerWidget {
         BetterForm.of(context) ??
         formControllerProvider(const BetterFormParameter(initialValue: {}));
 
+    final resolvedId = BetterFormGroup.resolve(context, fieldId);
+
     return ProviderScope(
       overrides: [
         currentControllerProvider.overrideWithValue(controllerProvider),
@@ -213,9 +110,9 @@ class RiverpodDropdownFormField<T> extends ConsumerWidget {
       child: Consumer(
         builder: (context, ref, child) {
           final controller = ref.read(controllerProvider.notifier);
-          final value = ref.watch(fieldValueProvider(fieldId));
-          final validation = ref.watch(fieldValidationProvider(fieldId));
-          final isDirty = ref.watch(fieldDirtyProvider(fieldId));
+          final value = ref.watch(fieldValueProvider(resolvedId));
+          final validation = ref.watch(fieldValidationProvider(resolvedId));
+          final isDirty = ref.watch(fieldDirtyProvider(resolvedId));
 
           Widget? suffixIcon;
           if (validation.isValidating) {
@@ -237,7 +134,7 @@ class RiverpodDropdownFormField<T> extends ConsumerWidget {
             ),
             onChanged: (newValue) {
               if (newValue != null) {
-                controller.setValue(fieldId, newValue);
+                controller.setValue(resolvedId, newValue);
               }
             },
           );
@@ -251,7 +148,10 @@ class RiverpodDropdownFormField<T> extends ConsumerWidget {
 class RiverpodFormStatus extends ConsumerWidget {
   const RiverpodFormStatus({super.key, this.controllerProvider});
 
-  final AutoDisposeStateNotifierProvider<RiverpodFormController, FormState>?
+  final AutoDisposeStateNotifierProvider<
+    RiverpodFormController,
+    BetterFormState
+  >?
   controllerProvider;
 
   @override

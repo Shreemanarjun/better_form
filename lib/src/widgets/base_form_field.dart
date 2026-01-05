@@ -75,6 +75,8 @@ abstract class BetterFormFieldWidgetState<T>
 
     // Register focus node
     _controller.registerFocusNode(widget.fieldId, _focusNode);
+    // Register context for scrolling
+    _controller.registerContext(widget.fieldId, context);
 
     _currentValue = _controller.getValue(widget.fieldId) ?? widget.initialValue;
     _controller.addFieldListener(widget.fieldId, _onFieldChanged);

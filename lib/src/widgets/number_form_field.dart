@@ -1,8 +1,10 @@
-import 'package:flutter/material.dart' hide FormState;
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../controllers/field_id.dart';
 import '../controllers/riverpod_controller.dart';
+import 'better_form.dart';
+import 'form_group.dart';
 import 'riverpod_form_fields.dart';
 
 /// Riverpod-based number form field
@@ -20,7 +22,10 @@ class RiverpodNumberFormField extends ConsumerStatefulWidget {
   final InputDecoration? decoration;
   final num? min;
   final num? max;
-  final AutoDisposeStateNotifierProvider<RiverpodFormController, FormState>?
+  final AutoDisposeStateNotifierProvider<
+    RiverpodFormController,
+    BetterFormState
+  >?
   controllerProvider;
 
   @override
@@ -49,8 +54,33 @@ class _RiverpodNumberFormFieldState
     super.dispose();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final provider =
+        widget.controllerProvider ??
+        BetterForm.of(context) ??
+        formControllerProvider(const BetterFormParameter(initialValue: {}));
+
+    final controller = ref.read(provider.notifier);
+    final resolvedId = BetterFormGroup.resolve(context, widget.fieldId);
+
+    if (controller is BetterFormController) {
+      controller.registerFocusNode(resolvedId, _focusNode);
+      controller.registerContext(resolvedId, context);
+    }
+  }
+
   void _onFocusChange() {
     if (mounted) {
+      if (!_focusNode.hasFocus) {
+        final provider =
+            widget.controllerProvider ??
+            BetterForm.of(context) ??
+            formControllerProvider(const BetterFormParameter(initialValue: {}));
+        final resolvedId = BetterFormGroup.resolve(context, widget.fieldId);
+        ref.read(provider.notifier).markAsTouched(resolvedId);
+      }
       setState(() {});
     }
   }
@@ -81,6 +111,8 @@ class _RiverpodNumberFormFieldState
         BetterForm.of(context) ??
         formControllerProvider(const BetterFormParameter(initialValue: {}));
 
+    final resolvedId = BetterFormGroup.resolve(context, widget.fieldId);
+
     return ProviderScope(
       overrides: [
         currentControllerProvider.overrideWithValue(controllerProvider),
@@ -88,9 +120,9 @@ class _RiverpodNumberFormFieldState
       child: Consumer(
         builder: (context, ref, child) {
           final controller = ref.read(controllerProvider.notifier);
-          final value = ref.watch(fieldValueProvider(widget.fieldId));
-          final validation = ref.watch(fieldValidationProvider(widget.fieldId));
-          final isDirty = ref.watch(fieldDirtyProvider(widget.fieldId));
+          final value = ref.watch(fieldValueProvider(resolvedId));
+          final validation = ref.watch(fieldValidationProvider(resolvedId));
+          final isDirty = ref.watch(fieldDirtyProvider(resolvedId));
 
           // Sync text if not focused to handle initial value and external updates
           if (!_focusNode.hasFocus) {
@@ -125,7 +157,7 @@ class _RiverpodNumberFormFieldState
               if (text.isEmpty) {
                 final defaultValue = value ?? 0.0;
                 final typedDefault = _ensureCorrectType(defaultValue, value);
-                controller.setValue(widget.fieldId, typedDefault);
+                controller.setValue(resolvedId, typedDefault);
                 return;
               }
 
@@ -142,7 +174,7 @@ class _RiverpodNumberFormFieldState
 
                 // Ensure the number type matches the field type
                 final typedNumber = _ensureCorrectType(number, value);
-                controller.setValue(widget.fieldId, typedNumber);
+                controller.setValue(resolvedId, typedNumber);
               } else {
                 // For invalid input (like partial decimals), don't update the value
                 // but allow the text to remain. This prevents cursor jumping.

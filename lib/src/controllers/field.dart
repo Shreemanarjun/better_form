@@ -1,4 +1,6 @@
 import 'field_id.dart';
+import '../enums.dart';
+import 'form_state.dart';
 
 /// Form field definition with validation and type information
 class BetterFormField<T> {
@@ -6,20 +8,42 @@ class BetterFormField<T> {
     required this.id,
     required this.initialValue,
     this.validator,
+    this.crossFieldValidator,
+    this.dependsOn = const [],
     this.label,
     this.hint,
     this.transformer,
     this.asyncValidator,
     this.debounceDuration,
     this.emptyValue,
+    this.validationMode = BetterAutovalidateMode.always,
   });
 
+  /// Unique identifier for this field
   final BetterFormFieldID<T> id;
+
+  /// Initial value of the field
   final T? initialValue;
+
+  /// Value to use when the field is cleared or reset
   final T? emptyValue;
+
+  /// Synchronous validator function
   final String? Function(T value)? validator;
+
+  /// Cross-field validator that can access the entire form state
+  final String? Function(T value, BetterFormState state)? crossFieldValidator;
+
+  /// List of fields that this field depends on for validation
+  final List<BetterFormFieldID<dynamic>> dependsOn;
+
+  /// Label for the field (UI hint)
   final String? label;
+
+  /// Hint text for the field (UI hint)
   final String? hint;
+
+  /// Optional transformer to convert raw input to specific type
   final T Function(dynamic value)? transformer;
 
   /// Asynchronous validator
@@ -27,4 +51,35 @@ class BetterFormField<T> {
 
   /// Debounce duration for async validation
   final Duration? debounceDuration;
+
+  /// Validation mode for this field
+  final BetterAutovalidateMode validationMode;
+
+  /// Returns a wrapped version of the validator that accepts dynamic input.
+  String? Function(dynamic)? get wrappedValidator {
+    final v = validator;
+    if (v == null) return null;
+    return (dynamic value) => v(value as T);
+  }
+
+  /// Returns a wrapped version of the cross-field validator that accepts dynamic input.
+  String? Function(dynamic, BetterFormState)? get wrappedCrossFieldValidator {
+    final v = crossFieldValidator;
+    if (v == null) return null;
+    return (dynamic value, BetterFormState state) => v(value as T, state);
+  }
+
+  /// Returns a wrapped version of the async validator that accepts dynamic input.
+  Future<String?> Function(dynamic)? get wrappedAsyncValidator {
+    final v = asyncValidator;
+    if (v == null) return null;
+    return (dynamic value) => v(value as T);
+  }
+
+  /// Returns a wrapped version of the transformer that accepts dynamic input.
+  dynamic Function(dynamic)? get wrappedTransformer {
+    final t = transformer;
+    if (t == null) return null;
+    return (dynamic value) => t(value);
+  }
 }

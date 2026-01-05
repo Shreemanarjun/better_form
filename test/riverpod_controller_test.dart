@@ -18,7 +18,7 @@ class MockPersistence implements BetterFormPersistence {
 void main() {
   group('FormState', () {
     test('constructor creates correct initial state', () {
-      final state = FormState(
+      final state = BetterFormState(
         values: {'field1': 'value1'},
         validations: {'field1': ValidationResult.valid},
         dirtyStates: {'field1': false},
@@ -34,7 +34,7 @@ void main() {
     });
 
     test('copyWith creates new instance with updated values', () {
-      final original = FormState(
+      final original = BetterFormState(
         values: {'field1': 'value1'},
         validations: {'field1': ValidationResult.valid},
         dirtyStates: {'field1': false},
@@ -53,7 +53,7 @@ void main() {
     });
 
     test('isValid returns true when all validations pass', () {
-      final state = FormState(
+      final state = BetterFormState(
         validations: {
           'field1': ValidationResult.valid,
           'field2': ValidationResult.valid,
@@ -64,7 +64,7 @@ void main() {
     });
 
     test('isValid returns false when any validation fails', () {
-      final state = FormState(
+      final state = BetterFormState(
         validations: {
           'field1': ValidationResult.valid,
           'field2': ValidationResult(isValid: false, errorMessage: 'Error'),
@@ -75,61 +75,67 @@ void main() {
     });
 
     test('isDirty returns true when any field is dirty', () {
-      final state = FormState(
-        dirtyStates: {
-          'field1': false,
-          'field2': true,
-        },
+      final state = BetterFormState(
+        dirtyStates: {'field1': false, 'field2': true},
       );
 
       expect(state.isDirty, true);
     });
 
     test('isDirty returns false when no fields are dirty', () {
-      final state = FormState(
-        dirtyStates: {
-          'field1': false,
-          'field2': false,
-        },
+      final state = BetterFormState(
+        dirtyStates: {'field1': false, 'field2': false},
       );
 
       expect(state.isDirty, false);
     });
 
     test('getValue returns typed value when type matches', () {
-      final state = FormState(values: {'field1': 'test'});
+      final state = BetterFormState(values: {'field1': 'test'});
 
-      expect(state.getValue<String>(BetterFormFieldID<String>('field1')), 'test');
+      expect(
+        state.getValue<String>(BetterFormFieldID<String>('field1')),
+        'test',
+      );
     });
 
     test('getValue returns null when type does not match', () {
-      final state = FormState(values: {'field1': 'test'});
+      final state = BetterFormState(values: {'field1': 'test'});
 
       expect(state.getValue<int>(BetterFormFieldID<int>('field1')), null);
     });
 
     test('getValidation returns validation result for field', () {
-      final validation = ValidationResult(isValid: false, errorMessage: 'Error');
-      final state = FormState(validations: {'field1': validation});
+      final validation = ValidationResult(
+        isValid: false,
+        errorMessage: 'Error',
+      );
+      final state = BetterFormState(validations: {'field1': validation});
 
-      expect(state.getValidation(BetterFormFieldID<String>('field1')), validation);
+      expect(
+        state.getValidation(BetterFormFieldID<String>('field1')),
+        validation,
+      );
     });
 
     test('getValidation returns valid result for unregistered field', () {
-      final state = FormState();
+      final state = BetterFormState();
 
-      expect(state.getValidation(BetterFormFieldID<String>('field1')).isValid, true);
+      expect(
+        state.getValidation(BetterFormFieldID<String>('field1')).isValid,
+        true,
+      );
     });
 
     test('isFieldDirty returns dirty state for field', () {
-      final state = FormState(dirtyStates: {'field1': true});
+      final state = BetterFormState(dirtyStates: {'field1': true});
 
       expect(state.isFieldDirty(BetterFormFieldID<String>('field1')), true);
       expect(state.isFieldDirty(BetterFormFieldID<String>('field2')), false);
     });
 
     test('isFieldTouched returns touched state for field', () {
-      final state = FormState(touchedStates: {'field1': true});
+      final state = BetterFormState(touchedStates: {'field1': true});
 
       expect(state.isFieldTouched(BetterFormFieldID<String>('field1')), true);
       expect(state.isFieldTouched(BetterFormFieldID<String>('field2')), false);
@@ -176,9 +182,18 @@ void main() {
       final id1 = BetterFormFieldID<String>('test');
       final id2 = BetterFormFieldID<String>('test');
 
-      final config1 = BetterFormFieldConfig<String>(id: id1, initialValue: 'test');
-      final config2 = BetterFormFieldConfig<String>(id: id2, initialValue: 'test');
-      final config3 = BetterFormFieldConfig<String>(id: id1, initialValue: 'different');
+      final config1 = BetterFormFieldConfig<String>(
+        id: id1,
+        initialValue: 'test',
+      );
+      final config2 = BetterFormFieldConfig<String>(
+        id: id2,
+        initialValue: 'test',
+      );
+      final config3 = BetterFormFieldConfig<String>(
+        id: id1,
+        initialValue: 'different',
+      );
 
       expect(config1 == config2, true);
       expect(config1 == config3, false);
@@ -186,8 +201,14 @@ void main() {
 
     test('hashCode works correctly', () {
       final id = BetterFormFieldID<String>('test');
-      final config1 = BetterFormFieldConfig<String>(id: id, initialValue: 'test');
-      final config2 = BetterFormFieldConfig<String>(id: id, initialValue: 'test');
+      final config1 = BetterFormFieldConfig<String>(
+        id: id,
+        initialValue: 'test',
+      );
+      final config2 = BetterFormFieldConfig<String>(
+        id: id,
+        initialValue: 'test',
+      );
 
       expect(config1.hashCode, config2.hashCode);
     });
@@ -215,10 +236,11 @@ void main() {
 
       expect(controller.state.values['field1'], 'value1');
       expect(controller.initialValue['field1'], 'value1');
-      expect(controller.isFieldRegistered(BetterFormFieldID<String>('field1')), true);
+      expect(
+        controller.isFieldRegistered(BetterFormFieldID<String>('field1')),
+        true,
+      );
     });
-
-
 
     test('getValue returns correct typed value', () {
       final controller = RiverpodFormController(
@@ -343,12 +365,21 @@ void main() {
       );
 
       controller.setValue(BetterFormFieldID<String>('field1'), 'changed');
-      expect(controller.getValue(BetterFormFieldID<String>('field1')), 'changed');
+      expect(
+        controller.getValue(BetterFormFieldID<String>('field1')),
+        'changed',
+      );
 
       controller.reset();
 
-      expect(controller.getValue(BetterFormFieldID<String>('field1')), 'initial');
-      expect(controller.isFieldDirty(BetterFormFieldID<String>('field1')), false);
+      expect(
+        controller.getValue(BetterFormFieldID<String>('field1')),
+        'initial',
+      );
+      expect(
+        controller.isFieldDirty(BetterFormFieldID<String>('field1')),
+        false,
+      );
     });
 
     test('resetFields resets specific fields', () {
@@ -397,8 +428,6 @@ void main() {
 
       expect(controller.getValidation(stringField).isValid, true);
     });
-
-
   });
 
   group('BetterFormController', () {
@@ -513,9 +542,7 @@ void main() {
     });
 
     test('resetToValues updates initial values and resets', () {
-      final controller = BetterFormController(
-        initialValue: {'field1': 'old'},
-      );
+      final controller = BetterFormController(initialValue: {'field1': 'old'});
 
       controller.resetToValues({'field1': 'new'});
 
@@ -587,7 +614,9 @@ void main() {
     test('constructor creates parameter correctly', () {
       final param = BetterFormParameter(
         initialValue: {'field1': 'value1'},
-        fields: [BetterFormFieldConfig(id: BetterFormFieldID<String>('field1'))],
+        fields: [
+          BetterFormFieldConfig(id: BetterFormFieldID<String>('field1')),
+        ],
         persistence: MockPersistence(),
         formId: 'test_form',
       );
@@ -600,17 +629,19 @@ void main() {
     test('equality works correctly', () {
       final param1 = BetterFormParameter(
         initialValue: {'field1': 'value1'},
-        fields: [BetterFormFieldConfig(id: BetterFormFieldID<String>('field1'))],
+        fields: [
+          BetterFormFieldConfig(id: BetterFormFieldID<String>('field1')),
+        ],
       );
 
       final param2 = BetterFormParameter(
         initialValue: {'field1': 'value1'},
-        fields: [BetterFormFieldConfig(id: BetterFormFieldID<String>('field1'))],
+        fields: [
+          BetterFormFieldConfig(id: BetterFormFieldID<String>('field1')),
+        ],
       );
 
-      final param3 = BetterFormParameter(
-        initialValue: {'field1': 'value2'},
-      );
+      final param3 = BetterFormParameter(initialValue: {'field1': 'value2'});
 
       expect(param1 == param2, true);
       expect(param1 == param3, false);
@@ -628,14 +659,19 @@ void main() {
     test('formControllerProvider creates controller correctly', () {
       final param = BetterFormParameter(
         initialValue: {'field1': 'value1'},
-        fields: [BetterFormFieldConfig(id: BetterFormFieldID<String>('field1'))],
+        fields: [
+          BetterFormFieldConfig(id: BetterFormFieldID<String>('field1')),
+        ],
       );
 
       final container = ProviderContainer();
       final provider = formControllerProvider(param);
       final controller = container.read(provider.notifier);
 
-      expect(controller.getValue(BetterFormFieldID<String>('field1')), 'value1');
+      expect(
+        controller.getValue(BetterFormFieldID<String>('field1')),
+        'value1',
+      );
       container.dispose();
     });
 

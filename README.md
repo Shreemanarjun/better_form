@@ -4,24 +4,7 @@
   <img src="assets/better_form.png" alt="Better Form Logo" width="200"/>
 </p>
 
-A high-performance, type-safe, and reactive form management package for Flutter built on Riverpod with automatic memory management.
-
-## ✨ Features
-
-- 🔒 **Type-Safe**: Define fields with `BetterFormFieldID<T>` for compile-time safety
-- ⚡ **High-Performance**: Riverpod selectors prevent unnecessary rebuilds - only affected widgets update
-- 🗑️ **Auto-Disposable**: Controllers automatically clean up memory when no longer needed
-- 🧩 **Flexible Field Widgets**: Text, Number, Checkbox, Dropdown, and more
-- 🚦 **Smart Validation**:
-  - Synchronous & Async Validation
-  - Debouncing support
-  - Cross-field dependencies
-- 💾 **State Persistence**: Automatically save/restore form progress
-- 🏗️ **Sectional Forms**: Lazy-load and organize massive forms (100+ fields) with `BetterFormSection`
-- 🎨 **Declarative API**: Define form structure clearly using `BetterFormFieldConfig`
-- 📱 **Flutter Native**: Works with standard Flutter widgets
-
----
+An elite, type-safe, and ultra-reactive form engine for Flutter. Powered by Riverpod, Better Form delivers lightning-fast performance and effortless memory management, whether you're building a simple contact form or a massive, multi-section enterprise dashboard.
 
 ## 📦 Installation
 
@@ -33,161 +16,175 @@ dependencies:
   flutter_riverpod: ^2.5.1
 ```
 
----
-
-## 🚀 Basic Usage
-
-### 1. Define Field IDs
-Define unique, typed identifiers for your fields.
-
-```dart
-final nameField = BetterFormFieldID<String>('name');
-final ageField = BetterFormFieldID<num>('age');
-final termsField = BetterFormFieldID<bool>('terms');
+Or run:
+```bash
+flutter pub add better_form
 ```
 
-### 2. Create the Form
-Use `BetterForm` to initialize your form. It automatically creates and provides a `RiverpodFormController`.
+---
 
+## ⚡ Quick Start (For Beginners)
+
+The fastest way to build a type-safe form in 3 minutes.
+
+### 1. Define your fields
+```dart
+final emailField = BetterFormFieldID<String>('email');
+final ageField = BetterFormFieldID<int>('age');
+```
+
+### 2. Wrap your app in a Scope
+```dart
+void main() {
+  runApp(const ProviderScope(child: MyApp()));
+}
+```
+
+### 3. Build the Form
 ```dart
 BetterForm(
-  initialValue: const {'name': '', 'age': 18, 'terms': false},
-  fields: [
-    BetterFormFieldConfig<String>(
-      id: nameField,
-      label: 'Full Name',
-      validator: (val) => val.isEmpty ? 'Name required' : null,
-    ),
-    BetterFormFieldConfig<num>(
-      id: ageField,
-      label: 'Age',
-      validator: (val) => val < 18 ? 'Must be 18+' : null,
-    ),
-  ],
   child: Column(
     children: [
-      RiverpodTextFormField(fieldId: nameField),
-      const SizedBox(height: 16),
-      RiverpodNumberFormField(fieldId: ageField),
-      const SizedBox(height: 16),
-      RiverpodCheckboxFormField(
-        fieldId: termsField,
-        title: const Text('Accept Terms'),
+      RiverpodTextFormField(
+        fieldId: emailField,
+        decoration: InputDecoration(labelText: 'Email'),
       ),
-      const SizedBox(height: 24),
-      SubmitButton(),
+      RiverpodNumberFormField(
+        fieldId: ageField,
+        decoration: InputDecoration(labelText: 'Age'),
+      ),
+      BetterFormBuilder(
+        builder: (context, scope) => ElevatedButton(
+          onPressed: () => scope.submit(
+            onValid: (values) => print('Saving: $values'),
+          ),
+          child: Text('Submit'),
+        ),
+      ),
     ],
   ),
 )
 ```
 
-### 3. Submit Data
-Access the controller to validate and retrieve values.
+---
+
+## ✨ Features
+
+- 🔒 **True Type Safety**: No more `map['key'] as String`. Use `BetterFormFieldID<T>`.
+- 🚀 **Extreme Performance**: Only the specific field widget rebuilds when its value changes.
+- 🗑️ **Zero Memory Leaks**: Controllers are automatically disposed via Riverpod's `autoDispose`.
+- 🚥 **Flexible Validation**: Sync, Async, Debounced, and Cross-field rules.
+- 🏗️ **Lazy Sections**: Built for massive forms. Register fields only when UI is built.
+- 💾 **Persistence**: Built-in support for saving draft state automatically.
+- 🎯 **UX First**: Automated scrolling to errors, focus management, and navigation guards.
+
+---
+
+## 📖 Essential Guide
+
+### Defining Field Configuration
+While `BetterForm` works with zero setup, you can define rules globally or locally using `BetterFormFieldConfig`.
 
 ```dart
-Consumer(
-  builder: (context, ref, child) {
-    // Get the nearest form controller
-    final controllerProvider = BetterForm.of(context)!;
-    final formState = ref.watch(controllerProvider);
-    final controller = ref.read(controllerProvider.notifier);
+BetterForm(
+  fields: [
+    BetterFormFieldConfig<String>(
+      id: emailField,
+      label: 'User Email',
+      validator: (val) => val.contains('@') ? null : 'Invalid email',
+      initialValue: 'guest@example.com',
+    ),
+  ],
+  child: ...
+)
+```
 
-    return ElevatedButton(
-      onPressed: formState.isValid ? () {
-        if (controller.validate()) {
-          print(formState.values); // {'name': 'John', 'age': 25, ...}
-        }
-      } : null,
-      child: const Text('Submit'),
-    );
+### Accessing Values & State
+Use `BetterFormScope` (via `BetterFormBuilder` or `BetterFormWidget`) for the cleanest API.
+
+```dart
+BetterFormBuilder(
+  builder: (context, scope) {
+    // Reactive: Rebuilds whenever 'age' changes
+    final age = scope.watchValue(ageField);
+
+    // Non-reactive: Get value without rebuilt
+    final currentAge = scope.getValue(ageField);
+
+    return Text('Age is $age');
   },
 )
 ```
 
 ---
 
-## 🚦 Smart Validation Guide
+## 🛠️ Professional Guide
 
-Better Form supports comprehensive validation strategies.
-
-### Synchronous Validation
-Simple checks that return immediately.
-```dart
-BetterFormFieldConfig<String>(
-  id: nameField,
-  validator: (val) {
-    if (val.length < 3) return 'Too short';
-    return null; // Valid
-  }
-)
-```
-
-### Asynchronous Validation with Debounce
-Perfect for network checks (e.g., checking if a username is taken).
-```dart
-BetterFormFieldConfig<String>(
-  id: usernameField,
-  debounceDuration: const Duration(milliseconds: 500), // Wait for typing to stop
-  asyncValidator: (value) async {
-    final available = await api.checkAvailability(value);
-    return available ? null : 'Username taken';
-  },
-)
-```
-*The field will automatically show a loading spinner while validating.*
-
-### Cross-Field Validation
-Validating one field based on another (e.g., "Confirm Password").
-```dart
-// Unlike per-field validators, this logic typically lives in your submit handler or
-// a custom listener if you need real-time feedback.
-if (formState.getValue(passwordField) != formState.getValue(confirmField)) {
-  // Handle error manually or invalidate field
-  controller.invalidateField(confirmField, 'Passwords must match');
-}
-```
-
----
-
-## 🧩 Building Custom Form Fields
-
-You can build any custom input widget that integrates with Better Form.
-
-1. **Watch the State**: Use `fieldValueProvider` to get the current value.
-2. **Update the State**: Use `controller.setValue` to update it.
-3. **Show Errors**: Use `fieldValidationProvider` to see error messages.
+### 1. Custom Field Implementation
+Extend `BetterFormFieldWidget` to create pixel-perfect custom inputs with zero boilerplate.
 
 ```dart
-class MyCustomRatingField extends ConsumerWidget {
-  final BetterFormFieldID<int> fieldId;
-  const MyCustomRatingField({required this.fieldId});
+class CustomToggleField extends BetterFormFieldWidget<bool> {
+  const CustomToggleField({required super.fieldId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // 1. Get Controller
-    final controllerProvider = BetterForm.of(context)!;
-    final controller = ref.read(controllerProvider.notifier);
+  Widget buildForm(BuildContext context, BetterFormScope scope) {
+    final value = scope.watchValue(fieldId) ?? false;
 
-    // 2. Watch specific field state
-    final value = ref.watch(fieldValueProvider(fieldId)) ?? 0;
-    final validation = ref.watch(fieldValidationProvider(fieldId));
-
-    return Column(
-      children: [
-        Row(
-          children: List.generate(5, (index) {
-            return IconButton(
-              icon: Icon(index < value ? Icons.star : Icons.star_border),
-              onPressed: () => controller.setValue(fieldId, index + 1),
-            );
-          }),
-        ),
-        if (!validation.isValid)
-          Text(validation.errorMessage!, style: TextStyle(color: Colors.red)),
-      ],
+    return SwitchListTile(
+      value: value,
+      onChanged: (v) => scope.setValue(fieldId, v),
+      title: Text('Toggle Me'),
     );
   }
 }
+```
+
+### 2. Data Loss Prevention
+Use `BetterFormNavigationGuard` to stop users from accidentally navigating away after they've spent time filling out a form.
+
+```dart
+BetterForm(
+  child: BetterFormNavigationGuard(
+    // Shows a default confirmation dialog if form is dirty
+    child: MyFormBody(),
+  ),
+)
+```
+
+### 3. Sectional & Lazy Scaling
+For huge forms, use `BetterFormSection`. Fields are only registered when they enter the widget tree.
+
+```dart
+ListView(
+  children: [
+    BetterFormSection(
+      fields: [ /* Section 1 Configs */ ],
+      child: StepOneWidgets(),
+    ),
+    BetterFormSection(
+      fields: [ /* Section 2 Configs */ ],
+      child: StepTwoWidgets(),
+    ),
+  ],
+)
+```
+
+### 4. Performance Monitoring
+During development, use `BetterFormFieldPerformanceMonitor` to ensure your custom widgets aren't rebuilding too often.
+
+```dart
+BetterFormFieldPerformanceMonitor<String>(
+  fieldId: nameField,
+  builder: (context, info, rebuildCount) {
+    return Column(
+      children: [
+        Text('Rebuilds: $rebuildCount'),
+        MyWidget(info.value),
+      ],
+    );
+  },
+)
 ```
 
 ### 4. Simplified Usage with Builders or Base Classes
@@ -220,15 +217,42 @@ class FormStatusPanel extends BetterFormWidget {
     // Rebuilds ONLY when 'name' or validation for 'email' changes
     final name = scope.watchValue(nameField);
     final emailError = scope.watchError(emailField);
+    final isValidating = scope.watchIsValidating(emailField);
 
     return Column(
       children: [
         if (name != null) Text('Welcome, $name'),
+        if (isValidating) const CircularProgressIndicator(),
         if (emailError != null) Text(emailError, style: TextStyle(color: Colors.red)),
       ],
     );
   }
 }
+```
+
+### 5. Dynamic Form Arrays
+Manage lists of dynamic inputs easily with `BetterFormArray`.
+
+```dart
+final friendsArray = BetterFormArrayID<String>('friends');
+
+BetterFormArray<String>(
+  id: friendsArray,
+  builder: (context, index, friendId, scope) {
+    return Row(
+      children: [
+        Expanded(child: RiverpodTextFormField(fieldId: friendId)),
+        IconButton(
+          icon: Icon(Icons.delete),
+          onPressed: () => scope.removeArrayItemAt(friendsArray, index),
+        ),
+      ],
+    );
+  },
+)
+
+// Add new items via scope
+scope.addArrayItem(friendsArray, 'New Friend');
 ```
 
 ---
@@ -286,6 +310,32 @@ BetterDependentField<String>(
 )
 ```
 
+### 3. Programmatic Control
+Directly control focus and scrolling within your form through the `BetterFormScope`.
+
+```dart
+BetterFormBuilder(
+  builder: (context, scope) {
+    return Column(
+      children: [
+        ElevatedButton(
+          onPressed: () => scope.focusField(emailField),
+          child: Text('Jump to Email'),
+        ),
+        ElevatedButton(
+          onPressed: () => scope.focusFirstError(),
+          child: Text('Fix Errors'),
+        ),
+        ElevatedButton(
+          onPressed: () => scope.scrollToField(lastFieldId),
+          child: Text('Scroll to Bottom'),
+        ),
+      ],
+    );
+  },
+)
+```
+
 ### 2. State Persistence
 Automatically save form progress to local storage (or any other source) so users don't lose data on app restart or crash.
 
@@ -314,24 +364,51 @@ BetterForm(
 
 ---
 
-## ⚡ Performance Deep Dive
+## 🚦 Error Handling & Advanced UI
 
-Better Form is built on **Riverpod**, which offers significant performance advantages compared to traditional `ChangeNotifier` or `setState` approaches for forms.
+### Focus & Error Management
+Guide your users directly to what needs fixing.
 
-- **Selectors**: Typically, watching a FormController causes a rebuild whenever *any* field changes. Better Form exposes specific providers (`fieldValueProvider`, `fieldValidationProvider`) that use Riverpod's `select` syntax. A text field only rebuilds when *its specific value* changes, not when a sibling checkbox is toggled.
-- **Auto-Dispose**: Controllers handle their own lifecycle. If a user navigates away, the form state is automatically cleaned up (unless you explicitly keep it alive), preventing memory leaks.
+```dart
+scope.submit(
+  onInvalid: (errors) {
+    // Automatically focus the first field with an error
+    // and scroll it into view.
+    scope.focusFirstError();
+  },
+  onValid: (values) async {
+    try {
+      await api.save(values);
+    } catch (e) {
+      // Manually set an error from the server
+      scope.setFieldError(emailField, 'Account already exists');
+    }
+  }
+)
+```
+
+### Handling Async Validation
+Better Form automatically handles the "Validating" state. You can customize the loading UI:
+
+```dart
+BetterFormFieldConfig<String>(
+  id: usernameField,
+  asyncValidator: (val) => checkRepo(val),
+  // debouncing is default to 300ms
+  debounceDuration: Duration(seconds: 1),
+)
+```
+
+### Common Pitfalls (Troubleshooting)
+
+| Issue | Solution |
+| :--- | :--- |
+| **"No BetterForm found"** | Ensure all fields are descendants of a `BetterForm` widget. |
+| **"No Material widget found"** | `RiverpodTextFormField` and others require a `Material` / `Scaffold` ancestor. |
+| **Field doesn't rebuild** | Ensure you are using `scope.watchValue(id)` or `ref.watch(fieldValueProvider(id))`. |
+| **Custom field not registering** | If using `BetterFormFieldWidget`, it registers itself. If building from scratch, use `BetterFormSection` or `controller.registerField`. |
 
 ---
-
-## ⚠️ Limitations
-
-While powerful, be aware of current constraints:
-- **Complex Nested Lists**: Arrays of objects (e.g., a dynamic list of addresses) are currently manual. You manage the list structure yourself and register fields with unique IDs (e.g., `address_0_street`, `address_1_street`). Direct `FormArray` support is planned.
-- **Controller Access**: You must ensure `BetterForm` is an ancestor of your fields. If you need fields in a different route (e.g., a wizard flow), you'll need to pass the controller provider or lift the state up.
-
----
-
-## 📚 API Reference
 
 ### Widgets
 - **`BetterForm`**: Root widget context.
@@ -348,6 +425,7 @@ While powerful, be aware of current constraints:
 ### Classes
 - **`BetterFormFieldID<T>`**: Typed identifier key.
 - **`BetterFormFieldConfig<T>`**: Configuration (validator, label, initialValue, etc).
+- **`BetterFormState`**: The immutable state containing all field values and errors.
 - **`RiverpodFormController`**: The brain ensuring state management.
 
 ---

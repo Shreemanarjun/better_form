@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart' hide FormState;
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../controllers/riverpod_controller.dart';
+import '../controllers/field_id.dart';
 import 'riverpod_form_fields.dart'; // For BetterForm.of
 
 /// A widget that registers a specific set of fields with the parent [BetterForm].
@@ -58,26 +59,23 @@ class BetterFormSection extends ConsumerWidget {
       );
     }
 
-    // Schedule registration to avoid modifying provider during build
+    // Use batch registration
     Future.microtask(() {
-      // Check if context/ref is still valid.
-      // For a ConsumerWidget, reading inside microtask might be tricky if widget is unmounted.
-      // But we have the provider reference.
-      // However, we need the Ref associated with the container.
-      // The 'ref' passed to build is valid.
-      // But 'ref.read' on a provider usually works.
       final controller = ref.read(controllerProvider.notifier);
-      for (final fieldConfig in fields) {
-        if (!controller.isFieldRegistered(fieldConfig.id)) {
-          controller.registerField(fieldConfig.toField());
-        }
+      final fieldsToRegister = fields
+          .where((f) => !controller.isFieldRegistered(f.id))
+          .map((f) => f.toField())
+          .toList();
+
+      if (fieldsToRegister.isNotEmpty) {
+        controller.registerFields(fieldsToRegister);
       }
     });
 
     if (!keepAlive) {
       return _DisposableSection(
         controllerProvider: controllerProvider,
-        fields: fields,
+        fieldIds: fields.map((f) => f.id).toList(),
         child: child,
       );
     }
@@ -89,13 +87,16 @@ class BetterFormSection extends ConsumerWidget {
 class _DisposableSection extends ConsumerStatefulWidget {
   const _DisposableSection({
     required this.controllerProvider,
-    required this.fields,
+    required this.fieldIds,
     required this.child,
   });
 
-  final AutoDisposeStateNotifierProvider<RiverpodFormController, FormState>
+  final AutoDisposeStateNotifierProvider<
+    RiverpodFormController,
+    BetterFormState
+  >
   controllerProvider;
-  final List<BetterFormFieldConfig<dynamic>> fields;
+  final List<BetterFormFieldID<dynamic>> fieldIds;
   final Widget child;
 
   @override
@@ -113,15 +114,13 @@ class _DisposableSectionState extends ConsumerState<_DisposableSection> {
 
   @override
   void dispose() {
-    final fields = widget.fields;
+    final ids = widget.fieldIds;
     final controller = _controller;
 
-    // Schedule unregistration to avoid modifying provider during dispose/build
+    // Use batch unregistration
     Future.microtask(() {
       if (controller.mounted) {
-        for (final field in fields) {
-          controller.unregisterField(field.id);
-        }
+        controller.unregisterFields(ids);
       }
     });
     super.dispose();

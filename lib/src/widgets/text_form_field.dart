@@ -1,8 +1,10 @@
-import 'package:flutter/material.dart' hide FormState;
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../controllers/field_id.dart';
 import '../controllers/riverpod_controller.dart';
+import 'better_form.dart';
+import 'form_group.dart';
 import 'riverpod_form_fields.dart';
 
 /// Riverpod-based text form field
@@ -14,14 +16,19 @@ class RiverpodTextFormField extends ConsumerStatefulWidget {
     this.keyboardType,
     this.maxLength,
     this.controllerProvider,
+    this.focusNode,
   });
 
   final BetterFormFieldID<String> fieldId;
   final InputDecoration? decoration;
   final TextInputType? keyboardType;
   final int? maxLength;
-  final AutoDisposeStateNotifierProvider<RiverpodFormController, FormState>?
+  final AutoDisposeStateNotifierProvider<
+    RiverpodFormController,
+    BetterFormState
+  >?
   controllerProvider;
+  final FocusNode? focusNode;
 
   @override
   ConsumerState<RiverpodTextFormField> createState() =>
@@ -30,16 +37,40 @@ class RiverpodTextFormField extends ConsumerStatefulWidget {
 
 class _RiverpodTextFormFieldState extends ConsumerState<RiverpodTextFormField> {
   late final TextEditingController _textController;
+  FocusNode? _internalFocusNode;
+
+  FocusNode get _focusNode => widget.focusNode ?? _internalFocusNode!;
 
   @override
   void initState() {
     super.initState();
     _textController = TextEditingController();
+    if (widget.focusNode == null) {
+      _internalFocusNode = FocusNode();
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final provider =
+        widget.controllerProvider ??
+        BetterForm.of(context) ??
+        formControllerProvider(const BetterFormParameter(initialValue: {}));
+
+    final controller = ref.read(provider.notifier);
+    final resolvedId = BetterFormGroup.resolve(context, widget.fieldId);
+
+    if (controller is BetterFormController) {
+      controller.registerFocusNode(resolvedId, _focusNode);
+      controller.registerContext(resolvedId, context);
+    }
   }
 
   @override
   void dispose() {
     _textController.dispose();
+    _internalFocusNode?.dispose();
     super.dispose();
   }
 
@@ -50,6 +81,8 @@ class _RiverpodTextFormFieldState extends ConsumerState<RiverpodTextFormField> {
         BetterForm.of(context) ??
         formControllerProvider(const BetterFormParameter(initialValue: {}));
 
+    final resolvedId = BetterFormGroup.resolve(context, widget.fieldId);
+
     return ProviderScope(
       overrides: [
         currentControllerProvider.overrideWithValue(controllerProvider),
@@ -57,9 +90,9 @@ class _RiverpodTextFormFieldState extends ConsumerState<RiverpodTextFormField> {
       child: Consumer(
         builder: (context, ref, child) {
           final controller = ref.read(controllerProvider.notifier);
-          final value = ref.watch(fieldValueProvider(widget.fieldId));
-          final validation = ref.watch(fieldValidationProvider(widget.fieldId));
-          final isDirty = ref.watch(fieldDirtyProvider(widget.fieldId));
+          final value = ref.watch(fieldValueProvider(resolvedId));
+          final validation = ref.watch(fieldValidationProvider(resolvedId));
+          final isDirty = ref.watch(fieldDirtyProvider(resolvedId));
 
           // Update controller text when value changes externally
           if (_textController.text != (value ?? '')) {
@@ -77,16 +110,27 @@ class _RiverpodTextFormFieldState extends ConsumerState<RiverpodTextFormField> {
             suffixIcon = const Icon(Icons.edit, size: 16);
           }
 
-          return TextFormField(
-            controller: _textController,
-            keyboardType: widget.keyboardType,
-            maxLength: widget.maxLength,
-            decoration: (widget.decoration ?? const InputDecoration()).copyWith(
-              errorText: validation.isValid ? null : validation.errorMessage,
-              suffixIcon: suffixIcon,
+          return Focus(
+            onFocusChange: (focused) {
+              if (!focused) {
+                controller.markAsTouched(resolvedId);
+              }
+            },
+            child: TextFormField(
+              controller: _textController,
+              focusNode: _focusNode,
+              keyboardType: widget.keyboardType,
+              maxLength: widget.maxLength,
+              decoration: (widget.decoration ?? const InputDecoration())
+                  .copyWith(
+                    errorText: validation.isValid
+                        ? null
+                        : validation.errorMessage,
+                    suffixIcon: suffixIcon,
+                  ),
+              onChanged: (newValue) =>
+                  controller.setValue(resolvedId, newValue),
             ),
-            onChanged: (newValue) =>
-                controller.setValue(widget.fieldId, newValue),
           );
         },
       ),

@@ -1,154 +1,37 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart' hide FormState;
+import 'package:flutter/widgets.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:collection/collection.dart';
 import 'field.dart';
 import 'field_id.dart';
 import 'validation.dart';
+import 'form_state.dart';
+import 'field_config.dart';
+import 'better_form_controller.dart';
 import '../i18n.dart';
 import '../enums.dart';
 import '../persistence/form_persistence.dart';
 
-/// Form state managed by Riverpod
-class FormState {
-  final Map<String, dynamic> values;
-  final Map<String, ValidationResult> validations;
-  final Map<String, bool> dirtyStates;
-  final Map<String, bool> touchedStates;
-  final bool isSubmitting;
+export 'form_state.dart';
+export 'field_config.dart';
+export 'better_form_controller.dart';
 
-  const FormState({
-    this.values = const {},
-    this.validations = const {},
-    this.dirtyStates = const {},
-    this.touchedStates = const {},
-    this.isSubmitting = false,
-  });
-
-  FormState copyWith({
-    Map<String, dynamic>? values,
-    Map<String, ValidationResult>? validations,
-    Map<String, bool>? dirtyStates,
-    Map<String, bool>? touchedStates,
-    bool? isSubmitting,
-  }) {
-    return FormState(
-      values: values ?? this.values,
-      validations: validations ?? this.validations,
-      dirtyStates: dirtyStates ?? this.dirtyStates,
-      touchedStates: touchedStates ?? this.touchedStates,
-      isSubmitting: isSubmitting ?? this.isSubmitting,
-    );
-  }
-
-  /// Check if form is valid
-  bool get isValid => validations.values.every((v) => v.isValid);
-
-  /// Check if form is dirty
-  bool get isDirty => dirtyStates.values.any((d) => d);
-
-  /// Get field value with type safety
-  T? getValue<T>(BetterFormFieldID<T> fieldId) {
-    final value = values[fieldId.key];
-    return value is T ? value : null;
-  }
-
-  /// Get field validation
-  ValidationResult getValidation<T>(BetterFormFieldID<T> fieldId) {
-    return validations[fieldId.key] ?? ValidationResult.valid;
-  }
-
-  /// Check if field is dirty
-  bool isFieldDirty<T>(BetterFormFieldID<T> fieldId) {
-    return dirtyStates[fieldId.key] ?? false;
-  }
-
-  /// Check if field is touched
-  bool isFieldTouched<T>(BetterFormFieldID<T> fieldId) {
-    return touchedStates[fieldId.key] ?? false;
-  }
-}
-
-/// Configuration for a form field
-class BetterFormFieldConfig<T> {
-  const BetterFormFieldConfig({
-    required this.id,
-    this.initialValue,
-    this.validator,
-    this.label,
-    this.hint,
-    this.asyncValidator,
-    this.debounceDuration,
-  });
-
-  final BetterFormFieldID<T> id;
-  final T? initialValue;
-  final String? Function(T value)? validator;
-  final String? label;
-  final String? hint;
-  final Future<String?> Function(T value)? asyncValidator;
-  final Duration? debounceDuration;
-
-  BetterFormField<T> toField() {
-    T? finalInitialValue = initialValue;
-    // Capture validator in local variable to avoid type inference issues
-    final originalValidator = validator;
-    String? Function(T)? wrappedValidator;
-    if (originalValidator != null) {
-      wrappedValidator = (T value) => originalValidator(value);
-    }
-
-    final originalAsyncValidator = asyncValidator;
-    Future<String?> Function(T)? wrappedAsyncValidator;
-    if (originalAsyncValidator != null) {
-      wrappedAsyncValidator = (T value) => originalAsyncValidator(value);
-    }
-
-    return BetterFormField<T>(
-      id: id,
-      initialValue: finalInitialValue,
-      validator: wrappedValidator,
-      label: label,
-      hint: hint,
-      asyncValidator: wrappedAsyncValidator,
-      debounceDuration: debounceDuration,
-    );
-  }
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is BetterFormFieldConfig<T> &&
-          runtimeType == other.runtimeType &&
-          id == other.id &&
-          initialValue == other.initialValue &&
-          validator == other.validator &&
-          label == other.label &&
-          hint == other.hint &&
-          asyncValidator == other.asyncValidator &&
-          debounceDuration == other.debounceDuration;
-
-  @override
-  int get hashCode =>
-      id.hashCode ^
-      initialValue.hashCode ^
-      validator.hashCode ^
-      label.hashCode ^
-      hint.hashCode ^
-      asyncValidator.hashCode ^
-      debounceDuration.hashCode;
-}
-
-/// Riverpod-based form controller
-class RiverpodFormController extends StateNotifier<FormState> {
+/// Core logic for managing form state using Riverpod.
+///
+/// This controller handles field registration, value updates, sync/async validation,
+/// cross-field dependencies, and state persistence.
+class RiverpodFormController extends StateNotifier<BetterFormState> {
+  /// Internationalization messages for validation errors
   final BetterFormMessages messages;
-  final Map<String, dynamic> _initialValue = {};
+  @protected
+  final Map<String, dynamic> initialValueMap = {};
   final Map<String, Timer> _debouncers = {};
+  Timer? _submitDebounceTimer;
+  DateTime? _lastSubmitTime;
   final Map<String, BetterFormField<dynamic>> _fieldDefinitions = {};
 
-  static FormState _createInitialState(
+  static BetterFormState _createInitialState(
     Map<String, dynamic> initialValues,
     List<BetterFormField> fields,
   ) {
@@ -165,12 +48,15 @@ class RiverpodFormController extends StateNotifier<FormState> {
       dirtyStates[key] = false;
       touchedStates[key] = false;
 
-      // Initial validation
-      final dynamic validator = (field as dynamic).validator;
       final val = values[key];
-      if (validator != null && val != null) {
+      final mode = field.validationMode;
+      final validator = field.wrappedValidator;
+
+      if (mode == BetterAutovalidateMode.always &&
+          validator != null &&
+          val != null) {
         try {
-          final result = (validator as dynamic)(val);
+          final result = validator(val);
           validations[key] = result != null
               ? ValidationResult(isValid: false, errorMessage: result)
               : ValidationResult.valid;
@@ -185,7 +71,7 @@ class RiverpodFormController extends StateNotifier<FormState> {
       }
     }
 
-    return FormState(
+    return BetterFormState(
       values: values,
       validations: validations,
       dirtyStates: dirtyStates,
@@ -193,42 +79,108 @@ class RiverpodFormController extends StateNotifier<FormState> {
     );
   }
 
+  /// The persistence handler for this form
   final BetterFormPersistence? persistence;
+
+  /// Unique identifier for this form (required for persistence)
   final String? formId;
 
+  /// Creates a [RiverpodFormController].
+  ///
+  /// [initialValue] sets the starting values for the form.
+  /// [fields] provides the configuration for form fields.
+  /// [messages] allows overriding the default validation messages.
+  /// [persistence] and [formId] enable state restoration across app restarts.
   RiverpodFormController({
     Map<String, dynamic> initialValue = const {},
-    List<BetterFormField> fields = const [],
+    List<BetterFormField<dynamic>> fields = const [],
     this.messages = const DefaultBetterFormMessages(),
     this.persistence,
     this.formId,
   }) : super(_createInitialState(initialValue, fields)) {
-    _initialValue.addAll(initialValue);
+    initialValueMap.addAll(initialValue);
     for (final field in fields) {
       final key = field.id.key;
-      // We need to wrap these as well for consistency with registerField
       _fieldDefinitions[key] = BetterFormField<dynamic>(
         id: BetterFormFieldID<dynamic>(key),
-        initialValue: (field as dynamic).initialValue,
-        validator: (field as dynamic).validator != null
-            ? _wrapValidator(field as dynamic)
+        initialValue: field.initialValue,
+        validator: field.wrappedValidator,
+        label: field.label,
+        hint: field.hint,
+        transformer: field.wrappedTransformer != null
+            ? (dynamic val) => field.wrappedTransformer!(val)
             : null,
-        label: (field as dynamic).label,
-        hint: (field as dynamic).hint,
-        transformer: (field as dynamic).transformer != null
-            ? _wrapTransformer(field as dynamic)
-            : null,
-        asyncValidator: (field as dynamic).asyncValidator != null
-            ? _wrapAsyncValidator(field as dynamic)
-            : null,
-        debounceDuration: (field as dynamic).debounceDuration,
+        asyncValidator: field.wrappedAsyncValidator,
+        debounceDuration: field.debounceDuration,
+        validationMode: field.validationMode,
+        crossFieldValidator: field.wrappedCrossFieldValidator,
+        dependsOn: field.dependsOn,
       );
     }
     _loadPersistedState();
   }
 
+  // --- Array Manipulation ---
+
+  /// Adds an item to a form array
+  void addArrayItem<T>(BetterFormArrayID<T> id, T item) {
+    final currentList = getValue(id) ?? [];
+    final newList = List<T>.from(currentList)..add(item);
+    setValue(id, newList);
+  }
+
+  /// Removes an item at a specific index from a form array
+  void removeArrayItemAt<T>(BetterFormArrayID<T> id, int index) {
+    final currentList = getValue(id);
+    if (currentList == null || index < 0 || index >= currentList.length) return;
+
+    final newList = List<T>.from(currentList)..removeAt(index);
+    setValue(id, newList);
+  }
+
+  /// Replaces an item at a specific index in a form array
+  void replaceArrayItem<T>(BetterFormArrayID<T> id, int index, T item) {
+    final currentList = getValue(id);
+    if (currentList == null || index < 0 || index >= currentList.length) return;
+
+    final newList = List<T>.from(currentList);
+    newList[index] = item;
+    setValue(id, newList);
+  }
+
+  /// Reorders items in a form array.
+  ///
+  /// Moves the item at [oldIndex] to [newIndex].
+  void moveArrayItem<T>(BetterFormArrayID<T> id, int oldIndex, int newIndex) {
+    final currentList = getValue(id);
+    if (currentList == null ||
+        oldIndex < 0 ||
+        oldIndex >= currentList.length ||
+        newIndex < 0 ||
+        newIndex >= currentList.length) {
+      return;
+    }
+
+    final newList = List<T>.from(currentList);
+    final item = newList.removeAt(oldIndex);
+    newList.insert(newIndex, item);
+    setValue(id, newList);
+  }
+
+  /// Clears all items from a form array
+  void clearArray<T>(BetterFormArrayID<T> id) {
+    setValue(id, <T>[]);
+  }
+
+  // --- Internals ---
+  /// Internal helper to update initial value from subclasses
+  @protected
+  void setInitialValueInternal(String key, dynamic value) {
+    initialValueMap[key] = value;
+  }
+
   /// Get the current state of the form.
-  FormState get currentState => state;
+  BetterFormState get currentState => state;
 
   Future<void> _loadPersistedState() async {
     if (persistence != null && formId != null) {
@@ -237,34 +189,29 @@ class RiverpodFormController extends StateNotifier<FormState> {
         final newValues = Map<String, dynamic>.from(state.values);
         newValues.addAll(savedValues);
 
-        // We need to re-validate everything with the loaded values
         final newValidations = Map<String, ValidationResult>.from(
           state.validations,
         );
         final newDirtyStates = Map<String, bool>.from(state.dirtyStates);
 
         for (final key in savedValues.keys) {
-          // check if field exists, validation etc.
           if (_fieldDefinitions.containsKey(key)) {
             final field = _fieldDefinitions[key]!;
             final value = savedValues[key];
 
-            // Mark as dirty if different from initial
-            final initial = _initialValue[key];
+            final initial = initialValueMap[key];
             final isDirty = initial == null ? value != null : value != initial;
             newDirtyStates[key] = isDirty;
 
-            // Validate
             if (field.validator != null) {
               try {
-                final res = (field.validator as dynamic)(value);
+                final res = field.validator!(value);
                 newValidations[key] = res != null
                     ? ValidationResult(isValid: false, errorMessage: res)
                     : ValidationResult.valid;
               } catch (_) {}
             }
           } else {
-            // If field not registered yet, just set value, it will be validated on registration
             newDirtyStates[key] = true;
           }
         }
@@ -278,49 +225,14 @@ class RiverpodFormController extends StateNotifier<FormState> {
     }
   }
 
-  static String? Function(dynamic)? _wrapValidator(dynamic field) {
-    final dynamic validator = field.validator;
-    if (validator == null) return null;
-    return (dynamic value) {
-      try {
-        return (validator as dynamic)(value);
-      } catch (e) {
-        return 'Type conversion error: ${e.toString()}';
-      }
-    };
-  }
-
-  static dynamic Function(dynamic)? _wrapTransformer(dynamic field) {
-    final dynamic transformer = field.transformer;
-    if (transformer == null) return null;
-    return (dynamic value) {
-      try {
-        return (transformer as dynamic)(value);
-      } catch (e) {
-        return value;
-      }
-    };
-  }
-
-  static Future<String?> Function(dynamic)? _wrapAsyncValidator(dynamic field) {
-    final dynamic asyncValidator = field.asyncValidator;
-    if (asyncValidator == null) return null;
-    return (dynamic value) async {
-      try {
-        return await (asyncValidator as dynamic)(value);
-      } catch (e) {
-        return 'Async validation error: ${e.toString()}';
-      }
-    };
-  }
-
   /// Get the initial form value
-  Map<String, dynamic> get initialValue => Map.unmodifiable(_initialValue);
+  Map<String, dynamic> get initialValue => Map.unmodifiable(initialValueMap);
 
   /// Check if form is submitting
   bool get isSubmitting => state.isSubmitting;
 
   /// Check if a field is registered
+  /// Returns true if a field with [fieldId] is currently registered.
   bool isFieldRegistered<T>(BetterFormFieldID<T> fieldId) {
     return _fieldDefinitions.containsKey(fieldId.key);
   }
@@ -341,9 +253,11 @@ class RiverpodFormController extends StateNotifier<FormState> {
   /// Set field value with type safety and validation
   void setValue<T>(BetterFormFieldID<T> fieldId, T value) {
     // Type check
-    final expectedInitialValue = _initialValue[fieldId.key];
+    final expectedInitialValue = initialValueMap[fieldId.key];
     if (expectedInitialValue != null &&
-        value.runtimeType != expectedInitialValue.runtimeType) {
+        value != null &&
+        value.runtimeType != expectedInitialValue.runtimeType &&
+        !(value is num && expectedInitialValue is num)) {
       throw ArgumentError(
         'Type mismatch: expected ${expectedInitialValue.runtimeType}, got ${value.runtimeType}',
       );
@@ -354,97 +268,259 @@ class RiverpodFormController extends StateNotifier<FormState> {
     // Apply transformer if available
     final transformer = fieldDef?.transformer;
     if (transformer != null) {
-      // safe cast assuming transformer returns T (or dynamic that fits)
       value = transformer(value) as T;
     }
 
-    // Update value
+    // State to be updated
     final newValues = Map<String, dynamic>.from(state.values);
-    newValues[fieldId.key] = value;
-
-    // Update dirty state
     final newDirtyStates = Map<String, bool>.from(state.dirtyStates);
-    final initialValue = _initialValue[fieldId.key];
+    final newValidations = Map<String, ValidationResult>.from(
+      state.validations,
+    );
+
+    // 1. Apply value and dirty state
+    newValues[fieldId.key] = value;
+    final initialValue = initialValueMap[fieldId.key];
     final isDirty = initialValue == null
         ? value != null
         : value != initialValue;
     newDirtyStates[fieldId.key] = isDirty;
 
-    // Validate field if it has a validator
-    final newValidations = Map<String, ValidationResult>.from(
-      state.validations,
-    );
-    ValidationResult syncResult = ValidationResult.valid;
+    // 2. Determine fields to validate (self + dependents)
+    final fieldsToValidate = <String>{};
+    final mode = fieldDef?.validationMode ?? BetterAutovalidateMode.always;
+    if (mode == BetterAutovalidateMode.always ||
+        (mode == BetterAutovalidateMode.onUserInteraction && isDirty)) {
+      fieldsToValidate.add(fieldId.key);
+    }
 
-    // Sync Validation
-    final validator = fieldDef?.validator;
+    final dependents = _getDependentsOf(fieldId.key);
+    for (final depKey in dependents) {
+      final depDef = _fieldDefinitions[depKey];
+      if (depDef != null) {
+        final depMode = depDef.validationMode;
+        if (depMode == BetterAutovalidateMode.always ||
+            depMode == BetterAutovalidateMode.onUserInteraction) {
+          fieldsToValidate.add(depKey);
+        }
+      }
+    }
+
+    // 3. Run all synchronous validations
+    for (final key in fieldsToValidate) {
+      final val = newValues[key];
+      final res = _performSyncValidation(key, val, newValues);
+      newValidations[key] = res;
+    }
+
+    // 4. Update state ONCE with all sync changes
+    state = state.copyWith(
+      values: newValues,
+      dirtyStates: newDirtyStates,
+      validations: newValidations,
+    );
+
+    // 5. Trigger async validations if necessary
+    for (final key in fieldsToValidate) {
+      final syncRes = newValidations[key]!;
+      if (syncRes.isValid) {
+        _triggerAsyncValidation(key, newValues[key]);
+      }
+    }
+
+    if (persistence != null && formId != null) {
+      persistence!.saveFormState(formId!, newValues);
+    }
+  }
+
+  ValidationResult _performSyncValidation(
+    String key,
+    dynamic value,
+    Map<String, dynamic> currentValues,
+  ) {
+    final fieldDef = _fieldDefinitions[key];
+    if (fieldDef == null) return ValidationResult.valid;
+
+    ValidationResult result = ValidationResult.valid;
+
+    // 1. Standard Validator
+    final validator = fieldDef.validator;
     if (validator != null) {
       try {
         final String? validationResult = validator(value);
-        syncResult = validationResult != null
-            ? ValidationResult(isValid: false, errorMessage: validationResult)
-            : ValidationResult.valid;
+        if (validationResult != null) {
+          return ValidationResult(
+            isValid: false,
+            errorMessage: validationResult,
+          );
+        }
       } catch (e) {
-        syncResult = ValidationResult(
+        return ValidationResult(
           isValid: false,
           errorMessage: 'Validation error: ${e.toString()}',
         );
       }
     }
 
-    newValidations[fieldId.key] = syncResult;
+    // 2. Cross-field Validator
+    final crossValidator = fieldDef.crossFieldValidator;
+    if (crossValidator != null) {
+      try {
+        // We create a temporary BetterFormState for the cross validator to see the NEW values
+        final tempState = BetterFormState(
+          values: currentValues,
+          validations: state.validations,
+          dirtyStates: state.dirtyStates,
+          touchedStates: state.touchedStates,
+        );
+        final String? validationResult = crossValidator(value, tempState);
+        if (validationResult != null) {
+          return ValidationResult(
+            isValid: false,
+            errorMessage: validationResult,
+          );
+        }
+      } catch (e) {
+        return ValidationResult(
+          isValid: false,
+          errorMessage: 'Cross-validation error: ${e.toString()}',
+        );
+      }
+    }
 
-    // Handle Async Validation with Debounce
-    final asyncValidator = fieldDef?.asyncValidator;
-    if (syncResult.isValid && asyncValidator != null) {
-      // Cancel previous timer
-      _debouncers[fieldId.key]?.cancel();
+    return result;
+  }
 
-      // Set to validating
-      newValidations[fieldId.key] = ValidationResult.validating;
+  void _triggerAsyncValidation(String key, dynamic value) {
+    final fieldDef = _fieldDefinitions[key];
+    if (fieldDef == null) return;
 
-      // Start timer
-      _debouncers[fieldId.key] = Timer(
-        fieldDef?.debounceDuration ?? const Duration(milliseconds: 300),
-        () async {
+    final asyncValidator = fieldDef.asyncValidator;
+    if (asyncValidator == null) return;
+
+    _debouncers[key]?.cancel();
+
+    // Set state to validating
+    final currentValidations = Map<String, ValidationResult>.from(
+      state.validations,
+    );
+    currentValidations[key] = ValidationResult.validating;
+    state = state.copyWith(validations: currentValidations);
+
+    _debouncers[key] = Timer(
+      fieldDef.debounceDuration ?? const Duration(milliseconds: 300),
+      () async {
+        if (!mounted) return;
+        try {
+          final error = await asyncValidator(value);
           if (!mounted) return;
-          try {
-            final error = await asyncValidator(value);
-            if (!mounted) return;
 
-            // Get fresh state validations
-            final currentValidations = Map<String, ValidationResult>.from(
-              state.validations,
-            );
-            currentValidations[fieldId.key] = error != null
-                ? ValidationResult(isValid: false, errorMessage: error)
-                : ValidationResult.valid;
+          final latestValidations = Map<String, ValidationResult>.from(
+            state.validations,
+          );
+          latestValidations[key] = error != null
+              ? ValidationResult(isValid: false, errorMessage: error)
+              : ValidationResult.valid;
 
-            state = state.copyWith(validations: currentValidations);
-          } catch (e) {
-            if (!mounted) return;
-            final currentValidations = Map<String, ValidationResult>.from(
-              state.validations,
-            );
-            currentValidations[fieldId.key] = ValidationResult(
-              isValid: false,
-              errorMessage: 'Async validation failed',
-            );
-            state = state.copyWith(validations: currentValidations);
-          }
-        },
+          state = state.copyWith(validations: latestValidations);
+        } catch (e) {
+          if (!mounted) return;
+          final latestValidations = Map<String, ValidationResult>.from(
+            state.validations,
+          );
+          latestValidations[key] = ValidationResult(
+            isValid: false,
+            errorMessage: 'Async validation failed',
+          );
+          state = state.copyWith(validations: latestValidations);
+        }
+      },
+    );
+  }
+
+  List<String> _getDependentsOf(String key) {
+    final dependents = <String>[];
+    for (final field in _fieldDefinitions.values) {
+      if (field.dependsOn.any((dep) => dep.key == key)) {
+        dependents.add(field.id.key);
+      }
+    }
+    return dependents;
+  }
+
+  /// Register multiple fields at once
+  void registerFields(List<BetterFormField> fields) {
+    if (fields.isEmpty) return;
+
+    final newValues = Map<String, dynamic>.from(state.values);
+    final newValidations = Map<String, ValidationResult>.from(
+      state.validations,
+    );
+    final newDirtyStates = Map<String, bool>.from(state.dirtyStates);
+    final newTouchedStates = Map<String, bool>.from(state.touchedStates);
+
+    for (final field in fields) {
+      final key = field.id.key;
+
+      _fieldDefinitions[key] = BetterFormField<dynamic>(
+        id: BetterFormFieldID<dynamic>(field.id.key),
+        initialValue: field.initialValue,
+        validator: field.wrappedValidator,
+        label: field.label,
+        hint: field.hint,
+        transformer: field.wrappedTransformer != null
+            ? (dynamic val) => field.wrappedTransformer!(val)
+            : null,
+        asyncValidator: field.wrappedAsyncValidator,
+        debounceDuration: field.debounceDuration,
+        validationMode: field.validationMode,
+        crossFieldValidator: field.wrappedCrossFieldValidator,
+        dependsOn: field.dependsOn,
+      );
+
+      if (!initialValueMap.containsKey(key)) {
+        initialValueMap[key] = field.initialValue;
+      }
+
+      if (!newValues.containsKey(key)) {
+        newValues[key] = field.initialValue;
+      }
+      if (!newDirtyStates.containsKey(key)) {
+        newDirtyStates[key] = false;
+      }
+      if (!newTouchedStates.containsKey(key)) {
+        newTouchedStates[key] = false;
+      }
+      if (!newValidations.containsKey(key)) {
+        newValidations[key] = _performSyncValidation(
+          key,
+          field.initialValue,
+          newValues,
+        );
+      }
+    }
+
+    void updateState() {
+      if (!mounted) return;
+      state = state.copyWith(
+        values: newValues,
+        validations: newValidations,
+        dirtyStates: newDirtyStates,
+        touchedStates: newTouchedStates,
       );
     }
 
-    state = state.copyWith(
-      values: newValues,
-      validations: newValidations,
-      dirtyStates: newDirtyStates,
-    );
+    bool isPersistent = false;
+    try {
+      final scheduler = WidgetsBinding.instance;
+      isPersistent =
+          scheduler.schedulerPhase == SchedulerPhase.persistentCallbacks;
+    } catch (_) {}
 
-    // Persist change
-    if (persistence != null && formId != null) {
-      persistence!.saveFormState(formId!, newValues);
+    if (isPersistent) {
+      Future.microtask(updateState);
+    } else {
+      updateState();
     }
   }
 
@@ -452,36 +528,29 @@ class RiverpodFormController extends StateNotifier<FormState> {
   void registerField<T>(BetterFormField<T> field) {
     final key = field.id.key;
 
-    final validator = field.validator;
-    final transformer = field.transformer;
-    final asyncValidator = field.asyncValidator;
-
     _fieldDefinitions[key] = BetterFormField<dynamic>(
       id: BetterFormFieldID<dynamic>(field.id.key),
       initialValue: field.initialValue,
-      validator: validator != null ? _wrapValidator(field) : null,
+      validator: field.wrappedValidator,
       label: field.label,
       hint: field.hint,
-      transformer: transformer != null ? _wrapTransformer(field) : null,
-      asyncValidator: asyncValidator != null
-          ? _wrapAsyncValidator(field)
+      transformer: field.wrappedTransformer != null
+          ? (dynamic val) => field.wrappedTransformer!(val)
           : null,
+      asyncValidator: field.wrappedAsyncValidator,
       debounceDuration: field.debounceDuration,
+      validationMode: field.validationMode,
+      crossFieldValidator: field.wrappedCrossFieldValidator,
+      dependsOn: field.dependsOn,
     );
 
-    // Persist initial value (can be null for nullable fields)
-    if (!_initialValue.containsKey(key)) {
-      _initialValue[key] = field.initialValue;
+    if (!initialValueMap.containsKey(key)) {
+      initialValueMap[key] = field.initialValue;
     }
 
-    // Initialize initialValue and state for this field if not present
-    if (!_initialValue.containsKey(key)) {
-      _initialValue[key] = field.initialValue;
-    }
     void updateState() {
       if (!mounted) return;
 
-      // Merge with latest state to avoid overwriting other registrations
       final currentValues = Map<String, dynamic>.from(state.values);
       final currentValidations = Map<String, ValidationResult>.from(
         state.validations,
@@ -499,28 +568,12 @@ class RiverpodFormController extends StateNotifier<FormState> {
         currentTouchedStates[key] = false;
       }
 
-      // Re-validate if not already present or if we need to force it
       if (!currentValidations.containsKey(key)) {
-        final validatorFunc = field.validator;
-        final initialValue = field.initialValue;
-        if (validatorFunc != null && initialValue != null) {
-          try {
-            final String? validationResult = validatorFunc(initialValue);
-            currentValidations[key] = validationResult != null
-                ? ValidationResult(
-                    isValid: false,
-                    errorMessage: validationResult,
-                  )
-                : ValidationResult.valid;
-          } catch (e) {
-            currentValidations[key] = ValidationResult(
-              isValid: false,
-              errorMessage: 'Validation error: ${e.toString()}',
-            );
-          }
-        } else {
-          currentValidations[key] = ValidationResult.valid;
-        }
+        currentValidations[key] = _performSyncValidation(
+          key,
+          field.initialValue,
+          currentValues,
+        );
       }
 
       state = state.copyWith(
@@ -531,20 +584,49 @@ class RiverpodFormController extends StateNotifier<FormState> {
       );
     }
 
-    // Only defer if we're currently in a build/layout/paint phase
     bool isPersistent = false;
     try {
       final scheduler = WidgetsBinding.instance;
       isPersistent =
           scheduler.schedulerPhase == SchedulerPhase.persistentCallbacks;
-    } catch (_) {
-      // Binding not initialized or other error, assume not persistent
-    }
+    } catch (_) {}
 
     if (isPersistent) {
       Future.microtask(updateState);
     } else {
       updateState();
+    }
+  }
+
+  /// Unregister multiple fields at once
+  void unregisterFields(List<BetterFormFieldID> fieldIds) {
+    if (fieldIds.isEmpty) return;
+
+    final newValues = Map<String, dynamic>.from(state.values);
+    final newValidations = Map<String, ValidationResult>.from(
+      state.validations,
+    );
+    final newDirtyStates = Map<String, bool>.from(state.dirtyStates);
+    final newTouchedStates = Map<String, bool>.from(state.touchedStates);
+
+    for (final fieldId in fieldIds) {
+      final key = fieldId.key;
+      _fieldDefinitions.remove(key);
+      newValues.remove(key);
+      newValidations.remove(key);
+      newDirtyStates.remove(key);
+      newTouchedStates.remove(key);
+    }
+
+    state = state.copyWith(
+      values: newValues,
+      validations: newValidations,
+      dirtyStates: newDirtyStates,
+      touchedStates: newTouchedStates,
+    );
+
+    if (persistence != null && formId != null) {
+      persistence!.saveFormState(formId!, newValues);
     }
   }
 
@@ -558,11 +640,11 @@ class RiverpodFormController extends StateNotifier<FormState> {
       state.validations,
     );
     final newDirtyStates = Map<String, bool>.from(state.dirtyStates);
+    final newTouchedStates = Map<String, bool>.from(state.touchedStates);
 
     newValues.remove(key);
     newValidations.remove(key);
     newDirtyStates.remove(key);
-    final newTouchedStates = Map<String, bool>.from(state.touchedStates);
     newTouchedStates.remove(key);
 
     state = state.copyWith(
@@ -571,7 +653,6 @@ class RiverpodFormController extends StateNotifier<FormState> {
       dirtyStates: newDirtyStates,
       touchedStates: newTouchedStates,
     );
-    // Should we persist removal? Maybe.
     if (persistence != null && formId != null) {
       persistence!.saveFormState(formId!, newValues);
     }
@@ -581,7 +662,7 @@ class RiverpodFormController extends StateNotifier<FormState> {
   void reset({ResetStrategy strategy = ResetStrategy.initialValues}) {
     final Map<String, dynamic> newValues;
     if (strategy == ResetStrategy.initialValues) {
-      newValues = Map<String, dynamic>.from(_initialValue);
+      newValues = Map<String, dynamic>.from(initialValueMap);
     } else {
       newValues = {};
       for (final entry in _fieldDefinitions.entries) {
@@ -595,27 +676,11 @@ class RiverpodFormController extends StateNotifier<FormState> {
 
     for (final key in _fieldDefinitions.keys) {
       newDirtyStates[key] = false;
-
-      // Re-validate the field with its new value
-      final fieldDef = _fieldDefinitions[key]!;
-      final newValue = newValues[key];
-      final validator = fieldDef.validator;
-
-      if (validator != null && newValue != null) {
-        try {
-          final String? validationResult = validator(newValue);
-          newValidations[key] = validationResult != null
-              ? ValidationResult(isValid: false, errorMessage: validationResult)
-              : ValidationResult.valid;
-        } catch (e) {
-          newValidations[key] = ValidationResult(
-            isValid: false,
-            errorMessage: 'Validation error: ${e.toString()}',
-          );
-        }
-      } else {
-        newValidations[key] = ValidationResult.valid;
-      }
+      newValidations[key] = _performSyncValidation(
+        key,
+        newValues[key],
+        newValues,
+      );
     }
 
     final newTouchedStates = <String, bool>{};
@@ -632,11 +697,17 @@ class RiverpodFormController extends StateNotifier<FormState> {
     );
 
     if (persistence != null && formId != null) {
-      // If resetting to initial values, we effectively "clear" the modifications.
-      // We can either clear storage or save the new (initial) values.
-      // Saving the current values is safer.
       persistence!.saveFormState(formId!, newValues);
     }
+  }
+
+  /// Resets the form and sets a new set of initial values.
+  /// This clears all dirty and touched states.
+  void resetToValues(Map<String, dynamic> data) {
+    for (final entry in data.entries) {
+      setInitialValueInternal(entry.key, entry.value);
+    }
+    reset(strategy: ResetStrategy.initialValues);
   }
 
   /// Reset specific fields
@@ -658,7 +729,7 @@ class RiverpodFormController extends StateNotifier<FormState> {
 
       final dynamic newValue;
       if (strategy == ResetStrategy.initialValues) {
-        newValue = _initialValue[key];
+        newValue = initialValueMap[key];
       } else {
         newValue = fieldDef.emptyValue ?? _getDefaultEmptyValue(fieldDef);
       }
@@ -666,24 +737,7 @@ class RiverpodFormController extends StateNotifier<FormState> {
       newValues[key] = newValue;
       newDirtyStates[key] = false;
       newTouchedStates[key] = false;
-
-      // Re-validate
-      final validator = fieldDef.validator;
-      if (validator != null && newValue != null) {
-        try {
-          final String? validationResult = validator(newValue);
-          newValidations[key] = validationResult != null
-              ? ValidationResult(isValid: false, errorMessage: validationResult)
-              : ValidationResult.valid;
-        } catch (e) {
-          newValidations[key] = ValidationResult(
-            isValid: false,
-            errorMessage: 'Validation error',
-          );
-        }
-      } else {
-        newValidations[key] = ValidationResult.valid;
-      }
+      newValidations[key] = _performSyncValidation(key, newValue, newValues);
     }
 
     state = state.copyWith(
@@ -696,45 +750,27 @@ class RiverpodFormController extends StateNotifier<FormState> {
 
   /// Validate entire form
   bool validate() {
-    var isFormValid = true;
     final newValidations = Map<String, ValidationResult>.from(
       state.validations,
     );
+    final values = state.values;
 
-    for (final field in _fieldDefinitions.values) {
-      final key = field.id.key;
-      final currentValue = state.values[key];
-      final validator = field.validator;
-
-      if (currentValue != null && validator != null) {
-        try {
-          final String? validationResult = validator(currentValue);
-          newValidations[key] = validationResult != null
-              ? ValidationResult(isValid: false, errorMessage: validationResult)
-              : ValidationResult.valid;
-
-          if (validationResult != null) {
-            isFormValid = false;
-          }
-        } catch (e) {
-          newValidations[key] = ValidationResult(
-            isValid: false,
-            errorMessage: 'Validation error: ${e.toString()}',
-          );
-          isFormValid = false;
-        }
-      } else if (validator != null) {
-        // Field has validator but no value - mark as invalid
-        newValidations[key] = ValidationResult(
-          isValid: false,
-          errorMessage: messages.required(field.label ?? key),
-        );
-        isFormValid = false;
-      }
+    for (final entry in _fieldDefinitions.entries) {
+      final key = entry.key;
+      final value = values[key];
+      newValidations[key] = _performSyncValidation(key, value, values);
     }
 
     state = state.copyWith(validations: newValidations);
-    return isFormValid;
+
+    // Trigger async validations for all valid fields
+    for (final key in _fieldDefinitions.keys) {
+      if (newValidations[key]!.isValid) {
+        _triggerAsyncValidation(key, values[key]);
+      }
+    }
+
+    return state.isValid;
   }
 
   /// Get validation result for field
@@ -752,11 +788,117 @@ class RiverpodFormController extends StateNotifier<FormState> {
     return state.isFieldTouched(fieldId);
   }
 
-  /// Mark field as touched
+  /// Mark field as touched. Triggers validation if mode is onBlur.
   void markAsTouched<T>(BetterFormFieldID<T> fieldId) {
+    if (state.touchedStates[fieldId.key] == true) return;
+
+    final key = fieldId.key;
     final newTouchedStates = Map<String, bool>.from(state.touchedStates);
-    newTouchedStates[fieldId.key] = true;
-    state = state.copyWith(touchedStates: newTouchedStates);
+    newTouchedStates[key] = true;
+
+    final fieldDef = _fieldDefinitions[key];
+    if (fieldDef?.validationMode == BetterAutovalidateMode.onBlur) {
+      final newValids = Map<String, ValidationResult>.from(state.validations);
+      final value = state.values[key];
+      newValids[key] = _performSyncValidation(key, value, state.values);
+
+      state = state.copyWith(
+        touchedStates: newTouchedStates,
+        validations: newValids,
+      );
+
+      if (newValids[key]!.isValid) {
+        _triggerAsyncValidation(key, value);
+      }
+    } else {
+      state = state.copyWith(touchedStates: newTouchedStates);
+    }
+  }
+
+  /// Submits the form with optional throttling and debouncing.
+  ///
+  /// [onValid] is called if the form is valid.
+  /// [onError] is called if the form is invalid.
+  /// [debounce] avoids multiple calls within a short time window (last one wins).
+  /// [throttle] prevents new calls until the duration has passed (first one wins).
+  Future<void> submit({
+    required Future<void> Function(Map<String, dynamic> values) onValid,
+    void Function(Map<String, ValidationResult> errors)? onError,
+    Duration? debounce,
+    Duration? throttle,
+    bool optimistic = false,
+  }) async {
+    // 1. Throttling
+    if (throttle != null) {
+      final now = DateTime.now();
+      if (_lastSubmitTime != null &&
+          now.difference(_lastSubmitTime!) < throttle) {
+        return; // Too soon
+      }
+      _lastSubmitTime = now;
+    }
+
+    // 2. Debouncing
+    if (debounce != null) {
+      _submitDebounceTimer?.cancel();
+      final completer = Completer<void>();
+
+      _submitDebounceTimer = Timer(debounce, () async {
+        try {
+          await _performSubmit(onValid, onError, optimistic);
+          completer.complete();
+        } catch (e) {
+          completer.completeError(e);
+        }
+      });
+
+      return completer.future;
+    }
+
+    // 3. Immediate execution
+    await _performSubmit(onValid, onError, optimistic);
+  }
+
+  Future<void> _performSubmit(
+    Future<void> Function(Map<String, dynamic> values) onValid,
+    void Function(Map<String, ValidationResult> errors)? onError,
+    bool optimistic,
+  ) async {
+    if (validate()) {
+      setSubmitting(true);
+
+      Map<String, dynamic>? previousInitialValues;
+      BetterFormState? previousState;
+
+      if (optimistic) {
+        previousInitialValues = Map.from(initialValueMap);
+        previousState = state;
+        // Optimistically set the form to "pristine" by syncing initial values
+        resetToValues(state.values);
+        // resetToValues resets isSubmitting to false, so we enable it again
+        setSubmitting(true);
+      }
+
+      try {
+        await onValid(state.values);
+      } catch (e) {
+        if (optimistic &&
+            previousInitialValues != null &&
+            previousState != null) {
+          // Revert optimistic changes
+          initialValueMap.clear();
+          initialValueMap.addAll(previousInitialValues);
+          state = previousState.copyWith(isSubmitting: false);
+        }
+        rethrow;
+      } finally {
+        setSubmitting(false);
+      }
+    } else {
+      if (onError != null) {
+        onError(state.validations);
+      }
+    }
   }
 
   /// Set submitting state
@@ -764,290 +906,14 @@ class RiverpodFormController extends StateNotifier<FormState> {
     state = state.copyWith(isSubmitting: submitting);
   }
 
-  /// Get default empty value for a field type
   dynamic _getDefaultEmptyValue(BetterFormField<dynamic> field) {
-    // Try to infer from initial value type
     final initialValue = field.initialValue;
     if (initialValue is String) return '';
     if (initialValue is num) return 0;
     if (initialValue is bool) return false;
     if (initialValue is List) return [];
     if (initialValue is Map) return {};
-    // For other types, return null
     return null;
-  }
-}
-
-/// Form controller for managing form state externally (Riverpod-based)
-/// This version adds ValueNotifier compatibility layer for non-Riverpod widgets.
-class BetterFormController extends RiverpodFormController {
-  BetterFormController({
-    super.initialValue,
-    super.fields,
-    super.messages = const DefaultBetterFormMessages(),
-    super.persistence,
-    super.formId,
-  }) {
-    addListener(_onStateChanged);
-  }
-
-  // Cache notifiers to ensure consistency
-  final Map<String, ValueNotifier<dynamic>> _valueNotifiers = {};
-  final Map<String, ValueNotifier<ValidationResult>> _validationNotifiers = {};
-  final Map<String, ValueNotifier<bool>> _dirtyNotifiers = {};
-  final Map<String, ValueNotifier<bool>> _touchedNotifiers = {};
-
-  ValueNotifier<bool>? _isDirtyNotifier;
-  ValueNotifier<bool>? _isValidNotifier;
-  ValueNotifier<bool>? _isSubmittingNotifier;
-
-  void _onStateChanged(FormState state) {
-    //  debugPrint('STATE CHANGED: values=${state.values.keys.toList()}');
-    // Update value notifiers
-    for (final key in _valueNotifiers.keys) {
-      final notifier = _valueNotifiers[key];
-      final newValue = state.values[key];
-      if (notifier != null && notifier.value != newValue) {
-        notifier.value = newValue;
-      }
-    }
-
-    // Update validation notifiers
-    for (final key in _validationNotifiers.keys) {
-      final notifier = _validationNotifiers[key];
-      final newResult = state.validations[key] ?? ValidationResult.valid;
-      if (notifier != null && notifier.value != newResult) {
-        notifier.value = newResult;
-      }
-    }
-
-    // Update dirty notifiers
-    for (final key in _dirtyNotifiers.keys) {
-      final notifier = _dirtyNotifiers[key];
-      final isDirty = state.dirtyStates[key] ?? false;
-      if (notifier != null && notifier.value != isDirty) {
-        notifier.value = isDirty;
-      }
-    }
-
-    // Update touched notifiers
-    for (final key in _touchedNotifiers.keys) {
-      final notifier = _touchedNotifiers[key];
-      final isTouched = state.touchedStates[key] ?? false;
-      if (notifier != null && notifier.value != isTouched) {
-        notifier.value = isTouched;
-      }
-    }
-
-    // Update global notifiers
-    if (_isDirtyNotifier != null && _isDirtyNotifier!.value != state.isDirty) {
-      _isDirtyNotifier!.value = state.isDirty;
-    }
-    if (_isValidNotifier != null && _isValidNotifier!.value != state.isValid) {
-      _isValidNotifier!.value = state.isValid;
-    }
-    if (_isSubmittingNotifier != null &&
-        _isSubmittingNotifier!.value != state.isSubmitting) {
-      _isSubmittingNotifier!.value = state.isSubmitting;
-    }
-
-    // Call legacy listeners
-    for (final listener in _fieldListeners) {
-      listener();
-    }
-    for (final listener in _dirtyListeners) {
-      listener(state.isDirty);
-    }
-  }
-
-  /// Get boolean for submitting state
-  @override
-  bool get isSubmitting => state.isSubmitting;
-
-  /// Check if form is dirty
-  bool get isDirty => state.isDirty;
-
-  /// Extract data from form
-  Map<String, dynamic> get values => state.values;
-
-  /// Reset form to initial state
-  @override
-  void reset({ResetStrategy strategy = ResetStrategy.initialValues}) {
-    super.reset(strategy: strategy);
-  }
-
-  /// Dispose of resources
-  @override
-  void dispose() {
-    for (final notifier in _valueNotifiers.values) {
-      notifier.dispose();
-    }
-    for (final notifier in _validationNotifiers.values) {
-      notifier.dispose();
-    }
-    for (final notifier in _dirtyNotifiers.values) {
-      notifier.dispose();
-    }
-    for (final notifier in _touchedNotifiers.values) {
-      notifier.dispose();
-    }
-    _isDirtyNotifier?.dispose();
-    _isValidNotifier?.dispose();
-    _isSubmittingNotifier?.dispose();
-
-    super.dispose();
-  }
-
-  /// Get a ValueNotifier for a specific field
-  ValueNotifier<T?> getFieldNotifier<T>(BetterFormFieldID<T> fieldId) {
-    if (_valueNotifiers.containsKey(fieldId.key)) {
-      return _valueNotifiers[fieldId.key] as ValueNotifier<T?>;
-    }
-    final notifier = ValueNotifier<T?>(getValue(fieldId));
-    _valueNotifiers[fieldId.key] = notifier;
-    return notifier;
-  }
-
-  /// Listen to a specific field's value changes
-  ValueListenable<T?> fieldValueListenable<T>(BetterFormFieldID<T> fieldId) {
-    return getFieldNotifier(fieldId);
-  }
-
-  /// Get validation notifier for a field
-  ValueNotifier<ValidationResult> fieldValidationNotifier<T>(
-    BetterFormFieldID<T> fieldId,
-  ) {
-    if (_validationNotifiers.containsKey(fieldId.key)) {
-      return _validationNotifiers[fieldId.key]!;
-    }
-    final notifier = ValueNotifier<ValidationResult>(getValidation(fieldId));
-    _validationNotifiers[fieldId.key] = notifier;
-    return notifier;
-  }
-
-  /// Get dirty notifier for a field
-  ValueNotifier<bool> fieldDirtyNotifier<T>(BetterFormFieldID<T> fieldId) {
-    if (_dirtyNotifiers.containsKey(fieldId.key)) {
-      return _dirtyNotifiers[fieldId.key]!;
-    }
-    final notifier = ValueNotifier<bool>(isFieldDirty(fieldId));
-    _dirtyNotifiers[fieldId.key] = notifier;
-    return notifier;
-  }
-
-  /// Get touched notifier for a field
-  ValueNotifier<bool> fieldTouchedNotifier<T>(BetterFormFieldID<T> fieldId) {
-    if (_touchedNotifiers.containsKey(fieldId.key)) {
-      return _touchedNotifiers[fieldId.key]!;
-    }
-    final notifier = ValueNotifier<bool>(isFieldTouched(fieldId));
-    _touchedNotifiers[fieldId.key] = notifier;
-    return notifier;
-  }
-
-  /// Global notifiers
-  ValueNotifier<bool> get isDirtyNotifier {
-    _isDirtyNotifier ??= ValueNotifier(state.isDirty);
-    return _isDirtyNotifier!;
-  }
-
-  ValueNotifier<bool> get isValidNotifier {
-    _isValidNotifier ??= ValueNotifier(state.isValid);
-    return _isValidNotifier!;
-  }
-
-  ValueNotifier<bool> get isSubmittingNotifier {
-    _isSubmittingNotifier ??= ValueNotifier(state.isSubmitting);
-    return _isSubmittingNotifier!;
-  }
-
-  // Focus Management
-  final Map<String, FocusNode> _focusNodes = {};
-
-  /// Register a focus node for a field
-  void registerFocusNode<T>(BetterFormFieldID<T> fieldId, FocusNode node) {
-    _focusNodes[fieldId.key] = node;
-  }
-
-  /// Request focus for a specific field
-  void focusField<T>(BetterFormFieldID<T> fieldId) {
-    _focusNodes[fieldId.key]?.requestFocus();
-  }
-
-  /// Focus the first field with an error
-  void focusFirstError() {
-    for (final entry in state.validations.entries) {
-      if (!entry.value.isValid) {
-        _focusNodes[entry.key]?.requestFocus();
-        return;
-      }
-    }
-  }
-
-  /// Get all current form values as a map
-  Map<String, dynamic> toMap() => Map.unmodifiable(state.values);
-
-  /// Helper to get only modified values
-  Map<String, dynamic> getChangedValues() {
-    final result = <String, dynamic>{};
-    for (final entry in state.dirtyStates.entries) {
-      if (entry.value) {
-        result[entry.key] = state.values[entry.key];
-      }
-    }
-    return result;
-  }
-
-  /// Bulk update form values without changing initial values or resetting dirty state
-  /// This will trigger validation for updated fields.
-  void updateFromMap(Map<String, dynamic> data) {
-    for (final entry in data.entries) {
-      final fieldId = BetterFormFieldID<dynamic>(entry.key);
-      if (isFieldRegistered(fieldId)) {
-        setValue(fieldId, entry.value);
-      }
-    }
-  }
-
-  /// Reset the form to a new set of initial values.
-  /// This will update the underlying initial values, set current values to them,
-  /// and clear all dirty states.
-  void resetToValues(Map<String, dynamic> data) {
-    // We need to update _initialValue and then call reset
-    for (final entry in data.entries) {
-      _initialValue[entry.key] = entry.value;
-    }
-    reset(strategy: ResetStrategy.initialValues);
-  }
-
-  // Listener management for compatibility
-  final _fieldListeners = <VoidCallback>[];
-  final _dirtyListeners = <void Function(bool)>[];
-
-  /// Add a listener for field changes (compatibility)
-  void addFieldListener<T>(
-    BetterFormFieldID<T> fieldId,
-    VoidCallback listener,
-  ) {
-    _fieldListeners.add(listener);
-  }
-
-  /// Remove a listener (compatibility)
-  void removeFieldListener<T>(
-    BetterFormFieldID<T> fieldId,
-    VoidCallback listener,
-  ) {
-    _fieldListeners.remove(listener);
-  }
-
-  /// Add a dirty state listener (compatibility)
-  void addDirtyListener(void Function(bool) listener) {
-    _dirtyListeners.add(listener);
-  }
-
-  /// Remove a dirty state listener (compatibility)
-  void removeDirtyListener(void Function(bool) listener) {
-    _dirtyListeners.remove(listener);
   }
 }
 
@@ -1090,7 +956,7 @@ class BetterFormParameter {
 
 /// Provider for form controller with auto-disposal
 final formControllerProvider = StateNotifierProvider.autoDispose
-    .family<RiverpodFormController, FormState, BetterFormParameter>((
+    .family<RiverpodFormController, BetterFormState, BetterFormParameter>((
       ref,
       param,
     ) {
@@ -1107,7 +973,7 @@ final formControllerProvider = StateNotifierProvider.autoDispose
 /// Provider for the current controller provider (can be overridden)
 final currentControllerProvider =
     Provider<
-      AutoDisposeStateNotifierProvider<RiverpodFormController, FormState>
+      AutoDisposeStateNotifierProvider<RiverpodFormController, BetterFormState>
     >((ref) {
       return formControllerProvider(
         const BetterFormParameter(initialValue: {}),
@@ -1138,6 +1004,54 @@ final fieldValidationProvider =
         ),
       );
     }, dependencies: [currentControllerProvider]);
+
+/// Provider for field error message with selector for performance
+final fieldErrorProvider = Provider.family<String?, BetterFormFieldID<dynamic>>(
+  (ref, fieldId) {
+    final controllerProvider = ref.watch(currentControllerProvider);
+    return ref.watch(
+      controllerProvider.select(
+        (formState) => formState.getValidation(fieldId).errorMessage,
+      ),
+    );
+  },
+  dependencies: [currentControllerProvider],
+);
+
+final groupValidProvider = Provider.family<bool, String>((ref, prefix) {
+  final controllerProvider = ref.watch(currentControllerProvider);
+  return ref.watch(controllerProvider.select((s) => s.isGroupValid(prefix)));
+}, dependencies: [currentControllerProvider]);
+
+/// Provider for watching if a field name group contains any modifications.
+final groupDirtyProvider = Provider.family<bool, String>((ref, prefix) {
+  final controllerProvider = ref.watch(currentControllerProvider);
+  return ref.watch(controllerProvider.select((s) => s.isGroupDirty(prefix)));
+}, dependencies: [currentControllerProvider]);
+
+/// Provider for field 'isValidating' state with selector for performance
+final fieldValidatingProvider =
+    Provider.family<bool, BetterFormFieldID<dynamic>>((ref, fieldId) {
+      final controllerProvider = ref.watch(currentControllerProvider);
+      return ref.watch(
+        controllerProvider.select(
+          (formState) => formState.getValidation(fieldId).isValidating,
+        ),
+      );
+    }, dependencies: [currentControllerProvider]);
+
+/// Provider for field 'isValid' state with selector for performance
+final fieldIsValidProvider = Provider.family<bool, BetterFormFieldID<dynamic>>((
+  ref,
+  fieldId,
+) {
+  final controllerProvider = ref.watch(currentControllerProvider);
+  return ref.watch(
+    controllerProvider.select(
+      (formState) => formState.getValidation(fieldId).isValid,
+    ),
+  );
+}, dependencies: [currentControllerProvider]);
 
 /// Provider for field dirty state with selector for performance
 final fieldDirtyProvider = Provider.family<bool, BetterFormFieldID<dynamic>>((

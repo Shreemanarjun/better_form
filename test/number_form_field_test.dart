@@ -22,7 +22,9 @@ void main() {
             home: Scaffold(
               body: BetterForm(
                 initialValue: const {'num_field': 42.5},
-                fields: [BetterFormFieldConfig(id: numField, initialValue: 42.5)],
+                fields: [
+                  BetterFormFieldConfig(id: numField, initialValue: 42.5),
+                ],
                 child: RiverpodNumberFormField(
                   fieldId: numField,
                   decoration: const InputDecoration(labelText: 'Number'),
@@ -46,9 +48,7 @@ void main() {
               body: BetterForm(
                 initialValue: const {'int_field': 42},
                 fields: [BetterFormFieldConfig(id: intField, initialValue: 42)],
-                child: RiverpodNumberFormField(
-                  fieldId: intField,
-                ),
+                child: RiverpodNumberFormField(fieldId: intField),
               ),
             ),
           ),
@@ -65,10 +65,10 @@ void main() {
             home: Scaffold(
               body: BetterForm(
                 initialValue: const {'double_field': 42.7},
-                fields: [BetterFormFieldConfig(id: doubleField, initialValue: 42.7)],
-                child: RiverpodNumberFormField(
-                  fieldId: doubleField,
-                ),
+                fields: [
+                  BetterFormFieldConfig(id: doubleField, initialValue: 42.7),
+                ],
+                child: RiverpodNumberFormField(fieldId: doubleField),
               ),
             ),
           ),
@@ -86,9 +86,7 @@ void main() {
               body: BetterForm(
                 initialValue: const {'num_field': 0},
                 fields: [BetterFormFieldConfig(id: numField, initialValue: 0)],
-                child: RiverpodNumberFormField(
-                  fieldId: numField,
-                ),
+                child: RiverpodNumberFormField(fieldId: numField),
               ),
             ),
           ),
@@ -101,9 +99,14 @@ void main() {
       expect(find.text('123'), findsOneWidget);
 
       // Check that the controller has the updated value
-      final provider = BetterForm.of(tester.element(find.byType(TextFormField)))!;
-      final container = ProviderScope.containerOf(tester.element(find.byType(TextFormField)));
-      final controller = container.read(provider.notifier) as BetterFormController;
+      final provider = BetterForm.of(
+        tester.element(find.byType(TextFormField)),
+      )!;
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(TextFormField)),
+      );
+      final controller =
+          container.read(provider.notifier) as BetterFormController;
       expect(controller.getValue(numField), 123);
     });
 
@@ -114,10 +117,10 @@ void main() {
             home: Scaffold(
               body: BetterForm(
                 initialValue: const {'num_field': 0.0}, // Start with double
-                fields: [BetterFormFieldConfig(id: numField, initialValue: 0.0)],
-                child: RiverpodNumberFormField(
-                  fieldId: numField,
-                ),
+                fields: [
+                  BetterFormFieldConfig(id: numField, initialValue: 0.0),
+                ],
+                child: RiverpodNumberFormField(fieldId: numField),
               ),
             ),
           ),
@@ -129,9 +132,14 @@ void main() {
 
       expect(find.text('123.45'), findsOneWidget);
 
-      final provider = BetterForm.of(tester.element(find.byType(TextFormField)))!;
-      final container = ProviderScope.containerOf(tester.element(find.byType(TextFormField)));
-      final controller = container.read(provider.notifier) as BetterFormController;
+      final provider = BetterForm.of(
+        tester.element(find.byType(TextFormField)),
+      )!;
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(TextFormField)),
+      );
+      final controller =
+          container.read(provider.notifier) as BetterFormController;
       expect(controller.getValue(numField), 123.45);
     });
 
@@ -143,10 +151,7 @@ void main() {
               body: BetterForm(
                 initialValue: const {'num_field': 50},
                 fields: [BetterFormFieldConfig(id: numField, initialValue: 50)],
-                child: RiverpodNumberFormField(
-                  fieldId: numField,
-                  min: 10,
-                ),
+                child: RiverpodNumberFormField(fieldId: numField, min: 10),
               ),
             ),
           ),
@@ -161,9 +166,14 @@ void main() {
       expect(find.text('5'), findsOneWidget);
 
       // But the controller value should remain unchanged
-      final provider = BetterForm.of(tester.element(find.byType(TextFormField)))!;
-      final container = ProviderScope.containerOf(tester.element(find.byType(TextFormField)));
-      final controller = container.read(provider.notifier) as BetterFormController;
+      final provider = BetterForm.of(
+        tester.element(find.byType(TextFormField)),
+      )!;
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(TextFormField)),
+      );
+      final controller =
+          container.read(provider.notifier) as BetterFormController;
       expect(controller.getValue(numField), 50); // Should still be 50
     });
 
@@ -175,10 +185,7 @@ void main() {
               body: BetterForm(
                 initialValue: const {'num_field': 50},
                 fields: [BetterFormFieldConfig(id: numField, initialValue: 50)],
-                child: RiverpodNumberFormField(
-                  fieldId: numField,
-                  max: 100,
-                ),
+                child: RiverpodNumberFormField(fieldId: numField, max: 100),
               ),
             ),
           ),
@@ -193,9 +200,14 @@ void main() {
       expect(find.text('150'), findsOneWidget);
 
       // But the controller value should remain unchanged
-      final provider = BetterForm.of(tester.element(find.byType(TextFormField)))!;
-      final container = ProviderScope.containerOf(tester.element(find.byType(TextFormField)));
-      final controller = container.read(provider.notifier) as BetterFormController;
+      final provider = BetterForm.of(
+        tester.element(find.byType(TextFormField)),
+      )!;
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(TextFormField)),
+      );
+      final controller =
+          container.read(provider.notifier) as BetterFormController;
       expect(controller.getValue(numField), 50);
     });
 
@@ -207,9 +219,7 @@ void main() {
               body: BetterForm(
                 initialValue: const {'num_field': 42},
                 fields: [BetterFormFieldConfig(id: numField, initialValue: 42)],
-                child: RiverpodNumberFormField(
-                  fieldId: numField,
-                ),
+                child: RiverpodNumberFormField(fieldId: numField),
               ),
             ),
           ),
@@ -221,9 +231,14 @@ void main() {
       await tester.pump();
 
       // Should use the current value as default (42.0)
-      final provider = BetterForm.of(tester.element(find.byType(TextFormField)))!;
-      final container = ProviderScope.containerOf(tester.element(find.byType(TextFormField)));
-      final controller = container.read(provider.notifier) as BetterFormController;
+      final provider = BetterForm.of(
+        tester.element(find.byType(TextFormField)),
+      )!;
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(TextFormField)),
+      );
+      final controller =
+          container.read(provider.notifier) as BetterFormController;
       expect(controller.getValue(numField), 42.0);
     });
 
@@ -235,9 +250,7 @@ void main() {
               body: BetterForm(
                 initialValue: const {'num_field': 42},
                 fields: [BetterFormFieldConfig(id: numField, initialValue: 42)],
-                child: RiverpodNumberFormField(
-                  fieldId: numField,
-                ),
+                child: RiverpodNumberFormField(fieldId: numField),
               ),
             ),
           ),
@@ -252,9 +265,14 @@ void main() {
       expect(find.text('not-a-number'), findsOneWidget);
 
       // Controller value should remain unchanged
-      final provider = BetterForm.of(tester.element(find.byType(TextFormField)))!;
-      final container = ProviderScope.containerOf(tester.element(find.byType(TextFormField)));
-      final controller = container.read(provider.notifier) as BetterFormController;
+      final provider = BetterForm.of(
+        tester.element(find.byType(TextFormField)),
+      )!;
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(TextFormField)),
+      );
+      final controller =
+          container.read(provider.notifier) as BetterFormController;
       expect(controller.getValue(numField), 42);
     });
 
@@ -266,9 +284,7 @@ void main() {
               body: BetterForm(
                 initialValue: const {'num_field': 42},
                 fields: [BetterFormFieldConfig(id: numField, initialValue: 42)],
-                child: RiverpodNumberFormField(
-                  fieldId: numField,
-                ),
+                child: RiverpodNumberFormField(fieldId: numField),
               ),
             ),
           ),
@@ -278,9 +294,14 @@ void main() {
       expect(find.text('42'), findsOneWidget);
 
       // Change value externally
-      final provider = BetterForm.of(tester.element(find.byType(TextFormField)))!;
-      final container = ProviderScope.containerOf(tester.element(find.byType(TextFormField)));
-      final controller = container.read(provider.notifier) as BetterFormController;
+      final provider = BetterForm.of(
+        tester.element(find.byType(TextFormField)),
+      )!;
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(TextFormField)),
+      );
+      final controller =
+          container.read(provider.notifier) as BetterFormController;
       controller.setValue(numField, 99);
       await tester.pump();
 
@@ -296,8 +317,9 @@ void main() {
                 fields: [
                   BetterFormFieldConfig(
                     id: numField,
-                    validator: (value) => (value ?? 0) < 10 ? 'Must be at least 10' : null,
-                  )
+                    validator: (value) =>
+                        (value ?? 0) < 10 ? 'Must be at least 10' : null,
+                  ),
                 ],
                 child: RiverpodNumberFormField(
                   fieldId: numField,
@@ -328,11 +350,9 @@ void main() {
                       await Future.delayed(const Duration(milliseconds: 100));
                       return null;
                     },
-                  )
+                  ),
                 ],
-                child: RiverpodNumberFormField(
-                  fieldId: numField,
-                ),
+                child: RiverpodNumberFormField(fieldId: numField),
               ),
             ),
           ),
@@ -354,9 +374,7 @@ void main() {
               body: BetterForm(
                 initialValue: const {'num_field': 42},
                 fields: [BetterFormFieldConfig(id: numField, initialValue: 42)],
-                child: RiverpodNumberFormField(
-                  fieldId: numField,
-                ),
+                child: RiverpodNumberFormField(fieldId: numField),
               ),
             ),
           ),
@@ -381,9 +399,7 @@ void main() {
               body: BetterForm(
                 initialValue: const {'num_field': 42},
                 fields: [BetterFormFieldConfig(id: numField, initialValue: 42)],
-                child: RiverpodNumberFormField(
-                  fieldId: numField,
-                ),
+                child: RiverpodNumberFormField(fieldId: numField),
               ),
             ),
           ),
@@ -399,9 +415,13 @@ void main() {
     });
 
     testWidgets('handles controller provider override', (tester) async {
-      final customProvider = StateNotifierProvider.autoDispose<RiverpodFormController, FormState>((ref) {
-        return RiverpodFormController(initialValue: {'num_field': 99});
-      });
+      final customProvider =
+          StateNotifierProvider.autoDispose<
+            RiverpodFormController,
+            BetterFormState
+          >((ref) {
+            return RiverpodFormController(initialValue: {'num_field': 99});
+          });
 
       await tester.pumpWidget(
         ProviderScope(
@@ -454,9 +474,7 @@ void main() {
               body: BetterForm(
                 initialValue: const {'int_field': 42},
                 fields: [BetterFormFieldConfig(id: intField, initialValue: 42)],
-                child: RiverpodNumberFormField(
-                  fieldId: intField,
-                ),
+                child: RiverpodNumberFormField(fieldId: intField),
               ),
             ),
           ),
@@ -466,9 +484,14 @@ void main() {
       await tester.enterText(find.byType(TextFormField), '123.7');
       await tester.pump();
 
-      final provider = BetterForm.of(tester.element(find.byType(TextFormField)))!;
-      final container = ProviderScope.containerOf(tester.element(find.byType(TextFormField)));
-      final controller = container.read(provider.notifier) as BetterFormController;
+      final provider = BetterForm.of(
+        tester.element(find.byType(TextFormField)),
+      )!;
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(TextFormField)),
+      );
+      final controller =
+          container.read(provider.notifier) as BetterFormController;
       final value = controller.getValue(intField);
 
       expect(value, isA<int>());
@@ -482,10 +505,10 @@ void main() {
             home: Scaffold(
               body: BetterForm(
                 initialValue: const {'double_field': 42.0},
-                fields: [BetterFormFieldConfig(id: doubleField, initialValue: 42.0)],
-                child: RiverpodNumberFormField(
-                  fieldId: doubleField,
-                ),
+                fields: [
+                  BetterFormFieldConfig(id: doubleField, initialValue: 42.0),
+                ],
+                child: RiverpodNumberFormField(fieldId: doubleField),
               ),
             ),
           ),
@@ -495,9 +518,14 @@ void main() {
       await tester.enterText(find.byType(TextFormField), '123');
       await tester.pump();
 
-      final provider = BetterForm.of(tester.element(find.byType(TextFormField)))!;
-      final container = ProviderScope.containerOf(tester.element(find.byType(TextFormField)));
-      final controller = container.read(provider.notifier) as BetterFormController;
+      final provider = BetterForm.of(
+        tester.element(find.byType(TextFormField)),
+      )!;
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(TextFormField)),
+      );
+      final controller =
+          container.read(provider.notifier) as BetterFormController;
       final value = controller.getValue(doubleField);
 
       expect(value, isA<double>());
@@ -511,9 +539,7 @@ void main() {
             home: Scaffold(
               body: BetterForm(
                 fields: [BetterFormFieldConfig(id: numField)],
-                child: RiverpodNumberFormField(
-                  fieldId: numField,
-                ),
+                child: RiverpodNumberFormField(fieldId: numField),
               ),
             ),
           ),
@@ -523,9 +549,14 @@ void main() {
       // Should display empty text
       expect(find.text(''), findsOneWidget);
 
-      final provider = BetterForm.of(tester.element(find.byType(TextFormField)))!;
-      final container = ProviderScope.containerOf(tester.element(find.byType(TextFormField)));
-      final controller = container.read(provider.notifier) as BetterFormController;
+      final provider = BetterForm.of(
+        tester.element(find.byType(TextFormField)),
+      )!;
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(TextFormField)),
+      );
+      final controller =
+          container.read(provider.notifier) as BetterFormController;
       expect(controller.getValue(numField), isNull);
     });
 
@@ -537,9 +568,7 @@ void main() {
               body: BetterForm(
                 initialValue: const {'num_field': 42},
                 fields: [BetterFormFieldConfig(id: numField, initialValue: 42)],
-                child: RiverpodNumberFormField(
-                  fieldId: numField,
-                ),
+                child: RiverpodNumberFormField(fieldId: numField),
               ),
             ),
           ),
@@ -551,11 +580,7 @@ void main() {
 
       // Remove widget
       await tester.pumpWidget(
-        ProviderScope(
-          child: MaterialApp(
-            home: Container(),
-          ),
-        ),
+        ProviderScope(child: MaterialApp(home: Container())),
       );
 
       // Widget should be disposed

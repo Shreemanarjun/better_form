@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart' hide FormState;
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../controllers/riverpod_controller.dart';
 import '../controllers/field_id.dart';
@@ -42,8 +42,18 @@ class BetterFormScope {
       ref.watch(fieldValidationProvider(id));
 
   /// Watch only the error message of a field. Returns null if valid.
+  ///
+  /// More efficient than [watchValidation] if you only need the message.
   String? watchError<T>(BetterFormFieldID<T> id) =>
-      ref.watch(fieldValidationProvider(id)).errorMessage;
+      ref.watch(fieldErrorProvider(id));
+
+  /// Watch if a field is currently being validated (async).
+  bool watchIsValidating<T>(BetterFormFieldID<T> id) =>
+      ref.watch(fieldValidatingProvider(id));
+
+  /// Watch if a specific field is valid.
+  bool watchFieldIsValid<T>(BetterFormFieldID<T> id) =>
+      ref.watch(fieldIsValidProvider(id));
 
   /// Watch if a specific field is dirty (its value differs from initial).
   bool watchIsDirty<T>(BetterFormFieldID<T> id) =>
@@ -67,9 +77,28 @@ class BetterFormScope {
   /// WARNING: Using this will cause the widget to rebuild whenever ANY field
   /// in the form changes. For better performance, use field-specific watchers
   /// like [watchValue] or [watchValidation].
-  FormState get watchState => ref.watch(BetterForm.of(context)!);
+  BetterFormState get watchState => ref.watch(BetterForm.of(context)!);
+
+  /// Watch if a specific group of fields is valid.
+  bool watchGroupIsValid(String prefix) =>
+      ref.watch(groupValidProvider(prefix));
+
+  /// Watch if a specific group of fields contains any modifications.
+  bool watchGroupIsDirty(String prefix) =>
+      ref.watch(groupDirtyProvider(prefix));
 
   // --- Action Methods (Non-reactive) ---
+
+  /// Returns a nested representation of the current form values.
+  Map<String, dynamic> toNestedMap() => controller.currentState.toNestedMap();
+
+  /// Checks if a specific group of fields is valid (non-reactive).
+  bool isGroupValid(String prefix) =>
+      controller.currentState.isGroupValid(prefix);
+
+  /// Checks if a specific group of fields is dirty (non-reactive).
+  bool isGroupDirty(String prefix) =>
+      controller.currentState.isGroupDirty(prefix);
 
   /// Update a field's value and trigger validation.
   void setValue<T>(BetterFormFieldID<T> id, T value) =>
@@ -79,11 +108,56 @@ class BetterFormScope {
   void markAsTouched<T>(BetterFormFieldID<T> id) =>
       controller.markAsTouched(id);
 
+  /// Request focus for a specific field.
+  void focusField<T>(BetterFormFieldID<T> id) => controller.focusField(id);
+
+  /// Scroll to a specific field.
+  void scrollToField<T>(
+    BetterFormFieldID<T> id, {
+    Duration duration = const Duration(milliseconds: 300),
+    Curve curve = Curves.easeInOut,
+    double alignment = 0.5,
+  }) {
+    controller.scrollToField(
+      id,
+      duration: duration,
+      curve: curve,
+      alignment: alignment,
+    );
+  }
+
+  /// Focus the first field that currently has a validation error.
+  void focusFirstError() => controller.focusFirstError();
+
   /// Manually trigger form-wide validation. Returns true if all fields are valid.
   bool validate() => controller.validate();
 
   /// Reset the form to its initial values and clear all error states.
   void reset() => controller.reset();
+
+  // --- Array Helpers ---
+
+  /// Watch a form array.
+  List<T> watchArray<T>(BetterFormArrayID<T> id) => watchValue(id) ?? <T>[];
+
+  /// Add an item to a form array.
+  void addArrayItem<T>(BetterFormArrayID<T> id, T item) =>
+      controller.addArrayItem(id, item);
+
+  /// Remove an item at index from a form array.
+  void removeArrayItemAt<T>(BetterFormArrayID<T> id, int index) =>
+      controller.removeArrayItemAt(id, index);
+
+  /// Replace an item at index in a form array.
+  void replaceArrayItem<T>(BetterFormArrayID<T> id, int index, T item) =>
+      controller.replaceArrayItem(id, index, item);
+
+  /// Move an item in a form array.
+  void moveArrayItem<T>(BetterFormArrayID<T> id, int oldIndex, int newIndex) =>
+      controller.moveArrayItem(id, oldIndex, newIndex);
+
+  /// Clear a form array.
+  void clearArray<T>(BetterFormArrayID<T> id) => controller.clearArray(id);
 
   /// High-level helper for form submission.
   ///
@@ -96,17 +170,17 @@ class BetterFormScope {
   Future<void> submit({
     required Future<void> Function(Map<String, dynamic> values) onValid,
     void Function(Map<String, ValidationResult> errors)? onError,
+    Duration? debounce,
+    Duration? throttle,
+    bool optimistic = false,
   }) async {
-    if (controller.validate()) {
-      controller.setSubmitting(true);
-      try {
-        await onValid(controller.currentState.values);
-      } finally {
-        controller.setSubmitting(false);
-      }
-    } else {
-      onError?.call(controller.currentState.validations);
-    }
+    return controller.submit(
+      onValid: onValid,
+      onError: onError,
+      debounce: debounce,
+      throttle: throttle,
+      optimistic: optimistic,
+    );
   }
 }
 

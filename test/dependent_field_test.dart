@@ -277,9 +277,10 @@ void main() {
     ) async {
       final customField = BetterFormFieldID<String>('custom_field');
       final customProvider =
-          StateNotifierProvider.autoDispose<RiverpodFormController, FormState>((
-            ref,
-          ) {
+          StateNotifierProvider.autoDispose<
+            RiverpodFormController,
+            BetterFormState
+          >((ref) {
             return RiverpodFormController(
               initialValue: {'custom_field': 'custom_value'},
             );
