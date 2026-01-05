@@ -18,7 +18,7 @@ class RiverpodCheckboxFormField extends ConsumerWidget {
 
   final FormixFieldID<bool> fieldId;
   final Widget? title;
-  final AutoDisposeStateNotifierProvider<RiverpodFormController, FormixState>?
+  final AutoDisposeStateNotifierProvider<FormixController, FormixData>?
   controllerProvider;
 
   @override
@@ -85,7 +85,7 @@ class RiverpodDropdownFormField<T> extends ConsumerWidget {
   final FormixFieldID<T> fieldId;
   final List<DropdownMenuItem<T>> items;
   final InputDecoration? decoration;
-  final AutoDisposeStateNotifierProvider<RiverpodFormController, FormixState>?
+  final AutoDisposeStateNotifierProvider<FormixController, FormixData>?
   controllerProvider;
 
   @override
@@ -142,7 +142,7 @@ class RiverpodDropdownFormField<T> extends ConsumerWidget {
 class RiverpodFormStatus extends ConsumerWidget {
   const RiverpodFormStatus({super.key, this.controllerProvider});
 
-  final AutoDisposeStateNotifierProvider<RiverpodFormController, FormixState>?
+  final AutoDisposeStateNotifierProvider<FormixController, FormixData>?
   controllerProvider;
 
   @override

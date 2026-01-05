@@ -175,8 +175,7 @@ void main() {
                       FormixFieldConfig<String>(
                         id: fieldId,
                         initialValue: '',
-                        validator: (v) =>
-                            (v?.isEmpty ?? true) ? 'Required' : null,
+                        validator: (v) => (v.isEmpty) ? 'Required' : null,
                       ),
                     ],
                     child: FormixBuilder(
@@ -244,6 +243,354 @@ void main() {
 
       expect(find.text('B'), findsOneWidget);
       expect(find.text('A'), findsNothing);
+    });
+
+    testWidgets('GlobalKey allows external form control', (tester) async {
+      final formKey = GlobalKey<FormixState>();
+      final nameField = FormixFieldID<String>('name');
+      bool savePressed = false;
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              appBar: AppBar(
+                actions: [
+                  Builder(
+                    builder: (context) => IconButton(
+                      icon: const Icon(Icons.save),
+                      onPressed: () {
+                        // Access form from outside its tree
+                        final controller = formKey.currentState?.controller;
+                        final data = formKey.currentState?.data;
+                        expect(controller, isNotNull);
+                        expect(data?.values['name'], 'John');
+                        savePressed = true;
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              body: Formix(
+                key: formKey,
+                initialValue: {'name': 'John'},
+                child: RiverpodTextFormField(fieldId: nameField),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Verify initial state access
+      expect(formKey.currentState, isNotNull);
+      expect(formKey.currentState!.controller.getValue(nameField), 'John');
+
+      await tester.tap(find.byIcon(Icons.save));
+      await tester.pump();
+
+      expect(savePressed, true);
+    });
+
+    testWidgets('onChanged callback triggers on value updates', (tester) async {
+      final nameField = FormixFieldID<String>('name');
+      final emailField = FormixFieldID<String>('email');
+      final changedValues = <Map<String, dynamic>>[];
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: Formix(
+                initialValue: {'name': 'Alice', 'email': 'alice@example.com'},
+                onChanged: (values) => changedValues.add(Map.from(values)),
+                child: Column(
+                  children: [
+                    RiverpodTextFormField(fieldId: nameField),
+                    RiverpodTextFormField(fieldId: emailField),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Update name
+      await tester.enterText(find.byType(TextField).first, 'Bob');
+      await tester.pump();
+
+      expect(changedValues.length, greaterThan(0));
+      expect(changedValues.last['name'], 'Bob');
+      expect(changedValues.last['email'], 'alice@example.com');
+
+      // Update email
+      await tester.enterText(find.byType(TextField).last, 'bob@example.com');
+      await tester.pump();
+
+      expect(changedValues.last['name'], 'Bob');
+      expect(changedValues.last['email'], 'bob@example.com');
+    });
+
+    testWidgets('Triple-nested forms maintain isolation', (tester) async {
+      final field = FormixFieldID<String>('value');
+
+      FormixController? level1Controller;
+      FormixController? level2Controller;
+      FormixController? level3Controller;
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: Formix(
+                initialValue: {'value': 'L1'},
+                child: FormixBuilder(
+                  builder: (context, scope) {
+                    level1Controller = scope.controller;
+                    return Column(
+                      children: [
+                        Text('Level 1: ${scope.watchValue(field)}'),
+                        Formix(
+                          initialValue: {'value': 'L2'},
+                          child: FormixBuilder(
+                            builder: (context, scope) {
+                              level2Controller = scope.controller;
+                              return Column(
+                                children: [
+                                  Text('Level 2: ${scope.watchValue(field)}'),
+                                  Formix(
+                                    initialValue: {'value': 'L3'},
+                                    child: FormixBuilder(
+                                      builder: (context, scope) {
+                                        level3Controller = scope.controller;
+                                        return Text(
+                                          'Level 3: ${scope.watchValue(field)}',
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      expect(level1Controller!.getValue(field), 'L1');
+      expect(level2Controller!.getValue(field), 'L2');
+      expect(level3Controller!.getValue(field), 'L3');
+
+      expect(find.text('Level 1: L1'), findsOneWidget);
+      expect(find.text('Level 2: L2'), findsOneWidget);
+      expect(find.text('Level 3: L3'), findsOneWidget);
+    });
+
+    testWidgets('Resetting one form does not affect parallel forms', (
+      tester,
+    ) async {
+      final formKey1 = GlobalKey<FormixState>();
+      final formKey2 = GlobalKey<FormixState>();
+      final field = FormixFieldID<String>('value');
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: Column(
+                children: [
+                  Formix(
+                    key: formKey1,
+                    initialValue: {'value': 'Initial 1'},
+                    child: RiverpodTextFormField(fieldId: field),
+                  ),
+                  Formix(
+                    key: formKey2,
+                    initialValue: {'value': 'Initial 2'},
+                    child: RiverpodTextFormField(fieldId: field),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Modify both forms
+      await tester.enterText(find.byType(TextField).first, 'Modified 1');
+      await tester.enterText(find.byType(TextField).last, 'Modified 2');
+      await tester.pump();
+
+      // Reset only form 1
+      formKey1.currentState!.controller.reset();
+      await tester.pumpAndSettle();
+
+      expect(formKey1.currentState!.data.values['value'], 'Initial 1');
+      expect(formKey2.currentState!.data.values['value'], 'Modified 2');
+    });
+
+    testWidgets('Validation errors are isolated between forms', (tester) async {
+      final field = FormixFieldID<String>('email');
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: Column(
+                children: [
+                  Formix(
+                    key: const Key('form1'),
+                    fields: [
+                      FormixFieldConfig<String>(
+                        id: field,
+                        initialValue: 'invalid',
+                        validator: (v) =>
+                            v.contains('@') ? null : 'Invalid email',
+                      ),
+                    ],
+                    child: FormixBuilder(
+                      builder: (context, scope) {
+                        return Column(
+                          children: [
+                            RiverpodTextFormField(fieldId: field),
+                            Text('Form 1 Valid: ${scope.watchIsValid}'),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                  Formix(
+                    key: const Key('form2'),
+                    fields: [
+                      FormixFieldConfig<String>(
+                        id: field,
+                        initialValue: 'valid@example.com',
+                        validator: (v) =>
+                            v.contains('@') ? null : 'Invalid email',
+                      ),
+                    ],
+                    child: FormixBuilder(
+                      builder: (context, scope) {
+                        return Text('Form 2 Valid: ${scope.watchIsValid}');
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      expect(find.text('Form 1 Valid: false'), findsOneWidget);
+      expect(find.text('Form 2 Valid: true'), findsOneWidget);
+    });
+
+    testWidgets('Dirty state is independent across forms', (tester) async {
+      final formKey1 = GlobalKey<FormixState>();
+      final formKey2 = GlobalKey<FormixState>();
+      final field = FormixFieldID<String>('value');
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: Column(
+                children: [
+                  Formix(
+                    key: formKey1,
+                    initialValue: {'value': 'A'},
+                    child: RiverpodTextFormField(fieldId: field),
+                  ),
+                  Formix(
+                    key: formKey2,
+                    initialValue: {'value': 'B'},
+                    child: RiverpodTextFormField(fieldId: field),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Initially both forms are clean
+      expect(formKey1.currentState!.data.isDirty, false);
+      expect(formKey2.currentState!.data.isDirty, false);
+
+      // Modify only form 1
+      await tester.enterText(find.byType(TextField).first, 'Modified');
+      await tester.pump();
+
+      expect(formKey1.currentState!.data.isDirty, true);
+      expect(formKey2.currentState!.data.isDirty, false);
+    });
+
+    testWidgets('Removing a form cleans up its resources', (tester) async {
+      final field = FormixFieldID<String>('value');
+      bool showForm = true;
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: StatefulBuilder(
+                builder: (context, setState) {
+                  return Column(
+                    children: [
+                      if (showForm)
+                        Formix(
+                          key: const Key('disposable_form'),
+                          initialValue: {'value': 'Test'},
+                          child: RiverpodTextFormField(fieldId: field),
+                        ),
+                      ElevatedButton(
+                        onPressed: () => setState(() => showForm = !showForm),
+                        child: const Text('Toggle'),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('disposable_form')), findsOneWidget);
+
+      // Remove the form
+      await tester.tap(find.text('Toggle'));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('disposable_form')), findsNothing);
+
+      // Re-add the form (should work without errors)
+      await tester.tap(find.text('Toggle'));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('disposable_form')), findsOneWidget);
+      expect(find.text('Test'), findsOneWidget);
     });
   });
 }

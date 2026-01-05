@@ -34,7 +34,7 @@ class FormixController extends RiverpodFormController {
   ValueNotifier<bool>? _isValidNotifier;
   ValueNotifier<bool>? _isSubmittingNotifier;
 
-  void _onStateChanged(FormixState state) {
+  void _onStateChanged(FormixData state) {
     // Update value notifiers
     for (final key in _valueNotifiers.keys) {
       final notifier = _valueNotifiers[key];

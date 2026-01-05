@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'formix.dart';
 import 'form_builder.dart';
 import '../controllers/field_id.dart';
-import '../controllers/formix_controller.dart';
-import '../controllers/riverpod_controller.dart';
 import 'form_group.dart';
 
 /// A widget for managing dynamic lists of items in a form.
@@ -49,7 +47,7 @@ class FormixArray<T> extends ConsumerWidget {
       throw FlutterError('FormixArray must be placed inside a Formix widget');
     }
 
-    final controller = ref.read(provider.notifier) as FormixController;
+    final controller = ref.read(provider.notifier);
     final scope = FormixScope(
       context: context,
       ref: ref,

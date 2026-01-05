@@ -7,7 +7,7 @@ void main() {
       final passwordId = FormixFieldID<String>('password');
       final confirmPasswordId = FormixFieldID<String>('confirmPassword');
 
-      final controller = RiverpodFormController(
+      final controller = FormixController(
         fields: [
           FormixField(id: passwordId, initialValue: ''),
           FormixField(
@@ -41,7 +41,7 @@ void main() {
 
     test('FormixAutovalidateMode.onBlur only validates on touch', () {
       final fieldId = FormixFieldID<String>('email');
-      final controller = RiverpodFormController(
+      final controller = FormixController(
         fields: [
           FormixField(
             id: fieldId,

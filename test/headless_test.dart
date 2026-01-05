@@ -315,7 +315,7 @@ void main() {
       final container = ProviderScope.containerOf(
         tester.element(find.text('Submitting: false')),
       );
-      (container.read(provider.notifier) as FormixController).setSubmitting(
+      (container.read(provider.notifier)).setSubmitting(
         true,
       );
       await tester.pump();

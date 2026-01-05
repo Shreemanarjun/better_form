@@ -89,7 +89,7 @@ class _DisposableSection extends ConsumerStatefulWidget {
     required this.child,
   });
 
-  final AutoDisposeStateNotifierProvider<RiverpodFormController, FormixState>
+  final AutoDisposeStateNotifierProvider<FormixController, FormixData>
   controllerProvider;
   final List<FormixFieldID<dynamic>> fieldIds;
   final Widget child;
@@ -99,7 +99,7 @@ class _DisposableSection extends ConsumerStatefulWidget {
 }
 
 class _DisposableSectionState extends ConsumerState<_DisposableSection> {
-  late RiverpodFormController _controller;
+  late FormixController _controller;
 
   @override
   void didChangeDependencies() {

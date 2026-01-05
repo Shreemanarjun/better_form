@@ -21,7 +21,7 @@ export 'formix_controller.dart';
 ///
 /// This controller handles field registration, value updates, sync/async validation,
 /// cross-field dependencies, and state persistence.
-class RiverpodFormController extends StateNotifier<FormixState> {
+class RiverpodFormController extends StateNotifier<FormixData> {
   /// Internationalization messages for validation errors
   final FormixMessages messages;
   @protected
@@ -31,7 +31,7 @@ class RiverpodFormController extends StateNotifier<FormixState> {
   DateTime? _lastSubmitTime;
   final Map<String, FormixField<dynamic>> _fieldDefinitions = {};
 
-  static FormixState _createInitialState(
+  static FormixData _createInitialState(
     Map<String, dynamic> initialValues,
     List<FormixField> fields,
   ) {
@@ -71,7 +71,7 @@ class RiverpodFormController extends StateNotifier<FormixState> {
       }
     }
 
-    return FormixState(
+    return FormixData(
       values: values,
       validations: validations,
       dirtyStates: dirtyStates,
@@ -180,7 +180,7 @@ class RiverpodFormController extends StateNotifier<FormixState> {
   }
 
   /// Get the current state of the form.
-  FormixState get currentState => state;
+  FormixData get currentState => state;
 
   Future<void> _loadPersistedState() async {
     if (persistence != null && formId != null) {
@@ -366,8 +366,8 @@ class RiverpodFormController extends StateNotifier<FormixState> {
     final crossValidator = fieldDef.crossFieldValidator;
     if (crossValidator != null) {
       try {
-        // We create a temporary FormixState for the cross validator to see the NEW values
-        final tempState = FormixState(
+        // We create a temporary FormixData for the cross validator to see the NEW values
+        final tempState = FormixData(
           values: currentValues,
           validations: state.validations,
           dirtyStates: state.dirtyStates,
@@ -868,7 +868,7 @@ class RiverpodFormController extends StateNotifier<FormixState> {
       setSubmitting(true);
 
       Map<String, dynamic>? previousInitialValues;
-      FormixState? previousState;
+      FormixData? previousState;
 
       if (optimistic) {
         previousInitialValues = Map.from(initialValueMap);
@@ -956,7 +956,7 @@ class FormixParameter {
 
 /// Provider for form controller with auto-disposal
 final formControllerProvider = StateNotifierProvider.autoDispose
-    .family<RiverpodFormController, FormixState, FormixParameter>((ref, param) {
+    .family<FormixController, FormixData, FormixParameter>((ref, param) {
       final messages = ref.watch(formixMessagesProvider);
       return FormixController(
         initialValue: param.initialValue,
@@ -970,7 +970,7 @@ final formControllerProvider = StateNotifierProvider.autoDispose
 /// Provider for the current controller provider (can be overridden)
 final currentControllerProvider =
     Provider.autoDispose<
-      AutoDisposeStateNotifierProvider<RiverpodFormController, FormixState>
+      AutoDisposeStateNotifierProvider<FormixController, FormixData>
     >((ref) {
       return formControllerProvider(const FormixParameter(initialValue: {}));
     }, name: 'currentControllerProvider');

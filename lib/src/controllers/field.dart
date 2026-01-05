@@ -32,7 +32,7 @@ class FormixField<T> {
   final String? Function(T value)? validator;
 
   /// Cross-field validator that can access the entire form state
-  final String? Function(T value, FormixState state)? crossFieldValidator;
+  final String? Function(T value, FormixData state)? crossFieldValidator;
 
   /// List of fields that this field depends on for validation
   final List<FormixFieldID<dynamic>> dependsOn;
@@ -63,10 +63,10 @@ class FormixField<T> {
   }
 
   /// Returns a wrapped version of the cross-field validator that accepts dynamic input.
-  String? Function(dynamic, FormixState)? get wrappedCrossFieldValidator {
+  String? Function(dynamic, FormixData)? get wrappedCrossFieldValidator {
     final v = crossFieldValidator;
     if (v == null) return null;
-    return (dynamic value, FormixState state) => v(value as T, state);
+    return (dynamic value, FormixData state) => v(value as T, state);
   }
 
   /// Returns a wrapped version of the async validator that accepts dynamic input.

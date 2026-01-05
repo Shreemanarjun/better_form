@@ -28,7 +28,7 @@ class FormixFieldConfig<T> {
   final String? Function(T value)? validator;
 
   /// Cross-field validator that can access the entire form state
-  final String? Function(T value, FormixState state)? crossFieldValidator;
+  final String? Function(T value, FormixData state)? crossFieldValidator;
 
   /// List of fields that this field depends on for validation
   final List<FormixFieldID<dynamic>> dependsOn;

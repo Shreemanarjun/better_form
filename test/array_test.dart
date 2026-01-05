@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 void main() {
   group('FormArray Logic', () {
     test('addArrayItem adds item to list', () {
-      final controller = RiverpodFormController();
+      final controller = FormixController();
       final arrayId = FormixArrayID<String>('tags');
 
       controller.addArrayItem(arrayId, 'tag1');
@@ -21,7 +21,7 @@ void main() {
     });
 
     test('removeArrayItemAt removes correct item', () {
-      final controller = RiverpodFormController();
+      final controller = FormixController();
       final arrayId = FormixArrayID<String>('tags');
 
       controller.setValue(arrayId, ['tag1', 'tag2', 'tag3']);
@@ -31,7 +31,7 @@ void main() {
     });
 
     test('replaceArrayItem replaces item at index', () {
-      final controller = RiverpodFormController();
+      final controller = FormixController();
       final arrayId = FormixArrayID<String>('tags');
 
       controller.setValue(arrayId, ['tag1', 'tag2']);
@@ -41,7 +41,7 @@ void main() {
     });
 
     test('moveArrayItem reorders items', () {
-      final controller = RiverpodFormController();
+      final controller = FormixController();
       final arrayId = FormixArrayID<String>('tags');
 
       controller.setValue(arrayId, ['tag1', 'tag2', 'tag3']);

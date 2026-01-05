@@ -24,7 +24,7 @@ Add `formix` to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  formix: ^1.0.1
+  formix: ^0.0.1
   flutter_riverpod: ^2.5.1
 ```
 
@@ -89,6 +89,9 @@ Formix(
 - 🏗️ **Lazy Sections**: Built for massive forms. Register fields only when UI is built.
 - 💾 **Persistence**: Built-in support for saving draft state automatically.
 - 🎯 **UX First**: Automated scrolling to errors, focus management, and navigation guards.
+- 🔑 **GlobalKey Access**: Control forms from anywhere using `GlobalKey<FormixState>` (like FormBuilder).
+- 🔔 **Form Callbacks**: React to changes with `onChanged` for auto-save and analytics.
+- 🎭 **Multi-Form Support**: Parallel and nested forms with complete state isolation.
 
 ---
 
@@ -242,7 +245,316 @@ class FormStatusPanel extends FormixWidget {
 }
 ```
 
-### 5. Dynamic Form Arrays
+### 5. External Form Control with GlobalKey
+Access and control your form from outside its widget tree using `GlobalKey<FormixState>` - perfect for AppBar actions, floating buttons, or external validation triggers.
+
+```dart
+class MyFormPage extends StatelessWidget {
+  final _formKey = GlobalKey<FormixState>();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('User Profile'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.save),
+            onPressed: () {
+              // Access form from anywhere!
+              final controller = _formKey.currentState?.controller;
+              final data = _formKey.currentState?.data;
+
+              if (data?.isValid ?? false) {
+                print('Saving: ${data?.values}');
+                controller?.submit(
+                  onValid: (values) async {
+                    await saveToServer(values);
+                  },
+                );
+              }
+            },
+          ),
+        ],
+      ),
+      body: Formix(
+        key: _formKey,
+        initialValue: {'name': 'John', 'email': 'john@example.com'},
+        child: Column(
+          children: [
+            RiverpodTextFormField(fieldId: nameField),
+            RiverpodTextFormField(fieldId: emailField),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+### 6. Form Change Callbacks
+React to any value change in your form with the `onChanged` callback - ideal for auto-save, analytics, or real-time validation.
+
+```dart
+Formix(
+  initialValue: {'name': '', 'email': ''},
+  onChanged: (values) {
+    // Triggered whenever ANY field changes
+    print('Form updated: $values');
+
+    // Auto-save draft
+    saveDraft(values);
+
+    // Track analytics
+    analytics.logFormProgress(values.length);
+  },
+  child: MyFormFields(),
+)
+```
+
+### 7. Multiple Forms: Parallel & Nested
+Formix seamlessly handles multiple independent forms on the same screen, or nested forms for complex hierarchical data.
+
+#### Parallel Forms (Independent)
+```dart
+Column(
+  children: [
+    // Form 1: User Info
+    Formix(
+      key: ValueKey('user_form'),
+      initialValue: {'name': 'Alice'},
+      child: Column(
+        children: [
+          Text('User Information'),
+          RiverpodTextFormField(fieldId: nameField),
+          FormixBuilder(
+            builder: (context, scope) => ElevatedButton(
+              onPressed: () => scope.submit(
+                onValid: (values) => saveUser(values),
+              ),
+              child: Text('Save User'),
+            ),
+          ),
+        ],
+      ),
+    ),
+
+    Divider(),
+
+    // Form 2: Company Info (completely independent)
+    Formix(
+      key: ValueKey('company_form'),
+      initialValue: {'company': 'Acme Corp'},
+      child: Column(
+        children: [
+          Text('Company Information'),
+          RiverpodTextFormField(fieldId: companyField),
+          FormixBuilder(
+            builder: (context, scope) => ElevatedButton(
+              onPressed: () => scope.submit(
+                onValid: (values) => saveCompany(values),
+              ),
+              child: Text('Save Company'),
+            ),
+          ),
+        ],
+      ),
+    ),
+  ],
+)
+```
+
+#### Nested Forms (Hierarchical)
+```dart
+// Outer form: Order details
+Formix(
+  initialValue: {'orderId': '12345', 'status': 'pending'},
+  child: Column(
+    children: [
+      RiverpodTextFormField(fieldId: orderIdField),
+      RiverpodTextFormField(fieldId: statusField),
+
+      // Inner form: Shipping address (isolated scope)
+      Formix(
+        initialValue: {
+          'street': '123 Main St',
+          'city': 'New York',
+          'zip': '10001',
+        },
+        child: FormixBuilder(
+          builder: (context, scope) {
+            // This scope only sees shipping fields
+            return Column(
+              children: [
+                Text('Shipping Address'),
+                RiverpodTextFormField(fieldId: streetField),
+                RiverpodTextFormField(fieldId: cityField),
+                RiverpodTextFormField(fieldId: zipField),
+                ElevatedButton(
+                  onPressed: () => scope.submit(
+                    onValid: (address) => validateAddress(address),
+                  ),
+                  child: Text('Validate Address'),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    ],
+  ),
+)
+```
+
+**Key Benefits:**
+- ✅ Each form maintains its own state, validation, and dirty tracking
+- ✅ Nested forms can share field IDs without conflicts
+- ✅ Submit, reset, and validation are scoped to each form
+- ✅ Perfect for wizards, multi-step flows, or complex data entry
+
+#### Multi-Step Wizard with Validation
+Build complex multi-step forms with independent validation per step using GlobalKey for external control:
+
+```dart
+class RegistrationWizard extends StatefulWidget {
+  @override
+  State<RegistrationWizard> createState() => _RegistrationWizardState();
+}
+
+class _RegistrationWizardState extends State<RegistrationWizard> {
+  int _currentStep = 0;
+
+  // GlobalKeys for each step
+  final _step1Key = GlobalKey<FormixState>();
+  final _step2Key = GlobalKey<FormixState>();
+  final _step3Key = GlobalKey<FormixState>();
+
+  // Field IDs
+  final nameField = FormixFieldID<String>('name');
+  final emailField = FormixFieldID<String>('email');
+  final addressField = FormixFieldID<String>('address');
+  final cityField = FormixFieldID<String>('city');
+  final termsField = FormixFieldID<bool>('terms');
+
+  bool _canProceed() {
+    final currentKey = [_step1Key, _step2Key, _step3Key][_currentStep];
+    return currentKey.currentState?.data.isValid ?? false;
+  }
+
+  void _onStepContinue() {
+    if (_canProceed()) {
+      if (_currentStep < 2) {
+        setState(() => _currentStep++);
+      } else {
+        _submitForm();
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please fix errors before continuing')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stepper(
+      currentStep: _currentStep,
+      onStepContinue: _onStepContinue,
+      onStepCancel: () => setState(() => _currentStep--),
+      steps: [
+        Step(
+          title: Text('Personal Info'),
+          content: ProviderScope(
+            child: Formix(
+              key: _step1Key,
+              fields: [
+                FormixFieldConfig<String>(
+                  id: nameField,
+                  validator: (v) => v.isEmpty ? 'Required' : null,
+                ),
+                FormixFieldConfig<String>(
+                  id: emailField,
+                  validator: (v) => v.contains('@') ? null : 'Invalid email',
+                ),
+              ],
+              child: Column(
+                children: [
+                  RiverpodTextFormField(
+                    fieldId: nameField,
+                    decoration: InputDecoration(labelText: 'Name'),
+                  ),
+                  RiverpodTextFormField(
+                    fieldId: emailField,
+                    decoration: InputDecoration(labelText: 'Email'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Step(
+          title: Text('Address'),
+          content: ProviderScope(
+            child: Formix(
+              key: _step2Key,
+              fields: [
+                FormixFieldConfig<String>(
+                  id: addressField,
+                  validator: (v) => v.isEmpty ? 'Required' : null,
+                ),
+                FormixFieldConfig<String>(
+                  id: cityField,
+                  validator: (v) => v.isEmpty ? 'Required' : null,
+                ),
+              ],
+              child: Column(
+                children: [
+                  RiverpodTextFormField(
+                    fieldId: addressField,
+                    decoration: InputDecoration(labelText: 'Street Address'),
+                  ),
+                  RiverpodTextFormField(
+                    fieldId: cityField,
+                    decoration: InputDecoration(labelText: 'City'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Step(
+          title: Text('Confirm'),
+          content: ProviderScope(
+            child: Formix(
+              key: _step3Key,
+              fields: [
+                FormixFieldConfig<bool>(
+                  id: termsField,
+                  validator: (v) => v ? null : 'Must accept terms',
+                ),
+              ],
+              child: FormixBuilder(
+                builder: (context, scope) {
+                  final accepted = scope.watchValue(termsField) ?? false;
+                  return CheckboxListTile(
+                    title: Text('I accept the terms and conditions'),
+                    value: accepted,
+                    onChanged: (v) => scope.setValue(termsField, v ?? false),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+```
+
+**See the full example**: Check `example/lib/ui/multi_step_form/multi_step_form_page.dart` for a complete 4-step registration form with validation, progress tracking, and data collection.
+
+### 8. Dynamic Form Arrays
 Manage lists of dynamic inputs easily with `FormixArray`.
 
 ```dart
@@ -375,6 +687,64 @@ Formix(
 ```
 
 ---
+
+## 💡 Pro Tips: Usability & State Management
+
+Enhance your form's resilience and user experience with these three powerful features.
+
+### 1. `keepAlive`: Preserving State Across Navigation
+By default, Formix automatically disposes of its state when the widget is unmounted to save memory. However, in multi-step forms (like wizards or tabs) where the user navigates back and forth, you don't want to lose their data.
+
+Set `keepAlive: true` to preserve the form state in memory even if the widget is temporarily removed from the tree.
+
+```dart
+Formix(
+  keepAlive: true, // Prevents auto-disposal
+  child: MyFormStep(),
+)
+```
+
+### 2. `formId`: Identification for Persistence
+When using `FormixPersistence` to save drafts, `formId` is **required**. It acts as the unique key to store and retrieve data for this specific form instance.
+
+```dart
+Formix(
+  formId: 'user_onboarding_v1', // Must be unique across the app
+  persistence: MyLocalPersistence(),
+  child: ...
+)
+```
+
+### 3. Off-Stage Widget Registering
+In complex layouts like `IndexedStack`, `PageView`, or tabs, some field widgets might be "off-stage" (not yet built). By default, Formix only knows about fields that have been rendered. This causes issues if you try to `validate()` a form where required fields haven't been built yet—they effectively don't exist.
+
+To fix this, **pre-register** your fields by passing them to the `Formix` constructor. This ensures the controller knows about them immediately, allowing for full validation even if the UI is hidden.
+
+```dart
+final nameField = FormixFieldID<String>('name');
+final bioField = FormixFieldID<String>('bio');
+
+Formix(
+  // Register fields upfront so validation works even if widgets aren't built
+  fields: [
+    FormixFieldConfig<String>(id: nameField, validator: (v) => v.isNotEmpty ? null : 'Required'),
+    FormixFieldConfig<String>(id: bioField, validator: (v) => v.isNotEmpty ? null : 'Required'),
+  ],
+  child: IndexedStack(
+    index: _currentIndex,
+    children: [
+      // Step 1: Visible
+      RiverpodTextFormField(fieldId: nameField),
+
+      // Step 2: Hidden (Off-stage), but still validated thanks to 'fields' above!
+      RiverpodTextFormField(fieldId: bioField),
+    ],
+  ),
+)
+```
+
+---
+
 
 ## 🚦 Error Handling & Advanced UI
 

@@ -40,7 +40,7 @@ class FormixDependentField<T> extends ConsumerWidget {
   final Widget Function(BuildContext context, T? value) builder;
 
   /// Optional explicit controller provider. If null, it looks up the nearest [Formix].
-  final AutoDisposeStateNotifierProvider<RiverpodFormController, FormixState>?
+  final AutoDisposeStateNotifierProvider<FormixController, FormixData>?
   controllerProvider;
 
   @override

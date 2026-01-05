@@ -80,9 +80,9 @@ void main() {
     });
   });
 
-  group('FormixState Coverage', () {
+  group('FormixData Coverage', () {
     test('isGroupValid and isGroupDirty', () {
-      final state = FormixState(
+      final state = FormixData(
         values: const {'user.name': 'John', 'user.age': 30, 'other': 'value'},
         validations: {
           'user.name': ValidationResult.valid,
@@ -105,7 +105,7 @@ void main() {
     });
 
     test('toNestedMap with dot notation', () {
-      final state = const FormixState(
+      final state = const FormixData(
         values: {
           'user.name': 'John',
           'user.profile.bio': 'Developer',
@@ -122,7 +122,7 @@ void main() {
     });
 
     test('getValue type mismatch', () {
-      final state = const FormixState(
+      final state = const FormixData(
         values: {'age': '30'}, // String value
       );
       final ageId = const FormixFieldID<int>('age');
@@ -462,7 +462,7 @@ void main() {
     });
   });
 
-  group('RiverpodFormController Extra Coverage', () {
+  group('FormixController Extra Coverage', () {
     testWidgets('resetToValues and focusFirstError', (tester) async {
       final nameField = const FormixFieldID<String>('name');
       late FormixController controller;

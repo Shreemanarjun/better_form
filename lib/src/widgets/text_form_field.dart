@@ -23,7 +23,7 @@ class RiverpodTextFormField extends ConsumerStatefulWidget {
   final InputDecoration? decoration;
   final TextInputType? keyboardType;
   final int? maxLength;
-  final AutoDisposeStateNotifierProvider<RiverpodFormController, FormixState>?
+  final AutoDisposeStateNotifierProvider<FormixController, FormixData>?
   controllerProvider;
   final FocusNode? focusNode;
 
@@ -58,11 +58,9 @@ class _RiverpodTextFormFieldState extends ConsumerState<RiverpodTextFormField> {
     final controller = ref.read(provider.notifier);
     final resolvedId = FormixGroup.resolve(context, widget.fieldId);
 
-    if (controller is FormixController) {
-      controller.registerFocusNode(resolvedId, _focusNode);
-      controller.registerContext(resolvedId, context);
+    controller.registerFocusNode(resolvedId, _focusNode);
+    controller.registerContext(resolvedId, context);
     }
-  }
 
   @override
   void dispose() {

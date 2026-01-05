@@ -11,6 +11,7 @@ import 'ui/advanced/advanced_page.dart';
 import 'ui/dynamic_array/dynamic_array_page.dart';
 import 'ui/programmatic_control/programmatic_control_page.dart';
 import 'ui/form_groups/form_groups_page.dart';
+import 'ui/multi_step_form/multi_step_form_page.dart';
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));
@@ -43,7 +44,7 @@ class _HomePageState extends State<HomePage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 11, vsync: this);
+    _tabController = TabController(length: 12, vsync: this);
   }
 
   @override
@@ -66,6 +67,7 @@ class _HomePageState extends State<HomePage>
             Tab(text: 'Arrays'),
             Tab(text: 'Control'),
             Tab(text: 'Groups'),
+            Tab(text: 'Multi-Step'),
           ],
         ),
       ),
@@ -83,6 +85,7 @@ class _HomePageState extends State<HomePage>
           DynamicArrayPage(),
           ProgrammaticControlPage(),
           FormGroupsPage(),
+          MultiStepFormPage(),
         ],
       ),
     );

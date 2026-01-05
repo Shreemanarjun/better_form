@@ -101,7 +101,7 @@ void main() {
       final container = ProviderScope.containerOf(
         tester.element(find.byType(TextFormField)),
       );
-      final controller = container.read(provider.notifier) as FormixController;
+      final controller = container.read(provider.notifier);
       expect(controller.getValue(numField), 123);
     });
 
@@ -129,7 +129,7 @@ void main() {
       final container = ProviderScope.containerOf(
         tester.element(find.byType(TextFormField)),
       );
-      final controller = container.read(provider.notifier) as FormixController;
+      final controller = container.read(provider.notifier);
       expect(controller.getValue(numField), 123.45);
     });
 
@@ -160,7 +160,7 @@ void main() {
       final container = ProviderScope.containerOf(
         tester.element(find.byType(TextFormField)),
       );
-      final controller = container.read(provider.notifier) as FormixController;
+      final controller = container.read(provider.notifier);
       expect(controller.getValue(numField), 50); // Should still be 50
     });
 
@@ -191,7 +191,7 @@ void main() {
       final container = ProviderScope.containerOf(
         tester.element(find.byType(TextFormField)),
       );
-      final controller = container.read(provider.notifier) as FormixController;
+      final controller = container.read(provider.notifier);
       expect(controller.getValue(numField), 50);
     });
 
@@ -219,7 +219,7 @@ void main() {
       final container = ProviderScope.containerOf(
         tester.element(find.byType(TextFormField)),
       );
-      final controller = container.read(provider.notifier) as FormixController;
+      final controller = container.read(provider.notifier);
       expect(controller.getValue(numField), 42.0);
     });
 
@@ -250,7 +250,7 @@ void main() {
       final container = ProviderScope.containerOf(
         tester.element(find.byType(TextFormField)),
       );
-      final controller = container.read(provider.notifier) as FormixController;
+      final controller = container.read(provider.notifier);
       expect(controller.getValue(numField), 42);
     });
 
@@ -276,7 +276,7 @@ void main() {
       final container = ProviderScope.containerOf(
         tester.element(find.byType(TextFormField)),
       );
-      final controller = container.read(provider.notifier) as FormixController;
+      final controller = container.read(provider.notifier);
       controller.setValue(numField, 99);
       await tester.pump();
 
@@ -392,10 +392,10 @@ void main() {
     testWidgets('handles controller provider override', (tester) async {
       final customProvider =
           StateNotifierProvider.autoDispose<
-            RiverpodFormController,
-            FormixState
+            FormixController,
+            FormixData
           >((ref) {
-            return RiverpodFormController(initialValue: {'num_field': 99});
+            return FormixController(initialValue: {'num_field': 99});
           });
 
       await tester.pumpWidget(
@@ -463,7 +463,7 @@ void main() {
       final container = ProviderScope.containerOf(
         tester.element(find.byType(TextFormField)),
       );
-      final controller = container.read(provider.notifier) as FormixController;
+      final controller = container.read(provider.notifier);
       final value = controller.getValue(intField);
 
       expect(value, isA<int>());
@@ -494,7 +494,7 @@ void main() {
       final container = ProviderScope.containerOf(
         tester.element(find.byType(TextFormField)),
       );
-      final controller = container.read(provider.notifier) as FormixController;
+      final controller = container.read(provider.notifier);
       final value = controller.getValue(doubleField);
 
       expect(value, isA<double>());
@@ -522,7 +522,7 @@ void main() {
       final container = ProviderScope.containerOf(
         tester.element(find.byType(TextFormField)),
       );
-      final controller = container.read(provider.notifier) as FormixController;
+      final controller = container.read(provider.notifier);
       expect(controller.getValue(numField), isNull);
     });
 

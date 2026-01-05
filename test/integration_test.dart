@@ -21,7 +21,7 @@ void main() {
             formControllerProvider(
               const FormixParameter(initialValue: {}),
             ).overrideWith((ref) {
-              final controller = RiverpodFormController(
+              final controller = FormixController(
                 initialValue: {
                   'name': '',
                   'email': '',
@@ -202,7 +202,7 @@ void main() {
             formControllerProvider(
               const FormixParameter(initialValue: {}),
             ).overrideWith((ref) {
-              return RiverpodFormController(
+              return FormixController(
                 initialValue: {
                   'name': 'Initial Name',
                   'email': 'initial@example.com',
@@ -281,8 +281,8 @@ void main() {
             formControllerProvider(
               const FormixParameter(initialValue: {}),
             ).overrideWith((ref) {
-              late final RiverpodFormController controller;
-              controller = RiverpodFormController(
+              late final FormixController controller;
+              controller = FormixController(
                 initialValue: {'password': '', 'confirmPassword': ''},
                 fields: [
                   FormixField<String>(
@@ -377,7 +377,7 @@ void main() {
             formControllerProvider(
               const FormixParameter(initialValue: {}),
             ).overrideWith((ref) {
-              return RiverpodFormController(
+              return FormixController(
                 initialValue: {'showExtra': false, 'extra': ''},
                 fields: [
                   FormixField<bool>(id: showExtraField, initialValue: false),

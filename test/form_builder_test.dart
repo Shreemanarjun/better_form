@@ -259,7 +259,7 @@ void main() {
     final container = ProviderScope.containerOf(
       tester.element(find.text('Touched: false')),
     );
-    (container.read(provider.notifier) as FormixController).markAsTouched(
+    (container.read(provider.notifier)).markAsTouched(
       field1,
     );
     await tester.pump();
@@ -327,7 +327,7 @@ void main() {
     final container = ProviderScope.containerOf(
       tester.element(find.text('Submitting: false')),
     );
-    (container.read(provider.notifier) as FormixController).setSubmitting(true);
+    (container.read(provider.notifier)).setSubmitting(true);
     await tester.pump();
 
     expect(find.text('Submitting: true'), findsOneWidget);
@@ -386,7 +386,7 @@ void main() {
     final container = ProviderScope.containerOf(
       tester.element(find.text('Mark Touched')),
     );
-    final controller = container.read(provider.notifier) as FormixController;
+    final controller = container.read(provider.notifier);
     expect(controller.isFieldTouched(field1), false);
 
     // Mark as touched

@@ -18,7 +18,7 @@ class MockPersistence implements FormixPersistence {
 void main() {
   group('FormState', () {
     test('constructor creates correct initial state', () {
-      final state = FormixState(
+      final state = FormixData(
         values: {'field1': 'value1'},
         validations: {'field1': ValidationResult.valid},
         dirtyStates: {'field1': false},
@@ -34,7 +34,7 @@ void main() {
     });
 
     test('copyWith creates new instance with updated values', () {
-      final original = FormixState(
+      final original = FormixData(
         values: {'field1': 'value1'},
         validations: {'field1': ValidationResult.valid},
         dirtyStates: {'field1': false},
@@ -53,7 +53,7 @@ void main() {
     });
 
     test('isValid returns true when all validations pass', () {
-      final state = FormixState(
+      final state = FormixData(
         validations: {
           'field1': ValidationResult.valid,
           'field2': ValidationResult.valid,
@@ -64,7 +64,7 @@ void main() {
     });
 
     test('isValid returns false when any validation fails', () {
-      final state = FormixState(
+      final state = FormixData(
         validations: {
           'field1': ValidationResult.valid,
           'field2': ValidationResult(isValid: false, errorMessage: 'Error'),
@@ -75,13 +75,13 @@ void main() {
     });
 
     test('isDirty returns true when any field is dirty', () {
-      final state = FormixState(dirtyStates: {'field1': false, 'field2': true});
+      final state = FormixData(dirtyStates: {'field1': false, 'field2': true});
 
       expect(state.isDirty, true);
     });
 
     test('isDirty returns false when no fields are dirty', () {
-      final state = FormixState(
+      final state = FormixData(
         dirtyStates: {'field1': false, 'field2': false},
       );
 
@@ -89,13 +89,13 @@ void main() {
     });
 
     test('getValue returns typed value when type matches', () {
-      final state = FormixState(values: {'field1': 'test'});
+      final state = FormixData(values: {'field1': 'test'});
 
       expect(state.getValue<String>(FormixFieldID<String>('field1')), 'test');
     });
 
     test('getValue returns null when type does not match', () {
-      final state = FormixState(values: {'field1': 'test'});
+      final state = FormixData(values: {'field1': 'test'});
 
       expect(state.getValue<int>(FormixFieldID<int>('field1')), null);
     });
@@ -105,13 +105,13 @@ void main() {
         isValid: false,
         errorMessage: 'Error',
       );
-      final state = FormixState(validations: {'field1': validation});
+      final state = FormixData(validations: {'field1': validation});
 
       expect(state.getValidation(FormixFieldID<String>('field1')), validation);
     });
 
     test('getValidation returns valid result for unregistered field', () {
-      final state = FormixState();
+      final state = FormixData();
 
       expect(
         state.getValidation(FormixFieldID<String>('field1')).isValid,
@@ -120,14 +120,14 @@ void main() {
     });
 
     test('isFieldDirty returns dirty state for field', () {
-      final state = FormixState(dirtyStates: {'field1': true});
+      final state = FormixData(dirtyStates: {'field1': true});
 
       expect(state.isFieldDirty(FormixFieldID<String>('field1')), true);
       expect(state.isFieldDirty(FormixFieldID<String>('field2')), false);
     });
 
     test('isFieldTouched returns touched state for field', () {
-      final state = FormixState(touchedStates: {'field1': true});
+      final state = FormixData(touchedStates: {'field1': true});
 
       expect(state.isFieldTouched(FormixFieldID<String>('field1')), true);
       expect(state.isFieldTouched(FormixFieldID<String>('field2')), false);
@@ -194,7 +194,7 @@ void main() {
     });
   });
 
-  group('RiverpodFormController', () {
+  group('FormixController', () {
     late FormixFieldID<String> stringField;
     late FormixFieldID<int> intField;
 
@@ -204,7 +204,7 @@ void main() {
     });
 
     test('constructor initializes with correct state', () {
-      final controller = RiverpodFormController(
+      final controller = FormixController(
         initialValue: {'field1': 'value1'},
         fields: [
           FormixField<String>(
@@ -223,7 +223,7 @@ void main() {
     });
 
     test('getValue returns correct typed value', () {
-      final controller = RiverpodFormController(
+      final controller = FormixController(
         initialValue: {'field1': 'test'},
       );
 
@@ -231,7 +231,7 @@ void main() {
     });
 
     test('setValue updates value and triggers validation', () {
-      final controller = RiverpodFormController(
+      final controller = FormixController(
         fields: [
           FormixField<String>(
             id: stringField,
@@ -249,7 +249,7 @@ void main() {
     });
 
     test('setValue throws on type mismatch', () {
-      final controller = RiverpodFormController(
+      final controller = FormixController(
         initialValue: {'field1': 'string'},
       );
 
@@ -260,7 +260,7 @@ void main() {
     });
 
     test('registerField adds field definition and initializes state', () {
-      final controller = RiverpodFormController();
+      final controller = FormixController();
 
       final field = FormixField<String>(
         id: stringField,
@@ -276,7 +276,7 @@ void main() {
     });
 
     test('unregisterField removes field from state', () {
-      final controller = RiverpodFormController(
+      final controller = FormixController(
         fields: [FormixField<String>(id: stringField, initialValue: 'test')],
       );
 
@@ -289,7 +289,7 @@ void main() {
     });
 
     test('markAsTouched updates touched state', () {
-      final controller = RiverpodFormController();
+      final controller = FormixController();
 
       expect(controller.isFieldTouched(stringField), false);
 
@@ -299,7 +299,7 @@ void main() {
     });
 
     test('setSubmitting updates submitting state', () {
-      final controller = RiverpodFormController();
+      final controller = FormixController();
 
       expect(controller.isSubmitting, false);
 
@@ -309,7 +309,7 @@ void main() {
     });
 
     test('validate runs validation on all fields', () {
-      final controller = RiverpodFormController(
+      final controller = FormixController(
         fields: [
           FormixField<String>(
             id: stringField,
@@ -332,7 +332,7 @@ void main() {
     });
 
     test('reset restores initial values', () {
-      final controller = RiverpodFormController(
+      final controller = FormixController(
         initialValue: {'field1': 'initial'},
         fields: [
           FormixField<String>(
@@ -355,7 +355,7 @@ void main() {
       final field1 = FormixFieldID<String>('field1');
       final field2 = FormixFieldID<String>('field2');
 
-      final controller = RiverpodFormController(
+      final controller = FormixController(
         initialValue: {'field1': 'initial1', 'field2': 'initial2'},
         fields: [
           FormixField<String>(id: field1, initialValue: 'initial1'),
@@ -373,7 +373,7 @@ void main() {
     });
 
     test('async validation works with debouncing', () async {
-      final controller = RiverpodFormController(
+      final controller = FormixController(
         fields: [
           FormixField<String>(
             id: stringField,
@@ -400,7 +400,7 @@ void main() {
   });
 
   group('FormixController', () {
-    test('extends RiverpodFormController correctly', () {
+    test('extends FormixController correctly', () {
       final controller = FormixController(initialValue: {'field1': 'value1'});
 
       expect(controller.values, {'field1': 'value1'});

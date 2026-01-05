@@ -5,7 +5,7 @@ import 'field_id.dart';
 ///
 /// This includes all field values, validation results, and metadata like
 /// dirty and touched states.
-class FormixState {
+class FormixData {
   /// Map of field keys to their current values.
   final Map<String, dynamic> values;
 
@@ -22,7 +22,7 @@ class FormixState {
   final bool isSubmitting;
 
   /// Creates a new form state.
-  const FormixState({
+  const FormixData({
     this.values = const {},
     this.validations = const {},
     this.dirtyStates = const {},
@@ -31,14 +31,14 @@ class FormixState {
   });
 
   /// Creates a copy of this state with some properties replaced.
-  FormixState copyWith({
+  FormixData copyWith({
     Map<String, dynamic>? values,
     Map<String, ValidationResult>? validations,
     Map<String, bool>? dirtyStates,
     Map<String, bool>? touchedStates,
     bool? isSubmitting,
   }) {
-    return FormixState(
+    return FormixData(
       values: values ?? this.values,
       validations: validations ?? this.validations,
       dirtyStates: dirtyStates ?? this.dirtyStates,

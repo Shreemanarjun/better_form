@@ -131,7 +131,7 @@ void main() {
       final container = ProviderScope.containerOf(
         tester.element(find.byType(FormixFieldDerivation)),
       );
-      final controller = container.read(provider.notifier) as FormixController;
+      final controller = container.read(provider.notifier);
 
       // Initial value should be derived
       expect(controller.getValue(targetField), 'INITIAL');
@@ -181,7 +181,7 @@ void main() {
       final container = ProviderScope.containerOf(
         tester.element(find.byType(FormixFieldDerivation)),
       );
-      final controller = container.read(provider.notifier) as FormixController;
+      final controller = container.read(provider.notifier);
 
       expect(controller.getValue(fullNameField), 'John Doe');
 
@@ -232,7 +232,7 @@ void main() {
       final container = ProviderScope.containerOf(
         tester.element(find.byType(FormixFieldDerivation)),
       );
-      final controller = container.read(provider.notifier) as FormixController;
+      final controller = container.read(provider.notifier);
 
       final expectedAge = DateTime.now().year - 2000;
       expect(controller.getValue(ageField), expectedAge);
@@ -271,7 +271,7 @@ void main() {
       final container = ProviderScope.containerOf(
         tester.element(find.byType(FormixFieldDerivation)),
       );
-      final controller = container.read(provider.notifier) as FormixController;
+      final controller = container.read(provider.notifier);
 
       // Should not crash, target field should keep its initial value
       expect(controller.getValue(targetField), 'target_initial');
@@ -312,7 +312,7 @@ void main() {
       final container = ProviderScope.containerOf(
         tester.element(find.byType(FormixFieldDerivation)),
       );
-      final controller = container.read(provider.notifier) as FormixController;
+      final controller = container.read(provider.notifier);
 
       expect(controller.getValue(targetField), 'INITIAL');
 
@@ -408,7 +408,7 @@ void main() {
       final container = ProviderScope.containerOf(
         tester.element(find.byType(FormixFieldDerivations)),
       );
-      final controller = container.read(provider.notifier) as FormixController;
+      final controller = container.read(provider.notifier);
 
       expect(controller.getValue(fullNameField), 'John Doe');
       expect(controller.getValue(displayNameField), 'John <john@example.com>');

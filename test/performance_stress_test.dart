@@ -20,8 +20,7 @@ void main() {
                 formControllerProvider(
                   FormixParameter(fields: fields),
                 ).notifier,
-              )
-              as FormixController;
+              );
 
       final stopwatch = Stopwatch()..start();
 
@@ -76,8 +75,7 @@ void main() {
                 formControllerProvider(
                   FormixParameter(fields: fields),
                 ).notifier,
-              )
-              as FormixController;
+              );
 
       final stopwatch = Stopwatch()..start();
 

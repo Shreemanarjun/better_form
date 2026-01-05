@@ -264,10 +264,10 @@ void main() {
       final customField = FormixFieldID<String>('custom_field');
       final customProvider =
           StateNotifierProvider.autoDispose<
-            RiverpodFormController,
-            FormixState
+            FormixController,
+            FormixData
           >((ref) {
-            return RiverpodFormController(
+            return FormixController(
               initialValue: {'custom_field': 'custom_value'},
             );
           });
@@ -335,7 +335,7 @@ void main() {
               formControllerProvider(
                 const FormixParameter(initialValue: {}),
               ).overrideWith((ref) {
-                return RiverpodFormController(
+                return FormixController(
                   initialValue: {'default_field': 'from_default'},
                 );
               }),
@@ -662,7 +662,7 @@ void main() {
       final container = ProviderScope.containerOf(
         tester.element(find.text('Temp: exists')),
       );
-      (container.read(provider.notifier) as FormixController).unregisterField(
+      (container.read(provider.notifier)).unregisterField(
         tempField,
       );
 

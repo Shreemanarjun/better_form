@@ -5,10 +5,10 @@ import 'package:formix/formix.dart';
 
 // Test-specific providers for easier testing
 final testControllerProvider =
-    StateNotifierProvider.autoDispose<RiverpodFormController, FormixState>((
+    StateNotifierProvider.autoDispose<FormixController, FormixData>((
       ref,
     ) {
-      return RiverpodFormController(initialValue: {});
+      return FormixController(initialValue: {});
     });
 
 void main() {
@@ -20,7 +20,7 @@ void main() {
         ProviderScope(
           overrides: [
             testControllerProvider.overrideWith((ref) {
-              return RiverpodFormController(initialValue: {'name': 'John'});
+              return FormixController(initialValue: {'name': 'John'});
             }),
           ],
           child: MaterialApp(
@@ -46,7 +46,7 @@ void main() {
         ProviderScope(
           overrides: [
             testControllerProvider.overrideWith((ref) {
-              return RiverpodFormController(initialValue: {'name': ''});
+              return FormixController(initialValue: {'name': ''});
             }),
           ],
           child: MaterialApp(
@@ -75,7 +75,7 @@ void main() {
         ProviderScope(
           overrides: [
             testControllerProvider.overrideWith((ref) {
-              final controller = RiverpodFormController(
+              final controller = FormixController(
                 initialValue: {'email': ''},
                 fields: [
                   FormixField<String>(
@@ -120,7 +120,7 @@ void main() {
             formControllerProvider(
               const FormixParameter(initialValue: {}),
             ).overrideWith((ref) {
-              return RiverpodFormController(initialValue: {'age': 25});
+              return FormixController(initialValue: {'age': 25});
             }),
           ],
           child: MaterialApp(
@@ -147,7 +147,7 @@ void main() {
             formControllerProvider(
               const FormixParameter(initialValue: {}),
             ).overrideWith((ref) {
-              return RiverpodFormController(initialValue: {'age': 0});
+              return FormixController(initialValue: {'age': 0});
             }),
           ],
           child: MaterialApp(
@@ -176,7 +176,7 @@ void main() {
             formControllerProvider(
               const FormixParameter(initialValue: {}),
             ).overrideWith((ref) {
-              return RiverpodFormController(initialValue: {'age': 25});
+              return FormixController(initialValue: {'age': 25});
             }),
           ],
           child: MaterialApp(
@@ -213,7 +213,7 @@ void main() {
             formControllerProvider(
               const FormixParameter(initialValue: {}),
             ).overrideWith((ref) {
-              return RiverpodFormController(initialValue: {'newsletter': true});
+              return FormixController(initialValue: {'newsletter': true});
             }),
           ],
           child: MaterialApp(
@@ -244,7 +244,7 @@ void main() {
             formControllerProvider(
               const FormixParameter(initialValue: {}),
             ).overrideWith((ref) {
-              return RiverpodFormController(
+              return FormixController(
                 initialValue: {'newsletter': false},
               );
             }),
@@ -284,7 +284,7 @@ void main() {
             formControllerProvider(
               const FormixParameter(initialValue: {}),
             ).overrideWith((ref) {
-              final controller = RiverpodFormController(
+              final controller = FormixController(
                 initialValue: {'agree': false},
                 fields: [
                   FormixField<bool>(
@@ -323,7 +323,7 @@ void main() {
             formControllerProvider(
               const FormixParameter(initialValue: {}),
             ).overrideWith((ref) {
-              return RiverpodFormController(
+              return FormixController(
                 initialValue: {'priority': 'medium'},
               );
             }),
@@ -357,7 +357,7 @@ void main() {
             formControllerProvider(
               const FormixParameter(initialValue: {}),
             ).overrideWith((ref) {
-              return RiverpodFormController(
+              return FormixController(
                 initialValue: {'priority': 'medium'},
               );
             }),
@@ -394,7 +394,7 @@ void main() {
             formControllerProvider(
               const FormixParameter(initialValue: {}),
             ).overrideWith((ref) {
-              return RiverpodFormController(initialValue: {'name': 'John'});
+              return FormixController(initialValue: {'name': 'John'});
             }),
           ],
           child: MaterialApp(home: Scaffold(body: const RiverpodFormStatus())),
@@ -417,7 +417,7 @@ void main() {
             formControllerProvider(
               const FormixParameter(initialValue: {}),
             ).overrideWith((ref) {
-              final controller = RiverpodFormController(
+              final controller = FormixController(
                 initialValue: {'name': 'John'},
               );
               // Simulate setting a value to make it dirty

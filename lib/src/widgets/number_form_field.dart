@@ -22,7 +22,7 @@ class RiverpodNumberFormField extends ConsumerStatefulWidget {
   final InputDecoration? decoration;
   final num? min;
   final num? max;
-  final AutoDisposeStateNotifierProvider<RiverpodFormController, FormixState>?
+  final AutoDisposeStateNotifierProvider<FormixController, FormixData>?
   controllerProvider;
 
   @override
@@ -62,11 +62,9 @@ class _RiverpodNumberFormFieldState
     final controller = ref.read(provider.notifier);
     final resolvedId = FormixGroup.resolve(context, widget.fieldId);
 
-    if (controller is FormixController) {
-      controller.registerFocusNode(resolvedId, _focusNode);
-      controller.registerContext(resolvedId, context);
+    controller.registerFocusNode(resolvedId, _focusNode);
+    controller.registerContext(resolvedId, context);
     }
-  }
 
   void _onFocusChange() {
     if (mounted) {

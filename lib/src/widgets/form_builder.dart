@@ -77,7 +77,7 @@ class FormixScope {
   /// WARNING: Using this will cause the widget to rebuild whenever ANY field
   /// in the form changes. For better performance, use field-specific watchers
   /// like [watchValue] or [watchValidation].
-  FormixState get watchState => ref.watch(Formix.of(context)!);
+  FormixData get watchState => ref.watch(Formix.of(context)!);
 
   /// Watch if a specific group of fields is valid.
   bool watchGroupIsValid(String prefix) =>
@@ -217,7 +217,7 @@ class FormixBuilder extends ConsumerWidget {
     }
 
     // We use ref.read to get the controller once, as it remains stable.
-    final controller = ref.read(provider.notifier) as FormixController;
+    final controller = ref.read(provider.notifier);
 
     final scope = FormixScope(
       context: context,
@@ -261,7 +261,7 @@ abstract class FormixWidget extends ConsumerWidget {
       throw FlutterError('$runtimeType must be placed inside a Formix widget');
     }
 
-    final controller = ref.read(provider.notifier) as FormixController;
+    final controller = ref.read(provider.notifier);
 
     final scope = FormixScope(
       context: context,
