@@ -1,3 +1,8 @@
+## 0.0.3
+- Upgraded flutter_riverpod to ^2.6.1
+
+
+
 ## 0.0.2
 
 - Updated logo URL
