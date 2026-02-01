@@ -26,5 +26,5 @@ This document outlines the planned features and improvements for Formix to becom
 - [ ] **Locale-Aware Validation**: Auto-switching error messages and formats based on context locale.
 
 ## 5. 🛠️ Tooling
-- [ ] **DevTools Extension**: Dedicated tab for state tree visualization and performance monitoring.
+- [x] **DevTools Extension**: Dedicated tab for state tree visualization and performance monitoring.
 

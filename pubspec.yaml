@@ -1,6 +1,6 @@
 name: formix
 description: "An elite, type-safe, and ultra-reactive form engine for Flutter powered by Riverpod."
-version: 0.0.3
+version: 0.0.4
 homepage: https://www.shreeman.dev
 repository: https://github.com/Shreemanarjun/formix
 issue_tracker: https://github.com/Shreemanarjun/formix/issues
@@ -22,7 +22,7 @@ dependencies:
   flutter_riverpod: ^2.6.1
   index_generator: ^4.1.2
 
-  meta: any
+  meta: ^1.17.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

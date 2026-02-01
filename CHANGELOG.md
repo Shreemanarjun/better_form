@@ -1,6 +1,37 @@
+## 0.0.4
+
+### 🛠️ DevTools Integration
+- **DevTools Extension**: Added a dedicated DevTools extension for real-time form state inspection and debugging
+  - 🔍 Visual form state tree with field values, validation states, and metadata
+  - ⚡ Performance monitoring for form rebuilds and validation execution
+  - 🔗 Deep link integration for quick access from running applications
+  - 🌐 Built with Flutter Web and fully integrated with the DevTools ecosystem
+
+### 🔒 Type Safety & Reliability
+- **Strict Null Safety**: Comprehensive null-safety across all validators and widgets
+- **Integration Testing**: Expanded integration tests for complex scenarios
+
+### 🎯 User Experience Enhancements
+- **Rich Error Placeholders**: Dynamic errors like `Field {label} must be at least {min} characters`
+- **Built-in Masking & Formatting**: Input formatters in `FieldConfig`
+- **Automatic Focus Management**: Submit-to-Error and Enter-to-Next implemented
+
+### 🧠 Advanced State Management
+- **Undo/Redo History**: Snapshots for state restoration and history
+- **Optimistic Field Updates**: Pending state for server round-trips
+- **Multi-Form Synchronization**: "Binding" API to link fields between separate forms
+
+### ⚡ Performance Optimizations
+- **Lazy Step Initialization**: "Sleep" background steps to save memory in 50+ step forms
+- **Form Analytics Hook**: Track completion time and abandonment points
+
+### 🔧 Developer Experience
+- Enhanced visual debugging tools through DevTools extension
+- Better form state introspection capabilities
+- Improved error messages and validation feedback
+
 ## 0.0.3
 - Upgraded flutter_riverpod to ^2.6.1
-
 
 
 ## 0.0.2
