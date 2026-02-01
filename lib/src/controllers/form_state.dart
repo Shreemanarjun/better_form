@@ -24,6 +24,12 @@ class FormixData {
   /// Whether the form is currently in the process of being submitted.
   final bool isSubmitting;
 
+  /// The set of field keys that changed in the last update.
+  ///
+  /// This is used for delta updates to optimize notification performance.
+  /// If null, consumers should assume all fields might have changed.
+  final Set<String>? changedFields;
+
   /// Creates a new form state.
   const FormixData({
     this.values = const {},
@@ -32,6 +38,7 @@ class FormixData {
     this.touchedStates = const {},
     this.pendingStates = const {},
     this.isSubmitting = false,
+    this.changedFields,
   });
 
   /// Creates a copy of this state with some properties replaced.
@@ -42,6 +49,7 @@ class FormixData {
     Map<String, bool>? touchedStates,
     Map<String, bool>? pendingStates,
     bool? isSubmitting,
+    Set<String>? changedFields,
   }) {
     return FormixData(
       values: values ?? this.values,
@@ -50,6 +58,7 @@ class FormixData {
       touchedStates: touchedStates ?? this.touchedStates,
       pendingStates: pendingStates ?? this.pendingStates,
       isSubmitting: isSubmitting ?? this.isSubmitting,
+      changedFields: changedFields ?? this.changedFields,
     );
   }
 

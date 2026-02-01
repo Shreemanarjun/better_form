@@ -137,6 +137,20 @@ FormixFieldConfig<String>(
 
 **UX Tip**: Formix widgets automatically show a `CircularProgressIndicator` or "Validating..." helper text while async rules are running!
 
+### Fluent Validation API
+Define complex rules easily with the Zod-like `FormixValidators` API:
+
+```dart
+FormixFieldConfig<String>(
+  id: emailField,
+  validator: FormixValidators.string()
+    .required()
+    .email('Please enter a valid email')
+    .minLength(5)
+    .build(), // Returns a standard validator function
+)
+```
+
 ### Manual/Backend Errors
 Sometimes errors come from the server after a submit attempt. Use `setFieldError` to inject these errors directly into your UI.
 
@@ -237,6 +251,26 @@ FormixFieldDerivation(
   dependencies: [priceField, quantityField],
   targetField: totalField,
   derive: (v) => (v[priceField] ?? 0.0) * (v[quantityField] ?? 1),
+)
+```
+
+---
+
+## 📊 Analytics & Debugging
+
+Understand exactly how your users interact with your forms.
+
+### Logging Analytics (Built-in)
+See every field change, validation event, and submission in your debug console:
+
+```dart
+Formix(
+  analytics: const LoggingFormAnalytics(), // Auto-logs to console in debug mode
+  child: Column(
+    children: [
+      // ... fields
+    ],
+  ),
 )
 ```
 

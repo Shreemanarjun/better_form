@@ -447,7 +447,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
         : value != initialValue;
     newDirtyStates[fieldId.key] = isDirty;
 
-    // 2. Determine fields to validate (self + dependents)
+    // 2. Determine fields to validate (self + transitive dependents)
     final fieldsToValidate = <String>{};
     final mode = fieldDef?.validationMode ?? FormixAutovalidateMode.always;
     if (mode == FormixAutovalidateMode.always ||
@@ -455,8 +455,9 @@ class RiverpodFormController extends StateNotifier<FormixData> {
       fieldsToValidate.add(fieldId.key);
     }
 
-    final dependents = _getDependentsOf(fieldId.key);
-    for (final depKey in dependents) {
+    // Collect ALL transitive dependents (preventing cycles)
+    final transitiveDependents = _collectTransitiveDependents(fieldId.key);
+    for (final depKey in transitiveDependents) {
       final depDef = _fieldDefinitions[depKey];
       if (depDef != null) {
         final depMode = depDef.validationMode;
@@ -470,15 +471,25 @@ class RiverpodFormController extends StateNotifier<FormixData> {
     // 3. Run all synchronous validations
     for (final key in fieldsToValidate) {
       final val = newValues[key];
-      final res = _performSyncValidation(key, val, newValues);
+      final res = _performSyncValidation(
+        key,
+        val,
+        newValues,
+        currentValidations: newValidations,
+      );
       newValidations[key] = res;
     }
 
     // 4. Update state ONCE with all sync changes
+    // Calculate changed fields for delta updates
+    final changedFields = <String>{fieldId.key}; // Value changed
+    changedFields.addAll(fieldsToValidate); // Validations changed
+
     state = state.copyWith(
       values: newValues,
       dirtyStates: newDirtyStates,
       validations: newValidations,
+      changedFields: changedFields,
     );
 
     // 5. Trigger async validations if necessary
@@ -497,8 +508,9 @@ class RiverpodFormController extends StateNotifier<FormixData> {
   ValidationResult _performSyncValidation(
     String key,
     dynamic value,
-    Map<String, dynamic> currentValues,
-  ) {
+    Map<String, dynamic> currentValues, {
+    Map<String, ValidationResult>? currentValidations,
+  }) {
     final sw = Stopwatch()..start();
     final fieldDef = _fieldDefinitions[key];
     if (fieldDef == null) return ValidationResult.valid;
@@ -533,7 +545,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
           // We create a temporary FormixData for the cross validator to see the NEW values
           final tempState = FormixData(
             values: currentValues,
-            validations: state.validations,
+            validations: currentValidations ?? state.validations,
             dirtyStates: state.dirtyStates,
             touchedStates: state.touchedStates,
           );
@@ -576,7 +588,10 @@ class RiverpodFormController extends StateNotifier<FormixData> {
       state.validations,
     );
     currentValidations[key] = ValidationResult.validating;
-    state = state.copyWith(validations: currentValidations);
+    state = state.copyWith(
+      validations: currentValidations,
+      changedFields: {key},
+    );
 
     _debouncers[key] = Timer(
       fieldDef.debounceDuration ?? const Duration(milliseconds: 300),
@@ -597,7 +612,10 @@ class RiverpodFormController extends StateNotifier<FormixData> {
               ? ValidationResult(isValid: false, errorMessage: error)
               : ValidationResult.valid;
 
-          state = state.copyWith(validations: latestValidations);
+          state = state.copyWith(
+            validations: latestValidations,
+            changedFields: {key},
+          );
         } catch (e) {
           sw.stop();
           _validationDurations[key] = sw.elapsed;
@@ -610,13 +628,17 @@ class RiverpodFormController extends StateNotifier<FormixData> {
             isValid: false,
             errorMessage: 'Async validation error: $e',
           );
-          state = state.copyWith(validations: latestValidations);
+          state = state.copyWith(
+            validations: latestValidations,
+            changedFields: {key},
+          );
         }
       },
     );
   }
 
   List<String> _getDependentsOf(String key) {
+    if (_fieldDefinitions.isEmpty) return const [];
     final dependents = <String>[];
     for (final field in _fieldDefinitions.values) {
       if (field.dependsOn.any((dep) => dep.key == key)) {
@@ -624,6 +646,29 @@ class RiverpodFormController extends StateNotifier<FormixData> {
       }
     }
     return dependents;
+  }
+
+  /// Recursively collects all fields that depend on the source field.
+  /// Implement BFS queue to handle deep chains and cycle detection.
+  Set<String> _collectTransitiveDependents(String sourceKey) {
+    final result = <String>{};
+    final queue = <String>{sourceKey};
+    final visited = <String>{sourceKey};
+
+    while (queue.isNotEmpty) {
+      final currentKey = queue.first;
+      queue.remove(currentKey);
+
+      final directDependents = _getDependentsOf(currentKey);
+      for (final depKey in directDependents) {
+        if (!visited.contains(depKey)) {
+          visited.add(depKey);
+          result.add(depKey); // Add to result (dependents only, not source)
+          queue.add(depKey);
+        }
+      }
+    }
+    return result;
   }
 
   /// Register multiple fields at once
@@ -678,6 +723,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
           key,
           field.initialValue,
           newValues,
+          currentValidations: newValidations,
         );
       }
     }
@@ -759,6 +805,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
           key,
           field.initialValue,
           currentValues,
+          currentValidations: currentValidations,
         );
       }
 

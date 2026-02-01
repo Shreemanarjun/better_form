@@ -36,41 +36,50 @@ class FormixController extends RiverpodFormController {
   ValueNotifier<bool>? _isSubmittingNotifier;
 
   void _onStateChanged(FormixData state) {
-    // Update value notifiers
-    for (final key in _valueNotifiers.keys) {
-      final notifier = _valueNotifiers[key];
-      final newValue = state.values[key];
-      if (notifier != null && notifier.value != newValue) {
-        notifier.value = newValue;
+    // Optimization: If changedFields is present, only update notifiers for those keys.
+    // If null, we fall back to checking all cached notifiers (e.g. initial load).
+    final changedKeys = state.changedFields;
+
+    // Helper to update a specific notifier map
+    void updateNotifiers<T>(
+      Map<String, ValueNotifier<T>> notifiers,
+      T Function(String key) getValue,
+    ) {
+      if (notifiers.isEmpty) return;
+
+      // If we have a delta, only check relevant keys that we are actually listening to
+      final keysToCheck = changedKeys != null
+          ? changedKeys.where((k) => notifiers.containsKey(k))
+          : notifiers.keys;
+
+      for (final key in keysToCheck) {
+        final notifier = notifiers[key];
+        if (notifier == null) continue;
+
+        final newValue = getValue(key);
+        if (notifier.value != newValue) {
+          notifier.value = newValue;
+        }
       }
     }
+
+    // Update value notifiers
+    updateNotifiers(_valueNotifiers, (key) => state.values[key]);
 
     // Update validation notifiers
-    for (final key in _validationNotifiers.keys) {
-      final notifier = _validationNotifiers[key];
-      final newResult = state.validations[key] ?? ValidationResult.valid;
-      if (notifier != null && notifier.value != newResult) {
-        notifier.value = newResult;
-      }
-    }
+    updateNotifiers(
+      _validationNotifiers,
+      (key) => state.validations[key] ?? ValidationResult.valid,
+    );
 
     // Update dirty notifiers
-    for (final key in _dirtyNotifiers.keys) {
-      final notifier = _dirtyNotifiers[key];
-      final isDirty = state.dirtyStates[key] ?? false;
-      if (notifier != null && notifier.value != isDirty) {
-        notifier.value = isDirty;
-      }
-    }
+    updateNotifiers(_dirtyNotifiers, (key) => state.dirtyStates[key] ?? false);
 
     // Update touched notifiers
-    for (final key in _touchedNotifiers.keys) {
-      final notifier = _touchedNotifiers[key];
-      final isTouched = state.touchedStates[key] ?? false;
-      if (notifier != null && notifier.value != isTouched) {
-        notifier.value = isTouched;
-      }
-    }
+    updateNotifiers(
+      _touchedNotifiers,
+      (key) => state.touchedStates[key] ?? false,
+    );
 
     // Update global notifiers
     if (_isDirtyNotifier != null && _isDirtyNotifier!.value != state.isDirty) {
@@ -151,6 +160,9 @@ class FormixController extends RiverpodFormController {
     _isDirtyNotifier?.dispose();
     _isValidNotifier?.dispose();
     _isSubmittingNotifier?.dispose();
+
+    _focusNodes.clear();
+    _contexts.clear();
 
     super.dispose();
   }

@@ -21,11 +21,15 @@
 - **Optimistic Field Updates**: Pending state for server round-trips
 - **Multi-Form Synchronization**: "Binding" API to link fields between separate forms
 
+- **Improved error messages and validation feedback**
+- **Fluent Validators**: New `FormixValidators` API for readable chainable rules
+- **Logging Analytics**: Built-in debug logger for form events
+- **Robust Dependency Logic**: Support for recursive A->B->C dependency chains with cycle detection
+
 ### ⚡ Performance Optimizations
+- **Delta Updates**: O(1) complexity for field updates (was O(N)), enabling forms with 1000+ fields
 - **Lazy Step Initialization**: "Sleep" background steps to save memory in 50+ step forms
 - **Form Analytics Hook**: Track completion time and abandonment points
-
-### 🌍 Internationalization (i18n)
 - **Built-in Localization**: Support for 6 languages out-of-the-box (En, Es, Fr, De, Hi, Zh)
 - **Zero Configuration**: Works automatically with standard Flutter `MaterialApp`
 - **Optional Delegate**: New `FormixLocalizations.delegate` for seamless integration (completely optional)
