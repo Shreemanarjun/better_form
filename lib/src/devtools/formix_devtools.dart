@@ -61,15 +61,13 @@ class FormixDevToolsService {
                   ? '${wsBase}ws'
                   : '$wsBase/ws';
 
-              // Construct the DevTools Base (http://.../token/devtools)
+              // Construct the DevTools Base (http://.../token/devtools/)
               final String devToolsBase = base.endsWith('/')
-                  ? '${base}devtools'
-                  : '$base/devtools';
+                  ? '${base}devtools/'
+                  : '$base/devtools/';
 
-              // Build the final deep link based on the user's working example:
-              // Pattern: http://host:port/token/devtools/formix_ext?uri=ws://...&extension=formix
-              final String fullUrl =
-                  "$devToolsBase/formix_ext?uri=$wsUri&extension=formix";
+              // Build the final deep link to the formix_ext route
+              final String fullUrl = "${devToolsBase}formix_ext?uri=$wsUri";
 
               debugPrint('\x1B[32m[Formix]\x1B[0m 🛠️  Inspector: $fullUrl');
             }
