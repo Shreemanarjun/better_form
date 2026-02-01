@@ -25,6 +25,12 @@
 - **Lazy Step Initialization**: "Sleep" background steps to save memory in 50+ step forms
 - **Form Analytics Hook**: Track completion time and abandonment points
 
+### 🌍 Internationalization (i18n)
+- **Built-in Localization**: Support for 6 languages out-of-the-box (En, Es, Fr, De, Hi, Zh)
+- **Zero Configuration**: Works automatically with standard Flutter `MaterialApp`
+- **Optional Delegate**: New `FormixLocalizations.delegate` for seamless integration (completely optional)
+- **Reviewable Messages**: Fallback mechanism to `Localizations.localeOf(context)` if delegate is missing
+
 ### 🔧 Developer Experience
 - Enhanced visual debugging tools through DevTools extension
 - Better form state introspection capabilities

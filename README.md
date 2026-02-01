@@ -155,6 +155,39 @@ try {
 
 ---
 
+## 🌍 Localization (i18n)
+
+Formix speaks your language! It comes with built-in translations for **English, Spanish, French, German, Hindi, and Chinese**.
+
+### 1. Automatic Usage (Zero Config)
+Just use `FormixLocalizations.of(context)` in your validators. It automatically detects the active locale from `MaterialApp`.
+
+```dart
+validator: (value, context) {
+  final messages = FormixLocalizations.of(context);
+  if (value == null || value.isEmpty) {
+    return messages.required('Email'); // Returns "Email is required" (or localized equivalent)
+  }
+  return null;
+}
+```
+
+### 2. Using the Delegate (Optional)
+For the best integration with Flutter's widget tree (and to strictly follow Flutter standards), you can add the delegate to your `MaterialApp`. **This is completely optional**—the method above works without it!
+
+```dart
+MaterialApp(
+  localizationsDelegates: const [
+    FormixLocalizations.delegate, // Optional: Add this
+    GlobalMaterialLocalizations.delegate,
+    // ...
+  ],
+  // ...
+)
+```
+
+---
+
 ## 🏗️ The Three Pillars of Formix
 
 ### 1. Inside the Tree (Reactive UI)

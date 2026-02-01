@@ -1,4 +1,12 @@
-// No imports needed for this file as of now.
+// Localization exports
+export 'i18n/formix_localizations.dart';
+export 'i18n/messages_de.dart';
+export 'i18n/messages_es.dart';
+export 'i18n/messages_fr.dart';
+export 'i18n/messages_hi.dart';
+export 'i18n/messages_zh.dart';
+
+// No other imports needed for this file as of now.
 
 /// Interface for all validation messages used in the formix library.
 /// Developers can implement this class to provide translations.
