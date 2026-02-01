@@ -24,6 +24,7 @@ class RiverpodTextFormField extends ConsumerStatefulWidget {
   final int? maxLines;
   final bool expands;
   final TextStyle? style;
+  final Widget? loadingIcon;
 
   const RiverpodTextFormField({
     super.key,
@@ -40,6 +41,7 @@ class RiverpodTextFormField extends ConsumerStatefulWidget {
     this.maxLines = 1,
     this.expands = false,
     this.style,
+    this.loadingIcon,
   });
 
   @override
@@ -112,11 +114,13 @@ class _RiverpodTextFormFieldState extends ConsumerState<RiverpodTextFormField> {
 
           Widget? suffixIcon;
           if (validation.isValidating) {
-            suffixIcon = const SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            );
+            suffixIcon =
+                widget.loadingIcon ??
+                const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                );
           } else if (isDirty) {
             suffixIcon = const Icon(Icons.edit, size: 16);
           }

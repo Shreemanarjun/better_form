@@ -15,11 +15,13 @@ class RiverpodCheckboxFormField extends ConsumerWidget {
     super.key,
     required this.fieldId,
     this.title,
+    this.validatingWidget,
     this.controllerProvider,
   });
 
   final FormixFieldID<bool> fieldId;
   final Widget? title;
+  final Widget? validatingWidget;
   final AutoDisposeStateNotifierProvider<FormixController, FormixData>?
   controllerProvider;
 
@@ -47,10 +49,11 @@ class RiverpodCheckboxFormField extends ConsumerWidget {
             value: value ?? false,
             title: title,
             subtitle: validation.isValidating
-                ? const Text(
-                    'Validating...',
-                    style: TextStyle(color: Colors.blue, fontSize: 12),
-                  )
+                ? (validatingWidget ??
+                      const Text(
+                        'Validating...',
+                        style: TextStyle(color: Colors.blue, fontSize: 12),
+                      ))
                 : (validation.isValid
                       ? (isDirty
                             ? const Text(
@@ -81,12 +84,14 @@ class RiverpodDropdownFormField<T> extends ConsumerWidget {
     required this.fieldId,
     required this.items,
     this.decoration,
+    this.loadingIcon,
     this.controllerProvider,
   });
 
   final FormixFieldID<T> fieldId;
   final List<DropdownMenuItem<T>> items;
   final InputDecoration? decoration;
+  final Widget? loadingIcon;
   final AutoDisposeStateNotifierProvider<FormixController, FormixData>?
   controllerProvider;
 
@@ -112,11 +117,13 @@ class RiverpodDropdownFormField<T> extends ConsumerWidget {
 
           Widget? suffixIcon;
           if (validation.isValidating) {
-            suffixIcon = const SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            );
+            suffixIcon =
+                loadingIcon ??
+                const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                );
           } else if (isDirty) {
             suffixIcon = const Icon(Icons.edit, size: 16);
           }

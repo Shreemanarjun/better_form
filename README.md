@@ -135,7 +135,7 @@ FormixFieldConfig<String>(
 )
 ```
 
-**UX Tip**: Formix widgets automatically show a `CircularProgressIndicator` or "Validating..." helper text while async rules are running!
+**UX Tip**: Formix widgets automatically show a `CircularProgressIndicator` while async rules are running! You can customize this by passing `loadingIcon` (or `validatingWidget` for checkboxes) to your field widget.
 
 ### Fluent Validation API
 Define complex rules easily with the Zod-like `FormixValidators` API:
