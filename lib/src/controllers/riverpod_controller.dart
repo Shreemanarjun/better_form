@@ -38,6 +38,8 @@ class RiverpodFormController extends StateNotifier<FormixData> {
   DateTime? _lastSubmitTime;
   DateTime? _startTime;
   final Map<String, FormixField<dynamic>> _fieldDefinitions = {};
+  // Inverse dependency graph: key -> list of dependents
+  final Map<String, List<String>> _dependentsMap = {};
 
   @visibleForTesting
   int get registeredFieldsCount => _fieldDefinitions.length;
@@ -227,28 +229,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
     _startTime = DateTime.now();
     analytics?.onFormStarted(formId);
     initialValueMap.addAll(initialValue);
-    for (final field in fields) {
-      final key = field.id.key;
-      _validationDurations[key] = Duration.zero;
-      _fieldDefinitions[key] = FormixField<dynamic>(
-        id: FormixFieldID<dynamic>(key),
-        initialValue: field.initialValue,
-        validator: field.wrappedValidator,
-        label: field.label,
-        hint: field.hint,
-        transformer: field.wrappedTransformer != null
-            ? (dynamic val) => field.wrappedTransformer!(val)
-            : null,
-        asyncValidator: field.wrappedAsyncValidator,
-        debounceDuration: field.debounceDuration,
-        validationMode: field.validationMode,
-        crossFieldValidator: field.wrappedCrossFieldValidator,
-        dependsOn: field.dependsOn,
-        inputFormatters: field.inputFormatters,
-        textInputAction: field.textInputAction,
-        onSubmitted: field.onSubmitted,
-      );
-    }
+    registerFields(fields);
     _history = [state];
     _historyIndex = 0;
     _loadPersistedState();
@@ -638,14 +619,10 @@ class RiverpodFormController extends StateNotifier<FormixData> {
   }
 
   List<String> _getDependentsOf(String key) {
-    if (_fieldDefinitions.isEmpty) return const [];
-    final dependents = <String>[];
-    for (final field in _fieldDefinitions.values) {
-      if (field.dependsOn.any((dep) => dep.key == key)) {
-        dependents.add(field.id.key);
-      }
+    if (_dependentsMap.containsKey(key)) {
+      return List<String>.from(_dependentsMap[key]!);
     }
-    return dependents;
+    return const [];
   }
 
   /// Recursively collects all fields that depend on the source field.
@@ -684,6 +661,15 @@ class RiverpodFormController extends StateNotifier<FormixData> {
 
     for (final field in fields) {
       final key = field.id.key;
+
+      // Update dependency graph: Cleanup old dependencies
+      if (_fieldDefinitions.containsKey(key)) {
+        final oldField = _fieldDefinitions[key]!;
+        for (final dep in oldField.dependsOn) {
+          _dependentsMap[dep.key]?.remove(key);
+        }
+      }
+
       _validationDurations[key] = Duration.zero;
 
       _fieldDefinitions[key] = FormixField<dynamic>(
@@ -704,6 +690,11 @@ class RiverpodFormController extends StateNotifier<FormixData> {
         textInputAction: field.textInputAction,
         onSubmitted: field.onSubmitted,
       );
+
+      // Update dependency graph: Add new dependencies
+      for (final dep in field.dependsOn) {
+        _dependentsMap.putIfAbsent(dep.key, () => []).add(key);
+      }
 
       if (!initialValueMap.containsKey(key)) {
         initialValueMap[key] = field.initialValue;
@@ -755,6 +746,15 @@ class RiverpodFormController extends StateNotifier<FormixData> {
   /// Register a field
   void registerField<T>(FormixField<T> field) {
     final key = field.id.key;
+
+    // Update dependency graph: Cleanup old dependencies
+    if (_fieldDefinitions.containsKey(key)) {
+      final oldField = _fieldDefinitions[key]!;
+      for (final dep in oldField.dependsOn) {
+        _dependentsMap[dep.key]?.remove(key);
+      }
+    }
+
     _validationDurations[key] = Duration.zero;
 
     _fieldDefinitions[key] = FormixField<dynamic>(
@@ -775,6 +775,11 @@ class RiverpodFormController extends StateNotifier<FormixData> {
       textInputAction: field.textInputAction,
       onSubmitted: field.onSubmitted,
     );
+
+    // Update dependency graph: Add new dependencies
+    for (final dep in field.dependsOn) {
+      _dependentsMap.putIfAbsent(dep.key, () => []).add(key);
+    }
 
     if (!initialValueMap.containsKey(key)) {
       initialValueMap[key] = field.initialValue;
@@ -847,6 +852,16 @@ class RiverpodFormController extends StateNotifier<FormixData> {
 
     for (final fieldId in fieldIds) {
       final key = fieldId.key;
+
+      // Update graph
+      final oldField = _fieldDefinitions[key];
+      if (oldField != null) {
+        for (final dep in oldField.dependsOn) {
+          _dependentsMap[dep.key]?.remove(key);
+        }
+      }
+      _dependentsMap.remove(key);
+
       _fieldDefinitions.remove(key);
       newValidations.remove(key);
 
@@ -875,6 +890,16 @@ class RiverpodFormController extends StateNotifier<FormixData> {
     bool preserveState = false,
   }) {
     final key = fieldId.key;
+
+    // Update graph
+    final oldField = _fieldDefinitions[key];
+    if (oldField != null) {
+      for (final dep in oldField.dependsOn) {
+        _dependentsMap[dep.key]?.remove(key);
+      }
+    }
+    _dependentsMap.remove(key);
+
     _fieldDefinitions.remove(key);
 
     final newValues = Map<String, dynamic>.from(state.values);

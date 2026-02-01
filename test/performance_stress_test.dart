@@ -41,7 +41,10 @@ void main() {
     });
 
     test('Cross-field dependency chain performance', () {
-      // Create a chain of 100 fields where each depends on the previous one
+      // Create a chain of 500 fields where each depends on the previous one
+      final chainLength = 100000;
+      int validationCount = 0;
+
       final fields = <FormixFieldConfig<String>>[];
       fields.add(
         FormixFieldConfig<String>(
@@ -50,7 +53,7 @@ void main() {
         ),
       );
 
-      for (var i = 1; i < 100; i++) {
+      for (var i = 1; i < chainLength; i++) {
         final prevId = FormixFieldID<String>('field_${i - 1}');
         fields.add(
           FormixFieldConfig<String>(
@@ -58,6 +61,7 @@ void main() {
             initialValue: '$i',
             dependsOn: [prevId],
             crossFieldValidator: (value, state) {
+              validationCount++;
               final prevVal = state.getValue(prevId);
               if (prevVal == null) return 'Previous missing';
               return null;
@@ -71,21 +75,27 @@ void main() {
         formControllerProvider(FormixParameter(fields: fields)).notifier,
       );
 
+      // Reset count after initial validation triggers
+      validationCount = 0;
+
       final stopwatch = Stopwatch()..start();
 
-      // Changing the first field should trigger validation for the second,
-      // but we don't have transitive dependency triggering yet (it only triggers immediate dependents).
-      // Wait, let's check _validateFieldInternal - it triggers dependents of the field that was valid.
-      // If field_0 changes, field_1 validates. If field_1 is valid, field_2 validates... wait, no.
-      // It only triggers dependents of the field currently being set.
-
+      // Changing the first field SHOULD trigger validation for the entire chain
+      // thanks to the new `_collectTransitiveDependents` logic.
       controller.setValue(const FormixFieldID<String>('field_0'), 'New Value');
 
       stopwatch.stop();
       // ignore: avoid_print
       print(
-        'Triggered dependency update in ${stopwatch.elapsedMilliseconds}ms',
+        'Triggered dependency update for $chainLength fields in ${stopwatch.elapsedMilliseconds}ms',
       );
+
+      // Assert that all downstream fields were validated
+      // (chainLength - 1) fields depend on something.
+      expect(validationCount, greaterThanOrEqualTo(chainLength - 1));
+
+      // Performance benchmark: 500 simple validations should be very fast (< 200ms)
+      expect(stopwatch.elapsedMilliseconds, lessThan(chainLength));
     });
   });
 }

@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'validation.dart';
 import 'field_id.dart';
 
@@ -140,5 +141,39 @@ class FormixData {
         }
       }
     }
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! FormixData) return false;
+    final mapEquals = const DeepCollectionEquality().equals;
+    final setEquals = const SetEquality().equals;
+
+    return mapEquals(values, other.values) &&
+        mapEquals(validations, other.validations) &&
+        mapEquals(dirtyStates, other.dirtyStates) &&
+        mapEquals(touchedStates, other.touchedStates) &&
+        mapEquals(pendingStates, other.pendingStates) &&
+        isSubmitting == other.isSubmitting &&
+        ((changedFields == null && other.changedFields == null) ||
+            (changedFields != null &&
+                other.changedFields != null &&
+                setEquals(changedFields, other.changedFields)));
+  }
+
+  @override
+  int get hashCode {
+    final mapHash = const DeepCollectionEquality().hash;
+    final setHash = const SetEquality().hash;
+    return Object.hash(
+      mapHash(values),
+      mapHash(validations),
+      mapHash(dirtyStates),
+      mapHash(touchedStates),
+      mapHash(pendingStates),
+      isSubmitting,
+      changedFields == null ? null : setHash(changedFields),
+    );
   }
 }

@@ -19,9 +19,21 @@ class ValidationResult {
   /// Constant for a successful validation result.
   static const ValidationResult valid = ValidationResult(isValid: true);
 
-  /// Constant for a field that is currently being validated.
   static const ValidationResult validating = ValidationResult(
     isValid: true,
     isValidating: true,
   );
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ValidationResult &&
+          runtimeType == other.runtimeType &&
+          isValid == other.isValid &&
+          errorMessage == other.errorMessage &&
+          isValidating == other.isValidating;
+
+  @override
+  int get hashCode =>
+      isValid.hashCode ^ errorMessage.hashCode ^ isValidating.hashCode;
 }
