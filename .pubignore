@@ -1,0 +1,16 @@
+# Exclude the extension source code from pub.dev, as only the compiled version is needed
+devtools_extension/
+
+# Exclude internal devtools options
+devtools_options.yaml
+example/devtools_options.yaml
+
+# Exclude compiled JS maps and debug artifacts
+extension/devtools/*.map
+extension/devtools/build/
+
+# Standard Dart/Flutter ignores for sub-packages
+**/build/
+**.dart_tool/
+.pub-cache/
+.pub/

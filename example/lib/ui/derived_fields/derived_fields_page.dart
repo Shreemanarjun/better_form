@@ -25,6 +25,7 @@ class _DerivedFieldsExampleContentState
   @override
   Widget build(BuildContext context) {
     return Formix(
+      formId: 'derived_fields_example',
       initialValue: {
         'firstName': '',
         'lastName': '',

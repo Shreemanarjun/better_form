@@ -1,0 +1,5 @@
+name: formix
+issueTracker: https://github.com/Shreemanarjun/formix/issues
+version: 0.0.3
+materialIconCodePoint: "0xf0c5"
+requiresConnection: true

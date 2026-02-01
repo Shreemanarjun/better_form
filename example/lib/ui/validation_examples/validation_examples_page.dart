@@ -25,6 +25,7 @@ class _ValidationExamplesContentState
   @override
   Widget build(BuildContext context) {
     return Formix(
+      formId: 'validation_examples',
       initialValue: {
         'email': '',
         'password': '',

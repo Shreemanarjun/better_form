@@ -25,6 +25,7 @@ class _ConditionalFormExampleContentState
   @override
   Widget build(BuildContext context) {
     return Formix(
+      formId: 'conditional_form_example',
       initialValue: {
         'accountType': 'personal',
         'companyName': '',

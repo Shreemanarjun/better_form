@@ -25,6 +25,7 @@ class _HeadlessFormExampleContentState
   @override
   Widget build(BuildContext context) {
     return Formix(
+      formId: 'headless_form_example',
       initialValue: {
         'rating': 3,
         'feedback': '',

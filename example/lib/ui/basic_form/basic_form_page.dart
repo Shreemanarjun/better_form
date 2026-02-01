@@ -10,6 +10,7 @@ class BasicFormExample extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Formix(
+      formId: 'basic_form_example',
       initialValue: {'name': '', 'email': '', 'age': 18, 'newsletter': false},
       fields: [
         FormixFieldConfig<String>(

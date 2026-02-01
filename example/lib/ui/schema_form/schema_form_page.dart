@@ -124,6 +124,7 @@ class _SchemaFormExampleContentState
   @override
   Widget build(BuildContext context) {
     return Formix(
+      formId: 'schema_form_example',
       initialValue: {
         'name': '',
         'email': '',

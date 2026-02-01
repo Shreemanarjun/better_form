@@ -76,13 +76,22 @@ class Formix extends ConsumerStatefulWidget {
 
 /// State for [Formix], allowing external control via [GlobalKey].
 class FormixState extends ConsumerState<Formix> {
+  late final String _internalFormId;
+
+  @override
+  void initState() {
+    super.initState();
+    final typeName = widget.runtimeType.toString();
+    _internalFormId = widget.formId ?? '${typeName}_${identityHashCode(this)}';
+  }
+
   AutoDisposeStateNotifierProvider<FormixController, FormixData> get _provider {
     return formControllerProvider(
       FormixParameter(
         initialValue: widget.initialValue,
         fields: widget.fields,
         persistence: widget.persistence,
-        formId: widget.formId,
+        formId: _internalFormId,
         analytics: widget.analytics,
       ),
     );

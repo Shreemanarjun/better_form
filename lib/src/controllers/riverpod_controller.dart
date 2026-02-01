@@ -13,6 +13,7 @@ import '../analytics/form_analytics.dart';
 import '../i18n.dart';
 import '../enums.dart';
 import '../persistence/form_persistence.dart';
+import '../devtools/formix_devtools.dart';
 
 export 'form_state.dart';
 export 'field_config.dart';
@@ -55,6 +56,12 @@ class RiverpodFormController extends StateNotifier<FormixData> {
 
   // Multi-Form Bindings
   final Map<String, StreamSubscription> _bindings = {};
+
+  final Map<String, Duration> _validationDurations = {};
+
+  /// Get validation durations for DevTools
+  Map<String, Duration> get validationDurations =>
+      Map.unmodifiable(_validationDurations);
 
   @visibleForTesting
   int get activeBindingsCount => _bindings.length;
@@ -143,6 +150,9 @@ class RiverpodFormController extends StateNotifier<FormixData> {
     _notifyFormListeners();
   }
 
+  @override
+  FormixData get state => super.state;
+
   static FormixData _createInitialState(
     Map<String, dynamic> initialValues,
     List<FormixField> fields,
@@ -219,6 +229,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
     initialValueMap.addAll(initialValue);
     for (final field in fields) {
       final key = field.id.key;
+      _validationDurations[key] = Duration.zero;
       _fieldDefinitions[key] = FormixField<dynamic>(
         id: FormixFieldID<dynamic>(key),
         initialValue: field.initialValue,
@@ -241,6 +252,10 @@ class RiverpodFormController extends StateNotifier<FormixData> {
     _history = [state];
     _historyIndex = 0;
     _loadPersistedState();
+
+    if (formId != null) {
+      FormixDevToolsService.registerController(formId!, this);
+    }
   }
 
   // --- Array Manipulation ---
@@ -362,6 +377,9 @@ class RiverpodFormController extends StateNotifier<FormixData> {
 
   @override
   void dispose() {
+    if (formId != null) {
+      FormixDevToolsService.unregisterController(formId!);
+    }
     if (!_hasSubmittedSuccessfully) {
       final duration = DateTime.now().difference(_startTime ?? DateTime.now());
       analytics?.onFormAbandoned(formId, duration);
@@ -369,6 +387,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
     for (var timer in _debouncers.values) {
       timer.cancel();
     }
+    _submitDebounceTimer?.cancel();
     for (var sub in _bindings.values) {
       sub.cancel();
     }
@@ -480,59 +499,66 @@ class RiverpodFormController extends StateNotifier<FormixData> {
     dynamic value,
     Map<String, dynamic> currentValues,
   ) {
+    final sw = Stopwatch()..start();
     final fieldDef = _fieldDefinitions[key];
     if (fieldDef == null) return ValidationResult.valid;
 
-    ValidationResult result = ValidationResult.valid;
-
-    // 1. Standard Validator
-    final validator = fieldDef.wrappedValidator;
-    if (validator != null) {
-      try {
-        String? error = validator(value);
-        if (error != null) {
-          // Resolve placeholders if any
-          error = messages.format(error, {
-            'label': fieldDef.label ?? key,
-            'value': value,
-          });
-          return ValidationResult(isValid: false, errorMessage: error);
+    // We'll calculate the end result first then record the time
+    ValidationResult calculate() {
+      // 1. Standard Validator
+      final validator = fieldDef.wrappedValidator;
+      if (validator != null) {
+        try {
+          String? error = validator(value);
+          if (error != null) {
+            // Resolve placeholders if any
+            error = messages.format(error, {
+              'label': fieldDef.label ?? key,
+              'value': value,
+            });
+            return ValidationResult(isValid: false, errorMessage: error);
+          }
+        } catch (e) {
+          return ValidationResult(
+            isValid: false,
+            errorMessage: 'Validation error: ${e.toString()}',
+          );
         }
-      } catch (e) {
-        return ValidationResult(
-          isValid: false,
-          errorMessage: 'Validation error: ${e.toString()}',
-        );
       }
+
+      // 2. Cross-field Validator
+      final crossValidator = fieldDef.wrappedCrossFieldValidator;
+      if (crossValidator != null) {
+        try {
+          // We create a temporary FormixData for the cross validator to see the NEW values
+          final tempState = FormixData(
+            values: currentValues,
+            validations: state.validations,
+            dirtyStates: state.dirtyStates,
+            touchedStates: state.touchedStates,
+          );
+          String? error = crossValidator(value, tempState);
+          if (error != null) {
+            error = messages.format(error, {
+              'label': fieldDef.label ?? key,
+              'value': value,
+            });
+            return ValidationResult(isValid: false, errorMessage: error);
+          }
+        } catch (e) {
+          return ValidationResult(
+            isValid: false,
+            errorMessage: 'Cross-validation error: ${e.toString()}',
+          );
+        }
+      }
+
+      return ValidationResult.valid;
     }
 
-    // 2. Cross-field Validator
-    final crossValidator = fieldDef.wrappedCrossFieldValidator;
-    if (crossValidator != null) {
-      try {
-        // We create a temporary FormixData for the cross validator to see the NEW values
-        final tempState = FormixData(
-          values: currentValues,
-          validations: state.validations,
-          dirtyStates: state.dirtyStates,
-          touchedStates: state.touchedStates,
-        );
-        String? error = crossValidator(value, tempState);
-        if (error != null) {
-          error = messages.format(error, {
-            'label': fieldDef.label ?? key,
-            'value': value,
-          });
-          return ValidationResult(isValid: false, errorMessage: error);
-        }
-      } catch (e) {
-        return ValidationResult(
-          isValid: false,
-          errorMessage: 'Cross-validation error: ${e.toString()}',
-        );
-      }
-    }
-
+    final result = calculate();
+    sw.stop();
+    _validationDurations[key] = sw.elapsed;
     return result;
   }
 
@@ -556,8 +582,12 @@ class RiverpodFormController extends StateNotifier<FormixData> {
       fieldDef.debounceDuration ?? const Duration(milliseconds: 300),
       () async {
         if (!mounted) return;
+        final sw = Stopwatch()..start();
         try {
           final error = await asyncValidator(value);
+          sw.stop();
+          _validationDurations[key] = sw.elapsed;
+
           if (!mounted) return;
 
           final latestValidations = Map<String, ValidationResult>.from(
@@ -569,13 +599,16 @@ class RiverpodFormController extends StateNotifier<FormixData> {
 
           state = state.copyWith(validations: latestValidations);
         } catch (e) {
+          sw.stop();
+          _validationDurations[key] = sw.elapsed;
+
           if (!mounted) return;
           final latestValidations = Map<String, ValidationResult>.from(
             state.validations,
           );
           latestValidations[key] = ValidationResult(
             isValid: false,
-            errorMessage: 'Async validation failed',
+            errorMessage: 'Async validation error: $e',
           );
           state = state.copyWith(validations: latestValidations);
         }
@@ -606,6 +639,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
 
     for (final field in fields) {
       final key = field.id.key;
+      _validationDurations[key] = Duration.zero;
 
       _fieldDefinitions[key] = FormixField<dynamic>(
         id: FormixFieldID<dynamic>(field.id.key),
@@ -675,6 +709,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
   /// Register a field
   void registerField<T>(FormixField<T> field) {
     final key = field.id.key;
+    _validationDurations[key] = Duration.zero;
 
     _fieldDefinitions[key] = FormixField<dynamic>(
       id: FormixFieldID<dynamic>(field.id.key),
