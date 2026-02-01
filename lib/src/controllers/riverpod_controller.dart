@@ -995,27 +995,32 @@ class RiverpodFormController extends StateNotifier<FormixData> {
   }
 
   /// Validate entire form
-  bool validate() {
+  /// Validate form (or specific fields)
+  bool validate({List<FormixFieldID>? fields}) {
     final newValidations = Map<String, ValidationResult>.from(
       state.validations,
     );
     final values = state.values;
+    final keysToValidate = fields?.map((f) => f.key) ?? _fieldDefinitions.keys;
 
-    for (final entry in _fieldDefinitions.entries) {
-      final key = entry.key;
+    for (final key in keysToValidate) {
+      if (!_fieldDefinitions.containsKey(key)) continue;
       final value = values[key];
       newValidations[key] = _performSyncValidation(key, value, values);
     }
 
     state = state.copyWith(validations: newValidations);
 
-    // Trigger async validations for all valid fields
-    for (final key in _fieldDefinitions.keys) {
-      if (newValidations[key]!.isValid) {
+    // Trigger async validations for valid fields
+    for (final key in keysToValidate) {
+      if (_fieldDefinitions.containsKey(key) && newValidations[key]!.isValid) {
         _triggerAsyncValidation(key, values[key]);
       }
     }
 
+    if (fields != null) {
+      return fields.every((f) => state.validations[f.key]?.isValid ?? true);
+    }
     return state.isValid;
   }
 

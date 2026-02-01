@@ -20,7 +20,7 @@ void main() {
       final param = FormixParameter(fields: fields);
 
       // Keep alive by listening
-      final sub = container.listen(formControllerProvider(param), (_, __) {});
+      container.listen(formControllerProvider(param), (_, __) {});
       final controller = container.read(formControllerProvider(param).notifier);
 
       // Verify initial error (auto-validate might be off, triggers on submit)
@@ -67,7 +67,7 @@ void main() {
         final param = FormixParameter(fields: fields);
 
         // Keep alive by listening
-        final sub = container.listen(formControllerProvider(param), (_, __) {});
+        container.listen(formControllerProvider(param), (_, __) {});
         final controller = container.read(
           formControllerProvider(param).notifier,
         );

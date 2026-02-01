@@ -26,6 +26,7 @@
 - **Logging Analytics**: Built-in debug logger for form events
 - **Robust Dependency Logic**: Support for recursive A->B->C dependency chains with cycle detection
 - **Async Submission Safety**: `submit()` now waits for all pending async validations to complete before proceeding
+- **Partial Validation**: `validate(fields: [...])` allows validating specific subsets of fields (e.g., for Steppers)
 
 ### ⚡ Performance Optimizations
 - **Delta Updates**: O(1) complexity for field updates (was O(N)), enabling forms with 1000+ fields

@@ -286,6 +286,18 @@ Formix(
 
 ## 🧬 Advanced Logic
 
+### Multi-Step Forms (Steppers)
+Validate only the current step's fields before moving forward.
+
+```dart
+onStepContinue: () {
+  // Only validate fields relevant to Step 1
+  if (controller.validate(fields: [firstName, lastName])) {
+    setState(() => _step++);
+  }
+}
+```
+
 ### Multi-Form Synchronization
 Link fields between completely separate forms (e.g., a "Profile" form and a "Checkout" form).
 
