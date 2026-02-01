@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:formix/formix.dart';
+import 'logging_analytics.dart';
 
 /// A comprehensive example demonstrating a multi-step form with:
 /// - 4 steps with independent validation
@@ -17,11 +18,8 @@ class MultiStepFormPage extends StatefulWidget {
 class _MultiStepFormPageState extends State<MultiStepFormPage> {
   int _currentStep = 0;
 
-  // GlobalKeys for each step's form
-  final _step1Key = GlobalKey<FormixState>();
-  final _step2Key = GlobalKey<FormixState>();
-  final _step3Key = GlobalKey<FormixState>();
-  final _step4Key = GlobalKey<FormixState>();
+  // GlobalKeys no longer needed as we use FormixFieldRegistry
+  // final _step1Key = GlobalKey<FormixState>(); ...
 
   // Field IDs for Step 1: Personal Information
   final nameField = FormixFieldID<String>('name');
@@ -50,7 +48,7 @@ class _MultiStepFormPageState extends State<MultiStepFormPage> {
       id: nameField,
       label: 'Full Name',
       validator: (v) {
-        if (v.isEmpty) return 'Name is required';
+        if (v == null || v.isEmpty) return 'Name is required';
         if (v.length < 3) return 'Name must be at least 3 characters';
         return null;
       },
@@ -59,7 +57,7 @@ class _MultiStepFormPageState extends State<MultiStepFormPage> {
       id: emailField,
       label: 'Email',
       validator: (v) {
-        if (v.isEmpty) return 'Email is required';
+        if (v == null || v.isEmpty) return 'Email is required';
         if (!v.contains('@')) return 'Invalid email format';
         return null;
       },
@@ -68,7 +66,7 @@ class _MultiStepFormPageState extends State<MultiStepFormPage> {
       id: phoneField,
       label: 'Phone',
       validator: (v) {
-        if (v.isEmpty) return 'Phone is required';
+        if (v == null || v.isEmpty) return 'Phone is required';
         if (v.length < 10) return 'Phone must be at least 10 digits';
         return null;
       },
@@ -78,39 +76,39 @@ class _MultiStepFormPageState extends State<MultiStepFormPage> {
   late final List<FormixFieldConfig> _step2Fields = [
     FormixFieldConfig<String>(
       id: streetField,
-      validator: (v) => v.isEmpty ? 'Street is required' : null,
+      validator: (v) => (v?.isEmpty ?? true) ? 'Street is required' : null,
     ),
     FormixFieldConfig<String>(
       id: cityField,
-      validator: (v) => v.isEmpty ? 'City is required' : null,
+      validator: (v) => (v?.isEmpty ?? true) ? 'City is required' : null,
     ),
     FormixFieldConfig<String>(
       id: zipField,
       validator: (v) {
-        if (v.isEmpty) return 'ZIP is required';
+        if (v == null || v.isEmpty) return 'ZIP is required';
         if (v.length < 5) return 'ZIP must be at least 5 digits';
         return null;
       },
     ),
     FormixFieldConfig<String>(
       id: countryField,
-      validator: (v) => v.isEmpty ? 'Country is required' : null,
+      validator: (v) => (v?.isEmpty ?? true) ? 'Country is required' : null,
     ),
   ];
 
   late final List<FormixFieldConfig> _step3Fields = [
     FormixFieldConfig<String>(
       id: companyField,
-      validator: (v) => v.isEmpty ? 'Company is required' : null,
+      validator: (v) => (v?.isEmpty ?? true) ? 'Company is required' : null,
     ),
     FormixFieldConfig<String>(
       id: positionField,
-      validator: (v) => v.isEmpty ? 'Position is required' : null,
+      validator: (v) => (v?.isEmpty ?? true) ? 'Position is required' : null,
     ),
     FormixFieldConfig<num>(
       id: salaryField,
       validator: (v) {
-        if (v <= 0) return 'Salary must be greater than 0';
+        if ((v ?? 0) <= 0) return 'Salary must be greater than 0';
         return null;
       },
     ),
@@ -120,7 +118,7 @@ class _MultiStepFormPageState extends State<MultiStepFormPage> {
     FormixFieldConfig<String>(
       id: commentsField,
       validator: (v) {
-        if (v.isNotEmpty && v.length < 10) {
+        if (v != null && v.isNotEmpty && v.length < 10) {
           return 'Comments must be at least 10 characters';
         }
         return null;
@@ -128,39 +126,25 @@ class _MultiStepFormPageState extends State<MultiStepFormPage> {
     ),
   ];
 
-  // Get current step's data from its GlobalKey (automatic persistence!)
-  Map<String, dynamic> _getStepData(int step) {
-    final key = [_step1Key, _step2Key, _step3Key, _step4Key][step];
-    return key.currentState?.data.values ?? {};
+  // Removed GlobalKey logic as we now use a single shared Formix state
+
+  // No longer needed
+  // Map<String, dynamic> _getStepData(int step) ...
+
+  // Check if current step fields are valid
+  bool _canProceedToNextStep(FormixScope scope) {
+    // In a multi-step form with lazy registry, 'scope.validate()' validates
+    // ALL currently registered fields. Since only the current step is mounted,
+    // this correctly validates only the current step!
+    return scope.validate();
   }
 
-  bool _canProceedToNextStep() {
-    final currentKey = _getCurrentStepKey();
-    final data = currentKey?.currentState?.data;
-    return data?.isValid ?? false;
-  }
-
-  GlobalKey<FormixState>? _getCurrentStepKey() {
-    switch (_currentStep) {
-      case 0:
-        return _step1Key;
-      case 1:
-        return _step2Key;
-      case 2:
-        return _step3Key;
-      case 3:
-        return _step4Key;
-      default:
-        return null;
-    }
-  }
-
-  void _onStepContinue() {
-    if (_canProceedToNextStep()) {
+  void _onStepContinue(FormixScope scope) {
+    if (_canProceedToNextStep(scope)) {
       if (_currentStep < 3) {
         setState(() => _currentStep++);
       } else {
-        _submitForm();
+        _submitForm(scope); // Pass scope to submit
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -178,14 +162,9 @@ class _MultiStepFormPageState extends State<MultiStepFormPage> {
     }
   }
 
-  void _submitForm() {
-    // Collect all data from all steps
-    final allData = <String, dynamic>{};
-    for (int i = 0; i < 4; i++) {
-      final stepData = _getStepData(i);
-      debugPrint('Step $i data: $stepData');
-      allData.addAll(stepData);
-    }
+  void _submitForm(FormixScope scope) {
+    // With preserving state, scope.values contains EVERYTHING, even from unmounted steps!
+    final allData = scope.values;
     debugPrint('All collected data: $allData');
 
     showDialog(
@@ -215,7 +194,7 @@ class _MultiStepFormPageState extends State<MultiStepFormPage> {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              // Reset by clearing all GlobalKey states
+              scope.reset(); // Reset the form
               setState(() {
                 _currentStep = 0;
               });
@@ -235,103 +214,143 @@ class _MultiStepFormPageState extends State<MultiStepFormPage> {
         elevation: 2,
       ),
       body: ProviderScope(
-        child: Column(
-          children: [
-            // Step indicator
-            Container(
-              padding: const EdgeInsets.all(16),
-              color: Colors.blue.shade50,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(4, (index) {
-                  return Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 16,
-                        backgroundColor: _currentStep >= index
-                            ? Colors.blue
-                            : Colors.grey.shade300,
-                        child: Text(
-                          '${index + 1}',
-                          style: TextStyle(
-                            color: _currentStep >= index
-                                ? Colors.white
-                                : Colors.grey.shade600,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      if (index < 3)
-                        Container(
-                          width: 40,
-                          height: 2,
-                          color: _currentStep > index
-                              ? Colors.blue
-                              : Colors.grey.shade300,
-                        ),
-                    ],
-                  );
-                }),
-              ),
-            ),
-            // Step titles
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                [
-                  'Personal Information',
-                  'Address',
-                  'Employment',
-                  'Preferences',
-                ][_currentStep],
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-            ),
-            // All forms (kept mounted with IndexedStack)
-            Expanded(
-              child: IndexedStack(
-                index: _currentStep,
+        child: Formix(
+          formId: 'multi_step_wizard', // ID required for analytics tracking
+          analytics: const LoggingFormixAnalytics(),
+          initialValue: const {'newsletter': false, 'notifications': true},
+          child: Builder(
+            // Builder to access Formix context
+            builder: (context) {
+              return Column(
                 children: [
-                  SingleChildScrollView(child: _buildStep1()),
-                  SingleChildScrollView(child: _buildStep2()),
-                  SingleChildScrollView(child: _buildStep3()),
-                  SingleChildScrollView(child: _buildStep4()),
-                ],
-              ),
-            ),
-            // Navigation buttons
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  if (_currentStep > 0)
-                    TextButton(
-                      key: const Key('back_button'),
-                      onPressed: _onStepCancel,
-                      child: const Text('Back'),
-                    )
-                  else
-                    const SizedBox.shrink(),
-                  ElevatedButton(
-                    key: const Key('continue_button'),
-                    onPressed: _onStepContinue,
-                    child: Text(_currentStep == 3 ? 'Submit' : 'Continue'),
+                  // Step indicator
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    color: Colors.blue.shade50,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(4, (index) {
+                        return Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 16,
+                              backgroundColor: _currentStep >= index
+                                  ? Colors.blue
+                                  : Colors.grey.shade300,
+                              child: Text(
+                                '${index + 1}',
+                                style: TextStyle(
+                                  color: _currentStep >= index
+                                      ? Colors.white
+                                      : Colors.grey.shade600,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            if (index < 3)
+                              Container(
+                                width: 40,
+                                height: 2,
+                                color: _currentStep > index
+                                    ? Colors.blue
+                                    : Colors.grey.shade300,
+                              ),
+                          ],
+                        );
+                      }),
+                    ),
+                  ),
+                  // Step titles
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Text(
+                      [
+                        'Personal Information',
+                        'Address',
+                        'Employment',
+                        'Preferences',
+                      ][_currentStep],
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                  ),
+                  // Active Step (Lazy Loaded)
+                  Expanded(
+                    child: Builder(
+                      builder: (context) {
+                        // We use a different key to force rebuild/cleanup when switching steps
+                        // allowing FormixFieldRegistry to do its work.
+                        switch (_currentStep) {
+                          case 0:
+                            return SingleChildScrollView(
+                              key: const ValueKey(0),
+                              child: _buildStep1(),
+                            );
+                          case 1:
+                            return SingleChildScrollView(
+                              key: const ValueKey(1),
+                              child: _buildStep2(),
+                            );
+                          case 2:
+                            return SingleChildScrollView(
+                              key: const ValueKey(2),
+                              child: _buildStep3(),
+                            );
+                          case 3:
+                            return SingleChildScrollView(
+                              key: const ValueKey(3),
+                              child: _buildStep4(),
+                            );
+                          default:
+                            return const SizedBox();
+                        }
+                      },
+                    ),
+                  ),
+                  // Navigation buttons
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        if (_currentStep > 0)
+                          TextButton(
+                            key: const Key('back_button'),
+                            onPressed: _onStepCancel,
+                            child: const Text('Back'),
+                          )
+                        else
+                          const SizedBox.shrink(),
+
+                        // We can now access the single form controller here
+                        FormixBuilder(
+                          builder: (context, scope) {
+                            return ElevatedButton(
+                              key: const Key('continue_button'),
+                              onPressed: () => _onStepContinue(scope),
+                              child: Text(
+                                _currentStep == 3 ? 'Submit' : 'Continue',
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ],
-              ),
-            ),
-          ],
+              );
+            },
+          ),
         ),
       ),
     );
   }
 
   Widget _buildStep1() {
-    return Formix(
-      key: _step1Key,
-      keepAlive: true,
+    return FormixFieldRegistry(
       fields: _step1Fields,
+      // Default is true, but explicit here for clarity:
+      // Preserves data even when this widget unmounts (next step)
+      preserveStateOnDispose: true,
       child: Column(
         children: [
           RiverpodTextFormField(
@@ -400,10 +419,9 @@ class _MultiStepFormPageState extends State<MultiStepFormPage> {
   }
 
   Widget _buildStep2() {
-    return Formix(
-      key: _step2Key,
-      keepAlive: true,
+    return FormixFieldRegistry(
       fields: _step2Fields,
+      preserveStateOnDispose: true,
       child: Column(
         children: [
           RiverpodTextFormField(
@@ -456,10 +474,9 @@ class _MultiStepFormPageState extends State<MultiStepFormPage> {
   }
 
   Widget _buildStep3() {
-    return Formix(
-      key: _step3Key,
-      keepAlive: true,
+    return FormixFieldRegistry(
       fields: _step3Fields,
+      preserveStateOnDispose: true,
       child: Column(
         children: [
           RiverpodTextFormField(
@@ -495,11 +512,9 @@ class _MultiStepFormPageState extends State<MultiStepFormPage> {
   }
 
   Widget _buildStep4() {
-    return Formix(
-      key: _step4Key,
-      keepAlive: true,
+    return FormixFieldRegistry(
       fields: _step4Fields,
-      initialValue: const {'newsletter': false, 'notifications': true},
+      preserveStateOnDispose: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -544,6 +559,7 @@ class _MultiStepFormPageState extends State<MultiStepFormPage> {
           const SizedBox(height: 16),
           FormixBuilder(
             builder: (context, scope) {
+              // Now inspecting global form dirtiness
               final isDirty = scope.watchIsFormDirty;
               if (isDirty) {
                 return const Card(

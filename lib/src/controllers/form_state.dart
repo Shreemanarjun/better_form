@@ -18,6 +18,9 @@ class FormixData {
   /// Map of field keys to their touched status (if they have been interacted with).
   final Map<String, bool> touchedStates;
 
+  /// Map of field keys to their pending status (e.g. validatng, syncing).
+  final Map<String, bool> pendingStates;
+
   /// Whether the form is currently in the process of being submitted.
   final bool isSubmitting;
 
@@ -27,6 +30,7 @@ class FormixData {
     this.validations = const {},
     this.dirtyStates = const {},
     this.touchedStates = const {},
+    this.pendingStates = const {},
     this.isSubmitting = false,
   });
 
@@ -36,6 +40,7 @@ class FormixData {
     Map<String, ValidationResult>? validations,
     Map<String, bool>? dirtyStates,
     Map<String, bool>? touchedStates,
+    Map<String, bool>? pendingStates,
     bool? isSubmitting,
   }) {
     return FormixData(
@@ -43,6 +48,7 @@ class FormixData {
       validations: validations ?? this.validations,
       dirtyStates: dirtyStates ?? this.dirtyStates,
       touchedStates: touchedStates ?? this.touchedStates,
+      pendingStates: pendingStates ?? this.pendingStates,
       isSubmitting: isSubmitting ?? this.isSubmitting,
     );
   }
@@ -72,6 +78,11 @@ class FormixData {
   /// Returns `true` if the field has been interacted with.
   bool isFieldTouched<T>(FormixFieldID<T> id) {
     return touchedStates[id.key] ?? false;
+  }
+
+  /// Returns `true` if the field is pending (e.g. async validation or sync).
+  bool isFieldPending<T>(FormixFieldID<T> id) {
+    return pendingStates[id.key] ?? false;
   }
 
   /// Returns a nested representation of the form values.

@@ -137,8 +137,8 @@ class _SchemaFormExampleContentState
           id: nameField,
           initialValue: '',
           validator: (value) {
-            if (value.isEmpty) return 'Name is required';
-            if (value.length < 2) return 'Name must be at least 2 characters';
+            if (value?.isEmpty ?? true) return 'Name is required';
+            if (value!.length < 2) return 'Name must be at least 2 characters';
             return null;
           },
         ),
@@ -146,8 +146,8 @@ class _SchemaFormExampleContentState
           id: emailField,
           initialValue: '',
           validator: (value) {
-            if (value.isEmpty) return 'Email is required';
-            if (!RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(value)) {
+            if (value?.isEmpty ?? true) return 'Email is required';
+            if (!RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(value!)) {
               return 'Invalid email format';
             }
             return null;
@@ -157,8 +157,8 @@ class _SchemaFormExampleContentState
           id: ageField,
           initialValue: 18,
           validator: (value) {
-            if (value < 13) return 'Must be at least 13 years old';
-            if (value > 120) return 'Age must be realistic';
+            if ((value ?? 0) < 13) return 'Must be at least 13 years old';
+            if ((value ?? 0) > 120) return 'Age must be realistic';
             return null;
           },
         ),

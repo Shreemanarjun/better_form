@@ -49,7 +49,7 @@ class _ConditionalFormExampleContentState
             final accountType = Formix.controllerOf(
               context,
             )?.getValue(FormixFieldID<String>('accountType'));
-            if (accountType == 'business' && value.isEmpty) {
+            if (accountType == 'business' && (value?.isEmpty ?? true)) {
               return 'Company name is required for business accounts';
             }
             return null;
@@ -62,7 +62,7 @@ class _ConditionalFormExampleContentState
             final accountType = Formix.controllerOf(
               context,
             )?.getValue(FormixFieldID<String>('accountType'));
-            if (accountType == 'business' && value.isEmpty) {
+            if (accountType == 'business' && (value?.isEmpty ?? true)) {
               return 'Tax ID is required for business accounts';
             }
             return null;
@@ -72,7 +72,7 @@ class _ConditionalFormExampleContentState
           id: FormixFieldID<String>('firstName'),
           initialValue: '',
           validator: (value) {
-            if (value.isEmpty) return 'First name is required';
+            if (value == null || value.isEmpty) return 'First name is required';
             return null;
           },
         ),
@@ -80,7 +80,7 @@ class _ConditionalFormExampleContentState
           id: FormixFieldID<String>('lastName'),
           initialValue: '',
           validator: (value) {
-            if (value.isEmpty) return 'Last name is required';
+            if (value == null || value.isEmpty) return 'Last name is required';
             return null;
           },
         ),
@@ -104,7 +104,7 @@ class _ConditionalFormExampleContentState
               context,
             )?.getValue(FormixFieldID<String>('contactMethod'));
             if ((contactMethod == 'phone' || contactMethod == 'sms') &&
-                value.isEmpty) {
+                (value?.isEmpty ?? true)) {
               return 'Phone number is required for ${contactMethod == 'phone' ? 'phone' : 'SMS'} contact';
             }
             return null;

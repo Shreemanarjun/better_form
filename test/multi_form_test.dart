@@ -175,7 +175,8 @@ void main() {
                       FormixFieldConfig<String>(
                         id: fieldId,
                         initialValue: '',
-                        validator: (v) => (v.isEmpty) ? 'Required' : null,
+                        validator: (v) =>
+                            (v?.isEmpty ?? true) ? 'Required' : null,
                       ),
                     ],
                     child: FormixBuilder(
@@ -459,8 +460,9 @@ void main() {
                       FormixFieldConfig<String>(
                         id: field,
                         initialValue: 'invalid',
-                        validator: (v) =>
-                            v.contains('@') ? null : 'Invalid email',
+                        validator: (v) => (v?.contains('@') ?? false)
+                            ? null
+                            : 'Invalid email',
                       ),
                     ],
                     child: FormixBuilder(
@@ -480,8 +482,9 @@ void main() {
                       FormixFieldConfig<String>(
                         id: field,
                         initialValue: 'valid@example.com',
-                        validator: (v) =>
-                            v.contains('@') ? null : 'Invalid email',
+                        validator: (v) => (v?.contains('@') ?? false)
+                            ? null
+                            : 'Invalid email',
                       ),
                     ],
                     child: FormixBuilder(

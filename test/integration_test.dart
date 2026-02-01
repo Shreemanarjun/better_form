@@ -34,19 +34,20 @@ void main() {
                     id: nameField,
                     initialValue: '',
                     validator: (value) =>
-                        value.isEmpty ? 'Name is required' : null,
+                        (value?.isEmpty ?? true) ? 'Name is required' : null,
                   ),
                   FormixField<String>(
                     id: emailField,
                     initialValue: '',
-                    validator: (value) =>
-                        value.contains('@') ? null : 'Invalid email',
+                    validator: (value) => (value?.contains('@') ?? false)
+                        ? null
+                        : 'Invalid email',
                   ),
                   FormixField<num>(
                     id: ageField,
                     initialValue: 18,
                     validator: (value) =>
-                        value >= 18 ? null : 'Must be 18 or older',
+                        (value ?? 0) >= 18 ? null : 'Must be 18 or older',
                   ),
                   FormixField<bool>(
                     id: agreeField,
@@ -289,7 +290,7 @@ void main() {
                     id: passwordField,
                     initialValue: '',
                     validator: (value) {
-                      if (value.length < 6) {
+                      if (value == null || value.length < 6) {
                         return 'Password must be at least 6 characters';
                       }
                       return null;
@@ -455,13 +456,14 @@ void main() {
                   FormixFieldConfig<String>(
                     id: nameField,
                     initialValue: '',
-                    validator: (value) => value.isEmpty ? 'Required' : null,
+                    validator: (value) =>
+                        (value?.isEmpty ?? true) ? 'Required' : null,
                   ),
                   FormixFieldConfig<String>(
                     id: emailField,
                     initialValue: '',
                     validator: (value) =>
-                        value.contains('@') ? null : 'Invalid',
+                        (value?.contains('@') ?? false) ? null : 'Invalid',
                   ),
                 ],
                 child: Column(

@@ -95,7 +95,7 @@ void main() {
           id: nameField,
           initialValue: 'John',
           label: 'Name',
-          validator: (value) => value.isEmpty ? 'Required' : null,
+          validator: (value) => (value?.isEmpty ?? true) ? 'Required' : null,
         );
 
         final field = schema.toFieldDefinition();

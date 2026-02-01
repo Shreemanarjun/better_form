@@ -42,9 +42,9 @@ class _ValidationExamplesContentState
           id: FormixFieldID<String>('email'),
           initialValue: '',
           validator: (value) {
-            if (value.isEmpty) return 'Email is required';
+            if (value?.isEmpty ?? true) return 'Email is required';
             final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
-            if (!emailRegex.hasMatch(value)) return 'Invalid email format';
+            if (!emailRegex.hasMatch(value!)) return 'Invalid email format';
             return null;
           },
         ),
@@ -52,8 +52,8 @@ class _ValidationExamplesContentState
           id: FormixFieldID<String>('password'),
           initialValue: '',
           validator: (value) {
-            if (value.isEmpty) return 'Password is required';
-            if (value.length < 8) {
+            if (value?.isEmpty ?? true) return 'Password is required';
+            if (value!.length < 8) {
               return 'Password must be at least 8 characters';
             }
             if (!RegExp(r'(?=.*[a-z])').hasMatch(value)) {
@@ -75,7 +75,7 @@ class _ValidationExamplesContentState
             final password = Formix.controllerOf(
               context,
             )?.getValue(FormixFieldID<String>('password'));
-            if (value.isEmpty) return 'Please confirm your password';
+            if (value?.isEmpty ?? true) return 'Please confirm your password';
             if (value != password) return 'Passwords do not match';
             return null;
           },
@@ -84,8 +84,8 @@ class _ValidationExamplesContentState
           id: FormixFieldID<num>('age'),
           initialValue: 18,
           validator: (value) {
-            if (value < 13) return 'Must be at least 13 years old';
-            if (value > 120) return 'Age must be realistic';
+            if ((value ?? 0) < 13) return 'Must be at least 13 years old';
+            if ((value ?? 0) > 120) return 'Age must be realistic';
             return null;
           },
         ),
@@ -93,9 +93,9 @@ class _ValidationExamplesContentState
           id: FormixFieldID<String>('phone'),
           initialValue: '',
           validator: (value) {
-            if (value.isEmpty) return 'Phone number is required';
+            if (value?.isEmpty ?? true) return 'Phone number is required';
             final phoneRegex = RegExp(r'^\+?[\d\s\-\(\)]{10,}$');
-            if (!phoneRegex.hasMatch(value)) {
+            if (!phoneRegex.hasMatch(value!)) {
               return 'Invalid phone number format';
             }
             return null;
@@ -105,9 +105,9 @@ class _ValidationExamplesContentState
           id: FormixFieldID<String>('url'),
           initialValue: '',
           validator: (value) {
-            if (value.isEmpty) return null; // Optional field
+            if (value?.isEmpty ?? true) return null; // Optional field
             final urlRegex = RegExp(r'^https?://[^\s/$.?#].[^\s]*$');
-            if (!urlRegex.hasMatch(value)) return 'Invalid URL format';
+            if (!urlRegex.hasMatch(value!)) return 'Invalid URL format';
             return null;
           },
         ),
@@ -115,8 +115,8 @@ class _ValidationExamplesContentState
           id: FormixFieldID<String>('creditCard'),
           initialValue: '',
           validator: (value) {
-            if (value.isEmpty) return null; // Optional field
-            final cleanValue = value.replaceAll(RegExp(r'\s+'), '');
+            if (value?.isEmpty ?? true) return null; // Optional field
+            final cleanValue = value!.replaceAll(RegExp(r'\s+'), '');
             if (cleanValue.length < 13 || cleanValue.length > 19) {
               return 'Invalid credit card number length';
             }
@@ -132,9 +132,9 @@ class _ValidationExamplesContentState
           id: FormixFieldID<String>('zipCode'),
           initialValue: '',
           validator: (value) {
-            if (value.isEmpty) return 'ZIP code is required';
+            if (value?.isEmpty ?? true) return 'ZIP code is required';
             final zipRegex = RegExp(r'^\d{5}(-\d{4})?$');
-            if (!zipRegex.hasMatch(value)) {
+            if (!zipRegex.hasMatch(value!)) {
               return 'Invalid ZIP code format (12345 or 12345-6789)';
             }
             return null;
@@ -144,8 +144,8 @@ class _ValidationExamplesContentState
           id: FormixFieldID<String>('username'),
           initialValue: '',
           validator: (value) {
-            if (value.isEmpty) return 'Username is required';
-            if (value.length < 3) {
+            if (value?.isEmpty ?? true) return 'Username is required';
+            if (value!.length < 3) {
               return 'Username must be at least 3 characters';
             }
             if (value.length > 20) {
@@ -161,7 +161,7 @@ class _ValidationExamplesContentState
           id: FormixFieldID<String>('bio'),
           initialValue: '',
           validator: (value) {
-            if (value.length > 500) {
+            if ((value?.length ?? 0) > 500) {
               return 'Bio must be less than 500 characters';
             }
             return null;

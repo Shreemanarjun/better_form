@@ -37,6 +37,16 @@ abstract class FormixMessages {
 
   /// Helper text when async validation is in progress
   String validating();
+
+  /// Resolve a template string with placeholders.
+  /// Example: format('{label} must be {min}', {'label': 'Age', 'min': 18})
+  String format(String template, Map<String, dynamic> params) {
+    var result = template;
+    params.forEach((key, value) {
+      result = result.replaceAll('{$key}', value.toString());
+    });
+    return result;
+  }
 }
 
 /// Default implementation of [FormixMessages] in English.

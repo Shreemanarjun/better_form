@@ -219,5 +219,62 @@ void main() {
       expect(find.text('position: Developer'), findsOneWidget);
       expect(find.text('salary: 100000.0'), findsOneWidget);
     });
+
+    testWidgets('Lazy loading: Only current step widgets should be mounted', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        const ProviderScope(child: MaterialApp(home: MultiStepFormPage())),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Verify Step 1 is present
+      expect(
+        find.widgetWithText(TextField, 'Full Name'),
+        findsOneWidget,
+        reason: 'Step 1 should be visible initially',
+      );
+
+      // Verify Step 2 is NOT present (Lazy initialization)
+      expect(
+        find.widgetWithText(TextField, 'Street Address'),
+        findsNothing,
+        reason: 'Step 2 should NOT be mounted yet',
+      );
+
+      // Fill Step 1 to proceed
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Full Name').first,
+        'Lazyness Test',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Email').first,
+        'lazy@test.com',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Phone').first,
+        '1231231234',
+      );
+      await tester.pumpAndSettle();
+
+      // Go to Step 2
+      await tester.tap(find.byKey(const Key('continue_button')).first);
+      await tester.pumpAndSettle();
+
+      // Verify Step 2 is now present
+      expect(
+        find.widgetWithText(TextField, 'Street Address'),
+        findsOneWidget,
+        reason: 'Step 2 should be mounted now',
+      );
+
+      // Verify Step 1 is NO LONGER present (Unmounted to save memory)
+      expect(
+        find.widgetWithText(TextField, 'Full Name'),
+        findsNothing,
+        reason: 'Step 1 should be unmounted when moving to Step 2',
+      );
+    });
   });
 }

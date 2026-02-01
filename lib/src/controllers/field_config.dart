@@ -1,7 +1,9 @@
+import 'package:flutter/services.dart';
 import 'field_id.dart';
 import 'field.dart';
 import '../enums.dart';
 import 'form_state.dart';
+import '../validators/validators.dart';
 
 /// Configuration for a form field
 class FormixFieldConfig<T> {
@@ -16,7 +18,38 @@ class FormixFieldConfig<T> {
     this.asyncValidator,
     this.debounceDuration,
     this.validationMode = FormixAutovalidateMode.always,
+    this.inputFormatters,
+    this.textInputAction,
+    this.onSubmitted,
   });
+
+  /// Create a field config with a validator chain.
+  factory FormixFieldConfig.chain({
+    required FormixFieldID<T> id,
+    required ValidatorChain<T, dynamic> rules,
+    T? initialValue,
+    String? label,
+    String? hint,
+    Duration? debounceDuration,
+    FormixAutovalidateMode validationMode = FormixAutovalidateMode.always,
+    List<TextInputFormatter>? inputFormatters,
+    TextInputAction? textInputAction,
+    void Function(String)? onSubmitted,
+  }) {
+    return FormixFieldConfig<T>(
+      id: id,
+      initialValue: initialValue,
+      validator: (T? v) => rules.build()(v),
+      asyncValidator: (T? v) => rules.buildAsync()(v),
+      label: label,
+      hint: hint,
+      debounceDuration: debounceDuration,
+      validationMode: validationMode,
+      inputFormatters: inputFormatters,
+      textInputAction: textInputAction,
+      onSubmitted: onSubmitted,
+    );
+  }
 
   /// Unique identifier for this field
   final FormixFieldID<T> id;
@@ -25,10 +58,10 @@ class FormixFieldConfig<T> {
   final T? initialValue;
 
   /// Synchronous validator function
-  final String? Function(T value)? validator;
+  final String? Function(T? value)? validator;
 
   /// Cross-field validator that can access the entire form state
-  final String? Function(T value, FormixData state)? crossFieldValidator;
+  final String? Function(T? value, FormixData state)? crossFieldValidator;
 
   /// List of fields that this field depends on for validation
   final List<FormixFieldID<dynamic>> dependsOn;
@@ -40,13 +73,22 @@ class FormixFieldConfig<T> {
   final String? hint;
 
   /// Asynchronous validator
-  final Future<String?> Function(T value)? asyncValidator;
+  final Future<String?> Function(T? value)? asyncValidator;
 
   /// Debounce duration for async validation
   final Duration? debounceDuration;
 
   /// Validation mode for this field
   final FormixAutovalidateMode validationMode;
+
+  /// Input formatters for the field (UI)
+  final List<TextInputFormatter>? inputFormatters;
+
+  /// Keyboard action (e.g. next, done)
+  final TextInputAction? textInputAction;
+
+  /// Callback when field is submitted
+  final void Function(String)? onSubmitted;
 
   FormixField<T> toField() {
     // Capture values to avoid type inference issues
@@ -62,11 +104,12 @@ class FormixFieldConfig<T> {
       dependsOn: dependsOn,
       label: label,
       hint: hint,
-      asyncValidator: localAsyncValidator != null
-          ? (T value) => localAsyncValidator(value)
-          : null,
+      asyncValidator: localAsyncValidator,
       debounceDuration: debounceDuration,
       validationMode: validationMode,
+      inputFormatters: inputFormatters,
+      textInputAction: textInputAction,
+      onSubmitted: onSubmitted,
     );
   }
 
@@ -81,7 +124,10 @@ class FormixFieldConfig<T> {
           label == other.label &&
           hint == other.hint &&
           asyncValidator == other.asyncValidator &&
-          debounceDuration == other.debounceDuration;
+          debounceDuration == other.debounceDuration &&
+          inputFormatters == other.inputFormatters &&
+          textInputAction == other.textInputAction &&
+          onSubmitted == other.onSubmitted;
 
   @override
   int get hashCode =>
@@ -91,5 +137,8 @@ class FormixFieldConfig<T> {
       label.hashCode ^
       hint.hashCode ^
       asyncValidator.hashCode ^
-      debounceDuration.hashCode;
+      debounceDuration.hashCode ^
+      inputFormatters.hashCode ^
+      textInputAction.hashCode ^
+      onSubmitted.hashCode;
 }

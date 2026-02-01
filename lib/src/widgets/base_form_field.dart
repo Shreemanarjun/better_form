@@ -20,7 +20,7 @@ abstract class FormixFieldWidget<T> extends StatefulWidget {
 
   final FormixFieldID<T> fieldId;
   final FormixController? controller;
-  final String? Function(T value)? validator;
+  final String? Function(T? value)? validator;
   final T? initialValue;
 
   @override

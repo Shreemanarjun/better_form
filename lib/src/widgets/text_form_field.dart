@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../controllers/field_id.dart';
@@ -9,6 +10,21 @@ import 'riverpod_form_fields.dart';
 
 /// Riverpod-based text form field
 class RiverpodTextFormField extends ConsumerStatefulWidget {
+  final FormixFieldID<String> fieldId;
+  final InputDecoration? decoration;
+  final TextInputType? keyboardType;
+  final int? maxLength;
+  final AutoDisposeStateNotifierProvider<FormixController, FormixData>?
+  controllerProvider;
+  final FocusNode? focusNode;
+  final List<TextInputFormatter>? inputFormatters;
+  final TextInputAction? textInputAction;
+  final void Function(String)? onFieldSubmitted;
+  final bool readOnly;
+  final int? maxLines;
+  final bool expands;
+  final TextStyle? style;
+
   const RiverpodTextFormField({
     super.key,
     required this.fieldId,
@@ -17,15 +33,14 @@ class RiverpodTextFormField extends ConsumerStatefulWidget {
     this.maxLength,
     this.controllerProvider,
     this.focusNode,
+    this.inputFormatters,
+    this.textInputAction,
+    this.onFieldSubmitted,
+    this.readOnly = false,
+    this.maxLines = 1,
+    this.expands = false,
+    this.style,
   });
-
-  final FormixFieldID<String> fieldId;
-  final InputDecoration? decoration;
-  final TextInputType? keyboardType;
-  final int? maxLength;
-  final AutoDisposeStateNotifierProvider<FormixController, FormixData>?
-  controllerProvider;
-  final FocusNode? focusNode;
 
   @override
   ConsumerState<RiverpodTextFormField> createState() =>
@@ -88,6 +103,7 @@ class _RiverpodTextFormFieldState extends ConsumerState<RiverpodTextFormField> {
           final value = ref.watch(fieldValueProvider(resolvedId));
           final validation = ref.watch(fieldValidationProvider(resolvedId));
           final isDirty = ref.watch(fieldDirtyProvider(resolvedId));
+          final fieldCode = controller.getField(resolvedId);
 
           // Update controller text when value changes externally
           if (_textController.text != (value ?? '')) {
@@ -116,6 +132,14 @@ class _RiverpodTextFormFieldState extends ConsumerState<RiverpodTextFormField> {
               focusNode: _focusNode,
               keyboardType: widget.keyboardType,
               maxLength: widget.maxLength,
+              readOnly: widget.readOnly,
+              maxLines: widget.maxLines,
+              expands: widget.expands,
+              style: widget.style,
+              inputFormatters: [
+                ...?fieldCode?.inputFormatters,
+                ...?widget.inputFormatters,
+              ],
               decoration: (widget.decoration ?? const InputDecoration())
                   .copyWith(
                     errorText: validation.isValid
@@ -125,6 +149,20 @@ class _RiverpodTextFormFieldState extends ConsumerState<RiverpodTextFormField> {
                   ),
               onChanged: (newValue) =>
                   controller.setValue(resolvedId, newValue),
+              textInputAction:
+                  widget.textInputAction ??
+                  fieldCode?.textInputAction ??
+                  TextInputAction.next,
+              onFieldSubmitted: (val) {
+                widget.onFieldSubmitted?.call(val);
+                fieldCode?.onSubmitted?.call(val);
+                if ((widget.textInputAction ??
+                        fieldCode?.textInputAction ??
+                        TextInputAction.next) ==
+                    TextInputAction.next) {
+                  controller.focusNextField(resolvedId);
+                }
+              },
             ),
           );
         },

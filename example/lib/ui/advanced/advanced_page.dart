@@ -41,7 +41,7 @@ class _AdvancedExampleContentState
           id: nameField,
           initialValue: 'John Doe',
           validator: (value) {
-            if (value.isEmpty) return 'Name is required';
+            if (value == null || value.isEmpty) return 'Name is required';
             if (value.length < 2) return 'Name must be at least 2 characters';
             return null;
           },
@@ -50,7 +50,7 @@ class _AdvancedExampleContentState
           id: emailField,
           initialValue: 'john@example.com',
           validator: (value) {
-            if (value.isEmpty) return 'Email is required';
+            if (value == null || value.isEmpty) return 'Email is required';
             // Use static constant if available or standard pattern
             if (!RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(value)) {
               return 'Invalid email format';
@@ -62,6 +62,7 @@ class _AdvancedExampleContentState
           id: ageField,
           initialValue: 25,
           validator: (value) {
+            if (value == null) return null;
             if (value < 13) return 'Must be at least 13 years old';
             if (value > 120) return 'Age must be realistic';
             return null;
@@ -76,7 +77,7 @@ class _AdvancedExampleContentState
           id: FormixFieldID<String>('bio'),
           initialValue: '',
           validator: (value) {
-            if (value.length > 500) {
+            if (value != null && value.length > 500) {
               return 'Bio must be less than 500 characters';
             }
             return null;
@@ -86,7 +87,7 @@ class _AdvancedExampleContentState
           id: FormixFieldID<String>('password'),
           initialValue: '',
           validator: (value) {
-            if (value.isEmpty) return 'Password is required';
+            if (value == null || value.isEmpty) return 'Password is required';
             if (value.length < 8) {
               return 'Password must be at least 8 characters';
             }
@@ -99,7 +100,9 @@ class _AdvancedExampleContentState
           validator: (value) {
             // Cross-field validation will be handled by a custom mechanism
             // For now, just validate that it's not empty
-            if (value.isEmpty) return 'Please confirm your password';
+            if (value == null || value.isEmpty) {
+              return 'Please confirm your password';
+            }
             return null;
           },
         ),

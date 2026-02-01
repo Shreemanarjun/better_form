@@ -12,6 +12,8 @@ import 'ui/dynamic_array/dynamic_array_page.dart';
 import 'ui/programmatic_control/programmatic_control_page.dart';
 import 'ui/form_groups/form_groups_page.dart';
 import 'ui/multi_step_form/multi_step_form_page.dart';
+import 'ui/undo_redo_demo.dart';
+import 'ui/multi_form_sync_page.dart';
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));
@@ -44,7 +46,7 @@ class _HomePageState extends State<HomePage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 12, vsync: this);
+    _tabController = TabController(length: 14, vsync: this);
   }
 
   @override
@@ -68,6 +70,8 @@ class _HomePageState extends State<HomePage>
             Tab(text: 'Control'),
             Tab(text: 'Groups'),
             Tab(text: 'Multi-Step'),
+            Tab(text: 'Undo/Redo'),
+            Tab(text: 'Sync'),
           ],
         ),
       ),
@@ -86,6 +90,8 @@ class _HomePageState extends State<HomePage>
           ProgrammaticControlPage(),
           FormGroupsPage(),
           MultiStepFormPage(),
+          UndoRedoPage(),
+          MultiFormSyncPage(),
         ],
       ),
     );

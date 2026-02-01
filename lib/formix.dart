@@ -15,6 +15,7 @@ export 'src/i18n.dart';
 
 // Widgets
 export 'src/widgets/formix.dart';
+export 'src/widgets/formix_listener.dart';
 export 'src/widgets/base_form_field.dart';
 export 'src/widgets/riverpod_form_fields.dart';
 export 'src/widgets/headless.dart';
@@ -35,3 +36,6 @@ export 'src/widgets/field_selector/formix_field_conditional_selector.dart';
 export 'src/widgets/field_selector/formix_field_performance_monitor.dart';
 export 'src/widgets/field_selector/formix_field_selector.dart';
 export 'src/widgets/field_selector/formix_field_value_selector.dart';
+export 'src/validators/validators.dart';
+export 'src/analytics/form_analytics.dart';
+export 'src/widgets/form_registry.dart';

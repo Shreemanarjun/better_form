@@ -8,68 +8,59 @@
 <a href="https://pub.dev/packages/formix"><img src="https://img.shields.io/pub/v/formix.svg" alt="Pub"></a>
 <a href="https://github.com/Shreemanarjun/formix/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a>
 <img src="https://img.shields.io/badge/coverage-93%25-brightgreen" alt="Code Coverage">
-<img src="https://img.shields.io/badge/tests-1000%2B-brightgreen" alt="Tests">
-<img src="https://img.shields.io/badge/version-0.0.1-blue" alt="Version">
+<img src="https://img.shields.io/badge/tests-passed-brightgreen" alt="Tests">
 </p>
 
-<p align="center">
-  <a href="https://formix.shreeman.dev"><strong>Full Documentation</strong></a>
-</p>
+**An elite, type-safe, and ultra-reactive form engine for Flutter.**
 
-An elite, type-safe, and ultra-reactive form engine for Flutter. Powered by Riverpod, Formix delivers lightning-fast performance and effortless memory management, whether you're building a simple contact form or a massive, multi-section enterprise dashboard.
+Powered by Riverpod, Formix delivers lightning-fast performance, zero boilerplate, and effortless state management. Whether it's a simple login screen or a complex multi-step wizard, Formix scales with you.
+
+---
+
+## 📑 Table of Contents
+- [📦 Installation](#-installation)
+- [⚡ Quick Start](#-quick-start)
+- [🎮 Choosing Your API (Comparison)](#-choosing-your-api-comparison)
+- [🏗️ The Three Pillars of Formix](#%EF%B8%8F-the-three-pillars-of-formix)
+- [🎨 UI Components](#-ui-components)
+  - [Available Fields](#available-fields)
+  - [Custom Field Widgets](#custom-field-widgets)
+- [🚥 Validation & UX](#%EF%B8%8F-validation--ux)
+  - [Sync & Async Validation](#sync--async-validation)
+  - [Manual/Backend Errors](#manualbackend-errors)
+- [🛠️ Professional API Guide](#%EF%B8%8F-professional-api-guide)
+- [🚀 Advanced Patterns](#-advanced-patterns)
+- [💡 Pro Tips](#-pro-tips)
+
+---
 
 ## 📦 Installation
 
-Add `formix` to your `pubspec.yaml`:
-
-```yaml
-dependencies:
-  formix: ^0.0.1
-  flutter_riverpod: ^2.5.1
-```
-
-Or run:
 ```bash
 flutter pub add formix
 ```
 
 ---
 
-## ⚡ Quick Start (For Beginners)
+## ⚡ Quick Start
 
-The fastest way to build a type-safe form in 3 minutes.
-
-### 1. Define your fields
+### 1. Define Fields
 ```dart
 final emailField = FormixFieldID<String>('email');
 final ageField = FormixFieldID<int>('age');
 ```
 
-### 2. Wrap your app in a Scope
-```dart
-void main() {
-  runApp(const ProviderScope(child: MyApp()));
-}
-```
-
-### 3. Build the Form
+### 2. Build Form
 ```dart
 Formix(
   child: Column(
     children: [
-      RiverpodTextFormField(
-        fieldId: emailField,
-        decoration: InputDecoration(labelText: 'Email'),
-      ),
-      RiverpodNumberFormField(
-        fieldId: ageField,
-        decoration: InputDecoration(labelText: 'Age'),
-      ),
+      RiverpodTextFormField(fieldId: emailField),
+      RiverpodNumberFormField(fieldId: ageField),
+
       FormixBuilder(
         builder: (context, scope) => ElevatedButton(
-          onPressed: () => scope.submit(
-            onValid: (values) => print('Saving: $values'),
-          ),
+          onPressed: scope.watchIsValid ? () => scope.submit() : null,
           child: Text('Submit'),
         ),
       ),
@@ -80,738 +71,203 @@ Formix(
 
 ---
 
-## ✨ Features
+## 🎮 Choosing Your API (Comparison)
 
-- 🔒 **True Type Safety**: No more `map['key'] as String`. Use `FormixFieldID<T>`.
-- 🚀 **Extreme Performance**: Only the specific field widget rebuilds when its value changes.
-- 🗑️ **Zero Memory Leaks**: Controllers are automatically disposed via Riverpod's `autoDispose`.
-- 🚥 **Flexible Validation**: Sync, Async, Debounced, and Cross-field rules.
-- 🏗️ **Lazy Sections**: Built for massive forms. Register fields only when UI is built.
-- 💾 **Persistence**: Built-in support for saving draft state automatically.
-- 🎯 **UX First**: Automated scrolling to errors, focus management, and navigation guards.
-- 🔑 **GlobalKey Access**: Control forms from anywhere using `GlobalKey<FormixState>` (like FormBuilder).
-- 🔔 **Form Callbacks**: React to changes with `onChanged` for auto-save and analytics.
-- 🎭 **Multi-Form Support**: Parallel and nested forms with complete state isolation.
+| API | Best For | Rebuilds UI? | DX Rank |
+| :--- | :--- | :--- | :--- |
+| **`FormixBuilder`** | Granular UI updates (Buttons, status labels) | ✅ Yes | ⭐️⭐️⭐️⭐️⭐️ |
+| **`FormixListener`** | Side effects (Logic, Nav, Snackbar) | ❌ No | ⭐️⭐️⭐️⭐️⭐️ |
+| **`GlobalKey`** | External Control (AppBar, FAB, Logic) | ❌ No | ⭐️⭐️⭐️⭐️ |
+| **`ref.watch(fieldValueProvider)`** | Cross-field logic within Consumer | ✅ Yes | ⭐️⭐️⭐️⭐️ |
 
 ---
 
-## 📖 Essential Guide
+## 🎨 UI Components
 
-### Defining Field Configuration
-While `Formix` works with zero setup, you can define rules globally or locally using `FormixFieldConfig`.
+### Available Fields
+Formix comes with pre-built, high-performance widgets that work instantly:
 
-```dart
-Formix(
-  fields: [
-    FormixFieldConfig<String>(
-      id: emailField,
-      label: 'User Email',
-      validator: (val) => val.contains('@') ? null : 'Invalid email',
-      initialValue: 'guest@example.com',
-    ),
-  ],
-  child: ...
-)
-```
+- **`RiverpodTextFormField`**: Full-featured text input with auto-validation and dirty state indicators.
+- **`RiverpodNumberFormField`**: Type-safe numeric input with support for `min`/`max` constraints.
+- **`RiverpodCheckboxFormField`**: Reactive checkbox with built-in label support.
+- **`RiverpodDropdownFormField<T>`**: Type-safe generic dropdown for selections.
+- **`RiverpodFormStatus`**: A debug/status card that shows current form validity, dirty state, and submission progress.
 
-### Accessing Values & State
-Use `FormixScope` (via `FormixBuilder` or `FormixWidget`) for the cleanest API.
+### Custom Field Widgets
+Need a custom UI? Extend `FormixFieldWidget` to create a fully integrated form field in seconds.
 
 ```dart
-FormixBuilder(
-  builder: (context, scope) {
-    // Reactive: Rebuilds whenever 'age' changes
-    final age = scope.watchValue(ageField);
-
-    // Non-reactive: Get value without rebuilt
-    final currentAge = scope.getValue(ageField);
-
-    return Text('Age is $age');
-  },
-)
-```
-
----
-
-## 🛠️ Professional Guide
-
-### 1. Custom Field Implementation
-Extend `FormixFieldWidget` to create pixel-perfect custom inputs with zero boilerplate.
-
-```dart
-class CustomToggleField extends FormixFieldWidget<bool> {
-  const CustomToggleField({required super.fieldId});
-
-  @override
-  Widget buildForm(BuildContext context, FormixScope scope) {
-    final value = scope.watchValue(fieldId) ?? false;
-
-    return SwitchListTile(
-      value: value,
-      onChanged: (v) => scope.setValue(fieldId, v),
-      title: Text('Toggle Me'),
-    );
-  }
-}
-```
-
-### 2. Data Loss Prevention
-Use `FormixNavigationGuard` to stop users from accidentally navigating away after they've spent time filling out a form.
-
-```dart
-Formix(
-  child: FormixNavigationGuard(
-    // Shows a default confirmation dialog if form is dirty
-    child: MyFormBody(),
-  ),
-)
-```
-
-### 3. Sectional & Lazy Scaling
-For huge forms, use `FormixSection`. Fields are only registered when they enter the widget tree.
-
-```dart
-ListView(
-  children: [
-    FormixSection(
-      fields: [ /* Section 1 Configs */ ],
-      child: StepOneWidgets(),
-    ),
-    FormixSection(
-      fields: [ /* Section 2 Configs */ ],
-      child: StepTwoWidgets(),
-    ),
-  ],
-)
-```
-
-### 4. Performance Monitoring
-During development, use `FormixFieldPerformanceMonitor` to ensure your custom widgets aren't rebuilding too often.
-
-```dart
-FormixFieldPerformanceMonitor<String>(
-  fieldId: nameField,
-  builder: (context, info, rebuildCount) {
-    return Column(
-      children: [
-        Text('Rebuilds: $rebuildCount'),
-        MyWidget(info.value),
-      ],
-    );
-  },
-)
-```
-
-### 4. Simplified Usage with Builders or Base Classes
-Custom widgets can leverage `FormixScope` for an effortless development experience. `FormixScope` provides high-performance reactive accessors and a powerful `submit` helper.
-
-#### Using `FormixBuilder`
-```dart
-FormixBuilder(
-  builder: (context, scope) {
-    final isValid = scope.watchIsValid;
-    final isSubmitting = scope.watchIsSubmitting;
-
-    return ElevatedButton(
-      onPressed: (isValid && !isSubmitting)
-        ? () => scope.submit(onValid: (values) async => print(values))
-        : null,
-      child: Text(isSubmitting ? 'Submitting...' : 'Submit'),
-    );
-  },
-)
-```
-
-#### Extending `FormixWidget`
-```dart
-class FormStatusPanel extends FormixWidget {
-  const FormStatusPanel({super.key});
-
-  @override
-  Widget buildForm(BuildContext context, FormixScope scope) {
-    // Rebuilds ONLY when 'name' or validation for 'email' changes
-    final name = scope.watchValue(nameField);
-    final emailError = scope.watchError(emailField);
-    final isValidating = scope.watchIsValidating(emailField);
-
-    return Column(
-      children: [
-        if (name != null) Text('Welcome, $name'),
-        if (isValidating) const CircularProgressIndicator(),
-        if (emailError != null) Text(emailError, style: TextStyle(color: Colors.red)),
-      ],
-    );
-  }
-}
-```
-
-### 5. External Form Control with GlobalKey
-Access and control your form from outside its widget tree using `GlobalKey<FormixState>` - perfect for AppBar actions, floating buttons, or external validation triggers.
-
-```dart
-class MyFormPage extends StatelessWidget {
-  final _formKey = GlobalKey<FormixState>();
+class MyCustomToggle extends FormixFieldWidget<bool> {
+  const MyCustomToggle({super.key, required super.fieldId});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('User Profile'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.save),
-            onPressed: () {
-              // Access form from anywhere!
-              final controller = _formKey.currentState?.controller;
-              final data = _formKey.currentState?.data;
-
-              if (data?.isValid ?? false) {
-                print('Saving: ${data?.values}');
-                controller?.submit(
-                  onValid: (values) async {
-                    await saveToServer(values);
-                  },
-                );
-              }
-            },
-          ),
-        ],
-      ),
-      body: Formix(
-        key: _formKey,
-        initialValue: {'name': 'John', 'email': 'john@example.com'},
-        child: Column(
-          children: [
-            RiverpodTextFormField(fieldId: nameField),
-            RiverpodTextFormField(fieldId: emailField),
-          ],
-        ),
-      ),
+    // Access value, validation, and dirty state directly!
+    return Switch(
+      value: value ?? false,
+      onChanged: (v) => didChange(v), // Notifies the form
     );
   }
 }
-```
-
-### 6. Form Change Callbacks
-React to any value change in your form with the `onChanged` callback - ideal for auto-save, analytics, or real-time validation.
-
-```dart
-Formix(
-  initialValue: {'name': '', 'email': ''},
-  onChanged: (values) {
-    // Triggered whenever ANY field changes
-    print('Form updated: $values');
-
-    // Auto-save draft
-    saveDraft(values);
-
-    // Track analytics
-    analytics.logFormProgress(values.length);
-  },
-  child: MyFormFields(),
-)
-```
-
-### 7. Multiple Forms: Parallel & Nested
-Formix seamlessly handles multiple independent forms on the same screen, or nested forms for complex hierarchical data.
-
-#### Parallel Forms (Independent)
-```dart
-Column(
-  children: [
-    // Form 1: User Info
-    Formix(
-      key: ValueKey('user_form'),
-      initialValue: {'name': 'Alice'},
-      child: Column(
-        children: [
-          Text('User Information'),
-          RiverpodTextFormField(fieldId: nameField),
-          FormixBuilder(
-            builder: (context, scope) => ElevatedButton(
-              onPressed: () => scope.submit(
-                onValid: (values) => saveUser(values),
-              ),
-              child: Text('Save User'),
-            ),
-          ),
-        ],
-      ),
-    ),
-
-    Divider(),
-
-    // Form 2: Company Info (completely independent)
-    Formix(
-      key: ValueKey('company_form'),
-      initialValue: {'company': 'Acme Corp'},
-      child: Column(
-        children: [
-          Text('Company Information'),
-          RiverpodTextFormField(fieldId: companyField),
-          FormixBuilder(
-            builder: (context, scope) => ElevatedButton(
-              onPressed: () => scope.submit(
-                onValid: (values) => saveCompany(values),
-              ),
-              child: Text('Save Company'),
-            ),
-          ),
-        ],
-      ),
-    ),
-  ],
-)
-```
-
-#### Nested Forms (Hierarchical)
-```dart
-// Outer form: Order details
-Formix(
-  initialValue: {'orderId': '12345', 'status': 'pending'},
-  child: Column(
-    children: [
-      RiverpodTextFormField(fieldId: orderIdField),
-      RiverpodTextFormField(fieldId: statusField),
-
-      // Inner form: Shipping address (isolated scope)
-      Formix(
-        initialValue: {
-          'street': '123 Main St',
-          'city': 'New York',
-          'zip': '10001',
-        },
-        child: FormixBuilder(
-          builder: (context, scope) {
-            // This scope only sees shipping fields
-            return Column(
-              children: [
-                Text('Shipping Address'),
-                RiverpodTextFormField(fieldId: streetField),
-                RiverpodTextFormField(fieldId: cityField),
-                RiverpodTextFormField(fieldId: zipField),
-                ElevatedButton(
-                  onPressed: () => scope.submit(
-                    onValid: (address) => validateAddress(address),
-                  ),
-                  child: Text('Validate Address'),
-                ),
-              ],
-            );
-          },
-        ),
-      ),
-    ],
-  ),
-)
-```
-
-**Key Benefits:**
-- ✅ Each form maintains its own state, validation, and dirty tracking
-- ✅ Nested forms can share field IDs without conflicts
-- ✅ Submit, reset, and validation are scoped to each form
-- ✅ Perfect for wizards, multi-step flows, or complex data entry
-
-#### Multi-Step Wizard with Validation
-Build complex multi-step forms with independent validation per step using GlobalKey for external control:
-
-```dart
-class RegistrationWizard extends StatefulWidget {
-  @override
-  State<RegistrationWizard> createState() => _RegistrationWizardState();
-}
-
-class _RegistrationWizardState extends State<RegistrationWizard> {
-  int _currentStep = 0;
-
-  // GlobalKeys for each step
-  final _step1Key = GlobalKey<FormixState>();
-  final _step2Key = GlobalKey<FormixState>();
-  final _step3Key = GlobalKey<FormixState>();
-
-  // Field IDs
-  final nameField = FormixFieldID<String>('name');
-  final emailField = FormixFieldID<String>('email');
-  final addressField = FormixFieldID<String>('address');
-  final cityField = FormixFieldID<String>('city');
-  final termsField = FormixFieldID<bool>('terms');
-
-  bool _canProceed() {
-    final currentKey = [_step1Key, _step2Key, _step3Key][_currentStep];
-    return currentKey.currentState?.data.isValid ?? false;
-  }
-
-  void _onStepContinue() {
-    if (_canProceed()) {
-      if (_currentStep < 2) {
-        setState(() => _currentStep++);
-      } else {
-        _submitForm();
-      }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please fix errors before continuing')),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Stepper(
-      currentStep: _currentStep,
-      onStepContinue: _onStepContinue,
-      onStepCancel: () => setState(() => _currentStep--),
-      steps: [
-        Step(
-          title: Text('Personal Info'),
-          content: ProviderScope(
-            child: Formix(
-              key: _step1Key,
-              fields: [
-                FormixFieldConfig<String>(
-                  id: nameField,
-                  validator: (v) => v.isEmpty ? 'Required' : null,
-                ),
-                FormixFieldConfig<String>(
-                  id: emailField,
-                  validator: (v) => v.contains('@') ? null : 'Invalid email',
-                ),
-              ],
-              child: Column(
-                children: [
-                  RiverpodTextFormField(
-                    fieldId: nameField,
-                    decoration: InputDecoration(labelText: 'Name'),
-                  ),
-                  RiverpodTextFormField(
-                    fieldId: emailField,
-                    decoration: InputDecoration(labelText: 'Email'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        Step(
-          title: Text('Address'),
-          content: ProviderScope(
-            child: Formix(
-              key: _step2Key,
-              fields: [
-                FormixFieldConfig<String>(
-                  id: addressField,
-                  validator: (v) => v.isEmpty ? 'Required' : null,
-                ),
-                FormixFieldConfig<String>(
-                  id: cityField,
-                  validator: (v) => v.isEmpty ? 'Required' : null,
-                ),
-              ],
-              child: Column(
-                children: [
-                  RiverpodTextFormField(
-                    fieldId: addressField,
-                    decoration: InputDecoration(labelText: 'Street Address'),
-                  ),
-                  RiverpodTextFormField(
-                    fieldId: cityField,
-                    decoration: InputDecoration(labelText: 'City'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        Step(
-          title: Text('Confirm'),
-          content: ProviderScope(
-            child: Formix(
-              key: _step3Key,
-              fields: [
-                FormixFieldConfig<bool>(
-                  id: termsField,
-                  validator: (v) => v ? null : 'Must accept terms',
-                ),
-              ],
-              child: FormixBuilder(
-                builder: (context, scope) {
-                  final accepted = scope.watchValue(termsField) ?? false;
-                  return CheckboxListTile(
-                    title: Text('I accept the terms and conditions'),
-                    value: accepted,
-                    onChanged: (v) => scope.setValue(termsField, v ?? false),
-                  );
-                },
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-```
-
-**See the full example**: Check `example/lib/ui/multi_step_form/multi_step_form_page.dart` for a complete 4-step registration form with validation, progress tracking, and data collection.
-
-### 8. Dynamic Form Arrays
-Manage lists of dynamic inputs easily with `FormixArray`.
-
-```dart
-final friendsArray = FormixArrayID<String>('friends');
-
-FormixArray<String>(
-  id: friendsArray,
-  builder: (context, index, friendId, scope) {
-    return Row(
-      children: [
-        Expanded(child: RiverpodTextFormField(fieldId: friendId)),
-        IconButton(
-          icon: Icon(Icons.delete),
-          onPressed: () => scope.removeArrayItemAt(friendsArray, index),
-        ),
-      ],
-    );
-  },
-)
-
-// Add new items via scope
-scope.addArrayItem(friendsArray, 'New Friend');
 ```
 
 ---
 
-## 🧠 Advanced Features
+## 🚥 Validation & UX
 
-### 1. Lazy Loading & Sectional Forms
-For massive forms (100+ fields), you can organize fields into sections using `FormixSection`. This allows:
-- **Optimization**: Fields are only registered when the section is built (e.g., when scrolled into view in a `ListView`).
-- **Organization**: Cleanly group logical parts of your form.
-- **Dynamic Forms**: Easily add/remove entire sets of fields based on user interaction.
+Formix provides a multi-layered validation system designed for an elite user experience.
 
-```dart
-Formix(
-  child: ListView(
-    children: [
-      // Standard header
-      const Text('Profile Information'),
-
-      // Registered immediately
-      FormixSection(
-        fields: [ firstNameConfig, lastNameConfig ],
-        child: Column(children: [ ... ]),
-      ),
-
-      const SizedBox(height: 1000), // Long gap
-
-      // Only registered when user scrolls down
-      FormixSection(
-        fields: [ bioConfig, websiteConfig ],
-        keepAlive: true, // Keep values even if scrolled out of view
-        child: ProfileBioSection(),
-      ),
-    ],
-  ),
-)
-```
-
-### 2. Cross-Field Dependencies
-Use `FormixDependentField` to conditionally render UI based on other field values. This is much more efficient than rebuilding the whole form.
-
-```dart
-// Only show the "Spouse Name" field if "Marital Status" is "Married"
-FormixDependentField<String>(
-  fieldId: maritalStatusField,
-  builder: (context, status) {
-    if (status == 'Married') {
-      return RiverpodTextFormField(
-        fieldId: spouseNameField,
-        decoration: const InputDecoration(labelText: 'Spouse Name'),
-      );
-    }
-    return const SizedBox.shrink();
-  },
-)
-```
-
-### 3. Programmatic Control
-Directly control focus and scrolling within your form through the `FormixScope`.
-
-```dart
-FormixBuilder(
-  builder: (context, scope) {
-    return Column(
-      children: [
-        ElevatedButton(
-          onPressed: () => scope.focusField(emailField),
-          child: Text('Jump to Email'),
-        ),
-        ElevatedButton(
-          onPressed: () => scope.focusFirstError(),
-          child: Text('Fix Errors'),
-        ),
-        ElevatedButton(
-          onPressed: () => scope.scrollToField(lastFieldId),
-          child: Text('Scroll to Bottom'),
-        ),
-      ],
-    );
-  },
-)
-```
-
-### 2. State Persistence
-Automatically save form progress to local storage (or any other source) so users don't lose data on app restart or crash.
-
-Implement the simple `FormixPersistence` interface:
-
-```dart
-class MyPrefsPersistence implements FormixPersistence {
-  @override
-  Future<void> saveFormState(String formId, Map<String, dynamic> values) async {
-    // Save to SharedPreferences / Hive / Database
-  }
-
-  // ... implement getSavedState and clearSavedState
-}
-```
-
-Then attach it to your form:
-
-```dart
-Formix(
-  formId: 'registration_wizard', // Unique ID for this form
-  persistence: MyPrefsPersistence(),
-  child: ...
-)
-```
-
----
-
-## 💡 Pro Tips: Usability & State Management
-
-Enhance your form's resilience and user experience with these three powerful features.
-
-### 1. `keepAlive`: Preserving State Across Navigation
-By default, Formix automatically disposes of its state when the widget is unmounted to save memory. However, in multi-step forms (like wizards or tabs) where the user navigates back and forth, you don't want to lose their data.
-
-Set `keepAlive: true` to preserve the form state in memory even if the widget is temporarily removed from the tree.
-
-```dart
-Formix(
-  keepAlive: true, // Prevents auto-disposal
-  child: MyFormStep(),
-)
-```
-
-### 2. `formId`: Identification for Persistence
-When using `FormixPersistence` to save drafts, `formId` is **required**. It acts as the unique key to store and retrieve data for this specific form instance.
-
-```dart
-Formix(
-  formId: 'user_onboarding_v1', // Must be unique across the app
-  persistence: MyLocalPersistence(),
-  child: ...
-)
-```
-
-### 3. Off-Stage Widget Registering
-In complex layouts like `IndexedStack`, `PageView`, or tabs, some field widgets might be "off-stage" (not yet built). By default, Formix only knows about fields that have been rendered. This causes issues if you try to `validate()` a form where required fields haven't been built yet—they effectively don't exist.
-
-To fix this, **pre-register** your fields by passing them to the `Formix` constructor. This ensures the controller knows about them immediately, allowing for full validation even if the UI is hidden.
-
-```dart
-final nameField = FormixFieldID<String>('name');
-final bioField = FormixFieldID<String>('bio');
-
-Formix(
-  // Register fields upfront so validation works even if widgets aren't built
-  fields: [
-    FormixFieldConfig<String>(id: nameField, validator: (v) => v.isNotEmpty ? null : 'Required'),
-    FormixFieldConfig<String>(id: bioField, validator: (v) => v.isNotEmpty ? null : 'Required'),
-  ],
-  child: IndexedStack(
-    index: _currentIndex,
-    children: [
-      // Step 1: Visible
-      RiverpodTextFormField(fieldId: nameField),
-
-      // Step 2: Hidden (Off-stage), but still validated thanks to 'fields' above!
-      RiverpodTextFormField(fieldId: bioField),
-    ],
-  ),
-)
-```
-
----
-
-
-## 🚦 Error Handling & Advanced UI
-
-### Focus & Error Management
-Guide your users directly to what needs fixing.
-
-```dart
-scope.submit(
-  onInvalid: (errors) {
-    // Automatically focus the first field with an error
-    // and scroll it into view.
-    scope.focusFirstError();
-  },
-  onValid: (values) async {
-    try {
-      await api.save(values);
-    } catch (e) {
-      // Manually set an error from the server
-      scope.setFieldError(emailField, 'Account already exists');
-    }
-  }
-)
-```
-
-### Handling Async Validation
-Formix automatically handles the "Validating" state. You can customize the loading UI:
+### Sync & Async Validation
+Define rules in `FormixFieldConfig`. Sync rules run immediately on every keystroke, while Async rules are intelligently debounced.
 
 ```dart
 FormixFieldConfig<String>(
   id: usernameField,
-  asyncValidator: (val) => checkRepo(val),
-  // debouncing is default to 300ms
-  debounceDuration: Duration(seconds: 1),
+  // 🟢 Sync: Immediate feedback
+  validator: (val) => val!.length < 3 ? 'Too short' : null,
+
+  // 🔵 Async: Intelligent Debouncing (Default 300ms)
+  asyncValidator: (val) async {
+    final available = await checkUsername(val!);
+    return available ? null : 'Username taken';
+  },
+  debounceDuration: const Duration(milliseconds: 500),
 )
 ```
 
-### Common Pitfalls (Troubleshooting)
+**UX Tip**: Formix widgets automatically show a `CircularProgressIndicator` or "Validating..." helper text while async rules are running!
 
-| Issue | Solution |
-| :--- | :--- |
-| **"No Formix found"** | Ensure all fields are descendants of a `Formix` widget. |
-| **"No Material widget found"** | `RiverpodTextFormField` and others require a `Material` / `Scaffold` ancestor. |
-| **Field doesn't rebuild** | Ensure you are using `scope.watchValue(id)` or `ref.watch(fieldValueProvider(id))`. |
-| **Custom field not registering** | If using `FormixFieldWidget`, it registers itself. If building from scratch, use `FormixSection` or `controller.registerField`. |
+### Manual/Backend Errors
+Sometimes errors come from the server after a submit attempt. Use `setFieldError` to inject these errors directly into your UI.
 
----
+```dart
+final controller = Formix.controllerOf(context);
 
-### Widgets
-- **`Formix`**: Root widget context.
-- **`FormixBuilder`**: Builder widget with controller and state.
-- **`FormixWidget`**: Base class for custom form widgets.
-- **`FormixSection`**: Lazy field registration and sectional organization.
-- **`RiverpodTextFormField`**: Text input.
-- **`RiverpodNumberFormField`**: Numeric input (int/double).
-- **`RiverpodCheckboxFormField`**: Boolean checkbox.
-- **`RiverpodDropdownFormField`**: Selection from list.
-- **`FormixDependentField`**: Reactive builder for dependencies.
-- **`RiverpodFormStatus`**: Debug/Status display.
-
-### Classes
-- **`FormixFieldID<T>`**: Typed identifier key.
-- **`FormixFieldConfig<T>`**: Configuration (validator, label, initialValue, etc).
-- **`FormixState`**: The immutable state containing all field values and errors.
-- **`RiverpodFormController`**: The brain ensuring state management.
+try {
+  await api.submit(data);
+} catch (e) {
+  if (e is ValidationError) {
+    // Map backend errors to specific fields!
+    controller?.setFieldError(emailField, 'Email already exists on server');
+  }
+}
+```
 
 ---
 
-## 🤝 Contributing
+## 🏗️ The Three Pillars of Formix
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+### 1. Inside the Tree (Reactive UI)
+Use `FormixBuilder` for code that lives inside the form and needs to react to state changes.
+```dart
+FormixBuilder(
+  builder: (context, scope) => Text('Age: ${scope.watchValue(ageField)}'),
+)
+```
+
+### 2. Outside the Tree (External Control)
+Access the form from your `Scaffold`'s `AppBar` using a `GlobalKey`.
+```dart
+final _formKey = GlobalKey<FormixState>();
+// ...
+onPressed: () => _formKey.currentState?.controller.submit(...)
+```
+
+### 3. Listening to Changes (Side Effects)
+Use `FormixListener` for navigation or snackbars. It doesn't trigger rebuilds.
+```dart
+FormixListener(
+  formKey: _formKey,
+  listener: (context, state) => print('Valid: ${state.isValid}'),
+  child: Formix(key: _formKey, ...),
+)
+```
+
+---
+
+## 🚀 Advanced Patterns
+
+### Dynamic Form Arrays
+Manage lists of dynamic inputs easily with `FormixArray`.
+```dart
+FormixArray<String>(
+  id: hobbiesId,
+  itemBuilder: (context, index, itemId, scope) =>
+    RiverpodTextFormField(fieldId: itemId),
+)
+```
+
+### Computed & Derived Fields
+Update fields automatically based on other values.
+```dart
+FormixFieldDerivation(
+  dependencies: [priceField, quantityField],
+  targetField: totalField,
+  derive: (v) => (v[priceField] ?? 0.0) * (v[quantityField] ?? 1),
+)
+```
+
+---
+
+## 💡 Pro Tips
+
+- 💡 **`keepAlive`**: Maintain state in TabViews/Steppers.
+- 💡 **`Formix.of(context)`**: Quick access to the controller provider.
+- 💡 **`FormixNavigationGuard`**: Block accidental "Back" button presses when the form is dirty.
+
+---
+
+## 🧬 Advanced Logic
+
+### Multi-Form Synchronization
+Link fields between completely separate forms (e.g., a "Profile" form and a "Checkout" form).
+
+```dart
+// In your business logic or init
+checkoutController.bindField(
+  billingAddress,
+  sourceController: profileController,
+  sourceField: profileAddress,
+  twoWay: true, // Optional: Sync both ways
+);
+```
+
+### Optimistic Updates
+Perform immediate UI updates while waiting for async operations (like server saves). If the operation fails, the value automatically reverts.
+
+```dart
+await controller.optimisticUpdate(
+  fieldId: usernameField,
+  value: 'new_username',
+  action: () async {
+    await api.updateUsername('new_username');
+  },
+  revertOnError: true, // Default
+);
+```
+
+### Undo/Redo History
+Built-in state history allows you to implement undo/redo functionality effortlessly.
+
+```dart
+if (controller.canUndo) controller.undo();
+if (controller.canRedo) controller.redo();
+```
+
+### Automatic Focus Management
+Formix automatically handles focus traversal:
+- **Enter-to-Next**: Pressing "Enter" on the keyboard focuses the next field.
+- **Submit-to-Error**: On submission failure, the first invalid field is focused and scrolled into view.
+
+```dart
+// Enabled by default!
+// Customize via textInputAction in FormixFieldConfig
+FormixFieldConfig<String>(
+  id: emailField,
+  textInputAction: TextInputAction.next, // Default
+)
+```
+
+---
+
+<p align="center">Built with ❤️ for the Flutter Community</p>

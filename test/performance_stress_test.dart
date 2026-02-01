@@ -10,7 +10,7 @@ void main() {
         (i) => FormixFieldConfig<String>(
           id: FormixFieldID<String>('field_$i'),
           initialValue: '',
-          validator: (value) => value.isEmpty ? 'Required' : null,
+          validator: (value) => (value?.isEmpty ?? true) ? 'Required' : null,
         ),
       );
 

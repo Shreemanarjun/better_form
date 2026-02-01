@@ -185,8 +185,9 @@ void main() {
           initialValue: '',
           label: 'Nombre',
           // Validator uses the messages from the controller's property indirectly
-          validator: (v) =>
-              v.isEmpty ? controller.messages.required('Nombre') : null,
+          validator: (v) => (v?.isEmpty ?? true)
+              ? controller.messages.required('Nombre')
+              : null,
         ),
       );
 

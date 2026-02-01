@@ -36,7 +36,9 @@ class _HeadlessFormExampleContentState
           id: FormixFieldID<int>('rating'),
           initialValue: 3,
           validator: (value) {
-            if (value < 1 || value > 5) return 'Rating must be between 1 and 5';
+            if ((value ?? 0) < 1 || (value ?? 0) > 5) {
+              return 'Rating must be between 1 and 5';
+            }
             return null;
           },
         ),
@@ -44,8 +46,8 @@ class _HeadlessFormExampleContentState
           id: FormixFieldID<String>('feedback'),
           initialValue: '',
           validator: (value) {
-            if (value.isEmpty) return 'Please provide feedback';
-            if (value.length < 10) {
+            if (value?.isEmpty ?? true) return 'Please provide feedback';
+            if (value!.length < 10) {
               return 'Feedback must be at least 10 characters';
             }
             return null;

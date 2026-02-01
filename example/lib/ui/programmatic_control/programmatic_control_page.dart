@@ -20,7 +20,7 @@ class ProgrammaticControlPage extends StatelessWidget {
           FormixFieldConfig<String>(id: field2Id),
           FormixFieldConfig<String>(
             id: field3Id,
-            validator: (val) => val.isEmpty ? 'Required' : null,
+            validator: (val) => (val?.isEmpty ?? true) ? 'Required' : null,
           ),
           FormixFieldConfig<String>(id: field4Id),
           FormixFieldConfig<String>(id: field5Id),

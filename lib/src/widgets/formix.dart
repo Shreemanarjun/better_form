@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../analytics/form_analytics.dart';
 import '../controllers/riverpod_controller.dart';
 import '../persistence/form_persistence.dart';
 
@@ -22,9 +23,13 @@ class Formix extends ConsumerStatefulWidget {
     this.persistence,
     this.formId,
     this.onChanged,
+    this.analytics,
     this.keepAlive = false,
     required this.child,
   });
+
+  /// Optional analytics hook
+  final FormixAnalytics? analytics;
 
   /// initial values for the form fields.
   final Map<String, dynamic> initialValue;
@@ -78,6 +83,7 @@ class FormixState extends ConsumerState<Formix> {
         fields: widget.fields,
         persistence: widget.persistence,
         formId: widget.formId,
+        analytics: widget.analytics,
       ),
     );
   }
@@ -89,6 +95,30 @@ class FormixState extends ConsumerState<Formix> {
   ///
   /// Note: This is a snapshot. To watch state reactively, use [FormixBuilder].
   FormixData get data => ref.read(_provider);
+
+  /// Access the provider for Riverpod-specific utilities.
+  ///
+  /// This allows you to use Riverpod's `ref.watch`, `ref.listen`, etc.
+  /// outside of the widget tree.
+  ///
+  /// Example:
+  /// ```dart
+  /// final formKey = GlobalKey<FormixState>();
+  ///
+  /// // In a Consumer or ConsumerWidget:
+  /// final provider = formKey.currentState?.provider;
+  /// if (provider != null) {
+  ///   // Watch the form state
+  ///   final state = ref.watch(provider);
+  ///
+  ///   // Listen to specific changes
+  ///   ref.listen(provider.select((s) => s.isValid), (prev, next) {
+  ///     print('Validation changed: $next');
+  ///   });
+  /// }
+  /// ```
+  AutoDisposeStateNotifierProvider<FormixController, FormixData> get provider =>
+      _provider;
 
   @override
   Widget build(BuildContext context) {

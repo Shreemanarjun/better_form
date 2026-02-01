@@ -63,6 +63,10 @@ class FormixScope {
   bool watchIsTouched<T>(FormixFieldID<T> id) =>
       ref.watch(fieldTouchedProvider(id));
 
+  /// Watch if a specific field is pending (optimistic update or async).
+  bool watchIsPending<T>(FormixFieldID<T> id) =>
+      ref.watch(fieldPendingProvider(id));
+
   /// Watch the overall validity of the form.
   bool get watchIsValid => ref.watch(formValidProvider);
 
@@ -107,6 +111,10 @@ class FormixScope {
   /// Mark a field as touched (usually called when a field loses focus).
   void markAsTouched<T>(FormixFieldID<T> id) => controller.markAsTouched(id);
 
+  /// Checks if a field is pending (non-reactive).
+  bool isFieldPending<T>(FormixFieldID<T> id) =>
+      controller.currentState.isFieldPending(id);
+
   /// Request focus for a specific field.
   void focusField<T>(FormixFieldID<T> id) => controller.focusField(id);
 
@@ -133,6 +141,9 @@ class FormixScope {
 
   /// Reset the form to its initial values and clear all error states.
   void reset() => controller.reset();
+
+  /// Get current values (non-reactive). useful for submissions.
+  Map<String, dynamic> get values => controller.currentState.values;
 
   // --- Array Helpers ---
 

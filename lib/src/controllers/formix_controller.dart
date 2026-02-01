@@ -20,6 +20,7 @@ class FormixController extends RiverpodFormController {
     super.messages = const DefaultFormixMessages(),
     super.persistence,
     super.formId,
+    super.analytics,
   }) {
     addListener(_onStateChanged);
   }
@@ -106,6 +107,30 @@ class FormixController extends RiverpodFormController {
   @override
   void reset({ResetStrategy strategy = ResetStrategy.initialValues}) {
     super.reset(strategy: strategy);
+  }
+
+  /// Submits the form with automatic focus support on validation failure.
+  @override
+  Future<void> submit({
+    required Future<void> Function(Map<String, dynamic> values) onValid,
+    void Function(Map<String, ValidationResult> errors)? onError,
+    Duration? debounce,
+    Duration? throttle,
+    bool optimistic = false,
+    bool autoFocusOnInvalid = true,
+  }) async {
+    await super.submit(
+      onValid: onValid,
+      onError: (errors) {
+        if (autoFocusOnInvalid) {
+          focusFirstError();
+        }
+        onError?.call(errors);
+      },
+      debounce: debounce,
+      throttle: throttle,
+      optimistic: optimistic,
+    );
   }
 
   /// Disposes all created notifiers and listeners.
@@ -207,6 +232,15 @@ class FormixController extends RiverpodFormController {
   /// Requests focus for the specified field.
   void focusField<T>(FormixFieldID<T> id) {
     _focusNodes[id.key]?.requestFocus();
+  }
+
+  /// Focuses the next registered field relative to the current one.
+  void focusNextField<T>(FormixFieldID<T> currentId) {
+    final keys = _focusNodes.keys.toList();
+    final currentIndex = keys.indexOf(currentId.key);
+    if (currentIndex != -1 && currentIndex < keys.length - 1) {
+      _focusNodes[keys[currentIndex + 1]]?.requestFocus();
+    }
   }
 
   final Map<String, BuildContext> _contexts = {};

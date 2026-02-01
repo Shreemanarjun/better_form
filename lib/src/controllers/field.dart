@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'field_id.dart';
 import '../enums.dart';
 import 'form_state.dart';
@@ -17,6 +18,9 @@ class FormixField<T> {
     this.debounceDuration,
     this.emptyValue,
     this.validationMode = FormixAutovalidateMode.always,
+    this.inputFormatters,
+    this.textInputAction,
+    this.onSubmitted,
   });
 
   /// Unique identifier for this field
@@ -29,10 +33,10 @@ class FormixField<T> {
   final T? emptyValue;
 
   /// Synchronous validator function
-  final String? Function(T value)? validator;
+  final String? Function(T? value)? validator;
 
   /// Cross-field validator that can access the entire form state
-  final String? Function(T value, FormixData state)? crossFieldValidator;
+  final String? Function(T? value, FormixData state)? crossFieldValidator;
 
   /// List of fields that this field depends on for validation
   final List<FormixFieldID<dynamic>> dependsOn;
@@ -47,7 +51,7 @@ class FormixField<T> {
   final T Function(dynamic value)? transformer;
 
   /// Asynchronous validator
-  final Future<String?> Function(T value)? asyncValidator;
+  final Future<String?> Function(T? value)? asyncValidator;
 
   /// Debounce duration for async validation
   final Duration? debounceDuration;
@@ -55,25 +59,34 @@ class FormixField<T> {
   /// Validation mode for this field
   final FormixAutovalidateMode validationMode;
 
+  /// Input formatters for the field (UI)
+  final List<TextInputFormatter>? inputFormatters;
+
+  /// Keyboard action (e.g. next, done)
+  final TextInputAction? textInputAction;
+
+  /// Callback when field is submitted
+  final void Function(String)? onSubmitted;
+
   /// Returns a wrapped version of the validator that accepts dynamic input.
   String? Function(dynamic)? get wrappedValidator {
     final v = validator;
     if (v == null) return null;
-    return (dynamic value) => v(value as T);
+    return (dynamic value) => v(value as T?);
   }
 
   /// Returns a wrapped version of the cross-field validator that accepts dynamic input.
   String? Function(dynamic, FormixData)? get wrappedCrossFieldValidator {
     final v = crossFieldValidator;
     if (v == null) return null;
-    return (dynamic value, FormixData state) => v(value as T, state);
+    return (dynamic value, FormixData state) => v(value as T?, state);
   }
 
   /// Returns a wrapped version of the async validator that accepts dynamic input.
   Future<String?> Function(dynamic)? get wrappedAsyncValidator {
     final v = asyncValidator;
     if (v == null) return null;
-    return (dynamic value) => v(value as T);
+    return (dynamic value) => v(value as T?);
   }
 
   /// Returns a wrapped version of the transformer that accepts dynamic input.

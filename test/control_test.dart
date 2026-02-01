@@ -124,12 +124,12 @@ void main() {
                   FormixFieldConfig<String>(
                     id: fieldA,
                     initialValue: '',
-                    validator: (v) => v.isEmpty ? 'Required' : null,
+                    validator: (v) => (v?.isEmpty ?? true) ? 'Required' : null,
                   ),
                   FormixFieldConfig<String>(
                     id: fieldB,
                     initialValue: '',
-                    validator: (v) => v.isEmpty ? 'Required' : null,
+                    validator: (v) => (v?.isEmpty ?? true) ? 'Required' : null,
                   ),
                 ],
                 child: FormixBuilder(

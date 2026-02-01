@@ -138,7 +138,7 @@ void main() {
       final config = FormixFieldConfig<String>(
         id: id,
         initialValue: 'initial',
-        validator: (v) => v.isEmpty ? 'Required' : null,
+        validator: (v) => (v?.isEmpty ?? true) ? 'Required' : null,
         label: 'Test Field',
         hint: 'Enter value',
         debounceDuration: const Duration(milliseconds: 500),
@@ -156,7 +156,7 @@ void main() {
       final config = FormixFieldConfig<String>(
         id: id,
         initialValue: 'initial',
-        validator: (v) => v.isEmpty ? 'Required' : null,
+        validator: (v) => (v?.isEmpty ?? true) ? 'Required' : null,
         label: 'Test Field',
       );
 
@@ -232,7 +232,7 @@ void main() {
           FormixField<String>(
             id: stringField,
             initialValue: '',
-            validator: (v) => v.isEmpty ? 'Required' : null,
+            validator: (v) => (v?.isEmpty ?? true) ? 'Required' : null,
           ),
         ],
       );
@@ -259,7 +259,7 @@ void main() {
       final field = FormixField<String>(
         id: stringField,
         initialValue: 'initial',
-        validator: (v) => v.isEmpty ? 'Required' : null,
+        validator: (v) => (v?.isEmpty ?? true) ? 'Required' : null,
       );
 
       controller.registerField(field);
@@ -283,7 +283,9 @@ void main() {
     });
 
     test('markAsTouched updates touched state', () {
-      final controller = FormixController();
+      final controller = FormixController(
+        fields: [FormixField<String>(id: stringField, initialValue: 'initial')],
+      );
 
       expect(controller.isFieldTouched(stringField), false);
 
@@ -308,12 +310,12 @@ void main() {
           FormixField<String>(
             id: stringField,
             initialValue: '',
-            validator: (v) => v.isEmpty ? 'Required' : null,
+            validator: (v) => (v?.isEmpty ?? true) ? 'Required' : null,
           ),
           FormixField<int>(
             id: intField,
             initialValue: 5,
-            validator: (v) => (v) < 10 ? 'Must be at least 10' : null,
+            validator: (v) => (v ?? 0) < 10 ? 'Must be at least 10' : null,
           ),
         ],
       );
@@ -374,7 +376,7 @@ void main() {
             initialValue: '',
             asyncValidator: (v) async {
               await Future.delayed(const Duration(milliseconds: 100));
-              return v.isEmpty ? 'Async required' : null;
+              return (v?.isEmpty ?? true) ? 'Async required' : null;
             },
             debounceDuration: const Duration(milliseconds: 50),
           ),
@@ -532,12 +534,12 @@ void main() {
           FormixField<String>(
             id: field1,
             initialValue: '',
-            validator: (v) => v.isEmpty ? 'Required' : null,
+            validator: (v) => (v?.isEmpty ?? true) ? 'Required' : null,
           ),
           FormixField<String>(
             id: field2,
             initialValue: '',
-            validator: (v) => v.isEmpty ? 'Required' : null,
+            validator: (v) => (v?.isEmpty ?? true) ? 'Required' : null,
           ),
         ],
       );

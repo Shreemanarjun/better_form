@@ -130,22 +130,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // Step 4
-      await tester.tap(find.byKey(const Key('continue_button')));
-      await tester.pumpAndSettle();
-      expect(find.text('Form Submitted! 🎉'), findsOneWidget);
 
-      await tester.tap(find.text('Close'));
-      await tester.pumpAndSettle();
-
-      // Navigate to Step 4
-      await tester.tap(find.byKey(const Key('continue_button')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const Key('continue_button')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const Key('continue_button')));
-      await tester.pumpAndSettle();
-
-      // Invalid comment
+      // Invalid comment validation check
       final commentFinder = find.widgetWithText(
         TextField,
         'Additional Comments (Optional)',
@@ -161,6 +147,23 @@ void main() {
         find.text('Comments must be at least 10 characters'),
         findsOneWidget,
       );
+
+      // Wait for SnackBar to disappear to reveal the button
+      await tester.pumpAndSettle(const Duration(seconds: 4));
+
+      // Fix comment and submit
+      await tester.enterText(
+        commentFinder.first,
+        'This is a valid long comment',
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('continue_button')));
+      await tester.pumpAndSettle();
+      expect(find.text('Form Submitted! 🎉'), findsOneWidget);
+
+      await tester.tap(find.text('Close'));
+      await tester.pumpAndSettle();
     });
   });
 }

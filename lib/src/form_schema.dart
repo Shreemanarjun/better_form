@@ -35,13 +35,13 @@ abstract class FormFieldSchema<T> {
   final T initialValue;
 
   /// Synchronous validator
-  final String? Function(T value)? validator;
+  final String? Function(T? value)? validator;
 
   /// Validator with access to full form state (for cross-field validation)
-  final String? Function(T value, Map<String, dynamic> values)? stateValidator;
+  final String? Function(T? value, Map<String, dynamic> values)? stateValidator;
 
   /// Asynchronous validator
-  final Future<String?> Function(T value)? asyncValidator;
+  final Future<String?> Function(T? value)? asyncValidator;
 
   /// Debounce duration for async validation
   final Duration? debounceDuration;
@@ -97,7 +97,7 @@ abstract class FormFieldSchema<T> {
 
   /// Get validation errors for this field
   Future<List<String>> validate(
-    T value,
+    T? value,
     Map<String, dynamic> formState, {
     FormixMessages messages = const DefaultFormixMessages(),
   }) async {
@@ -139,7 +139,7 @@ abstract class FormFieldSchema<T> {
     return errors;
   }
 
-  bool _isEmptyValue(T value) {
+  bool _isEmptyValue(T? value) {
     if (value == null) {
       return true;
     }
@@ -182,11 +182,13 @@ class TextFieldSchema extends FormFieldSchema<String> {
 
   @override
   Future<List<String>> validate(
-    String value,
+    String? value,
     Map<String, dynamic> formState, {
     FormixMessages messages = const DefaultFormixMessages(),
   }) async {
     final errors = await super.validate(value, formState, messages: messages);
+
+    if (value == null) return errors;
 
     if (minLength != null && value.length < minLength!) {
       errors.add(messages.minLength(minLength!));
@@ -231,11 +233,13 @@ class NumberFieldSchema extends FormFieldSchema<num> {
 
   @override
   Future<List<String>> validate(
-    num value,
+    num? value,
     Map<String, dynamic> formState, {
     FormixMessages messages = const DefaultFormixMessages(),
   }) async {
     final errors = await super.validate(value, formState, messages: messages);
+
+    if (value == null) return errors;
 
     if (min != null && value < min!) {
       errors.add(messages.minValue(min!));
@@ -293,11 +297,13 @@ class DateFieldSchema extends FormFieldSchema<DateTime> {
 
   @override
   Future<List<String>> validate(
-    DateTime value,
+    DateTime? value,
     Map<String, dynamic> formState, {
     FormixMessages messages = const DefaultFormixMessages(),
   }) async {
     final errors = await super.validate(value, formState, messages: messages);
+
+    if (value == null) return errors;
 
     if (minDate != null && value.isBefore(minDate!)) {
       errors.add(messages.minDate(minDate!));
@@ -334,11 +340,13 @@ class SelectionFieldSchema<T> extends FormFieldSchema<T> {
 
   @override
   Future<List<String>> validate(
-    T value,
+    T? value,
     Map<String, dynamic> formState, {
     FormixMessages messages = const DefaultFormixMessages(),
   }) async {
     final errors = await super.validate(value, formState, messages: messages);
+
+    if (value == null) return errors;
 
     if (!options.contains(value)) {
       errors.add(messages.invalidSelection());

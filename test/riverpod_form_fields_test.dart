@@ -79,8 +79,9 @@ void main() {
                   FormixField<String>(
                     id: emailField,
                     initialValue: '',
-                    validator: (value) =>
-                        value.contains('@') ? null : 'Invalid email',
+                    validator: (value) => (value?.contains('@') ?? false)
+                        ? null
+                        : 'Invalid email',
                   ),
                 ],
               );
