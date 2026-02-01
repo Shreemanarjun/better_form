@@ -1157,6 +1157,23 @@ class RiverpodFormController extends StateNotifier<FormixData> {
     if (validate()) {
       setSubmitting(true);
 
+      // Wait for any pending async validations
+      while (state.validations.values.any((v) => v.isValidating)) {
+        await stream.first;
+        // Yield to prevent "Controller already firing" error if stream is sync
+        await Future<void>.delayed(Duration.zero);
+      }
+
+      // Re-validate after async completions
+      if (!state.isValid) {
+        setSubmitting(false);
+        if (onError != null) {
+          onError(state.validations);
+        }
+        analytics?.onSubmitFailure(formId, state.validations);
+        return;
+      }
+
       Map<String, dynamic>? previousInitialValues;
       FormixData? previousState;
 

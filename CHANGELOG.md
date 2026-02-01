@@ -25,6 +25,7 @@
 - **Fluent Validators**: New `FormixValidators` API for readable chainable rules
 - **Logging Analytics**: Built-in debug logger for form events
 - **Robust Dependency Logic**: Support for recursive A->B->C dependency chains with cycle detection
+- **Async Submission Safety**: `submit()` now waits for all pending async validations to complete before proceeding
 
 ### ⚡ Performance Optimizations
 - **Delta Updates**: O(1) complexity for field updates (was O(N)), enabling forms with 1000+ fields

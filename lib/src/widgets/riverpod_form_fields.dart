@@ -10,13 +10,14 @@ import '../controllers/field_id.dart';
 import 'form_group.dart';
 
 /// Riverpod-based checkbox form field
-class RiverpodCheckboxFormField extends ConsumerWidget {
+class RiverpodCheckboxFormField extends ConsumerStatefulWidget {
   const RiverpodCheckboxFormField({
     super.key,
     required this.fieldId,
     this.title,
     this.validatingWidget,
     this.controllerProvider,
+    this.focusNode,
   });
 
   final FormixFieldID<bool> fieldId;
@@ -24,15 +25,48 @@ class RiverpodCheckboxFormField extends ConsumerWidget {
   final Widget? validatingWidget;
   final AutoDisposeStateNotifierProvider<FormixController, FormixData>?
   controllerProvider;
+  final FocusNode? focusNode;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final controllerProvider =
-        this.controllerProvider ??
+  ConsumerState<RiverpodCheckboxFormField> createState() =>
+      _RiverpodCheckboxFormFieldState();
+}
+
+class _RiverpodCheckboxFormFieldState
+    extends ConsumerState<RiverpodCheckboxFormField> {
+  FocusNode? _internalFocusNode;
+  FocusNode get _focusNode =>
+      widget.focusNode ?? (_internalFocusNode ??= FocusNode());
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final provider =
+        widget.controllerProvider ??
         Formix.of(context) ??
         formControllerProvider(const FormixParameter(initialValue: {}));
 
-    final resolvedId = FormixGroup.resolve(context, fieldId);
+    final controller = ref.read(provider.notifier);
+    final resolvedId = FormixGroup.resolve(context, widget.fieldId);
+
+    controller.registerFocusNode(resolvedId, _focusNode);
+    controller.registerContext(resolvedId, context);
+  }
+
+  @override
+  void dispose() {
+    _internalFocusNode?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final controllerProvider =
+        widget.controllerProvider ??
+        Formix.of(context) ??
+        formControllerProvider(const FormixParameter(initialValue: {}));
+
+    final resolvedId = FormixGroup.resolve(context, widget.fieldId);
 
     return ProviderScope(
       overrides: [
@@ -47,9 +81,10 @@ class RiverpodCheckboxFormField extends ConsumerWidget {
 
           return CheckboxListTile(
             value: value ?? false,
-            title: title,
+            title: widget.title,
+            focusNode: _focusNode,
             subtitle: validation.isValidating
-                ? (validatingWidget ??
+                ? (widget.validatingWidget ??
                       const Text(
                         'Validating...',
                         style: TextStyle(color: Colors.blue, fontSize: 12),
@@ -78,7 +113,7 @@ class RiverpodCheckboxFormField extends ConsumerWidget {
 }
 
 /// Riverpod-based dropdown form field
-class RiverpodDropdownFormField<T> extends ConsumerWidget {
+class RiverpodDropdownFormField<T> extends ConsumerStatefulWidget {
   const RiverpodDropdownFormField({
     super.key,
     required this.fieldId,
@@ -86,6 +121,7 @@ class RiverpodDropdownFormField<T> extends ConsumerWidget {
     this.decoration,
     this.loadingIcon,
     this.controllerProvider,
+    this.focusNode,
   });
 
   final FormixFieldID<T> fieldId;
@@ -94,15 +130,48 @@ class RiverpodDropdownFormField<T> extends ConsumerWidget {
   final Widget? loadingIcon;
   final AutoDisposeStateNotifierProvider<FormixController, FormixData>?
   controllerProvider;
+  final FocusNode? focusNode;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final controllerProvider =
-        this.controllerProvider ??
+  ConsumerState<RiverpodDropdownFormField<T>> createState() =>
+      _RiverpodDropdownFormFieldState<T>();
+}
+
+class _RiverpodDropdownFormFieldState<T>
+    extends ConsumerState<RiverpodDropdownFormField<T>> {
+  FocusNode? _internalFocusNode;
+  FocusNode get _focusNode =>
+      widget.focusNode ?? (_internalFocusNode ??= FocusNode());
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final provider =
+        widget.controllerProvider ??
         Formix.of(context) ??
         formControllerProvider(const FormixParameter(initialValue: {}));
 
-    final resolvedId = FormixGroup.resolve(context, fieldId);
+    final controller = ref.read(provider.notifier);
+    final resolvedId = FormixGroup.resolve(context, widget.fieldId);
+
+    controller.registerFocusNode(resolvedId, _focusNode);
+    controller.registerContext(resolvedId, context);
+  }
+
+  @override
+  void dispose() {
+    _internalFocusNode?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final controllerProvider =
+        widget.controllerProvider ??
+        Formix.of(context) ??
+        formControllerProvider(const FormixParameter(initialValue: {}));
+
+    final resolvedId = FormixGroup.resolve(context, widget.fieldId);
 
     return ProviderScope(
       overrides: [
@@ -118,7 +187,7 @@ class RiverpodDropdownFormField<T> extends ConsumerWidget {
           Widget? suffixIcon;
           if (validation.isValidating) {
             suffixIcon =
-                loadingIcon ??
+                widget.loadingIcon ??
                 const SizedBox(
                   width: 16,
                   height: 16,
@@ -130,8 +199,9 @@ class RiverpodDropdownFormField<T> extends ConsumerWidget {
 
           return DropdownButtonFormField<T>(
             initialValue: value,
-            items: items,
-            decoration: (decoration ?? const InputDecoration()).copyWith(
+            items: widget.items,
+            focusNode: _focusNode,
+            decoration: (widget.decoration ?? const InputDecoration()).copyWith(
               errorText: validation.isValid ? null : validation.errorMessage,
               suffixIcon: suffixIcon,
             ),
