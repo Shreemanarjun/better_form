@@ -27,6 +27,7 @@ class _AsyncFieldSubmissionContentState
   final cityField = const FormixFieldID<String>('city');
   final cityOptionsField = const FormixFieldID<List<String>>('cityOptions');
   final nameField = const FormixFieldID<String>('name');
+  final usernameField = const FormixFieldID<String>('username');
 
   // Simulated API
   Future<List<String>> fetchCities(String? country) async {
@@ -38,6 +39,16 @@ class _AsyncFieldSubmissionContentState
     return ['Other'];
   }
 
+  // Simulated Username check
+  Future<String?> checkUsername(String? username) async {
+    if (username == null || username.isEmpty) return null;
+    await Future.delayed(const Duration(milliseconds: 1500));
+    if (username.toLowerCase() == 'admin' || username.toLowerCase() == 'root') {
+      return 'Username already taken';
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Formix(
@@ -47,6 +58,12 @@ class _AsyncFieldSubmissionContentState
           validator: (value) =>
               value == null || value.isEmpty ? 'Required' : null,
         ),
+        FormixFieldConfig<String>(
+          id: usernameField,
+          validator: (value) =>
+              value == null || value.isEmpty ? 'Required' : null,
+          asyncValidator: checkUsername,
+        ),
         FormixFieldConfig<String>(id: countryField, initialValue: 'USA'),
         FormixFieldConfig<String>(
           id: cityField,
@@ -54,22 +71,59 @@ class _AsyncFieldSubmissionContentState
               value == null || value.isEmpty ? 'Select a city' : null,
         ),
       ],
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Async Dependent Fields',
+              'Async Form Features',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 16),
+            const Text(
+              'This demo shows Formix waiting for async fields and validators before submission.',
+              style: TextStyle(color: Colors.grey),
+            ),
+            const SizedBox(height: 24),
 
             FormixTextFormField(
               fieldId: nameField,
               decoration: const InputDecoration(
                 labelText: 'Full Name',
                 border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.person),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            FormixTextFormField(
+              fieldId: usernameField,
+              decoration: InputDecoration(
+                labelText: 'Username',
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.alternate_email),
+                helperText:
+                    'Try "admin" or "root" to see async validation error',
+                suffix: Consumer(
+                  builder: (context, ref, _) {
+                    final form = Formix.of(context)!;
+                    final isValidating = ref.watch(
+                      form.select(
+                        (s) =>
+                            s.validations[usernameField.key]?.isValidating ??
+                            false,
+                      ),
+                    );
+                    if (isValidating) {
+                      return const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -79,6 +133,7 @@ class _AsyncFieldSubmissionContentState
               decoration: const InputDecoration(
                 labelText: 'Country',
                 border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.public),
               ),
               items: const [
                 DropdownMenuItem(value: 'USA', child: Text('USA')),
@@ -96,13 +151,31 @@ class _AsyncFieldSubmissionContentState
                   form.select((s) => s.values[countryField.key] as String?),
                 );
 
+                // Clear city when country changes to avoid invalid state
+                ref.listen(form.select((s) => s.values[countryField.key]), (
+                  prev,
+                  next,
+                ) {
+                  if (prev != next) {
+                    ref.read(form.notifier).setValue(cityField, null);
+                  }
+                });
+
                 return FormixAsyncField<List<String>>(
                   fieldId: cityOptionsField,
-                  // We provide a unique key based on the country so the future is re-initialized
-                  key: ValueKey(countryValue),
+                  // The future is re-triggered automatically if dependencies in the closure change
                   future: fetchCities(countryValue),
+                  // onRetry is called when reset() happens or manual refresh is requested
+                  onRetry: () => fetchCities(countryValue),
+                  // Prevent refetching on hot reload unless country actually changes
+                  dependencies: [countryValue],
+                  // Track countryValue as key to re-init when country changes
+                  key: ValueKey(countryValue),
                   keepPreviousData: true,
-                  loadingBuilder: (context) => const LinearProgressIndicator(),
+                  loadingBuilder: (context) => const Padding(
+                    padding: EdgeInsets.only(bottom: 8.0),
+                    child: LinearProgressIndicator(),
+                  ),
                   builder: (context, state) {
                     final cities = state.asyncState.value ?? [];
                     return FormixDropdownFormField<String>(
@@ -110,6 +183,7 @@ class _AsyncFieldSubmissionContentState
                       decoration: const InputDecoration(
                         labelText: 'City',
                         border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.location_city),
                       ),
                       items: cities
                           .map(
@@ -128,47 +202,78 @@ class _AsyncFieldSubmissionContentState
             const SizedBox(height: 32),
 
             const FormixFormStatus(),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
 
             Consumer(
               builder: (context, ref, child) {
                 final form = Formix.of(context)!;
-                final formState = ref.watch(form);
                 final controller = ref.read(form.notifier);
+                final formState = ref.watch(form);
 
-                final isSubmitting = formState.isSubmitting;
-                final isValid = formState.isValid;
-                final isPending = formState.isPending;
+                return Column(
+                  children: [
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          backgroundColor: Theme.of(context).primaryColor,
+                          foregroundColor: Colors.white,
+                        ),
+                        onPressed: () {
+                          // The new submit() automatically waits for:
+                          // 1. Any async validators currently running (e.g. Username check)
+                          // 2. Any async fields currently pending (e.g. City fetch)
+                          controller.submit(
+                            onValid: (values) async {
+                              // Simulate final API call
+                              await Future.delayed(const Duration(seconds: 2));
 
-                return SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: (isValid && !isSubmitting && !isPending)
-                        ? () async {
-                            controller.setSubmitting(true);
-
-                            // Simulate submission
-                            await Future.delayed(const Duration(seconds: 2));
-
-                            if (context.mounted) {
-                              controller.setSubmitting(false);
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    backgroundColor: Colors.green,
+                                    content: Text(
+                                      'Success! Final values: $values',
+                                    ),
+                                  ),
+                                );
+                              }
+                            },
+                            onError: (errors) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
+                                const SnackBar(
+                                  backgroundColor: Colors.red,
                                   content: Text(
-                                    'Submitted: ${formState.values}',
+                                    'Please fix the errors in the form',
                                   ),
                                 ),
                               );
-                            }
-                          }
-                        : null,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                            },
+                            autoFocusOnInvalid: true,
+                          );
+                        },
+                        child: formState.isSubmitting
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text('Submit (Waits for Pending)'),
+                      ),
                     ),
-                    child: isSubmitting
-                        ? const CircularProgressIndicator()
-                        : const Text('Submit Form'),
-                  ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: () => controller.reset(),
+                        child: const Text('Reset Form (Re-triggers Async)'),
+                      ),
+                    ),
+                  ],
                 );
               },
             ),

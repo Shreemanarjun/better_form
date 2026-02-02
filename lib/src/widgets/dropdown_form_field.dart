@@ -75,7 +75,9 @@ class FormixDropdownFormFieldState<T> extends FormixFieldWidgetState<T> {
               ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<T>(
-              value: value,
+              value: dropdownWidget.items.any((item) => item.value == value)
+                  ? value
+                  : null,
               items: dropdownWidget.items,
               focusNode: focusNode,
               hint: dropdownWidget.hint,

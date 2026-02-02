@@ -152,43 +152,29 @@ FormixCheckboxFormField(
 ```
 
 ### Async Data & Dependent Dropdowns
-Load dropdown options asynchronously (e.g., from an API) or based on another field.
+Use `FormixAsyncField` for fields that require asynchronous data fetching (e.g., from an API) or depend on other field values. It automatically manages loading states, race conditions, and integrates with the form's `isPending` status.
 
 ```dart
-// 1. Define a provider for your data
-final citiesProvider = FutureProvider.family<List<String>, String>((ref, country) async {
-  return await api.fetchCities(country);
-});
-
-// 2. Use FormixDependentField to react to changes
-FormixDependentField<String>(
-  fieldId: countryField,
-  builder: (context, country) {
-    if (country == null) return const SizedBox.shrink();
-
-    // 3. Watch the async data
-    // Note: Use a Consumer widget if not already in one
-    return Consumer(
-      builder: (context, ref, _) {
-        final citiesAsync = ref.watch(citiesProvider(country));
-
-        return citiesAsync.when(
-          data: (cities) => FormixDropdownFormField<String>(
-            fieldId: cityField,
-            items: cities.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
-            decoration: InputDecoration(labelText: 'City'),
-          ),
-          loading: () => const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: CircularProgressIndicator(),
-          ),
-          error: (err, _) => Text('Failed to load cities'),
-        );
-      },
+FormixAsyncField<List<String>>(
+  fieldId: cityOptionsField,
+  // The future is re-triggered automatically if dependencies in the closure change
+  future: api.fetchCities(ref.watch(fieldValueProvider(countryField))),
+  // Optional: automatically re-trigger on form reset
+  onRetry: () => api.fetchCities(ref.read(fieldValueProvider(countryField))),
+  keepPreviousData: true,
+  loadingBuilder: (context) => LinearProgressIndicator(),
+  builder: (context, state) {
+    final cities = state.asyncState.value ?? [];
+    return FormixDropdownFormField<String>(
+      fieldId: cityField,
+      items: cities.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+      decoration: InputDecoration(labelText: 'City'),
     );
   },
 )
 ```
+
+> **Pro Tip**: `controller.submit()` automatically waits for all `FormixAsyncField` widgets to finish loading before executing your `onValid` callback.
 
 ---
 

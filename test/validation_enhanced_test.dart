@@ -47,7 +47,7 @@ void main() {
             id: fieldId,
             initialValue: '',
             validationMode: FormixAutovalidateMode.onBlur,
-            validator: (value) => value.isEmpty ? 'Required' : null,
+            validator: (value) => (value?.isEmpty ?? true) ? 'Required' : null,
           ),
         ],
       );

@@ -735,7 +735,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
       if (!newValidations.containsKey(key)) {
         newValidations[key] = _performSyncValidation(
           key,
-          field.initialValue,
+          newValues[key],
           newValues,
           currentValidations: newValidations,
         );
@@ -831,7 +831,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
       if (!currentValidations.containsKey(key)) {
         currentValidations[key] = _performSyncValidation(
           key,
-          field.initialValue,
+          currentValues[key],
           currentValues,
           currentValidations: currentValidations,
         );
@@ -1461,6 +1461,8 @@ class FormixParameter {
     this.persistence,
     this.formId,
     this.analytics,
+    this.keepAlive = false,
+    this.namespace,
   });
 
   final Map<String, dynamic> initialValue;
@@ -1468,29 +1470,32 @@ class FormixParameter {
   final FormixPersistence? persistence;
   final String? formId;
   final FormixAnalytics? analytics;
+  final bool keepAlive;
+  final String? namespace;
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is FormixParameter &&
-          const MapEquality().equals(initialValue, other.initialValue) &&
-          const ListEquality().equals(fields, other.fields) &&
-          persistence == other.persistence &&
           formId == other.formId &&
-          analytics == other.analytics;
+          namespace == other.namespace &&
+          (formId != null
+              ? true // Prioritize explicit formId for cross-page stability
+              : const MapEquality().equals(initialValue, other.initialValue));
 
   @override
   int get hashCode =>
-      const MapEquality().hash(initialValue) ^
-      const ListEquality().hash(fields) ^
-      persistence.hashCode ^
       formId.hashCode ^
-      analytics.hashCode;
+      namespace.hashCode ^
+      (formId == null ? const MapEquality().hash(initialValue) : 0);
 }
 
 /// Provider for form controller with auto-disposal
 final formControllerProvider = StateNotifierProvider.autoDispose
     .family<FormixController, FormixData, FormixParameter>((ref, param) {
+      if (param.keepAlive) {
+        ref.keepAlive();
+      }
       final messages = ref.watch(formixMessagesProvider);
       return FormixController(
         initialValue: param.initialValue,

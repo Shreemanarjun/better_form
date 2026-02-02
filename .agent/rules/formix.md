@@ -60,7 +60,7 @@ Expert guidance for building high-performance, type-safe forms with Formix.
 - **Keep Alive**: Set `keepAlive: true` in `Formix` if it's placed inside a `TabView` or `Stepper` to preserve state.
 - **Optimistic Updates**: Use `controller.optimisticUpdate` for a "snappy" UI when saving individual fields to a server.
 - **Dropdowns**: Use `FormixDropdownFormField` which internally uses `InputDecorator` + `DropdownButton` (avoiding deprecated `DropdownButtonFormField`) for long-term support and flexibility.
-- **Async Data**: For fields that require async data (like dynamic dropdowns), use standard Riverpod `FutureProvider` combined with `FormixDependentField` or `Consumer`. Formix widgets are compatible with `AsyncValue.when` patterns.
+- **Async Data**: For fields that require async data (like dynamic dropdowns), prefer `FormixAsyncField` over manual `FutureProvider` + `Consumer` patterns. `FormixAsyncField` provides built-in race condition protection, retry/refresh logic, and submission-safety (automatically blocking `submit` while loading).
 
 ## Localization
 - Use `FormixLocalizations.of(context)` within validators to provide localized error messages.

@@ -29,6 +29,9 @@ void main() {
         ),
       );
 
+      // Allow microtask to run for initial pending state
+      await tester.pump();
+
       final formixState = tester.state<FormixState>(find.byType(Formix));
       final controller = formixState.controller;
 
@@ -113,8 +116,13 @@ void main() {
       int fetchCount = 0;
       final fieldId = const FormixFieldID<String>('async_field');
 
+      Completer<String>? secondFetchCompleter;
       Future<String> fetchData() async {
         fetchCount++;
+        if (fetchCount == 2) {
+          secondFetchCompleter = Completer<String>();
+          return secondFetchCompleter!.future;
+        }
         return 'data_$fetchCount';
       }
 
@@ -126,6 +134,7 @@ void main() {
                 child: FormixAsyncField<String>(
                   fieldId: fieldId,
                   future: fetchData(),
+                  onRetry: fetchData, // Needed for re-triggering on reset
                   builder: (context, state) =>
                       Text('Value: ${state.asyncState.value}'),
                 ),
@@ -134,6 +143,9 @@ void main() {
           ),
         ),
       );
+
+      // Allow microtask to run for initial pending state
+      await tester.pump();
 
       await tester.pumpAndSettle();
       expect(find.text('Value: data_1'), findsOneWidget);
@@ -148,15 +160,19 @@ void main() {
 
       // Reset the form
       controller.reset();
-      await tester.pump(); // Trigger reset and refresh
 
-      // Pending states should be cleared
+      // Pending states should be cleared immediately
       expect(controller.state.pendingStates, isEmpty);
+
+      await tester.pump();
+      await tester.pump(); // Trigger refresh microtask
+
       expect(
         controller.state.isPending,
         isTrue,
       ); // True because async_field is fetching again
 
+      secondFetchCompleter!.complete('data_2');
       await tester.pumpAndSettle();
       expect(find.text('Value: data_2'), findsOneWidget);
       expect(fetchCount, equals(2));

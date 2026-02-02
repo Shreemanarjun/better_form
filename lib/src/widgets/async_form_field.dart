@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import '../../formix.dart';
 
@@ -42,6 +43,7 @@ class FormixAsyncField<T> extends FormixFieldWidget<T> {
     this.debounce,
     this.manual = false,
     this.onRetry,
+    this.dependencies,
     super.validator,
     super.asyncValidator,
     super.initialValue,
@@ -57,6 +59,10 @@ class FormixAsyncField<T> extends FormixFieldWidget<T> {
 
   /// Optional debounce duration before executing the [future].
   final Duration? debounce;
+
+  /// Optional list of objects that trigger a refetch when changed.
+  /// If not provided, [FormixAsyncField] will refetch whenever the [future] instance changes.
+  final List<Object?>? dependencies;
 
   /// If true, the [future] will not be executed automatically.
   /// You must call `state.refresh()` to trigger the loading.
@@ -179,7 +185,13 @@ class FormixAsyncFieldState<T> extends FormixFieldWidgetState<T> {
 
   void _updatePendingState(bool isPending) {
     if (hasController) {
-      controller.setPending(widget.fieldId, isPending);
+      // Use microtask to avoid "Tried to modify a provider while the widget tree was building"
+      // during initState/didUpdateWidget.
+      Future.microtask(() {
+        if (mounted && hasController) {
+          controller.setPending(widget.fieldId, isPending);
+        }
+      });
     }
   }
 
@@ -187,15 +199,25 @@ class FormixAsyncFieldState<T> extends FormixFieldWidgetState<T> {
   void didUpdateWidget(FormixAsyncField<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
     final widget = this.widget as FormixAsyncField<T>;
-    if (widget.asyncValue != oldWidget.asyncValue ||
-        widget.future != oldWidget.future) {
-      // Update current future if the widget's future changed
-      if (widget.future != oldWidget.future) {
-        _currentFuture = widget.future;
-      }
-
+    if (widget.asyncValue != oldWidget.asyncValue) {
       if (!widget.manual) {
         _initAsyncState();
+      }
+    } else if (widget.future != oldWidget.future) {
+      final changed =
+          widget.dependencies == null ||
+          !const ListEquality().equals(
+            widget.dependencies,
+            oldWidget.dependencies,
+          );
+
+      if (changed) {
+        // Update current future if the widget's future changed
+        _currentFuture = widget.future;
+
+        if (!widget.manual) {
+          _initAsyncState();
+        }
       }
     }
   }
@@ -221,7 +243,7 @@ class FormixAsyncFieldState<T> extends FormixFieldWidgetState<T> {
       final val = _asyncState.value as T;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          if (value != val) {
+          if (!const DeepCollectionEquality().equals(value, val)) {
             didChange(val);
           }
         }

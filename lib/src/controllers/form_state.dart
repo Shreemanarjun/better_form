@@ -25,6 +25,9 @@ class FormixData {
   /// Whether the form is currently in the process of being submitted.
   final bool isSubmitting;
 
+  /// Number of times the form has been reset.
+  final int resetCount;
+
   /// The set of field keys that changed in the last update.
   ///
   /// This is used for delta updates to optimize notification performance.
@@ -39,6 +42,7 @@ class FormixData {
     this.touchedStates = const {},
     this.pendingStates = const {},
     this.isSubmitting = false,
+    this.resetCount = 0,
     this.changedFields,
   });
 
@@ -50,6 +54,7 @@ class FormixData {
     Map<String, bool>? touchedStates,
     Map<String, bool>? pendingStates,
     bool? isSubmitting,
+    int? resetCount,
     Set<String>? changedFields,
   }) {
     return FormixData(
@@ -59,6 +64,7 @@ class FormixData {
       touchedStates: touchedStates ?? this.touchedStates,
       pendingStates: pendingStates ?? this.pendingStates,
       isSubmitting: isSubmitting ?? this.isSubmitting,
+      resetCount: resetCount ?? this.resetCount,
       changedFields: changedFields ?? this.changedFields,
     );
   }

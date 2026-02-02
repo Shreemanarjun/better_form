@@ -112,8 +112,10 @@ class FormixState extends ConsumerState<Formix> {
         initialValue: widget.initialValue,
         fields: widget.fields,
         persistence: widget.persistence,
-        formId: _internalFormId,
+        formId: widget.formId,
+        namespace: _internalFormId,
         analytics: widget.analytics,
+        keepAlive: widget.keepAlive,
       ),
     );
   }

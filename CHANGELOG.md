@@ -9,8 +9,14 @@
 - **Validation Fixes**:
   - `FormixAutovalidateMode.always` now correctly shows errors immediately upon registration for all field types.
   - Fixed input formatter ordering in `FormixTextFormField` and `FormixNumberFormField` to ensure config-level formatters (logic) run before widget-level formatters (UI).
-- **Lifecycle Stability**: Fixed critical issues where form fields would not update when the parent controller changed or when widgets were reused in dynamic layouts (e.g., Wizards).
-- **Dropdown Field**: Migrated `FormixDropdownFormField` to use `InputDecorator` + `DropdownButton`, resolving deprecation warnings and improving layout flexibility.
+- **New `FormixAsyncField`**: Added a dedicated widget for handling asynchronous data fetching within forms.
+  - Features built-in race condition protection and retry logic.
+  - Automatically re-triggers fetch on form reset (via `onRetry`).
+  - Coordinated with the form's `isPending` state for submission safety.
+- **Robust Reset Logic**: Form resets are now tracked via an internal `resetCount`, ensuring the `onReset` hook is reliably triggered for all fields regardless of their previous dirty state.
+- **Improved Pending State Management**: Fixed "Tried to modify a provider while the widget tree was building" error by moving pending state updates to microtasks.
+- **Multi-Step Form Reliability**: Fixed a bug where navigating back to a previous page in a multi-step form would show "required" validation errors even if fields were filled. Formix now correctly validates against preserved values during re-registration.
+- **Dropdown Field**: Migrated `FormixDropdownFormField` to use `InputDecorator` + `DropdownButton`. Now defensively handles values not present in the items list to prevent crashes during dynamic transitions.
 
 ### 🛠️ Developer Experience
 - **FormixBuilder Enhancements**: Improved reactive data access patterns with better scoping.
