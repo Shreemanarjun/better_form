@@ -1,38 +1,43 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../controllers/riverpod_controller.dart';
 import '../controllers/field.dart';
 import '../controllers/field_id.dart';
 import '../controllers/validation.dart';
-import 'riverpod_form_fields.dart';
 
 /// Base class for custom form field widgets that automatically handles
 /// controller management, listeners, and value synchronization
-abstract class FormixFieldWidget<T> extends StatefulWidget {
+abstract class FormixFieldWidget<T> extends ConsumerStatefulWidget {
   const FormixFieldWidget({
     super.key,
     required this.fieldId,
     this.controller,
     this.validator,
     this.initialValue,
+    this.focusNode,
   });
 
   final FormixFieldID<T> fieldId;
   final FormixController? controller;
   final String? Function(T? value)? validator;
   final T? initialValue;
+  final FocusNode? focusNode;
 
   @override
   FormixFieldWidgetState<T> createState();
 }
 
 /// State class that provides simplified APIs for form field management
-abstract class FormixFieldWidgetState<T> extends State<FormixFieldWidget<T>> {
-  late FormixController _controller;
+abstract class FormixFieldWidgetState<T>
+    extends ConsumerState<FormixFieldWidget<T>> {
+  FormixController? _controller;
+  FormixFieldID<T>? _currentAttachedFieldId;
   T? _currentValue;
   late FocusNode _focusNode;
   bool _isMounted = false;
+  bool _createdOwnFocusNode = false;
+  ProviderSubscription? _controllerSub;
 
   /// Get the current field value
   T? get value => _currentValue;
@@ -41,16 +46,16 @@ abstract class FormixFieldWidgetState<T> extends State<FormixFieldWidget<T>> {
   FocusNode get focusNode => _focusNode;
 
   /// Get the controller
-  FormixController get controller => _controller;
+  FormixController get controller => _controller!;
 
   /// Check if the field is dirty
-  bool get isDirty => _controller.isFieldDirty(widget.fieldId);
+  bool get isDirty => controller.isFieldDirty(widget.fieldId);
 
   /// Check if the field is touched
-  bool get isTouched => _controller.isFieldTouched(widget.fieldId);
+  bool get isTouched => controller.isFieldTouched(widget.fieldId);
 
   /// Get validation result
-  ValidationResult get validation => _controller.getValidation(widget.fieldId);
+  ValidationResult get validation => controller.getValidation(widget.fieldId);
 
   /// Check if widget is mounted (safe to call setState)
   @override
@@ -60,38 +65,78 @@ abstract class FormixFieldWidgetState<T> extends State<FormixFieldWidget<T>> {
   void initState() {
     super.initState();
     _isMounted = true;
-    _focusNode = FocusNode();
+    _initFocusNode();
+    _setupControllerSubscription();
+  }
+
+  void _setupControllerSubscription() {
+    _controllerSub?.close();
+    _controllerSub = ref.listenManual(currentControllerProvider, (
+      previous,
+      next,
+    ) {
+      final newController = widget.controller ?? ref.read(next.notifier);
+      _setupController(newController);
+    }, fireImmediately: true);
+  }
+
+  void _initFocusNode() {
+    if (widget.focusNode != null) {
+      _focusNode = widget.focusNode!;
+      _createdOwnFocusNode = false;
+    } else {
+      _focusNode = FocusNode();
+      _createdOwnFocusNode = true;
+    }
     _focusNode.addListener(_onFocusChanged);
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _controller = widget.controller ?? Formix.controllerOf(context)!;
+  }
 
-    // Auto-register the field if it's not already registered
+  void _setupController(FormixController? newController) {
+    if (newController == null) return;
+
+    final controllerChanged = _controller != newController;
+    final fieldChanged = _currentAttachedFieldId != widget.fieldId;
+
+    if (!controllerChanged && !fieldChanged) return;
+
+    // If we were attached to something else, detach
+    if (_controller != null && _currentAttachedFieldId != null) {
+      _controller!.removeFieldListener(
+        _currentAttachedFieldId!,
+        _onFieldChanged,
+      );
+    }
+
+    _controller = newController;
+    _currentAttachedFieldId = widget.fieldId;
+
     _ensureFieldRegistered();
 
-    // Register focus node
-    _controller.registerFocusNode(widget.fieldId, _focusNode);
-    // Register context for scrolling
-    _controller.registerContext(widget.fieldId, context);
+    _controller!.registerFocusNode(widget.fieldId, _focusNode);
+    _controller!.registerContext(widget.fieldId, context);
 
-    _currentValue = _controller.getValue(widget.fieldId) ?? widget.initialValue;
-    _controller.addFieldListener(widget.fieldId, _onFieldChanged);
+    _currentValue =
+        _controller!.getValue(widget.fieldId) ?? widget.initialValue;
+    _controller!.addFieldListener(widget.fieldId, _onFieldChanged);
+
+    if (_isMounted) {
+      onFieldChanged(_currentValue);
+    }
   }
 
   void _ensureFieldRegistered() {
-    // Check if the field is already registered using the public API
-    if (!_controller.isFieldRegistered(widget.fieldId)) {
-      // Field not registered, try to get initial value from controller or widget
+    if (_controller == null) return;
+
+    if (!controller.isFieldRegistered(widget.fieldId)) {
       T? initialValue = widget.initialValue;
+      initialValue ??= controller.initialValue[widget.fieldId.key] as T?;
 
-      // If no initial value provided in widget, try to get it from controller's initial values
-      initialValue ??= _controller.initialValue[widget.fieldId.key] as T?;
-
-      // Allow null initial values - the field can start with null
-      _controller.registerField(
+      controller.registerField(
         FormixField<T>(
           id: widget.fieldId,
           initialValue: initialValue,
@@ -104,40 +149,52 @@ abstract class FormixFieldWidgetState<T> extends State<FormixFieldWidget<T>> {
   @override
   void didUpdateWidget(FormixFieldWidget<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.focusNode != oldWidget.focusNode) {
+      _focusNode.removeListener(_onFocusChanged);
+      if (_createdOwnFocusNode) {
+        _focusNode.dispose();
+      }
+      _initFocusNode();
+      if (_controller != null) {
+        controller.registerFocusNode(widget.fieldId, _focusNode);
+      }
+    }
+
     if (widget.controller != oldWidget.controller ||
         widget.fieldId != oldWidget.fieldId) {
-      _controller.removeFieldListener(oldWidget.fieldId, _onFieldChanged);
-      _controller = widget.controller ?? Formix.controllerOf(context)!;
-      _controller.registerFocusNode(widget.fieldId, _focusNode);
-      _controller.addFieldListener(widget.fieldId, _onFieldChanged);
-      _currentValue =
-          _controller.getValue(widget.fieldId) ?? widget.initialValue;
+      _setupControllerSubscription();
     }
   }
 
   @override
   void dispose() {
     _isMounted = false;
-    _controller.removeFieldListener(widget.fieldId, _onFieldChanged);
+    _controllerSub?.close();
+    _controller?.removeFieldListener(widget.fieldId, _onFieldChanged);
     _focusNode.removeListener(_onFocusChanged);
-    _focusNode.dispose();
+    if (_createdOwnFocusNode) {
+      _focusNode.dispose();
+    }
     super.dispose();
   }
 
   void _onFieldChanged() {
-    final newValue = _controller.getValue(widget.fieldId);
+    // Check if controller is initialized
+    if (_controller == null) return;
+
+    final newValue = controller.getValue(widget.fieldId);
     setState(() {
       _currentValue = newValue;
     });
-    if (_controller.isFieldRegistered(widget.fieldId)) {
+    if (controller.isFieldRegistered(widget.fieldId)) {
       onFieldChanged(newValue);
     }
   }
 
   void _onFocusChanged() {
-    if (!_focusNode.hasFocus) {
+    if (!_focusNode.hasFocus && _controller != null) {
       // Lost focus -> touched
-      _controller.markAsTouched(widget.fieldId);
+      controller.markAsTouched(widget.fieldId);
     }
   }
 
@@ -148,7 +205,9 @@ abstract class FormixFieldWidgetState<T> extends State<FormixFieldWidget<T>> {
   /// Update the field value and notify the form
   /// This is the primary way to update field values
   void didChange(T? value) {
-    _controller.setValue(widget.fieldId, value);
+    if (_controller == null) return;
+    controller.setValue(widget.fieldId, value);
+    controller.markAsTouched(widget.fieldId);
   }
 
   /// Alias for didChange - update the field value
@@ -157,8 +216,9 @@ abstract class FormixFieldWidgetState<T> extends State<FormixFieldWidget<T>> {
   /// Patch multiple field values at once
   /// Useful for complex form fields that control multiple values
   void patchValue(Map<FormixFieldID<dynamic>, dynamic> updates) {
+    if (_controller == null) return;
     for (final entry in updates.entries) {
-      _controller.setValue(entry.key, entry.value);
+      controller.setValue(entry.key, entry.value);
     }
   }
 
@@ -166,12 +226,16 @@ abstract class FormixFieldWidgetState<T> extends State<FormixFieldWidget<T>> {
   void resetField() {
     // This would need access to initial values
     // For now, we'll reset the entire form
-    _controller.reset();
+    if (_controller != null) {
+      controller.reset();
+    }
   }
 
   /// Mark field as touched (for validation purposes)
   void markAsTouched() {
-    _controller.markAsTouched(widget.fieldId);
+    if (_controller != null) {
+      controller.markAsTouched(widget.fieldId);
+    }
   }
 
   /// Focus the field (if it has focus capability)
@@ -186,54 +250,60 @@ abstract class FormixFieldWidgetState<T> extends State<FormixFieldWidget<T>> {
 
 /// Mixin for form fields that need text input capabilities
 mixin FormixFieldTextMixin<T> on FormixFieldWidgetState<T> {
-  late final TextEditingController _textController;
+  TextEditingController? _textController;
+  bool _isSyncing = false;
 
-  TextEditingController get textController => _textController;
+  TextEditingController get textController => _textController!;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _textController = TextEditingController(
-      text: _currentValue != null ? valueToString(_currentValue as T) : '',
-    );
-    _textController.addListener(_onTextChanged);
+    if (_textController == null) {
+      _textController = TextEditingController(
+        text: _currentValue != null ? valueToString(_currentValue as T) : '',
+      );
+      _textController!.addListener(_onTextChanged);
+    } else {
+      _syncText();
+    }
   }
 
   @override
   void didUpdateWidget(FormixFieldWidget<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
-    final newText = _currentValue != null
-        ? valueToString(_currentValue as T)
-        : '';
-    if (_textController.text != newText) {
-      scheduleMicrotask(() {
-        if (mounted && _textController.text != newText) {
-          _textController.text = newText;
-        }
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _textController.dispose();
-    super.dispose();
+    _syncText();
   }
 
   @override
   void onFieldChanged(T? value) {
     super.onFieldChanged(value);
-    final textValue = value != null ? valueToString(value) : '';
-    if (_textController.text != textValue) {
-      _textController.value = TextEditingValue(
-        text: textValue,
-        selection: TextSelection.collapsed(offset: textValue.length),
-      );
+    _syncText();
+  }
+
+  void _syncText() {
+    if (_textController == null) return;
+    final newText = _currentValue != null
+        ? valueToString(_currentValue as T)
+        : '';
+    if (_textController!.text != newText) {
+      _isSyncing = true;
+      try {
+        _textController!.text = newText;
+      } finally {
+        _isSyncing = false;
+      }
     }
   }
 
+  @override
+  void dispose() {
+    _textController?.dispose();
+    super.dispose();
+  }
+
   void _onTextChanged() {
-    final newValue = stringToValue(_textController.text);
+    if (_textController == null || _isSyncing) return;
+    final newValue = stringToValue(_textController!.text);
     if (newValue != null && newValue != _currentValue) {
       didChange(newValue);
     }
@@ -258,14 +328,14 @@ abstract class FormixTextFormFieldWidget extends FormixFieldWidget<String> {
     this.keyboardType,
     this.maxLines = 1,
     this.obscureText = false,
-    this.enabled,
+    this.enabled = true,
   });
 
   final InputDecoration decoration;
   final TextInputType? keyboardType;
   final int? maxLines;
   final bool obscureText;
-  final bool? enabled;
+  final bool enabled;
 
   @override
   FormixTextFormFieldWidgetState createState();
@@ -282,47 +352,50 @@ abstract class FormixTextFormFieldWidgetState
 
   @override
   Widget build(BuildContext context) {
-    final widget = this.widget as FormixTextFormFieldWidget;
+    final fieldWidget = widget as FormixTextFormFieldWidget;
 
-    return ValueListenableBuilder<ValidationResult>(
-      valueListenable: _controller.fieldValidationNotifier(widget.fieldId),
-      builder: (context, validation, child) {
-        return ValueListenableBuilder<bool>(
-          valueListenable: _controller.fieldDirtyNotifier(widget.fieldId),
-          builder: (context, isDirty, child) {
-            final shouldShowError =
-                validation.isValidating ||
-                (_controller.isFieldTouched(widget.fieldId) ||
-                    _controller.isSubmitting);
+    return AnimatedBuilder(
+      animation: Listenable.merge([
+        controller.fieldValidationNotifier(fieldWidget.fieldId),
+        controller.fieldTouchedNotifier(fieldWidget.fieldId),
+        controller.fieldDirtyNotifier(fieldWidget.fieldId),
+        controller.isSubmittingNotifier,
+      ]),
+      builder: (context, _) {
+        final validation = controller.getValidation(fieldWidget.fieldId);
+        final isTouched = controller.isFieldTouched(fieldWidget.fieldId);
+        final isDirty = controller.isFieldDirty(fieldWidget.fieldId);
+        final isSubmitting = controller.isSubmitting;
 
-            return TextFormField(
-              controller: textController,
-              focusNode: focusNode,
-              decoration: widget.decoration.copyWith(
-                errorText: shouldShowError && !validation.isValidating
-                    ? validation.errorMessage
-                    : null,
-                helperText: validation.isValidating ? 'Validating...' : null,
-                suffixIcon: validation.isValidating
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: Padding(
-                          padding: EdgeInsets.all(4),
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      )
-                    : isDirty
-                    ? const Icon(Icons.edit, size: 16)
-                    : null,
-              ),
-              keyboardType: widget.keyboardType,
-              maxLines: widget.maxLines,
-              obscureText: widget.obscureText,
-              enabled: widget.enabled,
-              onChanged: (value) => didChange(value),
-            );
-          },
+        final shouldShowError =
+            (isTouched || isSubmitting) && !validation.isValid;
+
+        Widget? suffixIcon;
+        if (validation.isValidating) {
+          suffixIcon = const SizedBox(
+            width: 16,
+            height: 16,
+            child: Padding(
+              padding: EdgeInsets.all(4),
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          );
+        } else if (isDirty) {
+          suffixIcon = const Icon(Icons.edit, size: 16);
+        }
+
+        return TextFormField(
+          controller: textController,
+          focusNode: focusNode,
+          decoration: fieldWidget.decoration.copyWith(
+            errorText: shouldShowError ? validation.errorMessage : null,
+            suffixIcon: suffixIcon,
+            helperText: validation.isValidating ? 'Validating...' : null,
+          ),
+          keyboardType: fieldWidget.keyboardType,
+          maxLines: fieldWidget.maxLines,
+          obscureText: fieldWidget.obscureText,
+          enabled: fieldWidget.enabled,
         );
       },
     );
@@ -362,15 +435,15 @@ abstract class FormixNumberFormFieldWidgetState
     final widget = this.widget as FormixNumberFormFieldWidget;
 
     return ValueListenableBuilder<ValidationResult>(
-      valueListenable: _controller.fieldValidationNotifier(widget.fieldId),
+      valueListenable: controller.fieldValidationNotifier(widget.fieldId),
       builder: (context, validation, child) {
         return ValueListenableBuilder<bool>(
-          valueListenable: _controller.fieldDirtyNotifier(widget.fieldId),
+          valueListenable: controller.fieldDirtyNotifier(widget.fieldId),
           builder: (context, isDirty, child) {
             final shouldShowError =
                 validation.isValidating ||
-                (_controller.isFieldTouched(widget.fieldId) ||
-                    _controller.isSubmitting);
+                (controller.isFieldTouched(widget.fieldId) ||
+                    controller.isSubmitting);
 
             return TextFormField(
               controller: textController,
@@ -403,3 +476,7 @@ abstract class FormixNumberFormFieldWidgetState
     );
   }
 }
+
+// Removed FormixTextFormFieldWidget and FormixNumberFormFieldWidget as they are
+// now replaced by concrete FormixTextFormField and FormixNumberFormField in
+// their respective files.

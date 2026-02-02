@@ -235,7 +235,7 @@ void main() {
                     builder: (context, scope) {
                       return Column(
                         children: [
-                          RiverpodTextFormField(fieldId: nameField),
+                          FormixTextFormField(fieldId: nameField),
                           ElevatedButton(
                             onPressed: () => Navigator.of(context).maybePop(),
                             child: const Text('Back'),
@@ -280,7 +280,7 @@ void main() {
                                 builder: (context, scope) {
                                   return Column(
                                     children: [
-                                      RiverpodTextFormField(fieldId: nameField),
+                                      FormixTextFormField(fieldId: nameField),
                                       ElevatedButton(
                                         onPressed: () =>
                                             Navigator.of(context).maybePop(),
@@ -342,7 +342,7 @@ void main() {
                                 builder: (context, scope) {
                                   return Column(
                                     children: [
-                                      RiverpodTextFormField(fieldId: nameField),
+                                      FormixTextFormField(fieldId: nameField),
                                       ElevatedButton(
                                         onPressed: () =>
                                             Navigator.of(context).maybePop(),
@@ -481,7 +481,7 @@ void main() {
                 child: FormixBuilder(
                   builder: (context, scope) {
                     controller = scope.controller;
-                    return RiverpodTextFormField(fieldId: nameField);
+                    return FormixTextFormField(fieldId: nameField);
                   },
                 ),
               ),

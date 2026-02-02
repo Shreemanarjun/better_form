@@ -34,7 +34,7 @@ void main() {
                             : const SizedBox.shrink();
                       },
                     ),
-                    RiverpodCheckboxFormField(
+                    FormixCheckboxFormField(
                       fieldId: visibilityField,
                       title: const Text('Check me'),
                     ),
@@ -82,7 +82,7 @@ void main() {
                     debounceDuration: const Duration(milliseconds: 50),
                   ),
                 ],
-                child: RiverpodTextFormField(fieldId: usernameField),
+                child: FormixTextFormField(fieldId: usernameField),
               ),
             ),
           ),
@@ -135,7 +135,7 @@ void main() {
                     initialValue: 'Initial',
                   ),
                 ],
-                child: RiverpodTextFormField(fieldId: nameField),
+                child: FormixTextFormField(fieldId: nameField),
               ),
             ),
           ),

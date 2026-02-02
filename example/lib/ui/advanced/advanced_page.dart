@@ -144,7 +144,7 @@ class _AdvancedExampleContentState
             const SizedBox(height: 16),
 
             // Form fields
-            RiverpodTextFormField(
+            FormixTextFormField(
               fieldId: nameField,
               decoration: const InputDecoration(
                 labelText: 'Full Name',
@@ -154,7 +154,7 @@ class _AdvancedExampleContentState
             ),
             const SizedBox(height: 16),
 
-            RiverpodTextFormField(
+            FormixTextFormField(
               fieldId: emailField,
               keyboardType: TextInputType.emailAddress,
               decoration: const InputDecoration(
@@ -165,7 +165,7 @@ class _AdvancedExampleContentState
             ),
             const SizedBox(height: 16),
 
-            RiverpodNumberFormField(
+            FormixNumberFormField(
               fieldId: ageField,
               min: 0,
               max: 150,
@@ -177,7 +177,7 @@ class _AdvancedExampleContentState
             ),
             const SizedBox(height: 16),
 
-            RiverpodDropdownFormField<String>(
+            FormixDropdownFormField<String>(
               fieldId: FormixFieldID<String>('country'),
               items: const [
                 DropdownMenuItem(value: 'US', child: Text('United States')),
@@ -194,7 +194,7 @@ class _AdvancedExampleContentState
             ),
             const SizedBox(height: 16),
 
-            RiverpodCheckboxFormField(
+            FormixCheckboxFormField(
               fieldId: newsletterField,
               title: const Text('Subscribe to newsletter'),
             ),
@@ -206,7 +206,7 @@ class _AdvancedExampleContentState
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 8),
-            RiverpodTextFormField(
+            FormixTextFormField(
               fieldId: FormixFieldID<String>('password'),
               decoration: const InputDecoration(
                 labelText: 'Password',
@@ -215,7 +215,7 @@ class _AdvancedExampleContentState
               ),
             ),
             const SizedBox(height: 16),
-            RiverpodTextFormField(
+            FormixTextFormField(
               fieldId: FormixFieldID<String>('confirmPassword'),
               decoration: const InputDecoration(
                 labelText: 'Confirm Password',
@@ -226,7 +226,7 @@ class _AdvancedExampleContentState
             const SizedBox(height: 16),
 
             // Bio field with length limit
-            RiverpodTextFormField(
+            FormixTextFormField(
               fieldId: FormixFieldID<String>('bio'),
               maxLength: 500,
               decoration: const InputDecoration(
@@ -238,7 +238,7 @@ class _AdvancedExampleContentState
             ),
 
             const SizedBox(height: 24),
-            const RiverpodFormStatus(),
+            const FormixFormStatus(),
             const SizedBox(height: 16),
 
             Consumer(

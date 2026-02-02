@@ -25,7 +25,7 @@ void main() {
               fields: [field1], // Only field1 is registered initially
               child: Column(
                 children: [
-                  RiverpodTextFormField(
+                  FormixTextFormField(
                     fieldId: field1.id,
                     decoration: const InputDecoration(labelText: 'Field 1'),
                   ),
@@ -50,13 +50,13 @@ void main() {
               fields: [field1],
               child: Column(
                 children: [
-                  RiverpodTextFormField(
+                  FormixTextFormField(
                     fieldId: field1.id,
                     decoration: const InputDecoration(labelText: 'Field 1'),
                   ),
                   FormixSection(
                     fields: [field2],
-                    child: RiverpodTextFormField(
+                    child: FormixTextFormField(
                       fieldId: field2.id,
                       decoration: const InputDecoration(labelText: 'Field 2'),
                     ),
@@ -91,7 +91,7 @@ void main() {
               child: FormixSection(
                 keepAlive: false,
                 fields: [field1],
-                child: RiverpodTextFormField(fieldId: field1.id),
+                child: FormixTextFormField(fieldId: field1.id),
               ),
             ),
           ),
@@ -100,7 +100,7 @@ void main() {
     );
     await tester.pump(); // Allow state update
 
-    expect(find.byType(RiverpodTextFormField), findsOneWidget);
+    expect(find.byType(FormixTextFormField), findsOneWidget);
 
     // Remove the section
     await tester.pumpWidget(
@@ -116,7 +116,7 @@ void main() {
     );
     await tester.pump(); // Allow microtask unregistration
 
-    expect(find.byType(RiverpodTextFormField), findsNothing);
+    expect(find.byType(FormixTextFormField), findsNothing);
 
     // If we add it back, it should re-register with initial value
     await tester.pumpWidget(
@@ -127,7 +127,7 @@ void main() {
               child: FormixSection(
                 keepAlive: false,
                 fields: [field1],
-                child: RiverpodTextFormField(fieldId: field1.id),
+                child: FormixTextFormField(fieldId: field1.id),
               ),
             ),
           ),

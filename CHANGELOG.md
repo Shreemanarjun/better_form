@@ -1,3 +1,26 @@
+## 0.0.5
+
+### 🚀 Core Improvements & Fixes
+- **Hot Reload Support**: Fixed field definitions not updating during hot reload. `Formix` and `FormixSection` now reliably detect configuration changes and update the controller.
+- **FormixSection Overhaul**: Refactored to `ConsumerStatefulWidget` for consistent lifecycle management.
+  - Now supports synchronous registration to prevent lazy-loading race conditions.
+  - Reliably handles `keepAlive` for preserving state in wizards and tabs.
+- **Undo/Redo Stability**: Fixed history pollution where focus/touch events triggered unnecessary undo steps. History is now strictly value-based using deep equality checks.
+- **Validation Fixes**:
+  - `FormixAutovalidateMode.always` now correctly shows errors immediately upon registration for all field types.
+  - Fixed input formatter ordering in `FormixTextFormField` and `FormixNumberFormField` to ensure config-level formatters (logic) run before widget-level formatters (UI).
+
+### 🛠️ Developer Experience
+- **FormixBuilder Enhancements**: Improved reactive data access patterns with better scoping.
+- **New `FormixWidget`**: Added base class for creating reusable, context-aware form components with less boilerplate.
+
+### 🧪 Testing
+- **Advanced Test Suite**: Added comprehensive tests for:
+  - Dynamic Array Fields (Contacts List)
+  - Multi-Step Wizards with State Preservation
+  - Complex Validation Scenarios & Input Formatting
+  - Hot Reload & Lifecycle Behavior
+
 ## 0.0.4
 
 ### 🛠️ DevTools Integration

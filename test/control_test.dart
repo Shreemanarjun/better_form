@@ -18,11 +18,11 @@ void main() {
                   builder: (context, scope) {
                     return Column(
                       children: [
-                        RiverpodTextFormField(
+                        FormixTextFormField(
                           key: const Key('A'),
                           fieldId: fieldA,
                         ),
-                        RiverpodTextFormField(
+                        FormixTextFormField(
                           key: const Key('B'),
                           fieldId: fieldB,
                         ),
@@ -77,7 +77,7 @@ void main() {
                             child: Column(
                               children: [
                                 const SizedBox(height: 1000),
-                                RiverpodTextFormField(
+                                FormixTextFormField(
                                   key: const Key('B'),
                                   fieldId: fieldB,
                                 ),
@@ -136,11 +136,11 @@ void main() {
                   builder: (context, scope) {
                     return Column(
                       children: [
-                        RiverpodTextFormField(
+                        FormixTextFormField(
                           key: const Key('A'),
                           fieldId: fieldA,
                         ),
-                        RiverpodTextFormField(
+                        FormixTextFormField(
                           key: const Key('B'),
                           fieldId: fieldB,
                         ),

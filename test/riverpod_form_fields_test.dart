@@ -10,23 +10,20 @@ final testControllerProvider =
     });
 
 void main() {
-  group('RiverpodTextFormField', () {
+  group('FormixTextFormField', () {
     testWidgets('should render with initial value', (tester) async {
       final nameField = FormixFieldID<String>('name');
 
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            testControllerProvider.overrideWith((ref) {
-              return FormixController(initialValue: {'name': 'John'});
-            }),
-          ],
           child: MaterialApp(
             home: Scaffold(
-              body: RiverpodTextFormField(
-                fieldId: nameField,
-                controllerProvider: testControllerProvider,
-                decoration: const InputDecoration(labelText: 'Name'),
+              body: Formix(
+                initialValue: const {'name': 'John'},
+                child: FormixTextFormField(
+                  fieldId: nameField,
+                  decoration: const InputDecoration(labelText: 'Name'),
+                ),
               ),
             ),
           ),
@@ -42,17 +39,14 @@ void main() {
 
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            testControllerProvider.overrideWith((ref) {
-              return FormixController(initialValue: {'name': ''});
-            }),
-          ],
           child: MaterialApp(
             home: Scaffold(
-              body: RiverpodTextFormField(
-                fieldId: nameField,
-                controllerProvider: testControllerProvider,
-                decoration: const InputDecoration(labelText: 'Name'),
+              body: Formix(
+                initialValue: const {'name': ''},
+                child: FormixTextFormField(
+                  fieldId: nameField,
+                  decoration: const InputDecoration(labelText: 'Name'),
+                ),
               ),
             ),
           ),
@@ -71,12 +65,11 @@ void main() {
 
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            testControllerProvider.overrideWith((ref) {
-              final controller = FormixController(
-                initialValue: {'email': ''},
+          child: MaterialApp(
+            home: Scaffold(
+              body: Formix(
                 fields: [
-                  FormixField<String>(
+                  FormixFieldConfig<String>(
                     id: emailField,
                     initialValue: '',
                     validator: (value) => (value?.contains('@') ?? false)
@@ -84,16 +77,10 @@ void main() {
                         : 'Invalid email',
                   ),
                 ],
-              );
-              return controller;
-            }),
-          ],
-          child: MaterialApp(
-            home: Scaffold(
-              body: RiverpodTextFormField(
-                fieldId: emailField,
-                controllerProvider: testControllerProvider,
-                decoration: const InputDecoration(labelText: 'Email'),
+                child: FormixTextFormField(
+                  fieldId: emailField,
+                  decoration: const InputDecoration(labelText: 'Email'),
+                ),
               ),
             ),
           ),
@@ -109,24 +96,20 @@ void main() {
     });
   });
 
-  group('RiverpodNumberFormField', () {
+  group('FormixNumberFormField', () {
     testWidgets('should render with initial numeric value', (tester) async {
       final ageField = FormixFieldID<num>('age');
 
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            formControllerProvider(
-              const FormixParameter(initialValue: {}),
-            ).overrideWith((ref) {
-              return FormixController(initialValue: {'age': 25});
-            }),
-          ],
           child: MaterialApp(
             home: Scaffold(
-              body: RiverpodNumberFormField(
-                fieldId: ageField,
-                decoration: const InputDecoration(labelText: 'Age'),
+              body: Formix(
+                initialValue: const {'age': 25},
+                child: FormixNumberFormField(
+                  fieldId: ageField,
+                  decoration: const InputDecoration(labelText: 'Age'),
+                ),
               ),
             ),
           ),
@@ -142,18 +125,14 @@ void main() {
 
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            formControllerProvider(
-              const FormixParameter(initialValue: {}),
-            ).overrideWith((ref) {
-              return FormixController(initialValue: {'age': 0});
-            }),
-          ],
           child: MaterialApp(
             home: Scaffold(
-              body: RiverpodNumberFormField(
-                fieldId: ageField,
-                decoration: const InputDecoration(labelText: 'Age'),
+              body: Formix(
+                initialValue: const {'age': 0},
+                child: FormixNumberFormField(
+                  fieldId: ageField,
+                  decoration: const InputDecoration(labelText: 'Age'),
+                ),
               ),
             ),
           ),
@@ -171,20 +150,16 @@ void main() {
 
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            formControllerProvider(
-              const FormixParameter(initialValue: {}),
-            ).overrideWith((ref) {
-              return FormixController(initialValue: {'age': 25});
-            }),
-          ],
           child: MaterialApp(
             home: Scaffold(
-              body: RiverpodNumberFormField(
-                fieldId: ageField,
-                min: 18,
-                max: 100,
-                decoration: const InputDecoration(labelText: 'Age'),
+              body: Formix(
+                initialValue: const {'age': 25},
+                child: FormixNumberFormField(
+                  fieldId: ageField,
+                  min: 18,
+                  max: 100,
+                  decoration: const InputDecoration(labelText: 'Age'),
+                ),
               ),
             ),
           ),
@@ -202,24 +177,20 @@ void main() {
     });
   });
 
-  group('RiverpodCheckboxFormField', () {
+  group('FormixCheckboxFormField', () {
     testWidgets('should render with initial boolean value', (tester) async {
       final newsletterField = FormixFieldID<bool>('newsletter');
 
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            formControllerProvider(
-              const FormixParameter(initialValue: {}),
-            ).overrideWith((ref) {
-              return FormixController(initialValue: {'newsletter': true});
-            }),
-          ],
           child: MaterialApp(
             home: Scaffold(
-              body: RiverpodCheckboxFormField(
-                fieldId: newsletterField,
-                title: const Text('Subscribe to newsletter'),
+              body: Formix(
+                initialValue: const {'newsletter': true},
+                child: FormixCheckboxFormField(
+                  fieldId: newsletterField,
+                  title: const Text('Subscribe to newsletter'),
+                ),
               ),
             ),
           ),
@@ -248,9 +219,12 @@ void main() {
           ],
           child: MaterialApp(
             home: Scaffold(
-              body: RiverpodCheckboxFormField(
-                fieldId: newsletterField,
-                title: const Text('Subscribe to newsletter'),
+              body: Formix(
+                initialValue: const {'newsletter': false},
+                child: FormixCheckboxFormField(
+                  fieldId: newsletterField,
+                  title: const Text('Subscribe to newsletter'),
+                ),
               ),
             ),
           ),
@@ -277,29 +251,22 @@ void main() {
 
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            formControllerProvider(
-              const FormixParameter(initialValue: {}),
-            ).overrideWith((ref) {
-              final controller = FormixController(
-                initialValue: {'agree': false},
+          child: MaterialApp(
+            home: Scaffold(
+              body: Formix(
                 fields: [
-                  FormixField<bool>(
+                  FormixFieldConfig<bool>(
                     id: agreeField,
                     initialValue: false,
                     validator: (value) =>
                         value == true ? null : 'You must agree',
+                    validationMode: FormixAutovalidateMode.always,
                   ),
                 ],
-              );
-              return controller;
-            }),
-          ],
-          child: MaterialApp(
-            home: Scaffold(
-              body: RiverpodCheckboxFormField(
-                fieldId: agreeField,
-                title: const Text('I agree to terms'),
+                child: FormixCheckboxFormField(
+                  fieldId: agreeField,
+                  title: const Text('I agree to terms'),
+                ),
               ),
             ),
           ),
@@ -310,29 +277,25 @@ void main() {
     });
   });
 
-  group('RiverpodDropdownFormField', () {
+  group('FormixDropdownFormField', () {
     testWidgets('should render with initial value', (tester) async {
       final priorityField = FormixFieldID<String>('priority');
 
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            formControllerProvider(
-              const FormixParameter(initialValue: {}),
-            ).overrideWith((ref) {
-              return FormixController(initialValue: {'priority': 'medium'});
-            }),
-          ],
           child: MaterialApp(
             home: Scaffold(
-              body: RiverpodDropdownFormField<String>(
-                fieldId: priorityField,
-                items: const [
-                  DropdownMenuItem(value: 'low', child: Text('Low')),
-                  DropdownMenuItem(value: 'medium', child: Text('Medium')),
-                  DropdownMenuItem(value: 'high', child: Text('High')),
-                ],
-                decoration: const InputDecoration(labelText: 'Priority'),
+              body: Formix(
+                initialValue: const {'priority': 'medium'},
+                child: FormixDropdownFormField<String>(
+                  fieldId: priorityField,
+                  items: const [
+                    DropdownMenuItem(value: 'low', child: Text('Low')),
+                    DropdownMenuItem(value: 'medium', child: Text('Medium')),
+                    DropdownMenuItem(value: 'high', child: Text('High')),
+                  ],
+                  decoration: const InputDecoration(labelText: 'Priority'),
+                ),
               ),
             ),
           ),
@@ -348,23 +311,19 @@ void main() {
 
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            formControllerProvider(
-              const FormixParameter(initialValue: {}),
-            ).overrideWith((ref) {
-              return FormixController(initialValue: {'priority': 'medium'});
-            }),
-          ],
           child: MaterialApp(
             home: Scaffold(
-              body: RiverpodDropdownFormField<String>(
-                fieldId: priorityField,
-                items: const [
-                  DropdownMenuItem(value: 'low', child: Text('Low')),
-                  DropdownMenuItem(value: 'medium', child: Text('Medium')),
-                  DropdownMenuItem(value: 'high', child: Text('High')),
-                ],
-                decoration: const InputDecoration(labelText: 'Priority'),
+              body: Formix(
+                initialValue: const {'priority': 'medium'},
+                child: FormixDropdownFormField<String>(
+                  fieldId: priorityField,
+                  items: const [
+                    DropdownMenuItem(value: 'low', child: Text('Low')),
+                    DropdownMenuItem(value: 'medium', child: Text('Medium')),
+                    DropdownMenuItem(value: 'high', child: Text('High')),
+                  ],
+                  decoration: const InputDecoration(labelText: 'Priority'),
+                ),
               ),
             ),
           ),
@@ -379,24 +338,24 @@ void main() {
     });
   });
 
-  group('RiverpodFormStatus', () {
+  group('FormixFormStatus', () {
     testWidgets('should show form status', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            formControllerProvider(
-              const FormixParameter(initialValue: {}),
-            ).overrideWith((ref) {
-              return FormixController(initialValue: {'name': 'John'});
-            }),
-          ],
-          child: MaterialApp(home: Scaffold(body: const RiverpodFormStatus())),
+          child: MaterialApp(
+            home: Scaffold(
+              body: Formix(
+                initialValue: const {'name': 'John'},
+                child: const FormixFormStatus(),
+              ),
+            ),
+          ),
         ),
       );
 
       expect(find.text('Form Status'), findsOneWidget);
-      expect(find.text('Form is clean'), findsOneWidget);
-      expect(find.text('Is Valid: true'), findsOneWidget);
+      expect(find.text('Pristine'), findsOneWidget);
+      expect(find.text('Valid: true'), findsOneWidget);
     });
 
     testWidgets('should show dirty state when form is modified', (
@@ -406,25 +365,36 @@ void main() {
 
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            formControllerProvider(
-              const FormixParameter(initialValue: {}),
-            ).overrideWith((ref) {
-              final controller = FormixController(
+          child: MaterialApp(
+            home: Scaffold(
+              body: Formix(
                 initialValue: {'name': 'John'},
-              );
-              // Simulate setting a value to make it dirty
-              Future.microtask(() => controller.setValue(nameField, 'Jane'));
-              return controller;
-            }),
-          ],
-          child: MaterialApp(home: Scaffold(body: const RiverpodFormStatus())),
+                fields: [
+                  FormixFieldConfig<String>(
+                    id: nameField,
+                    initialValue: 'John',
+                  ),
+                ],
+                child: const FormixFormStatus(),
+              ),
+            ),
+          ),
         ),
       );
 
       await tester.pump();
+      expect(find.text('Pristine'), findsOneWidget);
 
-      expect(find.text('Form is dirty'), findsOneWidget);
+      // Get the controller from the tree
+      final FormixController controller = Formix.controllerOf(
+        tester.element(find.byType(FormixFormStatus)),
+      )!;
+
+      // Change value to make it dirty
+      controller.setValue(nameField, 'Jane');
+      await tester.pump();
+
+      expect(find.text('Modified'), findsOneWidget);
     });
   });
 }

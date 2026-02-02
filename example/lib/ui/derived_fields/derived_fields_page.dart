@@ -107,7 +107,7 @@ class _DerivedFieldsExampleContentState
             Row(
               children: [
                 Expanded(
-                  child: RiverpodTextFormField(
+                  child: FormixTextFormField(
                     fieldId: FormixFieldID<String>('firstName'),
                     decoration: const InputDecoration(
                       labelText: 'First Name',
@@ -117,7 +117,7 @@ class _DerivedFieldsExampleContentState
                 ),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: RiverpodTextFormField(
+                  child: FormixTextFormField(
                     fieldId: FormixFieldID<String>('lastName'),
                     decoration: const InputDecoration(
                       labelText: 'Last Name',
@@ -168,7 +168,7 @@ class _DerivedFieldsExampleContentState
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 8),
-            RiverpodNumberFormField(
+            FormixNumberFormField(
               fieldId: FormixFieldID<int>('birthYear'),
               min: 1900,
               max: DateTime.now().year,
@@ -219,7 +219,7 @@ class _DerivedFieldsExampleContentState
             Row(
               children: [
                 Expanded(
-                  child: RiverpodNumberFormField(
+                  child: FormixNumberFormField(
                     fieldId: FormixFieldID<double>('price'),
                     min: 0,
                     decoration: const InputDecoration(
@@ -230,7 +230,7 @@ class _DerivedFieldsExampleContentState
                 ),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: RiverpodNumberFormField(
+                  child: FormixNumberFormField(
                     fieldId: FormixFieldID<int>('quantity'),
                     min: 1,
                     decoration: const InputDecoration(
@@ -275,7 +275,7 @@ class _DerivedFieldsExampleContentState
             const SizedBox(height: 16),
 
             // Discount
-            RiverpodNumberFormField(
+            FormixNumberFormField(
               fieldId: FormixFieldID<double>('discountPercent'),
               min: 0,
               max: 100,
@@ -431,7 +431,7 @@ class _DerivedFieldsExampleContentState
             ),
 
             const SizedBox(height: 24),
-            const RiverpodFormStatus(),
+            const FormixFormStatus(),
           ],
         ),
       ),

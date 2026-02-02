@@ -22,7 +22,7 @@ void main() {
                     child: Column(
                       children: [
                         const Text('Form One'),
-                        RiverpodTextFormField(fieldId: nameField),
+                        FormixTextFormField(fieldId: nameField),
                       ],
                     ),
                   ),
@@ -32,7 +32,7 @@ void main() {
                     child: Column(
                       children: [
                         const Text('Form Two'),
-                        RiverpodTextFormField(fieldId: nameField),
+                        FormixTextFormField(fieldId: nameField),
                       ],
                     ),
                   ),
@@ -93,8 +93,8 @@ void main() {
                 initialValue: {'outer': 'O', 'shared': 'Outer Shared'},
                 child: Column(
                   children: [
-                    RiverpodTextFormField(fieldId: outerField),
-                    RiverpodTextFormField(fieldId: sharedField),
+                    FormixTextFormField(fieldId: outerField),
+                    FormixTextFormField(fieldId: sharedField),
                     const Divider(),
                     Formix(
                       key: const Key('inner_form'),
@@ -104,8 +104,8 @@ void main() {
                           innerController = scope.controller;
                           return Column(
                             children: [
-                              RiverpodTextFormField(fieldId: innerField),
-                              RiverpodTextFormField(fieldId: sharedField),
+                              FormixTextFormField(fieldId: innerField),
+                              FormixTextFormField(fieldId: sharedField),
                             ],
                           );
                         },
@@ -184,7 +184,7 @@ void main() {
                         return Column(
                           children: [
                             Text('Form 2 Valid: ${scope.watchIsValid}'),
-                            RiverpodTextFormField(fieldId: fieldId),
+                            FormixTextFormField(fieldId: fieldId),
                           ],
                         );
                       },
@@ -275,7 +275,7 @@ void main() {
               body: Formix(
                 key: formKey,
                 initialValue: {'name': 'John'},
-                child: RiverpodTextFormField(fieldId: nameField),
+                child: FormixTextFormField(fieldId: nameField),
               ),
             ),
           ),
@@ -308,8 +308,8 @@ void main() {
                 onChanged: (values) => changedValues.add(Map.from(values)),
                 child: Column(
                   children: [
-                    RiverpodTextFormField(fieldId: nameField),
-                    RiverpodTextFormField(fieldId: emailField),
+                    FormixTextFormField(fieldId: nameField),
+                    FormixTextFormField(fieldId: emailField),
                   ],
                 ),
               ),
@@ -416,12 +416,12 @@ void main() {
                   Formix(
                     key: formKey1,
                     initialValue: {'value': 'Initial 1'},
-                    child: RiverpodTextFormField(fieldId: field),
+                    child: FormixTextFormField(fieldId: field),
                   ),
                   Formix(
                     key: formKey2,
                     initialValue: {'value': 'Initial 2'},
-                    child: RiverpodTextFormField(fieldId: field),
+                    child: FormixTextFormField(fieldId: field),
                   ),
                 ],
               ),
@@ -469,7 +469,7 @@ void main() {
                       builder: (context, scope) {
                         return Column(
                           children: [
-                            RiverpodTextFormField(fieldId: field),
+                            FormixTextFormField(fieldId: field),
                             Text('Form 1 Valid: ${scope.watchIsValid}'),
                           ],
                         );
@@ -520,12 +520,12 @@ void main() {
                   Formix(
                     key: formKey1,
                     initialValue: {'value': 'A'},
-                    child: RiverpodTextFormField(fieldId: field),
+                    child: FormixTextFormField(fieldId: field),
                   ),
                   Formix(
                     key: formKey2,
                     initialValue: {'value': 'B'},
-                    child: RiverpodTextFormField(fieldId: field),
+                    child: FormixTextFormField(fieldId: field),
                   ),
                 ],
               ),
@@ -564,7 +564,7 @@ void main() {
                         Formix(
                           key: const Key('disposable_form'),
                           initialValue: {'value': 'Test'},
-                          child: RiverpodTextFormField(fieldId: field),
+                          child: FormixTextFormField(fieldId: field),
                         ),
                       ElevatedButton(
                         onPressed: () => setState(() => showForm = !showForm),
@@ -616,7 +616,7 @@ class _DynamicFormSwitcherState extends State<_DynamicFormSwitcher> {
           Formix(
             key: const ValueKey('form_a'),
             initialValue: {'field': 'A'},
-            child: RiverpodTextFormField(
+            child: FormixTextFormField(
               fieldId: FormixFieldID<String>('field'),
             ),
           )
@@ -624,7 +624,7 @@ class _DynamicFormSwitcherState extends State<_DynamicFormSwitcher> {
           Formix(
             key: const ValueKey('form_b'),
             initialValue: {'field': 'B'},
-            child: RiverpodTextFormField(
+            child: FormixTextFormField(
               fieldId: FormixFieldID<String>('field'),
             ),
           ),

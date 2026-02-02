@@ -1,176 +1,216 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'base_form_field.dart';
+import '../enums.dart';
 
-import '../controllers/field_id.dart';
-import '../controllers/riverpod_controller.dart';
-import 'formix.dart';
-import 'form_group.dart';
-import 'riverpod_form_fields.dart';
-
-/// Riverpod-based text form field
-class RiverpodTextFormField extends ConsumerStatefulWidget {
-  final FormixFieldID<String> fieldId;
-  final InputDecoration? decoration;
-  final TextInputType? keyboardType;
-  final int? maxLength;
-  final AutoDisposeStateNotifierProvider<FormixController, FormixData>?
-  controllerProvider;
-  final FocusNode? focusNode;
-  final List<TextInputFormatter>? inputFormatters;
-  final TextInputAction? textInputAction;
-  final void Function(String)? onFieldSubmitted;
-  final bool readOnly;
-  final int? maxLines;
-  final bool expands;
-  final TextStyle? style;
-  final Widget? loadingIcon;
-
-  const RiverpodTextFormField({
+/// A Formix-based text form field that is lifecycle aware.
+class FormixTextFormField extends FormixFieldWidget<String> {
+  const FormixTextFormField({
     super.key,
-    required this.fieldId,
-    this.decoration,
+    required super.fieldId,
+    super.controller,
+    super.validator,
+    super.initialValue,
+    super.focusNode,
+    this.decoration = const InputDecoration(),
     this.keyboardType,
     this.maxLength,
-    this.controllerProvider,
-    this.focusNode,
     this.inputFormatters,
     this.textInputAction,
     this.onFieldSubmitted,
     this.readOnly = false,
     this.maxLines = 1,
+    this.minLines,
     this.expands = false,
+    this.obscureText = false,
     this.style,
     this.loadingIcon,
+    this.enabled = true,
+    this.autocorrect = true,
+    this.autofillHints,
+    this.autofocus = false,
+    this.buildCounter,
+    this.cursorColor,
+    this.cursorHeight,
+    this.cursorRadius,
+    this.cursorWidth = 2.0,
+    this.enableInteractiveSelection = true,
+    this.enableSuggestions = true,
+    this.keyboardAppearance,
+    this.maxLengthEnforcement,
+    this.onChanged,
+    this.onEditingComplete,
+    this.onTap,
+    this.onTapOutside,
+    this.scrollController,
+    this.scrollPadding = const EdgeInsets.all(20.0),
+    this.scrollPhysics,
+    this.selectionControls,
+    this.showCursor,
+    this.smartDashesType,
+    this.smartQuotesType,
+    this.strutStyle,
+    this.textAlign = TextAlign.start,
+    this.textAlignVertical,
+    this.textCapitalization = TextCapitalization.none,
+    this.textDirection,
   });
 
+  final InputDecoration decoration;
+  final TextInputType? keyboardType;
+  final int? maxLength;
+  final List<TextInputFormatter>? inputFormatters;
+  final TextInputAction? textInputAction;
+  final void Function(String)? onFieldSubmitted;
+  final bool readOnly;
+  final int? maxLines;
+  final int? minLines;
+  final bool expands;
+  final bool obscureText;
+  final TextStyle? style;
+  final Widget? loadingIcon;
+  final bool enabled;
+  final bool autocorrect;
+  final Iterable<String>? autofillHints;
+  final bool autofocus;
+  final InputCounterWidgetBuilder? buildCounter;
+  final Color? cursorColor;
+  final double? cursorHeight;
+  final Radius? cursorRadius;
+  final double cursorWidth;
+  final bool enableInteractiveSelection;
+  final bool enableSuggestions;
+  final Brightness? keyboardAppearance;
+  final MaxLengthEnforcement? maxLengthEnforcement;
+  final ValueChanged<String>? onChanged;
+  final VoidCallback? onEditingComplete;
+  final GestureTapCallback? onTap;
+  final TapRegionCallback? onTapOutside;
+  final ScrollController? scrollController;
+  final EdgeInsets scrollPadding;
+  final ScrollPhysics? scrollPhysics;
+  final TextSelectionControls? selectionControls;
+  final bool? showCursor;
+  final SmartDashesType? smartDashesType;
+  final SmartQuotesType? smartQuotesType;
+  final StrutStyle? strutStyle;
+  final TextAlign textAlign;
+  final TextAlignVertical? textAlignVertical;
+  final TextCapitalization textCapitalization;
+  final TextDirection? textDirection;
+
   @override
-  ConsumerState<RiverpodTextFormField> createState() =>
-      _RiverpodTextFormFieldState();
+  FormixTextFormFieldState createState() => FormixTextFormFieldState();
 }
 
-class _RiverpodTextFormFieldState extends ConsumerState<RiverpodTextFormField> {
-  late final TextEditingController _textController;
-  FocusNode? _internalFocusNode;
-
-  FocusNode get _focusNode => widget.focusNode ?? _internalFocusNode!;
+class FormixTextFormFieldState extends FormixFieldWidgetState<String>
+    with FormixFieldTextMixin<String> {
+  @override
+  String valueToString(String? value) => value ?? '';
 
   @override
-  void initState() {
-    super.initState();
-    _textController = TextEditingController();
-    if (widget.focusNode == null) {
-      _internalFocusNode = FocusNode();
-    }
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final provider =
-        widget.controllerProvider ??
-        Formix.of(context) ??
-        formControllerProvider(const FormixParameter(initialValue: {}));
-
-    final controller = ref.read(provider.notifier);
-    final resolvedId = FormixGroup.resolve(context, widget.fieldId);
-
-    controller.registerFocusNode(resolvedId, _focusNode);
-    controller.registerContext(resolvedId, context);
-  }
-
-  @override
-  void dispose() {
-    _textController.dispose();
-    _internalFocusNode?.dispose();
-    super.dispose();
-  }
+  String? stringToValue(String text) => text;
 
   @override
   Widget build(BuildContext context) {
-    final controllerProvider =
-        widget.controllerProvider ??
-        Formix.of(context) ??
-        formControllerProvider(const FormixParameter(initialValue: {}));
+    final fieldWidget = widget as FormixTextFormField;
 
-    final resolvedId = FormixGroup.resolve(context, widget.fieldId);
+    return AnimatedBuilder(
+      animation: Listenable.merge([
+        controller.fieldValidationNotifier(widget.fieldId),
+        controller.fieldTouchedNotifier(widget.fieldId),
+        controller.fieldDirtyNotifier(widget.fieldId),
+        controller.isSubmittingNotifier,
+      ]),
+      builder: (context, _) {
+        final validation = controller.getValidation(widget.fieldId);
+        final isTouched = controller.isFieldTouched(widget.fieldId);
+        final isDirty = controller.isFieldDirty(widget.fieldId);
+        final isSubmitting = controller.isSubmitting;
+        final validationMode = controller.getValidationMode(widget.fieldId);
 
-    return ProviderScope(
-      overrides: [
-        currentControllerProvider.overrideWithValue(controllerProvider),
-      ],
-      child: Consumer(
-        builder: (context, ref, child) {
-          final controller = ref.read(controllerProvider.notifier);
-          final value = ref.watch(fieldValueProvider(resolvedId));
-          final validation = ref.watch(fieldValidationProvider(resolvedId));
-          final isDirty = ref.watch(fieldDirtyProvider(resolvedId));
-          final fieldCode = controller.getField(resolvedId);
+        final showImmediate = validationMode == FormixAutovalidateMode.always;
 
-          // Update controller text when value changes externally
-          if (_textController.text != (value ?? '')) {
-            _textController.text = value ?? '';
-          }
+        final shouldShowError =
+            (isTouched || isSubmitting || showImmediate) && !validation.isValid;
 
-          Widget? suffixIcon;
-          if (validation.isValidating) {
-            suffixIcon =
-                widget.loadingIcon ??
-                const SizedBox(
-                  width: 16,
-                  height: 16,
+        Widget? suffixIcon;
+        if (validation.isValidating) {
+          suffixIcon =
+              fieldWidget.loadingIcon ??
+              const SizedBox(
+                width: 16,
+                height: 16,
+                child: Padding(
+                  padding: EdgeInsets.all(4),
                   child: CircularProgressIndicator(strokeWidth: 2),
-                );
-          } else if (isDirty) {
-            suffixIcon = const Icon(Icons.edit, size: 16);
-          }
+                ),
+              );
+        } else if (isDirty) {
+          suffixIcon = const Icon(Icons.edit, size: 16);
+        }
 
-          return Focus(
-            onFocusChange: (focused) {
-              if (!focused) {
-                controller.markAsTouched(resolvedId);
-              }
-            },
-            child: TextFormField(
-              controller: _textController,
-              focusNode: _focusNode,
-              keyboardType: widget.keyboardType,
-              maxLength: widget.maxLength,
-              readOnly: widget.readOnly,
-              maxLines: widget.maxLines,
-              expands: widget.expands,
-              style: widget.style,
-              inputFormatters: [
-                ...?fieldCode?.inputFormatters,
-                ...?widget.inputFormatters,
-              ],
-              decoration: (widget.decoration ?? const InputDecoration())
-                  .copyWith(
-                    errorText: validation.isValid
-                        ? null
-                        : validation.errorMessage,
-                    suffixIcon: suffixIcon,
-                  ),
-              onChanged: (newValue) =>
-                  controller.setValue(resolvedId, newValue),
-              textInputAction:
-                  widget.textInputAction ??
-                  fieldCode?.textInputAction ??
-                  TextInputAction.next,
-              onFieldSubmitted: (val) {
-                widget.onFieldSubmitted?.call(val);
-                fieldCode?.onSubmitted?.call(val);
-                if ((widget.textInputAction ??
-                        fieldCode?.textInputAction ??
-                        TextInputAction.next) ==
-                    TextInputAction.next) {
-                  controller.focusNextField(resolvedId);
-                }
-              },
-            ),
-          );
-        },
-      ),
+        final formatters = [
+          ...?controller.getField(widget.fieldId)?.inputFormatters,
+          ...?fieldWidget.inputFormatters,
+        ];
+
+        return TextFormField(
+          controller: textController,
+          focusNode: focusNode,
+          decoration: fieldWidget.decoration.copyWith(
+            errorText: shouldShowError ? validation.errorMessage : null,
+            suffixIcon: suffixIcon,
+            helperText: validation.isValidating ? 'Validating...' : null,
+          ),
+          keyboardType: fieldWidget.keyboardType,
+          maxLength: fieldWidget.maxLength,
+          inputFormatters: formatters,
+          textInputAction: fieldWidget.textInputAction,
+          onFieldSubmitted: (val) {
+            fieldWidget.onFieldSubmitted?.call(val);
+          },
+          readOnly: fieldWidget.readOnly,
+          maxLines: fieldWidget.maxLines,
+          minLines: fieldWidget.minLines,
+          expands: fieldWidget.expands,
+          obscureText: fieldWidget.obscureText,
+          style: fieldWidget.style,
+          enabled: fieldWidget.enabled,
+          autocorrect: fieldWidget.autocorrect,
+          autofillHints: fieldWidget.autofillHints,
+          autofocus: fieldWidget.autofocus,
+          buildCounter: fieldWidget.buildCounter,
+          cursorColor: fieldWidget.cursorColor,
+          cursorHeight: fieldWidget.cursorHeight,
+          cursorRadius: fieldWidget.cursorRadius,
+          cursorWidth: fieldWidget.cursorWidth,
+          enableInteractiveSelection: fieldWidget.enableInteractiveSelection,
+          enableSuggestions: fieldWidget.enableSuggestions,
+          keyboardAppearance: fieldWidget.keyboardAppearance,
+          maxLengthEnforcement: fieldWidget.maxLengthEnforcement,
+          onChanged: (val) {
+            // FormixFieldTextMixin already handles synchronization via _textController listener.
+            // But if user provided onChanged, call it.
+            fieldWidget.onChanged?.call(val);
+          },
+          onEditingComplete: fieldWidget.onEditingComplete,
+          onTap: fieldWidget.onTap,
+          onTapOutside: fieldWidget.onTapOutside,
+          scrollController: fieldWidget.scrollController,
+          scrollPadding: fieldWidget.scrollPadding,
+          scrollPhysics: fieldWidget.scrollPhysics,
+          selectionControls: fieldWidget.selectionControls,
+          showCursor: fieldWidget.showCursor,
+          smartDashesType: fieldWidget.smartDashesType,
+          smartQuotesType: fieldWidget.smartQuotesType,
+          strutStyle: fieldWidget.strutStyle,
+          textAlign: fieldWidget.textAlign,
+          textAlignVertical: fieldWidget.textAlignVertical,
+          textCapitalization: fieldWidget.textCapitalization,
+          textDirection: fieldWidget.textDirection,
+        );
+      },
     );
   }
 }

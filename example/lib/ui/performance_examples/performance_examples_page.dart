@@ -186,7 +186,7 @@ class _PerformanceExamplesContentState
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 8),
-            RiverpodTextFormField(
+            FormixTextFormField(
               fieldId: FormixFieldID<String>('firstName'),
               decoration: const InputDecoration(
                 labelText: 'First Name',
@@ -194,7 +194,7 @@ class _PerformanceExamplesContentState
               ),
             ),
             const SizedBox(height: 16),
-            RiverpodTextFormField(
+            FormixTextFormField(
               fieldId: FormixFieldID<String>('lastName'),
               decoration: const InputDecoration(
                 labelText: 'Last Name',
@@ -202,7 +202,7 @@ class _PerformanceExamplesContentState
               ),
             ),
             const SizedBox(height: 16),
-            RiverpodTextFormField(
+            FormixTextFormField(
               fieldId: FormixFieldID<String>('email'),
               keyboardType: TextInputType.emailAddress,
               decoration: const InputDecoration(
@@ -211,7 +211,7 @@ class _PerformanceExamplesContentState
               ),
             ),
             const SizedBox(height: 16),
-            RiverpodNumberFormField(
+            FormixNumberFormField(
               fieldId: FormixFieldID<num>('age'),
               decoration: const InputDecoration(
                 labelText: 'Age',
@@ -219,12 +219,12 @@ class _PerformanceExamplesContentState
               ),
             ),
             const SizedBox(height: 16),
-            RiverpodCheckboxFormField(
+            FormixCheckboxFormField(
               fieldId: FormixFieldID<bool>('newsletter'),
               title: const Text('Subscribe to newsletter'),
             ),
             const SizedBox(height: 16),
-            RiverpodDropdownFormField<String>(
+            FormixDropdownFormField<String>(
               fieldId: FormixFieldID<String>('country'),
               items: const [
                 DropdownMenuItem(value: 'US', child: Text('United States')),
@@ -239,7 +239,7 @@ class _PerformanceExamplesContentState
             ),
 
             const SizedBox(height: 24),
-            const RiverpodFormStatus(),
+            const FormixFormStatus(),
             const SizedBox(height: 16),
 
             Consumer(

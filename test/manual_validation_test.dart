@@ -41,7 +41,7 @@ void main() {
                 child: FormixBuilder(
                   builder: (context, scope) {
                     controller = Formix.controllerOf(context)!;
-                    return RiverpodTextFormField(fieldId: nameField);
+                    return FormixTextFormField(fieldId: nameField);
                   },
                 ),
               ),

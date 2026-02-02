@@ -131,7 +131,7 @@ class UndoRedoPage extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
           ),
           padding: const EdgeInsets.all(8),
-          child: RiverpodTextFormField(
+          child: FormixTextFormField(
             fieldId: FormixFieldID('document'),
             maxLines: null,
             expands: true,

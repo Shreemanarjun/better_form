@@ -35,7 +35,7 @@ void main() {
                                       initialValue: 'A',
                                     ),
                                   ],
-                                  child: RiverpodTextFormField(fieldId: fieldA),
+                                  child: FormixTextFormField(fieldId: fieldA),
                                 ),
                             ],
                           );

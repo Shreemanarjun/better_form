@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:formix/formix.dart';
 
 void main() {
-  group('RiverpodNumberFormField', () {
+  group('FormixNumberFormField', () {
     late FormixFieldID<num> numField;
     late FormixFieldID<int> intField;
     late FormixFieldID<double> doubleField;
@@ -23,7 +23,7 @@ void main() {
               body: Formix(
                 initialValue: const {'num_field': 42.5},
                 fields: [FormixFieldConfig(id: numField, initialValue: 42.5)],
-                child: RiverpodNumberFormField(
+                child: FormixNumberFormField(
                   fieldId: numField,
                   decoration: const InputDecoration(labelText: 'Number'),
                 ),
@@ -46,7 +46,7 @@ void main() {
               body: Formix(
                 initialValue: const {'int_field': 42},
                 fields: [FormixFieldConfig(id: intField, initialValue: 42)],
-                child: RiverpodNumberFormField(fieldId: intField),
+                child: FormixNumberFormField(fieldId: intField),
               ),
             ),
           ),
@@ -66,7 +66,7 @@ void main() {
                 fields: [
                   FormixFieldConfig(id: doubleField, initialValue: 42.7),
                 ],
-                child: RiverpodNumberFormField(fieldId: doubleField),
+                child: FormixNumberFormField(fieldId: doubleField),
               ),
             ),
           ),
@@ -84,7 +84,7 @@ void main() {
               body: Formix(
                 initialValue: const {'num_field': 0},
                 fields: [FormixFieldConfig(id: numField, initialValue: 0)],
-                child: RiverpodNumberFormField(fieldId: numField),
+                child: FormixNumberFormField(fieldId: numField),
               ),
             ),
           ),
@@ -113,7 +113,7 @@ void main() {
               body: Formix(
                 initialValue: const {'num_field': 0.0}, // Start with double
                 fields: [FormixFieldConfig(id: numField, initialValue: 0.0)],
-                child: RiverpodNumberFormField(fieldId: numField),
+                child: FormixNumberFormField(fieldId: numField),
               ),
             ),
           ),
@@ -141,7 +141,7 @@ void main() {
               body: Formix(
                 initialValue: const {'num_field': 50},
                 fields: [FormixFieldConfig(id: numField, initialValue: 50)],
-                child: RiverpodNumberFormField(fieldId: numField, min: 10),
+                child: FormixNumberFormField(fieldId: numField, min: 10),
               ),
             ),
           ),
@@ -172,7 +172,7 @@ void main() {
               body: Formix(
                 initialValue: const {'num_field': 50},
                 fields: [FormixFieldConfig(id: numField, initialValue: 50)],
-                child: RiverpodNumberFormField(fieldId: numField, max: 100),
+                child: FormixNumberFormField(fieldId: numField, max: 100),
               ),
             ),
           ),
@@ -203,7 +203,7 @@ void main() {
               body: Formix(
                 initialValue: const {'num_field': 42},
                 fields: [FormixFieldConfig(id: numField, initialValue: 42)],
-                child: RiverpodNumberFormField(fieldId: numField),
+                child: FormixNumberFormField(fieldId: numField),
               ),
             ),
           ),
@@ -231,7 +231,7 @@ void main() {
               body: Formix(
                 initialValue: const {'num_field': 42},
                 fields: [FormixFieldConfig(id: numField, initialValue: 42)],
-                child: RiverpodNumberFormField(fieldId: numField),
+                child: FormixNumberFormField(fieldId: numField),
               ),
             ),
           ),
@@ -262,7 +262,7 @@ void main() {
               body: Formix(
                 initialValue: const {'num_field': 42},
                 fields: [FormixFieldConfig(id: numField, initialValue: 42)],
-                child: RiverpodNumberFormField(fieldId: numField),
+                child: FormixNumberFormField(fieldId: numField),
               ),
             ),
           ),
@@ -296,7 +296,7 @@ void main() {
                         (value ?? 0) < 10 ? 'Must be at least 10' : null,
                   ),
                 ],
-                child: RiverpodNumberFormField(
+                child: FormixNumberFormField(
                   fieldId: numField,
                   decoration: const InputDecoration(labelText: 'Number'),
                 ),
@@ -327,7 +327,7 @@ void main() {
                     },
                   ),
                 ],
-                child: RiverpodNumberFormField(fieldId: numField),
+                child: FormixNumberFormField(fieldId: numField),
               ),
             ),
           ),
@@ -349,7 +349,7 @@ void main() {
               body: Formix(
                 initialValue: const {'num_field': 42},
                 fields: [FormixFieldConfig(id: numField, initialValue: 42)],
-                child: RiverpodNumberFormField(fieldId: numField),
+                child: FormixNumberFormField(fieldId: numField),
               ),
             ),
           ),
@@ -374,7 +374,7 @@ void main() {
               body: Formix(
                 initialValue: const {'num_field': 42},
                 fields: [FormixFieldConfig(id: numField, initialValue: 42)],
-                child: RiverpodNumberFormField(fieldId: numField),
+                child: FormixNumberFormField(fieldId: numField),
               ),
             ),
           ),
@@ -389,21 +389,18 @@ void main() {
       expect(FocusManager.instance.primaryFocus?.hasFocus, true);
     });
 
-    testWidgets('handles controller provider override', (tester) async {
-      final customProvider =
-          StateNotifierProvider.autoDispose<FormixController, FormixData>((
-            ref,
-          ) {
-            return FormixController(initialValue: {'num_field': 99});
-          });
+    testWidgets('handles controller override', (tester) async {
+      final customController = FormixController(
+        initialValue: {'num_field': 99},
+      );
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
-              body: RiverpodNumberFormField(
+              body: FormixNumberFormField(
                 fieldId: numField,
-                controllerProvider: customProvider,
+                controller: customController,
               ),
             ),
           ),
@@ -421,7 +418,7 @@ void main() {
               body: Formix(
                 initialValue: const {'num_field': 42},
                 fields: [FormixFieldConfig(id: numField, initialValue: 42)],
-                child: RiverpodNumberFormField(
+                child: FormixNumberFormField(
                   fieldId: numField,
                   decoration: const InputDecoration(
                     labelText: 'Custom Label',
@@ -448,7 +445,7 @@ void main() {
               body: Formix(
                 initialValue: const {'int_field': 42},
                 fields: [FormixFieldConfig(id: intField, initialValue: 42)],
-                child: RiverpodNumberFormField(fieldId: intField),
+                child: FormixNumberFormField(fieldId: intField),
               ),
             ),
           ),
@@ -479,7 +476,7 @@ void main() {
                 fields: [
                   FormixFieldConfig(id: doubleField, initialValue: 42.0),
                 ],
-                child: RiverpodNumberFormField(fieldId: doubleField),
+                child: FormixNumberFormField(fieldId: doubleField),
               ),
             ),
           ),
@@ -507,7 +504,7 @@ void main() {
             home: Scaffold(
               body: Formix(
                 fields: [FormixFieldConfig(id: numField)],
-                child: RiverpodNumberFormField(fieldId: numField),
+                child: FormixNumberFormField(fieldId: numField),
               ),
             ),
           ),
@@ -533,7 +530,7 @@ void main() {
               body: Formix(
                 initialValue: const {'num_field': 42},
                 fields: [FormixFieldConfig(id: numField, initialValue: 42)],
-                child: RiverpodNumberFormField(fieldId: numField),
+                child: FormixNumberFormField(fieldId: numField),
               ),
             ),
           ),

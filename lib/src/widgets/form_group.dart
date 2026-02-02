@@ -13,10 +13,10 @@ import '../controllers/field_id.dart';
 ///   prefix: 'user',
 ///   child: Column(
 ///     children: [
-///       RiverpodTextFormField(fieldId: FormixFieldID('name')), // Resolves to 'user.name'
+///       FormixTextFormField(fieldId: FormixFieldID('name')), // Resolves to 'user.name'
 ///       FormixGroup(
 ///         prefix: 'address',
-///         child: RiverpodTextFormField(fieldId: FormixFieldID('city')), // Resolves to 'user.address.city'
+///         child: FormixTextFormField(fieldId: FormixFieldID('city')), // Resolves to 'user.address.city'
 ///       ),
 ///     ],
 ///   ),

@@ -25,7 +25,7 @@ class FormixArray<T> extends ConsumerWidget {
   /// Builder function for individual items.
   ///
   /// Receives the [index] and a unique [itemId] that can be used for
-  /// [RiverpodTextFormField] or other field widgets.
+  /// [FormixTextFormField] or other field widgets.
   final Widget Function(
     BuildContext context,
     int index,

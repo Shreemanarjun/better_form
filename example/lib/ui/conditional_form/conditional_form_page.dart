@@ -135,7 +135,7 @@ class _ConditionalFormExampleContentState
             // Account Type Selection
             const Text('Account Type'),
             const SizedBox(height: 8),
-            RiverpodDropdownFormField<String>(
+            FormixDropdownFormField<String>(
               fieldId: FormixFieldID<String>('accountType'),
               items: const [
                 DropdownMenuItem(
@@ -171,7 +171,7 @@ class _ConditionalFormExampleContentState
                         ),
                       ),
                       const SizedBox(height: 8),
-                      RiverpodTextFormField(
+                      FormixTextFormField(
                         fieldId: FormixFieldID<String>('companyName'),
                         decoration: const InputDecoration(
                           labelText: 'Company Name',
@@ -179,7 +179,7 @@ class _ConditionalFormExampleContentState
                         ),
                       ),
                       const SizedBox(height: 16),
-                      RiverpodTextFormField(
+                      FormixTextFormField(
                         fieldId: FormixFieldID<String>('taxId'),
                         decoration: const InputDecoration(
                           labelText: 'Tax ID',
@@ -200,7 +200,7 @@ class _ConditionalFormExampleContentState
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 8),
-            RiverpodTextFormField(
+            FormixTextFormField(
               fieldId: FormixFieldID<String>('firstName'),
               decoration: const InputDecoration(
                 labelText: 'First Name',
@@ -208,7 +208,7 @@ class _ConditionalFormExampleContentState
               ),
             ),
             const SizedBox(height: 16),
-            RiverpodTextFormField(
+            FormixTextFormField(
               fieldId: FormixFieldID<String>('lastName'),
               decoration: const InputDecoration(
                 labelText: 'Last Name',
@@ -218,7 +218,7 @@ class _ConditionalFormExampleContentState
             const SizedBox(height: 16),
 
             // Newsletter Subscription
-            RiverpodCheckboxFormField(
+            FormixCheckboxFormField(
               fieldId: FormixFieldID<bool>('hasNewsletter'),
               title: const Text('Subscribe to newsletter'),
             ),
@@ -236,7 +236,7 @@ class _ConditionalFormExampleContentState
                     children: [
                       const Text('Newsletter Frequency'),
                       const SizedBox(height: 8),
-                      RiverpodDropdownFormField<String>(
+                      FormixDropdownFormField<String>(
                         fieldId: FormixFieldID<String>('newsletterFrequency'),
                         items: const [
                           DropdownMenuItem(
@@ -267,7 +267,7 @@ class _ConditionalFormExampleContentState
             // Contact Method
             const Text('Preferred Contact Method'),
             const SizedBox(height: 8),
-            RiverpodDropdownFormField<String>(
+            FormixDropdownFormField<String>(
               fieldId: FormixFieldID<String>('contactMethod'),
               items: const [
                 DropdownMenuItem(value: 'email', child: Text('Email')),
@@ -290,7 +290,7 @@ class _ConditionalFormExampleContentState
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      RiverpodTextFormField(
+                      FormixTextFormField(
                         fieldId: FormixFieldID<String>('phoneNumber'),
                         decoration: const InputDecoration(
                           labelText: 'Phone Number',
@@ -304,7 +304,7 @@ class _ConditionalFormExampleContentState
                       if (contactMethod == 'phone') ...[
                         const Text('Preferred Call Time'),
                         const SizedBox(height: 8),
-                        RiverpodDropdownFormField<String>(
+                        FormixDropdownFormField<String>(
                           fieldId: FormixFieldID<String>('preferredTime'),
                           items: const [
                             DropdownMenuItem(
@@ -334,7 +334,7 @@ class _ConditionalFormExampleContentState
             ),
 
             const SizedBox(height: 24),
-            const RiverpodFormStatus(),
+            const FormixFormStatus(),
             const SizedBox(height: 16),
 
             Consumer(

@@ -299,7 +299,7 @@ class _HeadlessFormExampleContentState
             ),
 
             const SizedBox(height: 24),
-            const RiverpodFormStatus(),
+            const FormixFormStatus(),
             const SizedBox(height: 16),
 
             Consumer(

@@ -14,8 +14,11 @@ import 'ui/form_groups/form_groups_page.dart';
 import 'ui/multi_step_form/multi_step_form_page.dart';
 import 'ui/undo_redo_demo.dart';
 import 'ui/multi_form_sync_page.dart';
+import 'ui/login_form_test/login_form_test_page.dart';
+import 'ui/formix_builder_test/formix_builder_test_page.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const ProviderScope(child: MyApp()));
 }
 
@@ -46,7 +49,13 @@ class _HomePageState extends State<HomePage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 14, vsync: this);
+    _tabController = TabController(length: 16, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
@@ -72,6 +81,8 @@ class _HomePageState extends State<HomePage>
             Tab(text: 'Multi-Step'),
             Tab(text: 'Undo/Redo'),
             Tab(text: 'Sync'),
+            Tab(text: 'Login'),
+            Tab(text: 'Builder Test'),
           ],
         ),
       ),
@@ -92,6 +103,8 @@ class _HomePageState extends State<HomePage>
           MultiStepFormPage(),
           UndoRedoPage(),
           MultiFormSyncPage(),
+          LoginFormTestPage(),
+          FormixBuilderTestPage(),
         ],
       ),
     );

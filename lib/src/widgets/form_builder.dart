@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../controllers/riverpod_controller.dart';
 import '../controllers/field_id.dart';
 import '../controllers/validation.dart';
-import 'riverpod_form_fields.dart';
+import 'formix.dart';
 
 /// A comprehensive toolset for interacting with [Formix] state and logic.
 ///
@@ -227,8 +227,8 @@ class FormixBuilder extends ConsumerWidget {
       throw FlutterError('FormixBuilder must be placed inside a Formix widget');
     }
 
-    // We use ref.read to get the controller once, as it remains stable.
-    final controller = ref.read(provider.notifier);
+    // We watch the notifier so we get the new controller if it's recreated.
+    final controller = ref.watch(provider.notifier);
 
     final scope = FormixScope(
       context: context,
@@ -272,7 +272,7 @@ abstract class FormixWidget extends ConsumerWidget {
       throw FlutterError('$runtimeType must be placed inside a Formix widget');
     }
 
-    final controller = ref.read(provider.notifier);
+    final controller = ref.watch(provider.notifier);
 
     final scope = FormixScope(
       context: context,

@@ -71,7 +71,7 @@ void main() {
                         Text('Dirty: $isDirty'),
                         FormixSection(
                           fields: [FormixFieldConfig(id: nameField)],
-                          child: RiverpodTextFormField(fieldId: nameField),
+                          child: FormixTextFormField(fieldId: nameField),
                         ),
                         ElevatedButton(
                           onPressed: () {

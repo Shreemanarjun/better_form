@@ -34,7 +34,7 @@ void main() {
 
                     return Column(
                       children: [
-                        RiverpodTextFormField(fieldId: fieldA),
+                        FormixTextFormField(fieldId: fieldA),
                         if (isPending)
                           const CircularProgressIndicator(
                             key: Key('pending_indicator'),
@@ -105,7 +105,7 @@ void main() {
                     fields: [
                       FormixFieldConfig<String>(id: fieldA, initialValue: 'A'),
                     ],
-                    child: RiverpodTextFormField(
+                    child: FormixTextFormField(
                       fieldId: fieldA,
                       decoration: const InputDecoration(labelText: 'Form A'),
                     ),
@@ -116,7 +116,7 @@ void main() {
                     fields: [
                       FormixFieldConfig<String>(id: fieldB, initialValue: 'B'),
                     ],
-                    child: RiverpodTextFormField(
+                    child: FormixTextFormField(
                       fieldId: fieldB,
                       decoration: const InputDecoration(labelText: 'Form B'),
                     ),

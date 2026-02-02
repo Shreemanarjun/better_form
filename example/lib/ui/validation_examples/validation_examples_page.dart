@@ -191,7 +191,7 @@ class _ValidationExamplesContentState
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 8),
-            RiverpodTextFormField(
+            FormixTextFormField(
               fieldId: FormixFieldID<String>('email'),
               keyboardType: TextInputType.emailAddress,
               decoration: const InputDecoration(
@@ -208,7 +208,7 @@ class _ValidationExamplesContentState
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 8),
-            RiverpodTextFormField(
+            FormixTextFormField(
               fieldId: FormixFieldID<String>('password'),
               decoration: const InputDecoration(
                 labelText: 'Password',
@@ -220,7 +220,7 @@ class _ValidationExamplesContentState
             const SizedBox(height: 16),
 
             // Confirm Password
-            RiverpodTextFormField(
+            FormixTextFormField(
               fieldId: FormixFieldID<String>('confirmPassword'),
               decoration: const InputDecoration(
                 labelText: 'Confirm Password',
@@ -235,7 +235,7 @@ class _ValidationExamplesContentState
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 8),
-            RiverpodNumberFormField(
+            FormixNumberFormField(
               fieldId: FormixFieldID<num>('age'),
               min: 0,
               max: 150,
@@ -253,7 +253,7 @@ class _ValidationExamplesContentState
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 8),
-            RiverpodTextFormField(
+            FormixTextFormField(
               fieldId: FormixFieldID<String>('phone'),
               keyboardType: TextInputType.phone,
               decoration: const InputDecoration(
@@ -270,7 +270,7 @@ class _ValidationExamplesContentState
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 8),
-            RiverpodTextFormField(
+            FormixTextFormField(
               fieldId: FormixFieldID<String>('url'),
               keyboardType: TextInputType.url,
               decoration: const InputDecoration(
@@ -287,7 +287,7 @@ class _ValidationExamplesContentState
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 8),
-            RiverpodTextFormField(
+            FormixTextFormField(
               fieldId: FormixFieldID<String>('creditCard'),
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
@@ -304,7 +304,7 @@ class _ValidationExamplesContentState
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 8),
-            RiverpodTextFormField(
+            FormixTextFormField(
               fieldId: FormixFieldID<String>('zipCode'),
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
@@ -321,7 +321,7 @@ class _ValidationExamplesContentState
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 8),
-            RiverpodTextFormField(
+            FormixTextFormField(
               fieldId: FormixFieldID<String>('username'),
               decoration: const InputDecoration(
                 labelText: 'Username',
@@ -337,7 +337,7 @@ class _ValidationExamplesContentState
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 8),
-            RiverpodTextFormField(
+            FormixTextFormField(
               fieldId: FormixFieldID<String>('bio'),
               maxLength: 500,
               decoration: const InputDecoration(
@@ -348,7 +348,7 @@ class _ValidationExamplesContentState
             ),
             const SizedBox(height: 24),
 
-            const RiverpodFormStatus(),
+            const FormixFormStatus(),
             const SizedBox(height: 16),
 
             Consumer(

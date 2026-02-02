@@ -136,15 +136,23 @@ class RiverpodFormController extends StateNotifier<FormixData> {
 
     // Add to history if not restoring
     if (!_isRestoringHistory && (value != state)) {
-      if (_historyIndex < _history.length - 1) {
-        // Truncate future history
-        _history = _history.sublist(0, _historyIndex + 1);
-      }
-      _history.add(value);
-      if (_history.length > _maxHistoryLength) {
-        _history.removeAt(0);
-      } else {
-        _historyIndex++;
+      // Only add to history if values truly changed
+      final valuesChanged = !const MapEquality().equals(
+        value.values,
+        state.values,
+      );
+
+      if (valuesChanged) {
+        if (_historyIndex < _history.length - 1) {
+          // Truncate future history
+          _history = _history.sublist(0, _historyIndex + 1);
+        }
+        _history.add(value);
+        if (_history.length > _maxHistoryLength) {
+          _history.removeAt(0);
+        } else {
+          _historyIndex++;
+        }
       }
     }
 
@@ -176,19 +184,21 @@ class RiverpodFormController extends StateNotifier<FormixData> {
       final mode = field.validationMode;
       final validator = field.wrappedValidator;
 
-      if (mode == FormixAutovalidateMode.always &&
-          validator != null &&
-          val != null) {
-        try {
-          final result = validator(val);
-          validations[key] = result != null
-              ? ValidationResult(isValid: false, errorMessage: result)
-              : ValidationResult.valid;
-        } catch (e) {
-          validations[key] = ValidationResult(
-            isValid: false,
-            errorMessage: 'Validation error: $e',
-          );
+      if (mode == FormixAutovalidateMode.always) {
+        if (validator != null && val != null) {
+          try {
+            final result = validator(val);
+            validations[key] = result != null
+                ? ValidationResult(isValid: false, errorMessage: result)
+                : ValidationResult.valid;
+          } catch (e) {
+            validations[key] = ValidationResult(
+              isValid: false,
+              errorMessage: 'Validation error: $e',
+            );
+          }
+        } else {
+          validations[key] = ValidationResult.valid;
         }
       } else {
         validations[key] = ValidationResult.valid;
@@ -196,11 +206,18 @@ class RiverpodFormController extends StateNotifier<FormixData> {
     }
 
     return FormixData(
-      values: values,
+      values: Map.unmodifiable(values),
       validations: validations,
       dirtyStates: dirtyStates,
       touchedStates: touchedStates,
+      changedFields: values.keys.toSet(),
     );
+  }
+
+  /// Get the validation mode for a specific field.
+  FormixAutovalidateMode getValidationMode(FormixFieldID fieldId) {
+    return _fieldDefinitions[fieldId.key]?.validationMode ??
+        FormixAutovalidateMode.disabled;
   }
 
   /// The persistence handler for this form
@@ -736,7 +753,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
           scheduler.schedulerPhase == SchedulerPhase.persistentCallbacks;
     } catch (_) {}
 
-    if (isPersistent) {
+    if (isPersistent && _history.isNotEmpty) {
       Future.microtask(updateState);
     } else {
       updateState();
@@ -829,7 +846,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
           scheduler.schedulerPhase == SchedulerPhase.persistentCallbacks;
     } catch (_) {}
 
-    if (isPersistent) {
+    if (isPersistent && _history.isNotEmpty) {
       Future.microtask(updateState);
     } else {
       updateState();

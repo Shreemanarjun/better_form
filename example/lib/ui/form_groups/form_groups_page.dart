@@ -27,11 +27,11 @@ class FormGroupsPage extends StatelessWidget {
                 prefix: 'user',
                 child: Column(
                   children: [
-                    RiverpodTextFormField(
+                    FormixTextFormField(
                       fieldId: FormixFieldID('name'),
                       decoration: InputDecoration(labelText: 'Name'),
                     ),
-                    RiverpodTextFormField(
+                    FormixTextFormField(
                       fieldId: FormixFieldID('email'),
                       decoration: InputDecoration(labelText: 'Email'),
                     ),
@@ -48,11 +48,11 @@ class FormGroupsPage extends StatelessWidget {
                 prefix: 'address',
                 child: Column(
                   children: [
-                    RiverpodTextFormField(
+                    FormixTextFormField(
                       fieldId: FormixFieldID('street'),
                       decoration: InputDecoration(labelText: 'Street'),
                     ),
-                    RiverpodTextFormField(
+                    FormixTextFormField(
                       fieldId: FormixFieldID('city'),
                       decoration: InputDecoration(labelText: 'City'),
                     ),
@@ -69,7 +69,7 @@ class FormGroupsPage extends StatelessWidget {
                 prefix: 'delivery',
                 child: FormixGroup(
                   prefix: 'notice',
-                  child: RiverpodTextFormField(
+                  child: FormixTextFormField(
                     fieldId: FormixFieldID('note'),
                     decoration: InputDecoration(
                       labelText: 'Special Instructions',

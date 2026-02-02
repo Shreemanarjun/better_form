@@ -64,14 +64,14 @@ class _MultiFormSyncPageState extends State<MultiFormSyncPage> {
                                   return const SizedBox();
                                 },
                               ),
-                              RiverpodTextFormField(
+                              FormixTextFormField(
                                 fieldId: FormixFieldID('title'),
                                 decoration: const InputDecoration(
                                   labelText: 'Project Title',
                                 ),
                               ),
                               const SizedBox(height: 16),
-                              RiverpodDropdownFormField(
+                              FormixDropdownFormField(
                                 fieldId: FormixFieldID('category'),
                                 items: const [
                                   DropdownMenuItem(
@@ -146,7 +146,7 @@ class _MultiFormSyncPageState extends State<MultiFormSyncPage> {
                                 },
                               ),
                               // Fields in Form B need to be registered to receive values
-                              RiverpodTextFormField(
+                              FormixTextFormField(
                                 fieldId: FormixFieldID('title'),
                                 readOnly: true, // It's a sync target
                                 decoration: const InputDecoration(
@@ -155,7 +155,7 @@ class _MultiFormSyncPageState extends State<MultiFormSyncPage> {
                                 ),
                               ),
                               const SizedBox(height: 16),
-                              RiverpodDropdownFormField(
+                              FormixDropdownFormField(
                                 fieldId: FormixFieldID('category'),
                                 items: const [
                                   DropdownMenuItem(

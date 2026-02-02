@@ -38,7 +38,7 @@ void main() {
                                       fields: [
                                         FormixFieldConfig(id: nameField),
                                       ],
-                                      child: RiverpodTextFormField(
+                                      child: FormixTextFormField(
                                         fieldId: nameField,
                                       ),
                                     ),
@@ -119,7 +119,7 @@ void main() {
                             children: [
                               FormixSection(
                                 fields: [FormixFieldConfig(id: nameField)],
-                                child: RiverpodTextFormField(
+                                child: FormixTextFormField(
                                   fieldId: nameField,
                                 ),
                               ),
@@ -175,7 +175,7 @@ void main() {
                             children: [
                               FormixSection(
                                 fields: [FormixFieldConfig(id: nameField)],
-                                child: RiverpodTextFormField(
+                                child: FormixTextFormField(
                                   fieldId: nameField,
                                 ),
                               ),

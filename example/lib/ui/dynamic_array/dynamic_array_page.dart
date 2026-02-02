@@ -28,7 +28,7 @@ class DynamicArrayPage extends StatelessWidget {
                     itemBuilder: (context, index, itemId, scope) {
                       return ListTile(
                         contentPadding: EdgeInsets.zero,
-                        title: RiverpodTextFormField(
+                        title: FormixTextFormField(
                           fieldId: itemId,
                           decoration: InputDecoration(
                             labelText: 'Hobby ${index + 1}',

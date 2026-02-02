@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../analytics/form_analytics.dart';
+import '../controllers/field.dart';
 import '../controllers/riverpod_controller.dart';
 import '../persistence/form_persistence.dart';
 
@@ -185,7 +186,7 @@ class _FormixScope extends InheritedWidget {
   }
 }
 
-class _FieldRegistrar extends ConsumerWidget {
+class _FieldRegistrar extends ConsumerStatefulWidget {
   const _FieldRegistrar({
     required this.controllerProvider,
     required this.fields,
@@ -198,18 +199,53 @@ class _FieldRegistrar extends ConsumerWidget {
   final Widget child;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final controller = ref.read(controllerProvider.notifier);
+  ConsumerState<_FieldRegistrar> createState() => _FieldRegistrarState();
+}
 
-    final fieldsToRegister = fields
-        .where((f) => !controller.isFieldRegistered(f.id))
-        .map((f) => f.toField())
-        .toList();
+class _FieldRegistrarState extends ConsumerState<_FieldRegistrar> {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _registerFields();
+  }
+
+  void _registerFields() {
+    final controller = ref.read(widget.controllerProvider.notifier);
+
+    final fieldsToRegister = <FormixField<dynamic>>[];
+
+    for (final config in widget.fields) {
+      final field = config.toField();
+      if (!controller.isFieldRegistered(config.id)) {
+        fieldsToRegister.add(field);
+      } else {
+        // Check if we need to update the definition
+        // Note: We use the existing field definition comparison if possible,
+        // but FormixField doesn't implement ==.
+        // So we assume if widget.fields changed (triggering didUpdateWidget),
+        // we should re-register.
+      }
+    }
 
     if (fieldsToRegister.isNotEmpty) {
       controller.registerFields(fieldsToRegister);
     }
+  }
 
-    return child;
+  @override
+  void didUpdateWidget(_FieldRegistrar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.fields != oldWidget.fields) {
+      // Configuration changed (e.g. hot reload or dynamic fields).
+      // Re-register ALL fields to ensure definitions are updated.
+      // registerFields handles standardizing updates without data loss.
+      final controller = ref.read(widget.controllerProvider.notifier);
+      controller.registerFields(widget.fields.map((f) => f.toField()).toList());
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.child;
   }
 }

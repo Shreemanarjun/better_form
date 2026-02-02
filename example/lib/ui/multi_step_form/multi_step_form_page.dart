@@ -353,7 +353,7 @@ class _MultiStepFormPageState extends State<MultiStepFormPage> {
       preserveStateOnDispose: true,
       child: Column(
         children: [
-          RiverpodTextFormField(
+          FormixTextFormField(
             key: const Key('name_field'),
             fieldId: nameField,
             decoration: const InputDecoration(
@@ -363,7 +363,7 @@ class _MultiStepFormPageState extends State<MultiStepFormPage> {
             ),
           ),
           const SizedBox(height: 16),
-          RiverpodTextFormField(
+          FormixTextFormField(
             fieldId: emailField,
             decoration: const InputDecoration(
               labelText: 'Email',
@@ -372,7 +372,7 @@ class _MultiStepFormPageState extends State<MultiStepFormPage> {
             ),
           ),
           const SizedBox(height: 16),
-          RiverpodTextFormField(
+          FormixTextFormField(
             fieldId: phoneField,
             decoration: const InputDecoration(
               labelText: 'Phone',
@@ -424,7 +424,7 @@ class _MultiStepFormPageState extends State<MultiStepFormPage> {
       preserveStateOnDispose: true,
       child: Column(
         children: [
-          RiverpodTextFormField(
+          FormixTextFormField(
             key: const Key('street_field'),
             fieldId: streetField,
             decoration: const InputDecoration(
@@ -438,7 +438,7 @@ class _MultiStepFormPageState extends State<MultiStepFormPage> {
             children: [
               Expanded(
                 flex: 2,
-                child: RiverpodTextFormField(
+                child: FormixTextFormField(
                   fieldId: cityField,
                   decoration: const InputDecoration(
                     labelText: 'City',
@@ -449,7 +449,7 @@ class _MultiStepFormPageState extends State<MultiStepFormPage> {
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: RiverpodTextFormField(
+                child: FormixTextFormField(
                   fieldId: zipField,
                   decoration: const InputDecoration(
                     labelText: 'ZIP',
@@ -460,7 +460,7 @@ class _MultiStepFormPageState extends State<MultiStepFormPage> {
             ],
           ),
           const SizedBox(height: 16),
-          RiverpodTextFormField(
+          FormixTextFormField(
             fieldId: countryField,
             decoration: const InputDecoration(
               labelText: 'Country',
@@ -479,7 +479,7 @@ class _MultiStepFormPageState extends State<MultiStepFormPage> {
       preserveStateOnDispose: true,
       child: Column(
         children: [
-          RiverpodTextFormField(
+          FormixTextFormField(
             fieldId: companyField,
             decoration: const InputDecoration(
               labelText: 'Company Name',
@@ -488,7 +488,7 @@ class _MultiStepFormPageState extends State<MultiStepFormPage> {
             ),
           ),
           const SizedBox(height: 16),
-          RiverpodTextFormField(
+          FormixTextFormField(
             fieldId: positionField,
             decoration: const InputDecoration(
               labelText: 'Position',
@@ -497,7 +497,7 @@ class _MultiStepFormPageState extends State<MultiStepFormPage> {
             ),
           ),
           const SizedBox(height: 16),
-          RiverpodNumberFormField(
+          FormixNumberFormField(
             fieldId: salaryField,
             decoration: const InputDecoration(
               labelText: 'Annual Salary',
@@ -547,7 +547,7 @@ class _MultiStepFormPageState extends State<MultiStepFormPage> {
             },
           ),
           const SizedBox(height: 16),
-          RiverpodTextFormField(
+          FormixTextFormField(
             key: const Key('comments_field'),
             fieldId: commentsField,
             decoration: const InputDecoration(

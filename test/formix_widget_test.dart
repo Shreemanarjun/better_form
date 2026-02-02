@@ -16,7 +16,7 @@ void main() {
                 initialValue: {'name': 'Default Name'},
                 child: Column(
                   children: [
-                    RiverpodTextFormField(
+                    FormixTextFormField(
                       fieldId: nameField,
                       decoration: const InputDecoration(labelText: 'Name'),
                     ),
@@ -60,7 +60,7 @@ void main() {
                 ],
                 child: Column(
                   children: [
-                    RiverpodTextFormField(
+                    FormixTextFormField(
                       fieldId: emailField,
                       decoration: const InputDecoration(labelText: 'Email'),
                     ),
@@ -103,7 +103,7 @@ void main() {
                 initialValue: {'name': 'Original'},
                 child: Column(
                   children: [
-                    RiverpodTextFormField(fieldId: nameField),
+                    FormixTextFormField(fieldId: nameField),
                     Consumer(
                       builder: (context, ref, child) {
                         return ElevatedButton(
@@ -156,7 +156,7 @@ void main() {
                     child: Column(
                       children: [
                         const Text('Scope A'),
-                        RiverpodTextFormField(fieldId: fieldA),
+                        FormixTextFormField(fieldId: fieldA),
                       ],
                     ),
                   ),
@@ -167,7 +167,7 @@ void main() {
                     child: Column(
                       children: [
                         const Text('Scope B'),
-                        RiverpodTextFormField(fieldId: fieldB),
+                        FormixTextFormField(fieldId: fieldB),
                       ],
                     ),
                   ),

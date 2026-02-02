@@ -28,7 +28,7 @@ void main() {
                   builder: (context, scope) {
                     controller = Formix.controllerOf(context)!;
                     return Column(
-                      children: [RiverpodTextFormField(fieldId: fieldId)],
+                      children: [FormixTextFormField(fieldId: fieldId)],
                     );
                   },
                 ),
@@ -89,7 +89,7 @@ void main() {
                   builder: (context, scope) {
                     controller = Formix.controllerOf(context)!;
                     return Column(
-                      children: [RiverpodTextFormField(fieldId: fieldId)],
+                      children: [FormixTextFormField(fieldId: fieldId)],
                     );
                   },
                 ),

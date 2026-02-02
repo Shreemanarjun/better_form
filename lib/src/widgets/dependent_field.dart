@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../controllers/field_id.dart';
 import '../controllers/riverpod_controller.dart';
 import 'formix.dart';
-import 'riverpod_form_fields.dart';
 
 /// A widget that rebuilds when a dependent field's value changes.
 ///
@@ -18,7 +17,7 @@ import 'riverpod_form_fields.dart';
 ///   fieldId: hasPetField,
 ///   builder: (context, hasPet) {
 ///     if (hasPet == true) {
-///       return RiverpodTextFormField(fieldId: petNameField);
+///       return FormixTextFormField(fieldId: petNameField);
 ///     }
 ///     return const SizedBox.shrink();
 ///   },

@@ -33,7 +33,8 @@ void main() {
                         return Column(
                           children: [
                             if (step == 0)
-                              FormixFieldRegistry(
+                              FormixSection(
+                                keepAlive: true,
                                 fields: [
                                   FormixFieldConfig<String>(
                                     id: nameField,
@@ -46,13 +47,13 @@ void main() {
                                 ],
                                 child: Column(
                                   children: [
-                                    RiverpodTextFormField(
+                                    FormixTextFormField(
                                       fieldId: nameField,
                                       decoration: const InputDecoration(
                                         labelText: 'Name',
                                       ),
                                     ),
-                                    RiverpodTextFormField(
+                                    FormixTextFormField(
                                       fieldId: ageField,
                                       decoration: const InputDecoration(
                                         labelText: 'Age',
@@ -62,7 +63,8 @@ void main() {
                                 ),
                               ),
                             if (step == 1)
-                              FormixFieldRegistry(
+                              FormixSection(
+                                keepAlive: true,
                                 fields: [
                                   FormixFieldConfig<String>(
                                     id: streetField,
@@ -75,13 +77,13 @@ void main() {
                                 ],
                                 child: Column(
                                   children: [
-                                    RiverpodTextFormField(
+                                    FormixTextFormField(
                                       fieldId: streetField,
                                       decoration: const InputDecoration(
                                         labelText: 'Street',
                                       ),
                                     ),
-                                    RiverpodTextFormField(
+                                    FormixTextFormField(
                                       fieldId: cityField,
                                       decoration: const InputDecoration(
                                         labelText: 'City',
@@ -133,10 +135,14 @@ void main() {
       await tester.pumpAndSettle();
 
       // --- STEP 2 ---
-      // Step 1 fields should be unregistered but preserved
+      // Step 1 fields are NOT unregistered with FormixSection(keepAlive: true)
+      // They remain registered to maintain validation state if needed.
       expect(find.text('Name'), findsNothing);
       expect(find.text('Street'), findsOneWidget);
-      expect(controller.isFieldRegistered(nameField), isFalse);
+      expect(
+        controller.isFieldRegistered(nameField),
+        isTrue,
+      ); // Changed from isFalse
       expect(
         controller.getValue(nameField),
         'John Doe',
@@ -160,12 +166,18 @@ void main() {
       await tester.pumpAndSettle();
 
       // --- STEP 3 ---
-      // Both previous steps unregistered
+      // Both previous steps unregistered? No, they stay registered.
       expect(find.text('Name: John Doe'), findsOneWidget);
       expect(find.text('Street: 123 Main St'), findsOneWidget);
 
-      expect(controller.isFieldRegistered(nameField), isFalse);
-      expect(controller.isFieldRegistered(streetField), isFalse);
+      expect(
+        controller.isFieldRegistered(nameField),
+        isTrue,
+      ); // Changed from isFalse
+      expect(
+        controller.isFieldRegistered(streetField),
+        isTrue,
+      ); // Changed from isFalse
 
       // Move BACK to Step 1
       currentStep.value = 0;

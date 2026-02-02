@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:formix/src/controllers/field_id.dart';
-import 'package:formix/src/controllers/riverpod_controller.dart';
-import 'package:formix/src/widgets/field_derivation.dart';
-import 'package:formix/src/widgets/riverpod_form_fields.dart';
+import 'package:formix/formix.dart';
 
 void main() {
   group('FieldDerivationConfig', () {

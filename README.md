@@ -20,17 +20,16 @@ Powered by Riverpod, Formix delivers lightning-fast performance, zero boilerplat
 ## 📑 Table of Contents
 - [📦 Installation](#-installation)
 - [⚡ Quick Start](#-quick-start)
-- [🎮 Choosing Your API (Comparison)](#-choosing-your-api-comparison)
-- [🏗️ The Three Pillars of Formix](#%EF%B8%8F-the-three-pillars-of-formix)
-- [🎨 UI Components](#-ui-components)
-  - [Available Fields](#available-fields)
-  - [Custom Field Widgets](#custom-field-widgets)
-- [🚥 Validation & UX](#%EF%B8%8F-validation--ux)
-  - [Sync & Async Validation](#sync--async-validation)
-  - [Manual/Backend Errors](#manualbackend-errors)
-- [🛠️ Professional API Guide](#%EF%B8%8F-professional-api-guide)
-- [🚀 Advanced Patterns](#-advanced-patterns)
-- [💡 Pro Tips](#-pro-tips)
+- [🎮 Core Concepts](#-core-concepts)
+- [🧱 Widget Reference](#-widget-reference)
+    - [Standard Fields](#standard-fields)
+    - [Form Organization](#form-organization)
+    - [Reactive UI & Logic](#reactive-ui--logic)
+    - [Headless & Custom Widgets](#headless--custom-widgets)
+- [🚥 Validation](#-validation)
+- [🕹️ Controlling the Form](#-controlling-the-form)
+- [🧪 Advanced Features](#-advanced-features)
+- [📊 Analytics & Debugging](#-analytics--debugging)
 
 ---
 
@@ -40,11 +39,11 @@ Powered by Riverpod, Formix delivers lightning-fast performance, zero boilerplat
 flutter pub add formix
 ```
 
----
-
 ## ⚡ Quick Start
 
 ### 1. Define Fields
+Always use `FormixFieldID<T>` for type-safe field identification.
+
 ```dart
 final emailField = FormixFieldID<String>('email');
 final ageField = FormixFieldID<int>('age');
@@ -55,12 +54,12 @@ final ageField = FormixFieldID<int>('age');
 Formix(
   child: Column(
     children: [
-      RiverpodTextFormField(fieldId: emailField),
-      RiverpodNumberFormField(fieldId: ageField),
+      FormixTextFormField(fieldId: emailField),
+      FormixNumberFormField(fieldId: ageField),
 
       FormixBuilder(
         builder: (context, scope) => ElevatedButton(
-          onPressed: scope.watchIsValid ? () => scope.submit() : null,
+          onPressed: scope.watchIsValid ? () => scope.submit(onValid: _submit) : null,
           child: Text('Submit'),
         ),
       ),
@@ -71,281 +70,175 @@ Formix(
 
 ---
 
-## 🎮 Choosing Your API (Comparison)
+## 🎮 Core Concepts
 
-| API | Best For | Rebuilds UI? | DX Rank |
-| :--- | :--- | :--- | :--- |
-| **`FormixBuilder`** | Granular UI updates (Buttons, status labels) | ✅ Yes | ⭐️⭐️⭐️⭐️⭐️ |
-| **`FormixListener`** | Side effects (Logic, Nav, Snackbar) | ❌ No | ⭐️⭐️⭐️⭐️⭐️ |
-| **`GlobalKey`** | External Control (AppBar, FAB, Logic) | ❌ No | ⭐️⭐️⭐️⭐️ |
-| **`ref.watch(fieldValueProvider)`** | Cross-field logic within Consumer | ✅ Yes | ⭐️⭐️⭐️⭐️ |
+### The Three Pillars
 
----
+| Pattern | Best For | Usage |
+| :--- | :--- | :--- |
+| **Reactive UI** | Updating buttons, labels, or visibility. | `FormixBuilder(builder: (c, scope) => ...)` |
+| **External Control** | Logic outside the widget tree (AppBar buttons). | `ref.read(formControllerProvider(...).notifier)` |
+| **Side Effects** | Navigation, Snackbars, Logging. | `FormixListener` |
 
-## 🎨 UI Components
+### Side Effects (`FormixListener`)
+Use `FormixListener` to execute one-off actions (like showing a dialog, navigation, or logging) in response to state changes. **It does not rebuild the UI.**
 
-### Available Fields
-Formix comes with pre-built, high-performance widgets that work instantly:
-
-- **`RiverpodTextFormField`**: Full-featured text input with auto-validation and dirty state indicators.
-- **`RiverpodNumberFormField`**: Type-safe numeric input with support for `min`/`max` constraints.
-- **`RiverpodCheckboxFormField`**: Reactive checkbox with built-in label support.
-- **`RiverpodDropdownFormField<T>`**: Type-safe generic dropdown for selections.
-- **`RiverpodFormStatus`**: A debug/status card that shows current form validity, dirty state, and submission progress.
-
-### Custom Field Widgets
-Need a custom UI? Extend `FormixFieldWidget` to create a fully integrated form field in seconds.
-
-```dart
-class MyCustomToggle extends FormixFieldWidget<bool> {
-  const MyCustomToggle({super.key, required super.fieldId});
-
-  @override
-  Widget build(BuildContext context) {
-    // Access value, validation, and dirty state directly!
-    return Switch(
-      value: value ?? false,
-      onChanged: (v) => didChange(v), // Notifies the form
-    );
-  }
-}
-```
-
----
-
-## 🚥 Validation & UX
-
-Formix provides a multi-layered validation system designed for an elite user experience.
-
-### Sync & Async Validation
-Define rules in `FormixFieldConfig`. Sync rules run immediately on every keystroke, while Async rules are intelligently debounced.
-
-```dart
-FormixFieldConfig<String>(
-  id: usernameField,
-  // 🟢 Sync: Immediate feedback
-  validator: (val) => val!.length < 3 ? 'Too short' : null,
-
-  // 🔵 Async: Intelligent Debouncing (Default 300ms)
-  asyncValidator: (val) async {
-    final available = await checkUsername(val!);
-    return available ? null : 'Username taken';
-  },
-  debounceDuration: const Duration(milliseconds: 500),
-)
-```
-
-**UX Tip**: Formix widgets automatically show a `CircularProgressIndicator` while async rules are running! You can customize this by passing `loadingIcon` (or `validatingWidget` for checkboxes) to your field widget.
-
-### Fluent Validation API
-Define complex rules easily with the Zod-like `FormixValidators` API:
-
-```dart
-FormixFieldConfig<String>(
-  id: emailField,
-  validator: FormixValidators.string()
-    .required()
-    .email('Please enter a valid email')
-    .minLength(5)
-    .build(), // Returns a standard validator function
-)
-```
-
-### Manual/Backend Errors
-Sometimes errors come from the server after a submit attempt. Use `setFieldError` to inject these errors directly into your UI.
-
-```dart
-final controller = Formix.controllerOf(context);
-
-try {
-  await api.submit(data);
-} catch (e) {
-  if (e is ValidationError) {
-    // Map backend errors to specific fields!
-    controller?.setFieldError(emailField, 'Email already exists on server');
-  }
-}
-```
-
----
-
-## 🌍 Localization (i18n)
-
-Formix speaks your language! It comes with built-in translations for **English, Spanish, French, German, Hindi, and Chinese**.
-
-### 1. Automatic Usage (Zero Config)
-Just use `FormixLocalizations.of(context)` in your validators. It automatically detects the active locale from `MaterialApp`.
-
-```dart
-validator: (value, context) {
-  final messages = FormixLocalizations.of(context);
-  if (value == null || value.isEmpty) {
-    return messages.required('Email'); // Returns "Email is required" (or localized equivalent)
-  }
-  return null;
-}
-```
-
-### 2. Using the Delegate (Optional)
-For the best integration with Flutter's widget tree (and to strictly follow Flutter standards), you can add the delegate to your `MaterialApp`. **This is completely optional**—the method above works without it!
-
-```dart
-MaterialApp(
-  localizationsDelegates: const [
-    FormixLocalizations.delegate, // Optional: Add this
-    GlobalMaterialLocalizations.delegate,
-    // ...
-  ],
-  // ...
-)
-```
-
----
-
-## 🏗️ The Three Pillars of Formix
-
-### 1. Inside the Tree (Reactive UI)
-Use `FormixBuilder` for code that lives inside the form and needs to react to state changes.
-```dart
-FormixBuilder(
-  builder: (context, scope) => Text('Age: ${scope.watchValue(ageField)}'),
-)
-```
-
-### 2. Outside the Tree (External Control)
-Access the form from your `Scaffold`'s `AppBar` using a `GlobalKey`.
-```dart
-final _formKey = GlobalKey<FormixState>();
-// ...
-onPressed: () => _formKey.currentState?.controller.submit(...)
-```
-
-### 3. Listening to Changes (Side Effects)
-Use `FormixListener` for navigation or snackbars. It doesn't trigger rebuilds.
 ```dart
 FormixListener(
   formKey: _formKey,
-  listener: (context, state) => print('Valid: ${state.isValid}'),
+  listener: (context, state) {
+    if (state.hasError) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Form has ${state.errorCount} errors!')),
+      );
+    }
+  },
   child: Formix(key: _formKey, ...),
 )
 ```
 
 ---
 
-## 🚀 Advanced Patterns
+## 🧱 Widget Reference
 
-### Dynamic Form Arrays
-Manage lists of dynamic inputs easily with `FormixArray`.
+### Standard Fields
+Formix includes high-performance widgets out of the box:
+
+- **`FormixTextFormField`**: Full-featured text input with auto-validation and focus management.
+- **`FormixNumberFormField<T extends num>`**: Type-safe numeric input (`int` or `double`).
+- **`FormixCheckboxFormField`**: Boolean selection.
+- **`FormixDropdownFormField<T>`**: Type-safe generic dropdown for selections.
+
+### Form Organization
+Manage complex hierarchies and performance:
+
+| Widget | Purpose | Usage |
+| :--- | :--- | :--- |
+| **`FormixGroup`** | Namespaces fields (e.g. `user.address`). | `FormixGroup(prefix: 'address', child: ...)` |
+| **`FormixArray<T>`** | Manage dynamic lists of inputs. | `FormixArray(id: FormixArrayID('items'), ...)` |
+| **`FormixSection`** | Persists data when swiping away (wizard/tabs). | `FormixSection(keepAlive: true, ...)` |
+| **`FormixFieldRegistry`** | Lazy-loads fields only when mounted. | `FormixFieldRegistry(fields: [...], ...)` |
+
+### Reactive UI & Logic
+Make your forms "alive":
+
+- **`FormixBuilder`**: Access `FormixScope` for reactive UI components (buttons, progress bars).
+- **`FormixDependentField<T>`**: Only rebuilds when a *specific* field changes.
+    ```dart
+    FormixDependentField<bool>(
+      fieldId: hasPetField,
+      builder: (context, hasPet) => hasPet ? PetForm() : SizedBox(),
+    )
+    ```
+- **`FormixFieldSelector`**: Fine-grained selection of field state changes (value vs validation).
+- **`FormixFieldDerivation`**: Computes values automatically (e.g., `Total = Price * Qty`).
+- **`FormixFormStatus`**: Pre-built dashboard showing validity, dirty state, and submission info.
+
+### Headless & Custom Widgets
+100% UI control with zero state-management headache.
+
+#### `FormixRawFormField<T>` (Headless)
+Perfect for using third-party UI libraries (like Shadcn or Material).
 ```dart
-FormixArray<String>(
-  id: hobbiesId,
-  itemBuilder: (context, index, itemId, scope) =>
-    RiverpodTextFormField(fieldId: itemId),
+FormixRawFormField<String>(
+  fieldId: nameField,
+  builder: (context, state) => MyInput(
+    value: state.value,
+    error: state.validation.errorMessage,
+    onChanged: state.didChange,
+  ),
 )
 ```
 
-### Computed & Derived Fields
-Update fields automatically based on other values.
+#### `FormixFieldWidget` (Base Class)
+Extend this to build your own reusable Formix-enabled components. It handles all controller wiring and focus management automatically. See also `FormixFieldTextMixin` for text fields.
+
+#### `FormixWidget`
+Base class for non-field components (like summaries) that need access to `FormixScope`.
+
+---
+
+## 🚥 Validation
+
+### Fluent API (`FormixValidators`)
+Define readable, type-safe validation rules. Use `.build()` for synchronous and `.buildAsync()` for asynchronous rules.
+
 ```dart
-FormixFieldDerivation(
-  dependencies: [priceField, quantityField],
-  targetField: totalField,
-  derive: (v) => (v[priceField] ?? 0.0) * (v[quantityField] ?? 1),
+// String Validation
+FormixValidators.string()
+  .required('Email is mandatory')
+  .email('Invalid format')
+  .minLength(6)
+  .pattern(RegExp(r'...'))
+  .build()
+
+// Number Validation
+FormixValidators.number<int>()
+  .required()
+  .positive()
+  .min(18, 'Must be an adult')
+  .max(99)
+  .build()
+```
+
+### Async Validation
+Async validators are debounced automatically to optimize server performance.
+
+```dart
+FormixFieldConfig(
+  id: usernameField,
+  asyncValidator: (val) async => await checkAvailability(val) ? null : 'Taken',
+  debounceDuration: Duration(milliseconds: 500),
 )
 ```
+
+---
+
+## 🕹️ Controlling the Form
+
+### Using `WidgetRef` (Recommended)
+While `BuildContext` works, using Riverpod's `WidgetRef` is often more reliable for external logic.
+
+```dart
+void resetForm(WidgetRef ref) {
+  // Use ref to reach the controller directly
+  ref.read(formControllerProvider(_myParam).notifier).reset();
+}
+```
+
+### Programmatic Actions
+- **`controller.setValue`**: Change values from code.
+- **`controller.setFieldError`**: Map backend errors to specific fields.
+- **`controller.focusField`**: Programmatically move focus.
+- **`controller.undo()` / `controller.redo()`**: Built-in history management.
+
+### Cross-Field Validation
+Validate fields based on the state of other fields.
+```dart
+FormixFieldConfig(
+  id: confirmField,
+  crossFieldValidator: (value, state) {
+    if (value != state.getValue(passwordField)) return 'No match';
+    return null;
+  },
+)
+```
+
+---
+
+## 🧪 Advanced Features
+
+- **`Navigation Guard`**: Use `FormixNavigationGuard` to prevent accidental exits from dirty forms.
+- **`Persistence`**: Implement `FormixPersistence` for auto-save/restore functionality.
+- **`Form Binding`**: Use `controller.bindField` to sync data between separate forms in real-time.
+- **`Undo/Redo`**: Seamless history management for every input.
 
 ---
 
 ## 📊 Analytics & Debugging
 
-Understand exactly how your users interact with your forms.
-
-### Logging Analytics (Built-in)
-See every field change, validation event, and submission in your debug console:
-
-```dart
-Formix(
-  analytics: const LoggingFormAnalytics(), // Auto-logs to console in debug mode
-  child: Column(
-    children: [
-      // ... fields
-    ],
-  ),
-)
-```
-
----
-
-## 💡 Pro Tips
-
-- 💡 **`keepAlive`**: Maintain state in TabViews/Steppers.
-- 💡 **`Formix.of(context)`**: Quick access to the controller provider.
-- 💡 **`FormixNavigationGuard`**: Block accidental "Back" button presses when the form is dirty.
-
----
-
-## 🧬 Advanced Logic
-
-### Multi-Step Forms (Steppers)
-Validate only the current step's fields before moving forward.
-
-```dart
-onStepContinue: () {
-  // Only validate fields relevant to Step 1
-  if (controller.validate(fields: [firstName, lastName])) {
-    setState(() => _step++);
-  }
-}
-```
-
-### Multi-Form Synchronization
-Link fields between completely separate forms (e.g., a "Profile" form and a "Checkout" form).
-
-```dart
-// In your business logic or init
-checkoutController.bindField(
-  billingAddress,
-  sourceController: profileController,
-  sourceField: profileAddress,
-  twoWay: true, // Optional: Sync both ways
-);
-```
-
-### Optimistic Updates
-Perform immediate UI updates while waiting for async operations (like server saves). If the operation fails, the value automatically reverts.
-
-```dart
-await controller.optimisticUpdate(
-  fieldId: usernameField,
-  value: 'new_username',
-  action: () async {
-    await api.updateUsername('new_username');
-  },
-  revertOnError: true, // Default
-);
-```
-
-### Undo/Redo History
-Built-in state history allows you to implement undo/redo functionality effortlessly.
-
-```dart
-if (controller.canUndo) controller.undo();
-if (controller.canRedo) controller.redo();
-```
-
-### Automatic Focus Management
-Formix automatically handles focus traversal:
-- **Enter-to-Next**: Pressing "Enter" on the keyboard focuses the next field.
-- **Submit-to-Error**: On submission failure, the first invalid field is focused and scrolled into view.
-
-```dart
-// Enabled by default!
-// Customize via textInputAction in FormixFieldConfig
-FormixFieldConfig<String>(
-  id: emailField,
-  textInputAction: TextInputAction.next, // Default
-)
-```
+- **Logging**: Enable `LoggingFormAnalytics` to see every value change and validation event in the console.
+- **DevTools**: Inspect the form state tree and performance metrics using the Formix DevTools extension.
 
 ---
 

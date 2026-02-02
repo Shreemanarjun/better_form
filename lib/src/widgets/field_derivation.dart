@@ -4,7 +4,7 @@ import 'package:flutter/widgets.dart';
 
 import '../controllers/riverpod_controller.dart';
 import '../controllers/field_id.dart';
-import 'riverpod_form_fields.dart';
+import 'formix.dart';
 
 /// A widget that automatically derives field values based on other field changes.
 ///

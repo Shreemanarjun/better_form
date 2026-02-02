@@ -32,7 +32,7 @@ void main() {
                     controller = Formix.controllerOf(context)!;
                     return Column(
                       children: [
-                        RiverpodTextFormField(fieldId: cardNumberField),
+                        FormixTextFormField(fieldId: cardNumberField),
                       ],
                     );
                   },
@@ -81,7 +81,7 @@ void main() {
                 child: FormixBuilder(
                   builder: (context, scope) {
                     controller = Formix.controllerOf(context)!;
-                    return RiverpodTextFormField(
+                    return FormixTextFormField(
                       fieldId: phoneField,
                       inputFormatters: [LengthLimitingTextInputFormatter(10)],
                     );

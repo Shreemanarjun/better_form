@@ -80,7 +80,7 @@ class ProgrammaticControlPage extends StatelessWidget {
   }
 
   Widget _buildField(FormixFieldID<String> id, String label) {
-    return RiverpodTextFormField(
+    return FormixTextFormField(
       fieldId: id,
       decoration: InputDecoration(
         labelText: label,

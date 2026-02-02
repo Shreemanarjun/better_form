@@ -22,9 +22,9 @@ void main() {
                 ],
                 child: Column(
                   children: [
-                    RiverpodTextFormField(fieldId: field1),
-                    RiverpodTextFormField(fieldId: field2),
-                    RiverpodTextFormField(fieldId: field3),
+                    FormixTextFormField(fieldId: field1),
+                    FormixTextFormField(fieldId: field2),
+                    FormixTextFormField(fieldId: field3),
                   ],
                 ),
               ),
@@ -36,12 +36,11 @@ void main() {
       // Focus first field
       await tester.tap(find.widgetWithText(TextFormField, '').first);
       await tester.pump();
+      final firstField = find.byType(TextField).first;
       expect(
-        Focus.of(
-          tester.element(find.widgetWithText(TextFormField, '').first),
-        ).hasFocus,
+        tester.widget<TextField>(firstField).focusNode?.hasFocus,
         isTrue,
-        reason: 'First field should be focuesd',
+        reason: 'First field should be focused',
       );
 
       // Submit (Enter) - Should move to next
@@ -91,7 +90,7 @@ void main() {
                   builder: (context, scope) {
                     controller = Formix.controllerOf(context)!;
                     return Column(
-                      children: [RiverpodTextFormField(fieldId: requiredField)],
+                      children: [FormixTextFormField(fieldId: requiredField)],
                     );
                   },
                 ),

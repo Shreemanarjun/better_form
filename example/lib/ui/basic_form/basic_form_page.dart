@@ -55,18 +55,18 @@ class BasicFormExample extends ConsumerWidget {
               style: TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 16),
-            RiverpodTextFormField(
+            FormixTextFormField(
               fieldId: nameField,
               decoration: const InputDecoration(prefixIcon: Icon(Icons.person)),
             ),
             const SizedBox(height: 16),
-            RiverpodTextFormField(
+            FormixTextFormField(
               fieldId: emailField,
               keyboardType: TextInputType.emailAddress,
               decoration: const InputDecoration(prefixIcon: Icon(Icons.email)),
             ),
             const SizedBox(height: 16),
-            RiverpodNumberFormField(
+            FormixNumberFormField(
               fieldId: ageField,
               min: 0,
               max: 120,
@@ -75,12 +75,12 @@ class BasicFormExample extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 16),
-            RiverpodCheckboxFormField(
+            FormixCheckboxFormField(
               fieldId: newsletterField,
               title: const Text('Subscribe to newsletter'),
             ),
             const SizedBox(height: 24),
-            const RiverpodFormStatus(),
+            const FormixFormStatus(),
             const SizedBox(height: 16),
             Consumer(
               builder: (context, ref, child) {
