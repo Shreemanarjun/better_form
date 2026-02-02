@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:formix/formix.dart';
 
 void main() {
@@ -119,9 +118,7 @@ void main() {
                             children: [
                               FormixSection(
                                 fields: [FormixFieldConfig(id: nameField)],
-                                child: FormixTextFormField(
-                                  fieldId: nameField,
-                                ),
+                                child: FormixTextFormField(fieldId: nameField),
                               ),
                               ElevatedButton(
                                 onPressed: () =>
@@ -175,9 +172,7 @@ void main() {
                             children: [
                               FormixSection(
                                 fields: [FormixFieldConfig(id: nameField)],
-                                child: FormixTextFormField(
-                                  fieldId: nameField,
-                                ),
+                                child: FormixTextFormField(fieldId: nameField),
                               ),
                               ElevatedButton(
                                 onPressed: () =>

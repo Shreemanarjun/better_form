@@ -34,6 +34,7 @@ class FormixController extends RiverpodFormController {
   ValueNotifier<bool>? _isDirtyNotifier;
   ValueNotifier<bool>? _isValidNotifier;
   ValueNotifier<bool>? _isSubmittingNotifier;
+  ValueNotifier<bool>? _isPendingNotifier;
 
   void _onStateChanged(FormixData state) {
     // Optimization: If changedFields is present, only update notifiers for those keys.
@@ -92,6 +93,10 @@ class FormixController extends RiverpodFormController {
         _isSubmittingNotifier!.value != state.isSubmitting) {
       _isSubmittingNotifier!.value = state.isSubmitting;
     }
+    if (_isPendingNotifier != null &&
+        _isPendingNotifier!.value != state.isPending) {
+      _isPendingNotifier!.value = state.isPending;
+    }
 
     // Call legacy listeners
     for (final listener in _fieldListeners) {
@@ -127,6 +132,7 @@ class FormixController extends RiverpodFormController {
     Duration? throttle,
     bool optimistic = false,
     bool autoFocusOnInvalid = true,
+    bool waitForPending = true,
   }) async {
     await super.submit(
       onValid: onValid,
@@ -139,6 +145,7 @@ class FormixController extends RiverpodFormController {
       debounce: debounce,
       throttle: throttle,
       optimistic: optimistic,
+      waitForPending: waitForPending,
     );
   }
 
@@ -160,6 +167,7 @@ class FormixController extends RiverpodFormController {
     _isDirtyNotifier?.dispose();
     _isValidNotifier?.dispose();
     _isSubmittingNotifier?.dispose();
+    _isPendingNotifier?.dispose();
 
     _focusNodes.clear();
     _contexts.clear();
@@ -230,6 +238,12 @@ class FormixController extends RiverpodFormController {
   ValueNotifier<bool> get isSubmittingNotifier {
     _isSubmittingNotifier ??= ValueNotifier(state.isSubmitting);
     return _isSubmittingNotifier!;
+  }
+
+  /// A [ValueNotifier] that tracks whether any field is in a pending state.
+  ValueNotifier<bool> get isPendingNotifier {
+    _isPendingNotifier ??= ValueNotifier(state.isPending);
+    return _isPendingNotifier!;
   }
 
   // Focus Management

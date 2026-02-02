@@ -69,6 +69,9 @@ class FormixData {
   /// returns `true` if any registered field has been modified.
   bool get isDirty => dirtyStates.values.any((d) => d);
 
+  /// returns `true` if any registered field is currently pending (e.g. async operation).
+  bool get isPending => pendingStates.values.any((p) => p);
+
   /// Retrieves the current value for a specific field with type safety.
   T? getValue<T>(FormixFieldID<T> fieldId) {
     final value = values[fieldId.key];

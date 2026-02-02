@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:formix/formix.dart';
 
@@ -616,17 +615,13 @@ class _DynamicFormSwitcherState extends State<_DynamicFormSwitcher> {
           Formix(
             key: const ValueKey('form_a'),
             initialValue: {'field': 'A'},
-            child: FormixTextFormField(
-              fieldId: FormixFieldID<String>('field'),
-            ),
+            child: FormixTextFormField(fieldId: FormixFieldID<String>('field')),
           )
         else
           Formix(
             key: const ValueKey('form_b'),
             initialValue: {'field': 'B'},
-            child: FormixTextFormField(
-              fieldId: FormixFieldID<String>('field'),
-            ),
+            child: FormixTextFormField(fieldId: FormixFieldID<String>('field')),
           ),
         ElevatedButton(
           onPressed: () => setState(() => useFormA = !useFormA),

@@ -1,6 +1,8 @@
 /// A type-safe form package for Flutter
 library;
 
+export 'package:flutter_riverpod/flutter_riverpod.dart';
+
 // Core classes
 export 'src/controllers/field_id.dart';
 export 'src/controllers/field.dart';
@@ -26,6 +28,7 @@ export 'src/widgets/number_form_field.dart';
 export 'src/widgets/field_selector.dart';
 export 'src/widgets/field_derivation.dart';
 export 'src/widgets/dependent_field.dart';
+export 'src/widgets/async_form_field.dart'; // Added
 export 'src/widgets/formix_section.dart';
 export 'src/widgets/form_builder.dart';
 export 'src/widgets/form_array.dart';

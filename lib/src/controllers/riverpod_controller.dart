@@ -21,13 +21,16 @@ export 'formix_controller.dart';
 
 /// Core logic for managing form state using Riverpod.
 ///
-/// This controller handles field registration, value updates, sync/async validation,
-/// cross-field dependencies, and state persistence.
+/// This controller is the brain of the form. It coordinates:
+/// *   **Field Lifecycle**: Registration and disposal of form fields.
+/// *   **Value Management**: Synchronous and asynchronous value updates.
+/// *   **Validation Rules**: Per-field (sync/async) and cross-field validation.
+/// *   **Dependency Tracking**: Automatically re-calculates fields when their dependencies change.
+/// *   **Undo/Redo**: Maintains a history of form states for easy navigation.
+/// *   **Persistence**: Integrates with [FormixPersistence] to save/restore data.
 ///
-/// **Listening to changes outside widgets:**
-/// - Use `stream` to listen to all state changes
-/// - Use `addListener` to register callbacks for specific events
-/// - Access via `GlobalKey<FormixState>` for external control
+/// You typically interact with this via [Formix.controllerOf(context)] in widgets,
+/// or via a [GlobalKey<FormixState>].
 class RiverpodFormController extends StateNotifier<FormixData> {
   /// Internationalization messages for validation errors
   final FormixMessages messages;
@@ -38,7 +41,6 @@ class RiverpodFormController extends StateNotifier<FormixData> {
   DateTime? _lastSubmitTime;
   DateTime? _startTime;
   final Map<String, FormixField<dynamic>> _fieldDefinitions = {};
-  // Inverse dependency graph: key -> list of dependents
   final Map<String, List<String>> _dependentsMap = {};
 
   @visibleForTesting
@@ -56,7 +58,6 @@ class RiverpodFormController extends StateNotifier<FormixData> {
 
   bool _hasSubmittedSuccessfully = false;
 
-  // Multi-Form Bindings
   final Map<String, StreamSubscription> _bindings = {};
 
   final Map<String, Duration> _validationDurations = {};
@@ -114,7 +115,6 @@ class RiverpodFormController extends StateNotifier<FormixData> {
   void _notifyFormListeners() {
     if (!mounted) return;
 
-    // Notify stream subscribers
     if (!_stateController.isClosed) {
       _stateController.add(state);
     }
@@ -136,7 +136,6 @@ class RiverpodFormController extends StateNotifier<FormixData> {
 
     // Add to history if not restoring
     if (!_isRestoringHistory && (value != state)) {
-      // Only add to history if values truly changed
       final valuesChanged = !const MapEquality().equals(
         value.values,
         state.values,
@@ -258,7 +257,9 @@ class RiverpodFormController extends StateNotifier<FormixData> {
 
   // --- Array Manipulation ---
 
-  /// Adds an item to a form array
+  /// Adds an item to a form array (defined by [FormixArrayID]).
+  ///
+  /// This will trigger a state update and re-validation of the array field.
   void addArrayItem<T>(FormixArrayID<T> id, T item) {
     final currentList = getValue(id) ?? [];
     final newList = List<T>.from(currentList)..add(item);
@@ -364,7 +365,9 @@ class RiverpodFormController extends StateNotifier<FormixData> {
   /// Get the initial form value
   Map<String, dynamic> get initialValue => Map.unmodifiable(initialValueMap);
 
-  /// Check if form is submitting
+  /// Whether the form is currently being submitted.
+  ///
+  /// This is true while the `onValid` callback provided to [submit] is executing.
   bool get isSubmitting => state.isSubmitting;
 
   /// Check if a field is registered
@@ -395,17 +398,29 @@ class RiverpodFormController extends StateNotifier<FormixData> {
     super.dispose();
   }
 
-  /// Get field value with type safety
+  /// Retrieves the current value of a field in a type-safe way.
+  ///
+  /// Returns null if the field is not registered or the value is null.
   T? getValue<T>(FormixFieldID<T> fieldId) {
     return state.getValue(fieldId);
   }
 
-  /// Get field definition
+  /// Retrieves the [FormixField] definition for a given [fieldId].
   FormixField? getField(FormixFieldID<dynamic> fieldId) {
     return _fieldDefinitions[fieldId.key];
   }
 
-  /// Set field value with type safety and validation
+  /// Updates the value of a field and triggers validation.
+  ///
+  /// This method:
+  /// 1.  Applies any transformations defined for the field.
+  /// 2.  Updates the field's value and dirty state.
+  /// 3.  Triggers synchronous validation for the field and its dependents.
+  /// 4.  Triggers asynchronous validation (if applicable).
+  /// 5.  Saves the state if persistence is enabled.
+  ///
+  /// Throws an [ArgumentError] if the value type doesn't match the field's
+  /// expected type (based on initial value).
   void setValue<T>(FormixFieldID<T> fieldId, T value) {
     // Type check
     final expectedInitialValue = initialValueMap[fieldId.key];
@@ -437,7 +452,6 @@ class RiverpodFormController extends StateNotifier<FormixData> {
       state.validations,
     );
 
-    // 1. Apply value and dirty state
     newValues[fieldId.key] = value;
     final initialValue = initialValueMap[fieldId.key];
     final isDirty = initialValue == null
@@ -445,7 +459,6 @@ class RiverpodFormController extends StateNotifier<FormixData> {
         : value != initialValue;
     newDirtyStates[fieldId.key] = isDirty;
 
-    // 2. Determine fields to validate (self + transitive dependents)
     final fieldsToValidate = <String>{};
     final mode = fieldDef?.validationMode ?? FormixAutovalidateMode.always;
     if (mode == FormixAutovalidateMode.always ||
@@ -466,7 +479,6 @@ class RiverpodFormController extends StateNotifier<FormixData> {
       }
     }
 
-    // 3. Run all synchronous validations
     for (final key in fieldsToValidate) {
       final val = newValues[key];
       final res = _performSyncValidation(
@@ -478,10 +490,8 @@ class RiverpodFormController extends StateNotifier<FormixData> {
       newValidations[key] = res;
     }
 
-    // 4. Update state ONCE with all sync changes
-    // Calculate changed fields for delta updates
-    final changedFields = <String>{fieldId.key}; // Value changed
-    changedFields.addAll(fieldsToValidate); // Validations changed
+    final changedFields = <String>{fieldId.key};
+    changedFields.addAll(fieldsToValidate);
 
     state = state.copyWith(
       values: newValues,
@@ -490,7 +500,6 @@ class RiverpodFormController extends StateNotifier<FormixData> {
       changedFields: changedFields,
     );
 
-    // 5. Trigger async validations if necessary
     for (final key in fieldsToValidate) {
       final syncRes = newValidations[key]!;
       if (syncRes.isValid) {
@@ -515,13 +524,11 @@ class RiverpodFormController extends StateNotifier<FormixData> {
 
     // We'll calculate the end result first then record the time
     ValidationResult calculate() {
-      // 1. Standard Validator
       final validator = fieldDef.wrappedValidator;
       if (validator != null) {
         try {
           String? error = validator(value);
           if (error != null) {
-            // Resolve placeholders if any
             error = messages.format(error, {
               'label': fieldDef.label ?? key,
               'value': value,
@@ -581,7 +588,6 @@ class RiverpodFormController extends StateNotifier<FormixData> {
 
     _debouncers[key]?.cancel();
 
-    // Set state to validating
     final currentValidations = Map<String, ValidationResult>.from(
       state.validations,
     );
@@ -981,6 +987,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
       validations: newValidations,
       dirtyStates: newDirtyStates,
       touchedStates: newTouchedStates,
+      pendingStates: const {},
       isSubmitting: false,
     );
 
@@ -1151,17 +1158,33 @@ class RiverpodFormController extends StateNotifier<FormixData> {
   }
 
   /// Submits the form with optional throttling and debouncing.
+  /// Submits the form, performing validation and error handling.
   ///
-  /// [onValid] is called if the form is valid.
-  /// [onError] is called if the form is invalid.
-  /// [debounce] avoids multiple calls within a short time window (last one wins).
-  /// [throttle] prevents new calls until the duration has passed (first one wins).
+  /// This method:
+  /// 1.  Runs all synchronous and asynchronous validators.
+  /// 2.  If [optimistic] is true, it calls [onValid] immediately if sync
+  ///     validation passes, without waiting for async validators.
+  /// 3.  If valid, calls [onValid] with the current form values.
+  /// 4.  If invalid, calls [onError] with the validation failures.
+  /// 5.  Handles [debounce] and [throttle] to prevent multiple submissions.
+  ///
+  /// Example:
+  /// ```dart
+  /// controller.submit(
+  ///   onValid: (values) async {
+  ///     await api.saveUser(values);
+  ///     print('Saved!');
+  ///   },
+  ///   onError: (errors) => print('Fix these: $errors'),
+  /// );
+  /// ```
   Future<void> submit({
     required Future<void> Function(Map<String, dynamic> values) onValid,
     void Function(Map<String, ValidationResult> errors)? onError,
     Duration? debounce,
     Duration? throttle,
     bool optimistic = false,
+    bool waitForPending = true,
   }) async {
     // 1. Throttling
     if (throttle != null) {
@@ -1180,7 +1203,12 @@ class RiverpodFormController extends StateNotifier<FormixData> {
 
       _submitDebounceTimer = Timer(debounce, () async {
         try {
-          await _performSubmit(onValid, onError, optimistic);
+          await _performSubmit(
+            onValid,
+            onError,
+            optimistic,
+            waitForPending: waitForPending,
+          );
           completer.complete();
         } catch (e) {
           completer.completeError(e);
@@ -1191,21 +1219,28 @@ class RiverpodFormController extends StateNotifier<FormixData> {
     }
 
     // 3. Immediate execution
-    await _performSubmit(onValid, onError, optimistic);
+    await _performSubmit(
+      onValid,
+      onError,
+      optimistic,
+      waitForPending: waitForPending,
+    );
   }
 
   Future<void> _performSubmit(
     Future<void> Function(Map<String, dynamic> values) onValid,
     void Function(Map<String, ValidationResult> errors)? onError,
-    bool optimistic,
-  ) async {
+    bool optimistic, {
+    bool waitForPending = true,
+  }) async {
     analytics?.onSubmitAttempt(formId, state.values);
 
     if (validate()) {
       setSubmitting(true);
 
-      // Wait for any pending async validations
-      while (state.validations.values.any((v) => v.isValidating)) {
+      // Wait for any pending async validations or fields
+      while (state.validations.values.any((v) => v.isValidating) ||
+          (waitForPending && state.isPending)) {
         await stream.first;
         // Yield to prevent "Controller already firing" error if stream is sync
         await Future<void>.delayed(Duration.zero);

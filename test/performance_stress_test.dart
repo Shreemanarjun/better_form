@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:formix/formix.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() {
   group('Performance Stress Tests', () {

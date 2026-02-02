@@ -6,22 +6,38 @@ import '../controllers/field.dart';
 import '../controllers/field_id.dart';
 import '../controllers/validation.dart';
 
-/// Base class for custom form field widgets that automatically handles
-/// controller management, listeners, and value synchronization
+/// Base class for custom form field widgets that automatically handle controller
+/// registration and value synchronization.
+///
+/// Most built-in fields like [FormixTextFormField] extend this.
 abstract class FormixFieldWidget<T> extends ConsumerStatefulWidget {
   const FormixFieldWidget({
     super.key,
     required this.fieldId,
     this.controller,
     this.validator,
+    this.asyncValidator,
     this.initialValue,
     this.focusNode,
   });
 
+  /// The unique identifier for this field in the [Formix] tree.
   final FormixFieldID<T> fieldId;
+
+  /// Optional explicit controller. If not provided, it will be looked up
+  /// from the nearest [Formix] ancestor.
   final FormixController? controller;
+
+  /// Synchronous validator for this field.
   final String? Function(T? value)? validator;
+
+  /// Asynchronous validator for this field.
+  final Future<String?> Function(T? value)? asyncValidator;
+
+  /// Initial value for this field.
   final T? initialValue;
+
+  /// Optional explicit focus node.
   final FocusNode? focusNode;
 
   @override
@@ -38,23 +54,28 @@ abstract class FormixFieldWidgetState<T>
   bool _isMounted = false;
   bool _createdOwnFocusNode = false;
   ProviderSubscription? _controllerSub;
+  bool _wasDirty = false;
 
-  /// Get the current field value
+  /// The current value of this field from the controller.
   T? get value => _currentValue;
 
-  /// Get the focus node
+  /// The [FocusNode] managing the focus for this field.
   FocusNode get focusNode => _focusNode;
 
-  /// Get the controller
+  /// The [FormixController] managing this field.
+  /// Throws an error if accessed before initialization.
   FormixController get controller => _controller!;
 
-  /// Check if the field is dirty
+  /// Whether the controller has been initialized.
+  bool get hasController => _controller != null;
+
+  /// Whether the field has been modified by the user.
   bool get isDirty => controller.isFieldDirty(widget.fieldId);
 
-  /// Check if the field is touched
+  /// Whether the field has been interacted with (focused and then blurred).
   bool get isTouched => controller.isFieldTouched(widget.fieldId);
 
-  /// Get validation result
+  /// The current validation result for this field.
   ValidationResult get validation => controller.getValidation(widget.fieldId);
 
   /// Check if widget is mounted (safe to call setState)
@@ -104,7 +125,6 @@ abstract class FormixFieldWidgetState<T>
 
     if (!controllerChanged && !fieldChanged) return;
 
-    // If we were attached to something else, detach
     if (_controller != null && _currentAttachedFieldId != null) {
       _controller!.removeFieldListener(
         _currentAttachedFieldId!,
@@ -125,6 +145,7 @@ abstract class FormixFieldWidgetState<T>
     _controller!.addFieldListener(widget.fieldId, _onFieldChanged);
 
     if (_isMounted) {
+      _wasDirty = _controller!.isFieldDirty(widget.fieldId);
       onFieldChanged(_currentValue);
     }
   }
@@ -141,6 +162,7 @@ abstract class FormixFieldWidgetState<T>
           id: widget.fieldId,
           initialValue: initialValue,
           validator: widget.validator,
+          asyncValidator: widget.asyncValidator,
         ),
       );
     }
@@ -179,10 +201,16 @@ abstract class FormixFieldWidgetState<T>
   }
 
   void _onFieldChanged() {
-    // Check if controller is initialized
     if (_controller == null) return;
 
     final newValue = controller.getValue(widget.fieldId);
+    final isDirtyNow = controller.isFieldDirty(widget.fieldId);
+
+    if (_wasDirty && !isDirtyNow) {
+      onReset();
+    }
+    _wasDirty = isDirtyNow;
+
     setState(() {
       _currentValue = newValue;
     });
@@ -193,7 +221,6 @@ abstract class FormixFieldWidgetState<T>
 
   void _onFocusChanged() {
     if (!_focusNode.hasFocus && _controller != null) {
-      // Lost focus -> touched
       controller.markAsTouched(widget.fieldId);
     }
   }
@@ -201,6 +228,9 @@ abstract class FormixFieldWidgetState<T>
   /// Called when the field value changes externally
   /// Override this to react to external value changes
   void onFieldChanged(T? value) {}
+
+  /// Called when the field is reset to its initial state
+  void onReset() {}
 
   /// Update the field value and notify the form
   /// This is the primary way to update field values
@@ -224,8 +254,6 @@ abstract class FormixFieldWidgetState<T>
 
   /// Reset this field to its initial value
   void resetField() {
-    // This would need access to initial values
-    // For now, we'll reset the entire form
     if (_controller != null) {
       controller.reset();
     }
@@ -476,7 +504,3 @@ abstract class FormixNumberFormFieldWidgetState
     );
   }
 }
-
-// Removed FormixTextFormFieldWidget and FormixNumberFormFieldWidget as they are
-// now replaced by concrete FormixTextFormField and FormixNumberFormField in
-// their respective files.

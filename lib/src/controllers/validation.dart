@@ -1,4 +1,9 @@
-/// The result of a field's validation.
+/// Represents the outcome of a validation check on a form field.
+///
+/// A [ValidationResult] can be in one of three logical states:
+/// 1.  **Valid**: [isValid] is true and [isValidating] is false.
+/// 2.  **Invalid**: [isValid] is false. [errorMessage] should contain the reason.
+/// 3.  **Validating**: [isValidating] is true. The form is waiting for an async check.
 class ValidationResult {
   /// Creates a validation result.
   const ValidationResult({

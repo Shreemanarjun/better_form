@@ -9,6 +9,8 @@
 - **Validation Fixes**:
   - `FormixAutovalidateMode.always` now correctly shows errors immediately upon registration for all field types.
   - Fixed input formatter ordering in `FormixTextFormField` and `FormixNumberFormField` to ensure config-level formatters (logic) run before widget-level formatters (UI).
+- **Lifecycle Stability**: Fixed critical issues where form fields would not update when the parent controller changed or when widgets were reused in dynamic layouts (e.g., Wizards).
+- **Dropdown Field**: Migrated `FormixDropdownFormField` to use `InputDecorator` + `DropdownButton`, resolving deprecation warnings and improving layout flexibility.
 
 ### 🛠️ Developer Experience
 - **FormixBuilder Enhancements**: Improved reactive data access patterns with better scoping.
@@ -20,6 +22,7 @@
   - Multi-Step Wizards with State Preservation
   - Complex Validation Scenarios & Input Formatting
   - Hot Reload & Lifecycle Behavior
+  - Performance & Memory Leaks (5000+ fields, rapid typing stress tests)
 
 ## 0.0.4
 
