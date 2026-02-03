@@ -30,14 +30,12 @@ export 'src/widgets/field_derivation.dart';
 export 'src/widgets/dependent_field.dart';
 export 'src/widgets/field_transformer.dart';
 export 'src/widgets/field_async_transformer.dart';
-export 'src/widgets/async_form_field.dart'; // Added
+export 'src/widgets/async_form_field.dart';
 export 'src/widgets/formix_section.dart';
 export 'src/widgets/form_builder.dart';
 export 'src/widgets/form_array.dart';
 export 'src/widgets/form_group.dart';
 export 'src/widgets/navigation_guard.dart';
-export 'src/controllers/riverpod_controller.dart'
-    show groupValidProvider, groupDirtyProvider;
 export 'src/persistence/form_persistence.dart';
 export 'src/widgets/field_selector/formix_field_conditional_selector.dart';
 export 'src/widgets/field_selector/formix_field_performance_monitor.dart';
