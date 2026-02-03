@@ -202,12 +202,6 @@ class _SchemaFormExampleContentState
             ),
             const SizedBox(height: 16),
 
-            FormixNumberFormField(
-              fieldId: ageField,
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.calendar_today),
-              ),
-            ),
             const SizedBox(height: 16),
 
             // Date field using custom widget

@@ -21,6 +21,7 @@ class FormixController extends RiverpodFormController {
     super.persistence,
     super.formId,
     super.analytics,
+    super.namespace,
   }) {
     addListener(_onStateChanged);
   }
@@ -99,8 +100,24 @@ class FormixController extends RiverpodFormController {
     }
 
     // Call legacy listeners
-    for (final listener in _fieldListeners) {
-      listener();
+    // Optimization: Only notify listeners for fields that actually changed
+    // If changedKeys is null (e.g. initial), notify all.
+    if (changedKeys != null) {
+      for (final key in changedKeys) {
+        final listeners = _fieldListeners[key];
+        if (listeners != null) {
+          for (final listener in listeners) {
+            listener();
+          }
+        }
+      }
+    } else {
+      // Notify all
+      for (final listeners in _fieldListeners.values) {
+        for (final listener in listeners) {
+          listener();
+        }
+      }
     }
     for (final listener in _dirtyListeners) {
       listener(state.isDirty);
@@ -343,17 +360,25 @@ class FormixController extends RiverpodFormController {
   }
 
   // Listener management for compatibility
-  final _fieldListeners = <VoidCallback>[];
+  final _fieldListeners = <String, List<VoidCallback>>{};
   final _dirtyListeners = <void Function(bool)>{};
 
   /// Adds a listener that will be called whenever any field value changes.
   void addFieldListener<T>(FormixFieldID<T> fieldId, VoidCallback listener) {
-    _fieldListeners.add(listener);
+    if (!_fieldListeners.containsKey(fieldId.key)) {
+      _fieldListeners[fieldId.key] = [];
+    }
+    _fieldListeners[fieldId.key]!.add(listener);
   }
 
   /// Removes a field listener.
   void removeFieldListener<T>(FormixFieldID<T> fieldId, VoidCallback listener) {
-    _fieldListeners.remove(listener);
+    if (_fieldListeners.containsKey(fieldId.key)) {
+      _fieldListeners[fieldId.key]!.remove(listener);
+      if (_fieldListeners[fieldId.key]!.isEmpty) {
+        _fieldListeners.remove(fieldId.key);
+      }
+    }
   }
 
   /// Adds a listener specifically for changes to the form's dirty state.

@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../controllers/field_id.dart';
 
 /// A widget that provides a namespace for form fields.
@@ -22,7 +23,7 @@ import '../controllers/field_id.dart';
 ///   ),
 /// )
 /// ```
-class FormixGroup extends StatelessWidget {
+class FormixGroup extends ConsumerStatefulWidget {
   /// Creates a form group.
   const FormixGroup({super.key, required this.prefix, required this.child});
 
@@ -33,17 +34,7 @@ class FormixGroup extends StatelessWidget {
   final Widget child;
 
   @override
-  Widget build(BuildContext context) {
-    final parent = context
-        .dependOnInheritedWidgetOfExactType<_FormixGroupScope>();
-    final fullPrefix = parent == null ? prefix : '${parent.fullPrefix}.$prefix';
-
-    return _FormixGroupScope(
-      prefix: prefix,
-      fullPrefix: fullPrefix,
-      child: child,
-    );
-  }
+  ConsumerState<FormixGroup> createState() => _FormixGroupState();
 
   /// Get the current combined prefix for the given [context].
   static String? prefixOf(BuildContext context) {
@@ -52,7 +43,7 @@ class FormixGroup extends StatelessWidget {
     return scope?.fullPrefix;
   }
 
-  /// Resolves a [FormixFieldID] by applying any active prefixes.
+  /// Resolves a [FormixFieldID] by applying any prefixes.
   static FormixFieldID<T> resolve<T>(
     BuildContext context,
     FormixFieldID<T> id,
@@ -60,6 +51,23 @@ class FormixGroup extends StatelessWidget {
     final prefix = prefixOf(context);
     if (prefix == null) return id;
     return id.withPrefix(prefix);
+  }
+}
+
+class _FormixGroupState extends ConsumerState<FormixGroup> {
+  @override
+  Widget build(BuildContext context) {
+    final parent = context
+        .dependOnInheritedWidgetOfExactType<_FormixGroupScope>();
+    final fullPrefix = parent == null
+        ? widget.prefix
+        : '${parent.fullPrefix}.${widget.prefix}';
+
+    return _FormixGroupScope(
+      prefix: widget.prefix,
+      fullPrefix: fullPrefix,
+      child: widget.child,
+    );
   }
 }
 

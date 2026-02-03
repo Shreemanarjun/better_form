@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../controllers/riverpod_controller.dart';
 import '../controllers/field_id.dart';
@@ -30,7 +31,7 @@ import 'formix.dart';
 ///   targetField: ageField,
 /// )
 /// ```
-class FormixFieldDerivation extends StatefulWidget {
+class FormixFieldDerivation extends ConsumerStatefulWidget {
   /// Creates a field derivation widget.
   ///
   /// [dependencies] - List of fields this derivation depends on
@@ -56,10 +57,11 @@ class FormixFieldDerivation extends StatefulWidget {
   final FormixFieldID<dynamic> targetField;
 
   @override
-  State<FormixFieldDerivation> createState() => _FormixFieldDerivationState();
+  ConsumerState<FormixFieldDerivation> createState() =>
+      _FormixFieldDerivationState();
 }
 
-class _FormixFieldDerivationState extends State<FormixFieldDerivation> {
+class _FormixFieldDerivationState extends ConsumerState<FormixFieldDerivation> {
   FormixController? _controller;
   late VoidCallback _listener;
 
@@ -189,7 +191,7 @@ class _FormixFieldDerivationState extends State<FormixFieldDerivation> {
 }
 
 /// A more advanced version that supports multiple derivations and more complex logic.
-class FormixFieldDerivations extends StatefulWidget {
+class FormixFieldDerivations extends ConsumerStatefulWidget {
   /// Creates multiple field derivations.
   ///
   /// [derivations] - List of derivation configurations
@@ -200,10 +202,12 @@ class FormixFieldDerivations extends StatefulWidget {
   final List<FieldDerivationConfig> derivations;
 
   @override
-  State<FormixFieldDerivations> createState() => _FormixFieldDerivationsState();
+  ConsumerState<FormixFieldDerivations> createState() =>
+      _FormixFieldDerivationsState();
 }
 
-class _FormixFieldDerivationsState extends State<FormixFieldDerivations> {
+class _FormixFieldDerivationsState
+    extends ConsumerState<FormixFieldDerivations> {
   FormixController? _controller;
   final Map<String, VoidCallback> _listeners = {};
 

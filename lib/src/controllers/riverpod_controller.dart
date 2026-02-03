@@ -228,6 +228,8 @@ class RiverpodFormController extends StateNotifier<FormixData> {
   /// Optional analytics hook
   final FormixAnalytics? analytics;
 
+  final String? _registeredDevToolsId;
+
   /// Creates a [RiverpodFormController].
   ///
   /// [initialValue] sets the starting values for the form.
@@ -241,7 +243,9 @@ class RiverpodFormController extends StateNotifier<FormixData> {
     this.persistence,
     this.formId,
     this.analytics,
-  }) : super(_createInitialState(initialValue, fields)) {
+    String? namespace,
+  }) : _registeredDevToolsId = formId ?? namespace,
+       super(_createInitialState(initialValue, fields)) {
     _startTime = DateTime.now();
     analytics?.onFormStarted(formId);
     initialValueMap.addAll(initialValue);
@@ -250,8 +254,8 @@ class RiverpodFormController extends StateNotifier<FormixData> {
     _historyIndex = 0;
     _loadPersistedState();
 
-    if (formId != null) {
-      FormixDevToolsService.registerController(formId!, this);
+    if (_registeredDevToolsId != null) {
+      FormixDevToolsService.registerController(_registeredDevToolsId, this);
     }
   }
 
@@ -378,8 +382,8 @@ class RiverpodFormController extends StateNotifier<FormixData> {
 
   @override
   void dispose() {
-    if (formId != null) {
-      FormixDevToolsService.unregisterController(formId!);
+    if (_registeredDevToolsId != null) {
+      FormixDevToolsService.unregisterController(_registeredDevToolsId);
     }
     if (!_hasSubmittedSuccessfully) {
       final duration = DateTime.now().difference(_startTime ?? DateTime.now());
@@ -749,6 +753,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
         validations: newValidations,
         dirtyStates: newDirtyStates,
         touchedStates: newTouchedStates,
+        changedFields: fields.map((f) => f.id.key).toSet(),
       );
     }
 
@@ -842,6 +847,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
         validations: currentValidations,
         dirtyStates: currentDirtyStates,
         touchedStates: currentTouchedStates,
+        changedFields: {key},
       );
     }
 
@@ -900,6 +906,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
       validations: newValidations,
       dirtyStates: newDirtyStates,
       touchedStates: newTouchedStates,
+      changedFields: fieldIds.map((e) => e.key).toSet(),
     );
 
     if (persistence != null && formId != null) {
@@ -945,6 +952,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
       validations: newValidations,
       dirtyStates: newDirtyStates,
       touchedStates: newTouchedStates,
+      changedFields: {key},
     );
 
     if (persistence != null && formId != null) {
@@ -989,6 +997,8 @@ class RiverpodFormController extends StateNotifier<FormixData> {
       touchedStates: newTouchedStates,
       pendingStates: const {},
       isSubmitting: false,
+      resetCount: state.resetCount + 1,
+      clearChangedFields: true,
     );
 
     if (persistence != null && formId != null) {
@@ -1040,6 +1050,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
       validations: newValidations,
       dirtyStates: newDirtyStates,
       touchedStates: newTouchedStates,
+      changedFields: fieldIds.map((id) => id.key).toSet(),
     );
   }
 
@@ -1351,7 +1362,10 @@ class RiverpodFormController extends StateNotifier<FormixData> {
     final newPendingStates = Map<String, bool>.from(state.pendingStates);
     newPendingStates[fieldId.key] = isPending;
 
-    state = state.copyWith(pendingStates: newPendingStates);
+    state = state.copyWith(
+      pendingStates: newPendingStates,
+      changedFields: {fieldId.key},
+    );
   }
 
   /// Perform an optimistic update.
@@ -1504,6 +1518,7 @@ final formControllerProvider = StateNotifierProvider.autoDispose
         persistence: param.persistence,
         formId: param.formId,
         analytics: param.analytics,
+        namespace: param.namespace,
       );
     }, name: 'formControllerProvider');
 

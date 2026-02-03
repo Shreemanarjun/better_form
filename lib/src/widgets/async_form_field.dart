@@ -61,7 +61,13 @@ class FormixAsyncField<T> extends FormixFieldWidget<T> {
   final Duration? debounce;
 
   /// Optional list of objects that trigger a refetch when changed.
-  /// If not provided, [FormixAsyncField] will refetch whenever the [future] instance changes.
+  ///
+  /// *   **If `null` (default):** The field refetches whenever the [future] instance changes.
+  ///     **Warning:** If you create a `Future` inside `build` (e.g., `Future.value(...)`),
+  ///     it creates a new instance every time, leading to infinite loops or unwanted refetches.
+  /// *   **If empty list `[]`:** The field ignores `future` instance changes and only fetches once
+  ///     (unless manually refreshed). Use this when defining futures inline in `build`.
+  /// *   **If populated:** The field refetches only when the values in the list change.
   final List<Object?>? dependencies;
 
   /// If true, the [future] will not be executed automatically.

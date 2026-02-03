@@ -18,7 +18,7 @@ import '../../formix.dart';
 ///   child: Container(),
 /// )
 /// ```
-class FormixListener extends StatefulWidget {
+class FormixListener extends ConsumerStatefulWidget {
   const FormixListener({
     super.key,
     required this.formKey,
@@ -36,10 +36,10 @@ class FormixListener extends StatefulWidget {
   final Widget child;
 
   @override
-  State<FormixListener> createState() => _FormixListenerState();
+  ConsumerState<FormixListener> createState() => _FormixListenerState();
 }
 
-class _FormixListenerState extends State<FormixListener> {
+class _FormixListenerState extends ConsumerState<FormixListener> {
   VoidCallback? _removeListener;
 
   @override

@@ -1,6 +1,10 @@
 ## 0.0.5
 
 ### 🚀 Core Improvements & Fixes
+- **New Field Transformers**:
+  - `FormixFieldTransformer`: Synchronous 1-to-1 transformation between fields.
+  - `FormixFieldAsyncTransformer`: Asynchronous transformation with built-in debounce and robust lifecycle management.
+- **Riverpod Refactors**: Key widgets (`FormixFieldDerivation`, `FormixGroup`, `FormixListener`) upgraded to `ConsumerStatefulWidget` for better state access.
 - **Hot Reload Support**: Fixed field definitions not updating during hot reload. `Formix` and `FormixSection` now reliably detect configuration changes and update the controller.
 - **FormixSection Overhaul**: Refactored to `ConsumerStatefulWidget` for consistent lifecycle management.
   - Now supports synchronous registration to prevent lazy-loading race conditions.
@@ -17,6 +21,8 @@
 - **Improved Pending State Management**: Fixed "Tried to modify a provider while the widget tree was building" error by moving pending state updates to microtasks.
 - **Multi-Step Form Reliability**: Fixed a bug where navigating back to a previous page in a multi-step form would show "required" validation errors even if fields were filled. Formix now correctly validates against preserved values during re-registration.
 - **Dropdown Field**: Migrated `FormixDropdownFormField` to use `InputDecorator` + `DropdownButton`. Now defensively handles values not present in the items list to prevent crashes during dynamic transitions.
+- **Infinite Loop Fix**: Optimized `FormixController` listener notifications to prevent infinite loops when fields trigger state changes during updates (e.g., in `FormixFieldAsyncTransformer`).
+- **DevTools Integration**: Forms without an explicit `formId` now automatically register with DevTools using their internal namespace as a fallback, ensuring full visibility.
 
 ### 🛠️ Developer Experience
 - **FormixBuilder Enhancements**: Improved reactive data access patterns with better scoping.

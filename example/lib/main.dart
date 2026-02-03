@@ -16,6 +16,7 @@ import 'ui/undo_redo_demo.dart';
 import 'ui/multi_form_sync_page.dart';
 import 'ui/login_form_test/login_form_test_page.dart';
 import 'ui/formix_builder_test/formix_builder_test_page.dart';
+import 'ui/custom_widgets/custom_widgets_page.dart';
 import 'ui/advanced/async_field_submission_page.dart';
 
 void main() {
@@ -50,7 +51,7 @@ class _HomePageState extends State<HomePage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 17, vsync: this);
+    _tabController = TabController(length: 18, vsync: this);
   }
 
   @override
@@ -85,6 +86,7 @@ class _HomePageState extends State<HomePage>
             Tab(text: 'Login'),
             Tab(text: 'Builder Test'),
             Tab(text: 'Async Submission'),
+            Tab(text: 'Custom Widgets'),
           ],
         ),
       ),
@@ -108,6 +110,7 @@ class _HomePageState extends State<HomePage>
           LoginFormTestPage(),
           FormixBuilderTestPage(),
           AsyncFieldSubmissionPage(),
+          CustomWidgetsPage(),
         ],
       ),
     );

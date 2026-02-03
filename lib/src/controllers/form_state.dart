@@ -56,6 +56,7 @@ class FormixData {
     bool? isSubmitting,
     int? resetCount,
     Set<String>? changedFields,
+    bool clearChangedFields = false,
   }) {
     return FormixData(
       values: values ?? this.values,
@@ -65,7 +66,9 @@ class FormixData {
       pendingStates: pendingStates ?? this.pendingStates,
       isSubmitting: isSubmitting ?? this.isSubmitting,
       resetCount: resetCount ?? this.resetCount,
-      changedFields: changedFields ?? this.changedFields,
+      changedFields: clearChangedFields
+          ? null
+          : (changedFields ?? this.changedFields),
     );
   }
 

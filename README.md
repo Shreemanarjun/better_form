@@ -239,7 +239,24 @@ Make your forms "alive":
     )
     ```
 - **`FormixFieldSelector`**: Fine-grained selection of field state changes (value vs validation).
-- **`FormixFieldDerivation`**: Computes values automatically (e.g., `Total = Price * Qty`).
+- **`FormixFieldDerivation`**: Computes values automatically from multiple dependencies (e.g., `Total = Price * Qty`).
+- **`FormixFieldTransformer`**: Type-safe 1-to-1 transformation between two fields (e.g., `String` -> `int`).
+    ```dart
+    FormixFieldTransformer<String, int>(
+      sourceField: textId,
+      targetField: lengthId,
+      transform: (text) => text?.length ?? 0,
+    )
+    ```
+- **`FormixFieldAsyncTransformer`**: Async 1-to-1 transformation with built-in debounce (e.g., fetching a user profile from an ID).
+    ```dart
+    FormixFieldAsyncTransformer<String, String>(
+      sourceField: userIdField,
+      targetField: userNameField,
+      debounce: Duration(milliseconds: 500),
+      transform: (id) async => await fetchUser(id),
+    )
+    ```
 - **`FormixFormStatus`**: Pre-built dashboard showing validity, dirty state, and submission info.
 
 ### Headless & Custom Widgets
