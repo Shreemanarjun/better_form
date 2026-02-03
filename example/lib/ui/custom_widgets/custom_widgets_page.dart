@@ -19,6 +19,8 @@ class _CustomWidgetsPageState extends State<CustomWidgetsPage> {
   static const _taxId = FormixFieldID<double>('tax_field');
   static const _zipCodeId = FormixFieldID<String>('zip_code_field');
   static const _cityId = FormixFieldID<String>('city_field');
+  static const _countryId = FormixFieldID<String>('country_field');
+  static const _dependentCityId = FormixFieldID<String>('dependent_city_field');
 
   final _formKey = GlobalKey<FormixState>();
 
@@ -372,7 +374,7 @@ class _CustomWidgetsPageState extends State<CustomWidgetsPage> {
                       debounce: const Duration(milliseconds: 800),
                       transform: (zip) async {
                         if (zip == null || zip.length < 3) return '';
-                        await Future.delayed(const Duration(seconds: 5));
+                        await Future.delayed(const Duration(seconds: 2));
                         if (zip == '90210') return 'Beverly Hills';
                         if (zip == '10001') return 'New York';
                         return 'Unknown City';
@@ -381,6 +383,70 @@ class _CustomWidgetsPageState extends State<CustomWidgetsPage> {
                   ],
                 ),
               ),
+              const SizedBox(height: 20),
+
+              const Text(
+                '13. FormixDependentAsyncField',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const Text('Fetch city options based on selected Country:'),
+              FormixSection(
+                fields: [
+                  FormixFieldConfig<String>(id: _countryId),
+                  FormixFieldConfig<String>(id: _dependentCityId),
+                ],
+                child: Column(
+                  children: [
+                    FormixDropdownFormField<String>(
+                      fieldId: _countryId,
+                      decoration: const InputDecoration(labelText: 'Country'),
+                      items: const [
+                        DropdownMenuItem(value: 'USA', child: Text('USA')),
+                        DropdownMenuItem(
+                          value: 'Canada',
+                          child: Text('Canada'),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    FormixDependentAsyncField<List<String>, String>(
+                      fieldId: const FormixFieldID('city_options'),
+                      dependency: _countryId,
+                      resetField: _dependentCityId,
+                      future: (country) async {
+                        if (country == null) return [];
+                        await Future.delayed(const Duration(seconds: 1));
+                        if (country == 'USA') {
+                          return ['New York', 'LA', 'Chicago'];
+                        }
+                        if (country == 'Canada') {
+                          return ['Toronto', 'Vancouver', 'Montreal'];
+                        }
+                        return [];
+                      },
+                      loadingBuilder: (context) =>
+                          const LinearProgressIndicator(),
+                      builder: (context, state) {
+                        final cities = state.asyncState.value ?? [];
+                        return FormixDropdownFormField<String>(
+                          fieldId: _dependentCityId,
+                          decoration: const InputDecoration(
+                            labelText: 'Select City',
+                          ),
+                          items: cities
+                              .map(
+                                (c) =>
+                                    DropdownMenuItem(value: c, child: Text(c)),
+                              )
+                              .toList(),
+                          validator: (val) => val == null ? 'Required' : null,
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 40),
             ],
           ),
         ),

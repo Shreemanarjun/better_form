@@ -17,6 +17,10 @@
   - Features built-in race condition protection and retry logic.
   - Automatically re-triggers fetch on form reset (via `onRetry`).
   - Coordinated with the form's `isPending` state for submission safety.
+- **New `FormixDependentAsyncField`**: A simplified widget for parent-child field relationships.
+  - Automatically watches a dependency and executes a future.
+  - **Improved Robustness**: Fixed lifecycle issues where fields could occasionally unregister during rapid state transitions.
+  - Supports `resetField` to automatically clear dependent fields when the parent changes.
 - **Robust Reset Logic**: Form resets are now tracked via an internal `resetCount`, ensuring the `onReset` hook is reliably triggered for all fields regardless of their previous dirty state.
 - **Improved Pending State Management**: Fixed "Tried to modify a provider while the widget tree was building" error by moving pending state updates to microtasks.
 - **Multi-Step Form Reliability**: Fixed a bug where navigating back to a previous page in a multi-step form would show "required" validation errors even if fields were filled. Formix now correctly validates against preserved values during re-registration.
@@ -29,7 +33,11 @@
 - **New `FormixWidget`**: Added base class for creating reusable, context-aware form components with less boilerplate.
 
 ### 🧪 Testing
-- **Advanced Test Suite**: Added comprehensive tests for:
+- **Advanced Async Test Suite**: Added comprehensive tests for `FormixDependentAsyncField` and `FormixAsyncField`:
+  - Rapid dependency change handling and debounce verification.
+  - State preservation during async loading unmounts.
+  - Validation error clearing on field resets.
+- **Additional Test Coverage**:
   - Dynamic Array Fields (Contacts List)
   - Multi-Step Wizards with State Preservation
   - Complex Validation Scenarios & Input Formatting

@@ -144,57 +144,33 @@ class _AsyncFieldSubmissionContentState
             const SizedBox(height: 16),
 
             // Use FormixAsyncField to fetch cities when country changes
-            Consumer(
-              builder: (context, ref, child) {
-                final form = Formix.of(context)!;
-                final countryValue = ref.watch(
-                  form.select((s) => s.values[countryField.key] as String?),
-                );
-
-                // Clear city when country changes to avoid invalid state
-                ref.listen(form.select((s) => s.values[countryField.key]), (
-                  prev,
-                  next,
-                ) {
-                  if (prev != next) {
-                    ref.read(form.notifier).setValue(cityField, null);
-                  }
-                });
-
-                return FormixAsyncField<List<String>>(
-                  fieldId: cityOptionsField,
-                  // The future is re-triggered automatically if dependencies in the closure change
-                  future: fetchCities(countryValue),
-                  // onRetry is called when reset() happens or manual refresh is requested
-                  onRetry: () => fetchCities(countryValue),
-                  // Prevent refetching on hot reload unless country actually changes
-                  dependencies: [countryValue],
-                  // Track countryValue as key to re-init when country changes
-                  key: ValueKey(countryValue),
-                  keepPreviousData: true,
-                  loadingBuilder: (context) => const Padding(
-                    padding: EdgeInsets.only(bottom: 8.0),
-                    child: LinearProgressIndicator(),
+            // Use FormixDependentAsyncField to fetch cities when country changes
+            FormixDependentAsyncField<List<String>, String>(
+              fieldId: cityOptionsField,
+              dependency: countryField,
+              resetField: cityField,
+              // The future is re-triggered automatically if dependencies in the closure change
+              future: (country) => fetchCities(country),
+              keepPreviousData: true,
+              loadingBuilder: (context) => const Padding(
+                padding: EdgeInsets.only(bottom: 8.0),
+                child: LinearProgressIndicator(),
+              ),
+              builder: (context, state) {
+                final cities = state.asyncState.value ?? [];
+                return FormixDropdownFormField<String>(
+                  fieldId: cityField,
+                  decoration: const InputDecoration(
+                    labelText: 'City',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.location_city),
                   ),
-                  builder: (context, state) {
-                    final cities = state.asyncState.value ?? [];
-                    return FormixDropdownFormField<String>(
-                      fieldId: cityField,
-                      decoration: const InputDecoration(
-                        labelText: 'City',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.location_city),
-                      ),
-                      items: cities
-                          .map(
-                            (city) => DropdownMenuItem(
-                              value: city,
-                              child: Text(city),
-                            ),
-                          )
-                          .toList(),
-                    );
-                  },
+                  items: cities
+                      .map(
+                        (city) =>
+                            DropdownMenuItem(value: city, child: Text(city)),
+                      )
+                      .toList(),
                 );
               },
             ),

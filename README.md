@@ -152,15 +152,17 @@ FormixCheckboxFormField(
 ```
 
 ### Async Data & Dependent Dropdowns
-Use `FormixAsyncField` for fields that require asynchronous data fetching (e.g., from an API) or depend on other field values. It automatically manages loading states, race conditions, and integrates with the form's `isPending` status.
+Use `FormixAsyncField` and `FormixDependentAsyncField` for fields that require asynchronous data fetching or depend on other field values. They automatically manage loading states, race conditions, and integrate with the form's `isPending` status.
+
+#### FormixDependentAsyncField
+Perfect for parent-child field relationships (e.g., Country -> City).
 
 ```dart
-FormixAsyncField<List<String>>(
+FormixDependentAsyncField<List<String>, String>(
   fieldId: cityOptionsField,
-  // The future is re-triggered automatically if dependencies in the closure change
-  future: api.fetchCities(ref.watch(fieldValueProvider(countryField))),
-  // Optional: automatically re-trigger on form reset
-  onRetry: () => api.fetchCities(ref.read(fieldValueProvider(countryField))),
+  dependency: countryField,
+  resetField: cityField, // Automatically clear selected city when country changes
+  future: (country) => api.fetchCities(country),
   keepPreviousData: true,
   loadingBuilder: (context) => LinearProgressIndicator(),
   builder: (context, state) {
@@ -173,6 +175,49 @@ FormixAsyncField<List<String>>(
   },
 )
 ```
+
+#### FormixAsyncField
+Use this when you have a future that doesn't depend on other form fields.
+
+```dart
+FormixAsyncField<List<String>>(
+  fieldId: categoryField,
+  future: api.fetchCategories(),
+  builder: (context, state) {
+    return FormixDropdownFormField<String>(
+      fieldId: categoryField,
+      items: (state.asyncState.value ?? []).map(...).toList(),
+    );
+  },
+)
+```
+
+### Computed Fields & Transformers
+Synchronize or transform data between fields automatically.
+
+#### FormixFieldTransformer
+Synchronously maps a value from a source field to a target field.
+
+```dart
+FormixFieldTransformer<String, int>(
+  sourceField: bioField,
+  targetField: bioLengthField,
+  transform: (bio) => bio?.length ?? 0,
+)
+```
+
+#### FormixFieldAsyncTransformer
+Asynchronously transforms values with built-in **debounce** and race condition protection.
+
+```dart
+FormixFieldAsyncTransformer<String, String>(
+  sourceField: promoCodeField,
+  targetField: discountLabelField,
+  debounce: Duration(milliseconds: 500),
+  transform: (code) => api.verifyPromoCode(code),
+)
+```
+
 
 > **Pro Tip**: `controller.submit()` automatically waits for all `FormixAsyncField` widgets to finish loading before executing your `onValid` callback.
 
@@ -231,6 +276,7 @@ Manage complex hierarchies and performance:
 Make your forms "alive":
 
 - **`FormixBuilder`**: Access `FormixScope` for reactive UI components (buttons, progress bars).
+- **`FormixDependentAsyncField<T, D>`**: Manages asynchronous data fetching based on a dependency. Reduce boilerplate for parent-child relationships.
 - **`FormixDependentField<T>`**: Only rebuilds when a *specific* field changes.
     ```dart
     FormixDependentField<bool>(
