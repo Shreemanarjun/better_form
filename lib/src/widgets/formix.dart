@@ -40,6 +40,7 @@ class Formix extends ConsumerStatefulWidget {
   /// Creates a [Formix].
   const Formix({
     super.key,
+    this.controller,
     this.initialValue = const {},
     this.fields = const [],
     this.persistence,
@@ -50,6 +51,9 @@ class Formix extends ConsumerStatefulWidget {
     this.autovalidateMode = FormixAutovalidateMode.always,
     required this.child,
   });
+
+  /// Optional explicit controller.
+  final FormixController? controller;
 
   /// Optional analytics hook
   final FormixAnalytics? analytics;
@@ -112,7 +116,7 @@ class FormixState extends ConsumerState<Formix> {
   }
 
   AutoDisposeStateNotifierProvider<FormixController, FormixData> get _provider {
-    return formControllerProvider(
+    final provider = formControllerProvider(
       FormixParameter(
         initialValue: widget.initialValue,
         fields: widget.fields,
@@ -124,6 +128,8 @@ class FormixState extends ConsumerState<Formix> {
         autovalidateMode: widget.autovalidateMode,
       ),
     );
+
+    return provider;
   }
 
   /// Access the controller to perform actions like [submit] or [reset].
@@ -178,7 +184,11 @@ class FormixState extends ConsumerState<Formix> {
     }
 
     return ProviderScope(
-      overrides: [currentControllerProvider.overrideWithValue(provider)],
+      overrides: [
+        if (widget.controller != null)
+          provider.overrideWith((ref) => widget.controller!),
+        currentControllerProvider.overrideWithValue(provider),
+      ],
       child: _FieldRegistrar(
         controllerProvider: provider,
         fields: widget.fields,

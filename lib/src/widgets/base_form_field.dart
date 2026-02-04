@@ -5,6 +5,7 @@ import '../controllers/riverpod_controller.dart';
 import '../controllers/field.dart';
 import '../controllers/field_id.dart';
 import '../controllers/validation.dart';
+import '../enums.dart';
 
 /// Base class for custom form field widgets that automatically handle controller
 /// registration and value synchronization.
@@ -19,6 +20,14 @@ abstract class FormixFieldWidget<T> extends ConsumerStatefulWidget {
     this.asyncValidator,
     this.initialValue,
     this.focusNode,
+    this.onChanged,
+    this.onSaved,
+    this.onReset,
+    this.forceErrorText,
+    this.errorBuilder,
+    this.enabled = true,
+    this.autovalidateMode,
+    this.restorationId,
   });
 
   /// The unique identifier for this field in the [Formix] tree.
@@ -39,6 +48,30 @@ abstract class FormixFieldWidget<T> extends ConsumerStatefulWidget {
 
   /// Optional explicit focus node.
   final FocusNode? focusNode;
+
+  /// Callback triggered whenever the field value changes within this widget.
+  final ValueChanged<T?>? onChanged;
+
+  /// Called when the form is saved.
+  final ValueChanged<T?>? onSaved;
+
+  /// Called when the field is reset.
+  final VoidCallback? onReset;
+
+  /// Manual error text to display, overriding validation.
+  final String? forceErrorText;
+
+  /// Custom builder for error display.
+  final Widget Function(BuildContext context, String error)? errorBuilder;
+
+  /// Whether the field is interactive.
+  final bool enabled;
+
+  /// Autovalidate mode for this field, overrides the form's mode.
+  final FormixAutovalidateMode? autovalidateMode;
+
+  /// Restoration ID for state restoration.
+  final String? restorationId;
 
   @override
   FormixFieldWidgetState<T> createState();
@@ -75,8 +108,22 @@ abstract class FormixFieldWidgetState<T>
   /// Whether the field has been interacted with (focused and then blurred).
   bool get isTouched => controller.isFieldTouched(widget.fieldId);
 
+  /// Whether the field is enabled.
+  bool get enabled => widget.enabled;
+
+  /// Whether the form is currently submitting.
+  bool get isSubmitting => controller.isSubmitting;
+
   /// The current validation result for this field.
-  ValidationResult get validation => controller.getValidation(widget.fieldId);
+  ValidationResult get validation {
+    if (widget.forceErrorText != null) {
+      return ValidationResult(
+        isValid: false,
+        errorMessage: widget.forceErrorText,
+      );
+    }
+    return controller.getValidation(widget.fieldId);
+  }
 
   /// Check if widget is mounted (safe to call setState)
   @override
@@ -153,16 +200,45 @@ abstract class FormixFieldWidgetState<T>
   void _ensureFieldRegistered() {
     if (_controller == null) return;
 
-    if (!controller.isFieldRegistered(widget.fieldId)) {
+    final existingField = controller.getField(widget.fieldId);
+
+    // If already registered, we should merge widget-provided properties.
+    // We avoid overwriting existing properties if the widget doesn't provide them.
+    if (existingField == null ||
+        widget.validator != null ||
+        widget.asyncValidator != null ||
+        (widget.autovalidateMode != null &&
+            widget.autovalidateMode != existingField.validationMode)) {
       T? initialValue = widget.initialValue;
-      initialValue ??= controller.initialValue[widget.fieldId.key] as T?;
+      initialValue ??=
+          existingField?.initialValue ??
+          controller.initialValue[widget.fieldId.key] as T?;
 
       controller.registerField(
         FormixField<T>(
           id: widget.fieldId,
           initialValue: initialValue,
-          validator: widget.validator,
-          asyncValidator: widget.asyncValidator,
+          validator:
+              widget.validator ??
+              (existingField?.validator as String? Function(T?)?),
+          asyncValidator:
+              widget.asyncValidator ??
+              (existingField?.asyncValidator as Future<String?> Function(T?)?),
+          validationMode:
+              widget.autovalidateMode ??
+              existingField?.validationMode ??
+              FormixAutovalidateMode.auto,
+          // Preserve other properties from config if they exist
+          label: existingField?.label,
+          hint: existingField?.hint,
+          dependsOn: existingField?.dependsOn ?? const [],
+          crossFieldValidator:
+              existingField?.crossFieldValidator
+                  as String? Function(T?, FormixData)?,
+          transformer: existingField?.transformer as T Function(dynamic)?,
+          inputFormatters: existingField?.inputFormatters,
+          textInputAction: existingField?.textInputAction,
+          onSubmitted: existingField?.onSubmitted,
         ),
       );
     }
@@ -208,6 +284,7 @@ abstract class FormixFieldWidgetState<T>
 
     if (_wasDirty && !isDirtyNow) {
       onReset();
+      widget.onReset?.call();
     }
     _wasDirty = isDirtyNow;
 
@@ -238,6 +315,7 @@ abstract class FormixFieldWidgetState<T>
     if (_controller == null) return;
     controller.setValue(widget.fieldId, value);
     controller.markAsTouched(widget.fieldId);
+    widget.onChanged?.call(value);
   }
 
   /// Alias for didChange - update the field value
@@ -264,6 +342,11 @@ abstract class FormixFieldWidgetState<T>
     if (_controller != null) {
       controller.markAsTouched(widget.fieldId);
     }
+  }
+
+  /// Call the onSaved callback with the current value.
+  void save() {
+    widget.onSaved?.call(value);
   }
 
   /// Focus the field (if it has focus capability)
@@ -356,14 +439,13 @@ abstract class FormixTextFormFieldWidget extends FormixFieldWidget<String> {
     this.keyboardType,
     this.maxLines = 1,
     this.obscureText = false,
-    this.enabled = true,
+    super.enabled,
   });
 
   final InputDecoration decoration;
   final TextInputType? keyboardType;
   final int? maxLines;
   final bool obscureText;
-  final bool enabled;
 
   @override
   FormixTextFormFieldWidgetState createState();
@@ -390,9 +472,9 @@ abstract class FormixTextFormFieldWidgetState
         controller.isSubmittingNotifier,
       ]),
       builder: (context, _) {
-        final validation = controller.getValidation(fieldWidget.fieldId);
-        final isTouched = controller.isFieldTouched(fieldWidget.fieldId);
-        final isDirty = controller.isFieldDirty(fieldWidget.fieldId);
+        final validation = this.validation;
+        final isTouched = this.isTouched;
+        final isDirty = this.isDirty;
         final isSubmitting = controller.isSubmitting;
 
         final shouldShowError =
@@ -423,7 +505,7 @@ abstract class FormixTextFormFieldWidgetState
           keyboardType: fieldWidget.keyboardType,
           maxLines: fieldWidget.maxLines,
           obscureText: fieldWidget.obscureText,
-          enabled: fieldWidget.enabled,
+          enabled: widget.enabled,
         );
       },
     );
@@ -439,11 +521,10 @@ abstract class FormixNumberFormFieldWidget extends FormixFieldWidget<int> {
     super.validator,
     super.initialValue,
     this.decoration = const InputDecoration(),
-    this.enabled,
+    super.enabled,
   });
 
   final InputDecoration decoration;
-  final bool? enabled;
 
   @override
   FormixNumberFormFieldWidgetState createState();

@@ -10,6 +10,13 @@ class TestFormFieldWidget extends FormixFieldWidget<String> {
     super.controller,
     super.validator,
     super.initialValue,
+    super.onSaved,
+    super.onReset,
+    super.enabled,
+    super.forceErrorText,
+    super.errorBuilder,
+    super.autovalidateMode,
+    super.restorationId,
   });
 
   @override
@@ -431,6 +438,186 @@ void main() {
       );
 
       expect(state.value, 'value2');
+    });
+
+    testWidgets('onSaved is called when state.save() is invoked', (
+      tester,
+    ) async {
+      String? savedValue;
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: Formix(
+                fields: [
+                  FormixFieldConfig(id: testField, initialValue: 'to_save'),
+                ],
+                child: TestFormFieldWidget(
+                  fieldId: testField,
+                  onSaved: (val) => savedValue = val,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final state = tester.state<TestFormFieldWidgetState>(
+        find.byType(TestFormFieldWidget),
+      );
+      state.save();
+      expect(savedValue, 'to_save');
+    });
+
+    testWidgets('onReset is called when field is reset', (tester) async {
+      bool resetCalled = false;
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: Formix(
+                fields: [
+                  FormixFieldConfig(id: testField, initialValue: 'initial'),
+                ],
+                child: TestFormFieldWidget(
+                  fieldId: testField,
+                  onReset: () => resetCalled = true,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final state = tester.state<TestFormFieldWidgetState>(
+        find.byType(TestFormFieldWidget),
+      );
+      state.didChange('dirty');
+      await tester.pump();
+
+      state.resetField();
+      await tester.pump();
+
+      expect(resetCalled, true);
+    });
+
+    testWidgets('forceErrorText overrides validation', (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: Formix(
+                fields: [FormixFieldConfig(id: testField)],
+                child: TestFormFieldWidget(
+                  fieldId: testField,
+                  forceErrorText: 'Forced Error',
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final state = tester.state<TestFormFieldWidgetState>(
+        find.byType(TestFormFieldWidget),
+      );
+      expect(state.validation.isValid, false);
+      expect(state.validation.errorMessage, 'Forced Error');
+    });
+
+    testWidgets('errorBuilder is used when provided', (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: Formix(
+                fields: [
+                  FormixFieldConfig(
+                    id: testField,
+                    validator: (_) => 'Validation Error',
+                  ),
+                ],
+                child: FormixRawFormField<String>(
+                  fieldId: testField,
+                  errorBuilder: (context, error) =>
+                      Text('Custom Error: $error'),
+                  builder: (context, snapshot) {
+                    if (snapshot.shouldShowError) {
+                      return snapshot.errorBuilder!(
+                        context,
+                        snapshot.validation.errorMessage!,
+                      );
+                    }
+                    return const Text('No Error');
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      // Mark as touched to show error
+      final state = tester.state<FormixFieldWidgetState<String>>(
+        find.byType(FormixRawFormField<String>),
+      );
+      state.markAsTouched();
+      await tester.pump();
+
+      expect(find.text('Custom Error: Validation Error'), findsOneWidget);
+    });
+
+    testWidgets('enabled property is passed to state', (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: Formix(
+                fields: [FormixFieldConfig(id: testField)],
+                child: TestFormFieldWidget(fieldId: testField, enabled: false),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final state = tester.state<TestFormFieldWidgetState>(
+        find.byType(TestFormFieldWidget),
+      );
+      expect(state.enabled, false);
+    });
+
+    testWidgets('autovalidateMode overrides form validation mode', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: Formix(
+                autovalidateMode: FormixAutovalidateMode.onUserInteraction,
+                fields: [
+                  FormixFieldConfig(id: testField, validator: (_) => 'Error'),
+                ],
+                child: TestFormFieldWidget(
+                  fieldId: testField,
+                  validator: (_) => 'Error',
+                  autovalidateMode: FormixAutovalidateMode.always,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pump();
+
+      // Should show error immediately because of .always override
+      final state = tester.state<TestFormFieldWidgetState>(
+        find.byType(TestFormFieldWidget),
+      );
+      expect(state.validation.isValid, false);
+      expect(state.validation.errorMessage, 'Error');
     });
   });
 

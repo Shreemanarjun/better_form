@@ -38,7 +38,7 @@ class FormixDependentAsyncField<T, D> extends ConsumerWidget {
     this.resetField,
     this.keepPreviousData = false,
     this.loadingBuilder,
-    this.errorBuilder,
+    this.asyncErrorBuilder,
     this.debounce,
     this.initialValue,
     this.manual = false,
@@ -68,7 +68,7 @@ class FormixDependentAsyncField<T, D> extends ConsumerWidget {
   final WidgetBuilder? loadingBuilder;
 
   /// Optional builder for the error state.
-  final Widget Function(BuildContext context, Object error)? errorBuilder;
+  final Widget Function(BuildContext context, Object error)? asyncErrorBuilder;
 
   /// Debounce duration for the future.
   final Duration? debounce;
@@ -116,7 +116,7 @@ class FormixDependentAsyncField<T, D> extends ConsumerWidget {
       onRetry: () => future(dependencyValue),
       builder: builder,
       loadingBuilder: loadingBuilder,
-      errorBuilder: errorBuilder,
+      asyncErrorBuilder: asyncErrorBuilder,
       keepPreviousData: keepPreviousData,
       debounce: debounce,
       initialValue: initialValue,

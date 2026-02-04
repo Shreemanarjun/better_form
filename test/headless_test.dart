@@ -15,6 +15,8 @@ void main() {
         focusNode: focusNode,
         didChange: (_) {},
         markAsTouched: () {},
+        valueNotifier: ValueNotifier(null),
+        enabled: true,
       );
 
       expect(snapshot.shouldShowError, true);
@@ -32,6 +34,8 @@ void main() {
         focusNode: focusNode,
         didChange: (_) {},
         markAsTouched: () {},
+        valueNotifier: ValueNotifier(null),
+        enabled: true,
       );
 
       expect(snapshot.shouldShowError, true);
@@ -49,6 +53,8 @@ void main() {
         focusNode: focusNode,
         didChange: (_) {},
         markAsTouched: () {},
+        valueNotifier: ValueNotifier(null),
+        enabled: true,
       );
 
       expect(snapshot.shouldShowError, false);
@@ -68,6 +74,8 @@ void main() {
           focusNode: focusNode,
           didChange: (_) {},
           markAsTouched: () {},
+          valueNotifier: ValueNotifier(null),
+          enabled: true,
         );
 
         expect(snapshot.shouldShowError, true);
@@ -86,6 +94,8 @@ void main() {
         focusNode: focusNode,
         didChange: (_) {},
         markAsTouched: () {},
+        valueNotifier: ValueNotifier(null),
+        enabled: true,
       );
 
       expect(snapshot.shouldShowError, false);
@@ -103,6 +113,8 @@ void main() {
         focusNode: focusNode,
         didChange: (_) {},
         markAsTouched: () {},
+        valueNotifier: ValueNotifier(null),
+        enabled: true,
       );
 
       expect(snapshot.hasError, true);
@@ -120,6 +132,8 @@ void main() {
         focusNode: focusNode,
         didChange: (_) {},
         markAsTouched: () {},
+        valueNotifier: ValueNotifier(null),
+        enabled: true,
       );
 
       expect(snapshot.hasError, false);
@@ -582,6 +596,182 @@ void main() {
       await tester.pump();
 
       expect(find.text('Value: Alex'), findsOneWidget);
+    });
+  });
+
+  group('FormixRawStringField', () {
+    testWidgets('works with default string converters', (tester) async {
+      final id = FormixFieldID<String>('string_field');
+      FormixTextFieldStateSnapshot<String>? capturedSnapshot;
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: Formix(
+                initialValue: const {'string_field': 'initial'},
+                fields: [FormixFieldConfig(id: id, initialValue: 'initial')],
+                child: FormixRawStringField(
+                  fieldId: id,
+                  builder: (context, snapshot) {
+                    capturedSnapshot = snapshot;
+                    return Text('Value: ${snapshot.value}');
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pump();
+
+      expect(capturedSnapshot!.textController.text, 'initial');
+
+      // Change text controller
+      capturedSnapshot!.textController.text = 'updated';
+      await tester.pump();
+
+      expect(capturedSnapshot!.value, 'updated');
+    });
+  });
+
+  group('FormixRawNotifierField', () {
+    testWidgets('provides valueNotifier and updates correctly', (tester) async {
+      final id = FormixFieldID<String>('notifier_field');
+      FormixFieldStateSnapshot<String>? capturedSnapshot;
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: Formix(
+                initialValue: const {'notifier_field': 'start'},
+                fields: [FormixFieldConfig(id: id, initialValue: 'start')],
+                child: FormixRawNotifierField<String>(
+                  fieldId: id,
+                  builder: (context, snapshot) {
+                    capturedSnapshot = snapshot;
+                    return ValueListenableBuilder<String?>(
+                      valueListenable: snapshot.valueNotifier,
+                      builder: (context, value, _) {
+                        return Text('NotifierValue: $value');
+                      },
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pump();
+      expect(find.text('NotifierValue: start'), findsOneWidget);
+
+      // Change via didChange
+      capturedSnapshot!.didChange('middle');
+      await tester.pump();
+      expect(find.text('NotifierValue: middle'), findsOneWidget);
+
+      // Change via notifier directly should ALSO work because Formix listens to them!
+      // Actually Formix doesn't listen to them for value updates, it provides them.
+      // But FormixController manages the notifier.
+
+      capturedSnapshot!.valueNotifier.value = 'end';
+      // Wait, let's check if FormixController updates the state when user sets notifier.value.
+      // Usually it's better to use didChange.
+
+      await tester.pump();
+      // If FormixController doesn't listen to the notifier, this test might fail to update the rest of the form.
+      // But the ValueListenableBuilder will definitely update.
+      expect(find.text('NotifierValue: end'), findsOneWidget);
+    });
+  });
+
+  group('Complex Headless Integration', () {
+    testWidgets('Headless widgets react to form level resets', (tester) async {
+      final id = FormixFieldID<String>('reset_test');
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: Formix(
+                initialValue: const {'reset_test': 'initial'},
+                fields: [FormixFieldConfig(id: id, initialValue: 'initial')],
+                child: FormixRawStringField(
+                  fieldId: id,
+                  builder: (context, snapshot) {
+                    return Text('CurrentValue: ${snapshot.value}');
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pump();
+      expect(find.text('CurrentValue: initial'), findsOneWidget);
+
+      // Change value
+      final element = tester.element(find.text('CurrentValue: initial'));
+      final controller = Formix.controllerOf(element)!;
+      controller.setValue(id, 'changed');
+      await tester.pump();
+      expect(find.text('CurrentValue: changed'), findsOneWidget);
+
+      // Reset form
+      controller.reset();
+      await tester.pump();
+      expect(find.text('CurrentValue: initial'), findsOneWidget);
+    });
+
+    testWidgets('Headless widgets reflect global validation status', (
+      tester,
+    ) async {
+      final id = FormixFieldID<String>('validation_test');
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: Formix(
+                initialValue: const {'validation_test': ''},
+                fields: [
+                  FormixFieldConfig(
+                    id: id,
+                    initialValue: '',
+                    validator: (v) => (v?.isEmpty ?? true) ? 'REQUIRED' : null,
+                  ),
+                ],
+                child: FormixRawFormField<String>(
+                  fieldId: id,
+                  builder: (context, snapshot) {
+                    return Text(
+                      snapshot.validation.isValid
+                          ? 'STATE: VALID'
+                          : 'STATE: INVALID',
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pump();
+      // Initially invalid because it's required and empty
+      expect(find.text('STATE: INVALID'), findsOneWidget);
+
+      // Update to valid
+      final element = tester.element(find.text('STATE: INVALID'));
+      final controller = Formix.controllerOf(element)!;
+      controller.setValue(id, 'some value');
+      await tester.pump();
+      expect(find.text('STATE: VALID'), findsOneWidget);
     });
   });
 }

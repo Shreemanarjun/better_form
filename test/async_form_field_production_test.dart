@@ -49,7 +49,7 @@ void main() {
                   fieldId: fieldId,
                   future: future,
                   builder: (context, state) => Text(state.value ?? 'No Data'),
-                  errorBuilder: (context, error) => Text('Error: $error'),
+                  asyncErrorBuilder: (context, error) => Text('Error: $error'),
                 ),
               ),
             ),

@@ -13,7 +13,7 @@ class FormixNumberFormField<T extends num> extends FormixFieldWidget<T> {
     super.initialValue,
     super.focusNode,
     this.decoration = const InputDecoration(),
-    this.enabled = true,
+    super.enabled = true,
     this.loadingIcon,
     this.min,
     this.max,
@@ -28,7 +28,13 @@ class FormixNumberFormField<T extends num> extends FormixFieldWidget<T> {
     this.autocorrect = true,
     this.enableSuggestions = true,
     this.maxLength,
-    this.onChanged,
+    super.onChanged,
+    super.onSaved,
+    super.onReset,
+    super.forceErrorText,
+    super.errorBuilder,
+    super.autovalidateMode,
+    super.restorationId,
     this.onEditingComplete,
     this.onTap,
     this.onTapOutside,
@@ -51,7 +57,6 @@ class FormixNumberFormField<T extends num> extends FormixFieldWidget<T> {
   });
 
   final InputDecoration decoration;
-  final bool enabled;
   final Widget? loadingIcon;
   final T? min;
   final T? max;
@@ -66,7 +71,6 @@ class FormixNumberFormField<T extends num> extends FormixFieldWidget<T> {
   final bool autocorrect;
   final bool enableSuggestions;
   final int? maxLength;
-  final ValueChanged<T?>? onChanged;
   final VoidCallback? onEditingComplete;
   final GestureTapCallback? onTap;
   final TapRegionCallback? onTapOutside;
@@ -143,9 +147,9 @@ class FormixNumberFormFieldState<T extends num>
         controller.isSubmittingNotifier,
       ]),
       builder: (context, _) {
-        final validation = controller.getValidation(widget.fieldId);
-        final isTouched = controller.isFieldTouched(widget.fieldId);
-        final isDirty = controller.isFieldDirty(widget.fieldId);
+        final validation = this.validation;
+        final isTouched = this.isTouched;
+        final isDirty = this.isDirty;
         final isSubmitting = controller.isSubmitting;
         final validationMode = controller.getValidationMode(widget.fieldId);
 
@@ -196,7 +200,10 @@ class FormixNumberFormFieldState<T extends num>
           enableSuggestions: fieldWidget.enableSuggestions,
           maxLength: fieldWidget.maxLength,
           onChanged: (val) {
-            fieldWidget.onChanged?.call(stringToValue(val));
+            final parsed = stringToValue(val);
+            if (parsed != null) {
+              didChange(parsed);
+            }
           },
           onEditingComplete: fieldWidget.onEditingComplete,
           onTap: fieldWidget.onTap,

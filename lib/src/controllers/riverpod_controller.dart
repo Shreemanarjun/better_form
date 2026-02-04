@@ -1151,15 +1151,13 @@ class RiverpodFormController extends StateNotifier<FormixData> {
           ? autovalidateMode
           : rawMode;
 
-      if (!currentValidations.containsKey(key)) {
-        if (effectiveMode == FormixAutovalidateMode.always) {
-          currentValidations[key] = _performSyncValidation(
-            key,
-            currentValues[key],
-            currentValues,
-            currentValidations: currentValidations,
-          );
-        }
+      if (effectiveMode == FormixAutovalidateMode.always) {
+        currentValidations[key] = _performSyncValidation(
+          key,
+          currentValues[key],
+          currentValues,
+          currentValidations: currentValidations,
+        );
       }
 
       state = state.copyWith(

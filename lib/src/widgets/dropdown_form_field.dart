@@ -14,7 +14,14 @@ class FormixDropdownFormField<T> extends FormixFieldWidget<T> {
     this.loadingIcon,
     this.hint,
     this.disabledHint,
-    this.onChanged,
+    super.onChanged,
+    super.onSaved,
+    super.onReset,
+    super.forceErrorText,
+    super.errorBuilder,
+    super.enabled = true,
+    super.autovalidateMode,
+    super.restorationId,
   });
 
   final List<DropdownMenuItem<T>> items;
@@ -22,7 +29,6 @@ class FormixDropdownFormField<T> extends FormixFieldWidget<T> {
   final Widget? loadingIcon;
   final Widget? hint;
   final Widget? disabledHint;
-  final ValueChanged<T?>? onChanged;
 
   @override
   FormixDropdownFormFieldState<T> createState() =>
@@ -42,9 +48,9 @@ class FormixDropdownFormFieldState<T> extends FormixFieldWidgetState<T> {
         controller.isSubmittingNotifier,
       ]),
       builder: (context, _) {
-        final validation = controller.getValidation(widget.fieldId);
-        final isTouched = controller.isFieldTouched(widget.fieldId);
-        final isDirty = controller.isFieldDirty(widget.fieldId);
+        final validation = this.validation;
+        final isTouched = this.isTouched;
+        final isDirty = this.isDirty;
         final isSubmitting = controller.isSubmitting;
 
         Widget? suffixIcon;
@@ -82,12 +88,13 @@ class FormixDropdownFormFieldState<T> extends FormixFieldWidgetState<T> {
               focusNode: focusNode,
               hint: dropdownWidget.hint,
               disabledHint: dropdownWidget.disabledHint,
-              onChanged: (newValue) {
-                if (newValue != null) {
-                  didChange(newValue);
-                  dropdownWidget.onChanged?.call(newValue);
-                }
-              },
+              onChanged: widget.enabled
+                  ? (newValue) {
+                      if (newValue != null) {
+                        didChange(newValue);
+                      }
+                    }
+                  : null,
               isExpanded: true,
             ),
           ),

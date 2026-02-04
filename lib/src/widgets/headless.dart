@@ -13,6 +13,9 @@ class FormixFieldStateSnapshot<T> {
     required this.focusNode,
     required this.didChange,
     required this.markAsTouched,
+    required this.valueNotifier,
+    required this.enabled,
+    this.errorBuilder,
   });
 
   /// Current value of the field
@@ -39,9 +42,20 @@ class FormixFieldStateSnapshot<T> {
   /// Function to manually mark as touched
   final VoidCallback markAsTouched;
 
+  /// Value notifier for the field value
+  final ValueNotifier<T?> valueNotifier;
+
+  /// Whether the field is enabled
+  final bool enabled;
+
+  /// Custom error builder
+  final Widget Function(BuildContext context, String error)? errorBuilder;
+
   /// Helper to check if error should be shown (touched or submitting)
-  bool get shouldShowError =>
-      (isTouched || isSubmitting) && !validation.isValid;
+  bool get shouldShowError {
+    // This is a bit simplified, but essentially we want to show if it's invalid AND (touched OR submitting)
+    return !validation.isValid && (isTouched || isSubmitting);
+  }
 
   /// Helper to check if field is invalid
   bool get hasError => !validation.isValid;
@@ -56,6 +70,14 @@ class FormixRawFormField<T> extends FormixFieldWidget<T> {
     super.controller,
     super.validator,
     super.initialValue,
+    super.enabled,
+    super.onChanged,
+    super.onSaved,
+    super.onReset,
+    super.forceErrorText,
+    super.errorBuilder,
+    super.autovalidateMode,
+    super.restorationId,
   });
 
   final Widget Function(BuildContext context, FormixFieldStateSnapshot<T> state)
@@ -67,40 +89,40 @@ class FormixRawFormField<T> extends FormixFieldWidget<T> {
 
 class FormixRawFormFieldState<T> extends FormixFieldWidgetState<T> {
   @override
+  void onFieldChanged(T? value) {
+    // We don't call super.onFieldChanged() to avoid full widget rebuilds via setState.
+    // Instead, we rely on ValueListenableBuilders for granular updates.
+    // However, we still want to notify other potential listeners if needed.
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // We need to listen to all the notifiers to rebuild when they change
-    return ValueListenableBuilder<ValidationResult>(
-      valueListenable: controller.fieldValidationNotifier(widget.fieldId),
-      builder: (context, validation, child) {
-        return ValueListenableBuilder<bool>(
-          valueListenable: controller.fieldDirtyNotifier(widget.fieldId),
-          builder: (context, isDirty, child) {
-            return ValueListenableBuilder<bool>(
-              valueListenable: controller.fieldTouchedNotifier(widget.fieldId),
-              builder: (context, isTouched, child) {
-                return ValueListenableBuilder<bool>(
-                  valueListenable: controller.isSubmittingNotifier,
-                  builder: (context, isSubmitting, child) {
-                    final rawWidget = widget as FormixRawFormField<T>;
+    final rawWidget = widget as FormixRawFormField<T>;
 
-                    final snapshot = FormixFieldStateSnapshot<T>(
-                      value: value,
-                      validation: validation,
-                      isDirty: isDirty,
-                      isTouched: isTouched,
-                      isSubmitting: isSubmitting,
-                      focusNode: focusNode,
-                      didChange: didChange,
-                      markAsTouched: markAsTouched,
-                    );
-
-                    return rawWidget.builder(context, snapshot);
-                  },
-                );
-              },
-            );
-          },
+    return AnimatedBuilder(
+      animation: Listenable.merge([
+        controller.fieldValueListenable(widget.fieldId),
+        controller.fieldValidationNotifier(widget.fieldId),
+        controller.fieldDirtyNotifier(widget.fieldId),
+        controller.fieldTouchedNotifier(widget.fieldId),
+        controller.isSubmittingNotifier,
+      ]),
+      builder: (context, _) {
+        final snapshot = FormixFieldStateSnapshot<T>(
+          value: controller.getValue(widget.fieldId),
+          validation: controller.getValidation(widget.fieldId),
+          isDirty: controller.isFieldDirty(widget.fieldId),
+          isTouched: controller.isFieldTouched(widget.fieldId),
+          isSubmitting: controller.isSubmitting,
+          focusNode: focusNode,
+          didChange: didChange,
+          markAsTouched: markAsTouched,
+          valueNotifier: controller.getFieldNotifier(widget.fieldId),
+          enabled: widget.enabled,
+          errorBuilder: widget.errorBuilder,
         );
+
+        return rawWidget.builder(context, snapshot);
       },
     );
   }
@@ -117,6 +139,9 @@ class FormixTextFieldStateSnapshot<T> extends FormixFieldStateSnapshot<T> {
     required super.focusNode,
     required super.didChange,
     required super.markAsTouched,
+    required super.valueNotifier,
+    required super.enabled,
+    super.errorBuilder,
     required this.textController,
   });
 
@@ -135,6 +160,14 @@ class FormixRawTextField<T> extends FormixFieldWidget<T> {
     super.initialValue,
     required this.valueToString,
     required this.stringToValue,
+    super.enabled,
+    super.onChanged,
+    super.onSaved,
+    super.onReset,
+    super.forceErrorText,
+    super.errorBuilder,
+    super.autovalidateMode,
+    super.restorationId,
   });
 
   final Widget Function(
@@ -161,41 +194,87 @@ class FormixRawTextFieldState<T> extends FormixFieldWidgetState<T>
       (widget as FormixRawTextField<T>).stringToValue(text);
 
   @override
+  void onFieldChanged(T? value) {
+    // We rely on FormixFieldTextMixin and AnimatedBuilder
+    super.onFieldChanged(value);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<ValidationResult>(
-      valueListenable: controller.fieldValidationNotifier(widget.fieldId),
-      builder: (context, validation, child) {
-        return ValueListenableBuilder<bool>(
-          valueListenable: controller.fieldDirtyNotifier(widget.fieldId),
-          builder: (context, isDirty, child) {
-            return ValueListenableBuilder<bool>(
-              valueListenable: controller.fieldTouchedNotifier(widget.fieldId),
-              builder: (context, isTouched, child) {
-                return ValueListenableBuilder<bool>(
-                  valueListenable: controller.isSubmittingNotifier,
-                  builder: (context, isSubmitting, child) {
-                    final rawWidget = widget as FormixRawTextField<T>;
+    final rawWidget = widget as FormixRawTextField<T>;
 
-                    final snapshot = FormixTextFieldStateSnapshot<T>(
-                      value: value,
-                      validation: validation,
-                      isDirty: isDirty,
-                      isTouched: isTouched,
-                      isSubmitting: isSubmitting,
-                      focusNode: focusNode,
-                      didChange: didChange,
-                      markAsTouched: markAsTouched,
-                      textController: textController,
-                    );
-
-                    return rawWidget.builder(context, snapshot);
-                  },
-                );
-              },
-            );
-          },
+    return AnimatedBuilder(
+      animation: Listenable.merge([
+        controller.fieldValueListenable(widget.fieldId),
+        controller.fieldValidationNotifier(widget.fieldId),
+        controller.fieldDirtyNotifier(widget.fieldId),
+        controller.fieldTouchedNotifier(widget.fieldId),
+        controller.isSubmittingNotifier,
+      ]),
+      builder: (context, _) {
+        final snapshot = FormixTextFieldStateSnapshot<T>(
+          value: controller.getValue(widget.fieldId),
+          validation: controller.getValidation(widget.fieldId),
+          isDirty: controller.isFieldDirty(widget.fieldId),
+          isTouched: controller.isFieldTouched(widget.fieldId),
+          isSubmitting: controller.isSubmitting,
+          focusNode: focusNode,
+          didChange: didChange,
+          markAsTouched: markAsTouched,
+          valueNotifier: controller.getFieldNotifier(widget.fieldId),
+          enabled: widget.enabled,
+          errorBuilder: widget.errorBuilder,
+          textController: textController,
         );
+
+        return rawWidget.builder(context, snapshot);
       },
     );
   }
+}
+
+/// A headless text field widget specialized for String values
+class FormixRawStringField extends FormixRawTextField<String> {
+  const FormixRawStringField({
+    super.key,
+    required super.fieldId,
+    required super.builder,
+    super.controller,
+    super.validator,
+    super.initialValue,
+    super.enabled,
+    super.onChanged,
+    super.onSaved,
+    super.onReset,
+    super.forceErrorText,
+    super.errorBuilder,
+    super.autovalidateMode,
+    super.restorationId,
+  }) : super(
+         valueToString: _defaultToString,
+         stringToValue: _defaultFromString,
+       );
+
+  static String _defaultToString(String? v) => v ?? '';
+  static String? _defaultFromString(String s) => s;
+}
+
+/// A headless field widget that specifically emphasizes the ValueNotifier
+class FormixRawNotifierField<T> extends FormixRawFormField<T> {
+  const FormixRawNotifierField({
+    super.key,
+    required super.fieldId,
+    required super.builder,
+    super.controller,
+    super.validator,
+    super.initialValue,
+    super.enabled,
+    super.onChanged,
+    super.onSaved,
+    super.onReset,
+    super.forceErrorText,
+    super.errorBuilder,
+    super.autovalidateMode,
+    super.restorationId,
+  });
 }

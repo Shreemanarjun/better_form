@@ -12,6 +12,7 @@ class FormixTextFormField extends FormixFieldWidget<String> {
     super.validator,
     super.initialValue,
     super.focusNode,
+    super.onChanged,
     this.decoration = const InputDecoration(),
     this.keyboardType,
     this.maxLength,
@@ -25,7 +26,13 @@ class FormixTextFormField extends FormixFieldWidget<String> {
     this.obscureText = false,
     this.style,
     this.loadingIcon,
-    this.enabled = true,
+    super.enabled = true,
+    super.onSaved,
+    super.onReset,
+    super.forceErrorText,
+    super.errorBuilder,
+    super.autovalidateMode,
+    super.restorationId,
     this.autocorrect = true,
     this.autofillHints,
     this.autofocus = false,
@@ -38,7 +45,6 @@ class FormixTextFormField extends FormixFieldWidget<String> {
     this.enableSuggestions = true,
     this.keyboardAppearance,
     this.maxLengthEnforcement,
-    this.onChanged,
     this.onEditingComplete,
     this.onTap,
     this.onTapOutside,
@@ -69,7 +75,6 @@ class FormixTextFormField extends FormixFieldWidget<String> {
   final bool obscureText;
   final TextStyle? style;
   final Widget? loadingIcon;
-  final bool enabled;
   final bool autocorrect;
   final Iterable<String>? autofillHints;
   final bool autofocus;
@@ -82,7 +87,6 @@ class FormixTextFormField extends FormixFieldWidget<String> {
   final bool enableSuggestions;
   final Brightness? keyboardAppearance;
   final MaxLengthEnforcement? maxLengthEnforcement;
-  final ValueChanged<String>? onChanged;
   final VoidCallback? onEditingComplete;
   final GestureTapCallback? onTap;
   final TapRegionCallback? onTapOutside;
@@ -123,9 +127,9 @@ class FormixTextFormFieldState extends FormixFieldWidgetState<String>
         controller.isSubmittingNotifier,
       ]),
       builder: (context, _) {
-        final validation = controller.getValidation(widget.fieldId);
-        final isTouched = controller.isFieldTouched(widget.fieldId);
-        final isDirty = controller.isFieldDirty(widget.fieldId);
+        final validation = this.validation;
+        final isTouched = this.isTouched;
+        final isDirty = this.isDirty;
         final isSubmitting = controller.isSubmitting;
         final validationMode = controller.getValidationMode(widget.fieldId);
 
@@ -190,9 +194,7 @@ class FormixTextFormFieldState extends FormixFieldWidgetState<String>
           keyboardAppearance: fieldWidget.keyboardAppearance,
           maxLengthEnforcement: fieldWidget.maxLengthEnforcement,
           onChanged: (val) {
-            // FormixFieldTextMixin already handles synchronization via _textController listener.
-            // But if user provided onChanged, call it.
-            fieldWidget.onChanged?.call(val);
+            didChange(val);
           },
           onEditingComplete: fieldWidget.onEditingComplete,
           onTap: fieldWidget.onTap,
@@ -209,6 +211,7 @@ class FormixTextFormFieldState extends FormixFieldWidgetState<String>
           textAlignVertical: fieldWidget.textAlignVertical,
           textCapitalization: fieldWidget.textCapitalization,
           textDirection: fieldWidget.textDirection,
+          restorationId: fieldWidget.restorationId,
         );
       },
     );

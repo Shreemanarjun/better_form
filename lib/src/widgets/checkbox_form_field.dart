@@ -13,7 +13,13 @@ class FormixCheckboxFormField extends FormixFieldWidget<bool> {
     super.focusNode,
     this.title,
     this.validatingWidget,
-    this.enabled = true,
+    super.enabled = true,
+    super.onSaved,
+    super.onReset,
+    super.forceErrorText,
+    super.errorBuilder,
+    super.autovalidateMode,
+    super.restorationId,
     this.activeColor,
     this.checkColor,
     this.tileColor,
@@ -28,13 +34,12 @@ class FormixCheckboxFormField extends FormixFieldWidget<bool> {
     this.shape,
     this.checkboxShape,
     this.side,
-    this.onChanged,
+    super.onChanged,
     this.visualDensity,
   });
 
   final Widget? title;
   final Widget? validatingWidget;
-  final bool enabled;
   final Color? activeColor;
   final Color? checkColor;
   final Color? tileColor;
@@ -49,7 +54,6 @@ class FormixCheckboxFormField extends FormixFieldWidget<bool> {
   final ShapeBorder? shape;
   final OutlinedBorder? checkboxShape;
   final BorderSide? side;
-  final ValueChanged<bool?>? onChanged;
   final VisualDensity? visualDensity;
 
   @override
@@ -69,9 +73,9 @@ class FormixCheckboxFormFieldState extends FormixFieldWidgetState<bool> {
         controller.isSubmittingNotifier,
       ]),
       builder: (context, _) {
-        final validation = controller.getValidation(widget.fieldId);
-        final isTouched = controller.isFieldTouched(widget.fieldId);
-        final isDirty = controller.isFieldDirty(widget.fieldId);
+        final validation = this.validation;
+        final isTouched = this.isTouched;
+        final isDirty = this.isDirty;
         final isSubmitting = controller.isSubmitting;
         final validationMode = controller.getValidationMode(widget.fieldId);
 
@@ -120,7 +124,6 @@ class FormixCheckboxFormFieldState extends FormixFieldWidgetState<bool> {
           onChanged: checkboxWidget.enabled
               ? (newValue) {
                   didChange(newValue ?? false);
-                  checkboxWidget.onChanged?.call(newValue);
                 }
               : null,
         );

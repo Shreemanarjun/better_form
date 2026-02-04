@@ -76,7 +76,7 @@ void main() {
                 fieldId: fieldId,
                 future: fetchData(),
                 onRetry: fetchData, // Pass callback correctly
-                errorBuilder: (context, error) => Column(
+                asyncErrorBuilder: (context, error) => Column(
                   children: [
                     Text('Error: $error'),
                     Builder(

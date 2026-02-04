@@ -38,7 +38,7 @@ class FormixAsyncField<T> extends FormixFieldWidget<T> {
     this.asyncValue,
     this.future,
     this.loadingBuilder,
-    this.errorBuilder,
+    this.asyncErrorBuilder,
     this.keepPreviousData = false,
     this.debounce,
     this.manual = false,
@@ -93,7 +93,7 @@ class FormixAsyncField<T> extends FormixFieldWidget<T> {
   final WidgetBuilder? loadingBuilder;
 
   /// Optional builder shown if an error occurs during data loading.
-  final Widget Function(BuildContext context, Object error)? errorBuilder;
+  final Widget Function(BuildContext context, Object error)? asyncErrorBuilder;
 
   @override
   FormixAsyncFieldState<T> createState() => FormixAsyncFieldState<T>();
@@ -264,7 +264,7 @@ class FormixAsyncFieldState<T> extends FormixFieldWidgetState<T> {
     return _asyncState.when(
       data: (_) => widget.builder(context, this),
       error: (e, _) =>
-          widget.errorBuilder?.call(context, e) ?? Text('Error: $e'),
+          widget.asyncErrorBuilder?.call(context, e) ?? Text('Error: $e'),
       loading: () =>
           widget.loadingBuilder?.call(context) ??
           const Center(child: CircularProgressIndicator()),
