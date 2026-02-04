@@ -1,5 +1,8 @@
 /// Auto validation modes for the entire form or specific fields.
 enum FormixAutovalidateMode {
+  /// Use the form's global validation mode.
+  auto,
+
   /// Validation is only performed manually via [validate()].
   disabled,
 

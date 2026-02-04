@@ -6,6 +6,7 @@ import '../analytics/form_analytics.dart';
 import '../controllers/field.dart';
 import '../controllers/riverpod_controller.dart';
 import '../persistence/form_persistence.dart';
+import '../enums.dart';
 
 /// A form container widget that manages a [FormixController] and provides it
 /// to descendant widgets via the widget tree and Riverpod.
@@ -46,6 +47,7 @@ class Formix extends ConsumerStatefulWidget {
     this.onChanged,
     this.analytics,
     this.keepAlive = false,
+    this.autovalidateMode = FormixAutovalidateMode.always,
     required this.child,
   });
 
@@ -71,6 +73,9 @@ class Formix extends ConsumerStatefulWidget {
   /// widget is unmounted. Useful for multi-step forms where you want to
   /// preserve data across navigation.
   final bool keepAlive;
+
+  /// The autovalidate mode for the form.
+  final FormixAutovalidateMode autovalidateMode;
 
   /// The widget subtree.
   final Widget child;
@@ -116,6 +121,7 @@ class FormixState extends ConsumerState<Formix> {
         namespace: _internalFormId,
         analytics: widget.analytics,
         keepAlive: widget.keepAlive,
+        autovalidateMode: widget.autovalidateMode,
       ),
     );
   }

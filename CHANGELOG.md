@@ -25,18 +25,29 @@
 - **Improved Pending State Management**: Fixed "Tried to modify a provider while the widget tree was building" error by moving pending state updates to microtasks.
 - **Multi-Step Form Reliability**: Fixed a bug where navigating back to a previous page in a multi-step form would show "required" validation errors even if fields were filled. Formix now correctly validates against preserved values during re-registration.
 - **Dropdown Field**: Migrated `FormixDropdownFormField` to use `InputDecorator` + `DropdownButton`. Now defensively handles values not present in the items list to prevent crashes during dynamic transitions.
+- **Global Validation Mode**:
+  - Introduced form-level `autovalidateMode` in `Formix` widget and `FormixController`.
+  - Added `FormixAutovalidateMode.auto` as the default for all fields, allowing them to inherit the form's global setting or explicitly override it.
+  - Improved `onUserInteraction` logic to ensure consistent feedback when values are changed and then reverted to their initial state.
 - **Infinite Loop Fix**: Optimized `FormixController` listener notifications to prevent infinite loops when fields trigger state changes during updates (e.g., in `FormixFieldAsyncTransformer`).
 - **Robust Bulk Update API**:
   - Added `FormixBatch` for compile-time type-safe batch building with a new fluent `setValue().to()` API for guaranteed lint enforcement.
   - Added `FormixBatchResult` for detailed reporting on batch failures (type mismatches, missing fields).
   - Both `setValues` and `updateFromMap` now return results instead of throwing, with an optional `strict: true` mode for developers who prefer immediate crashes during debugging.
-- **Performance Breakthroughs**:
-  - **10x Faster Field Updates**: Optimized state transitions, reducing 1000-field update time from 424ms to **46ms**.
-  - **Efficient Equality**: Optimized `FormixData.==` with identity-first fast paths, slashing O(N) overhead in Riverpod notifications.
-  - **Lazy State Patching**: Implemented lazy map cloning in `_batchUpdate`, avoiding unnecessary allocations when metadata changes don't affect values.
-  - **Removed Map.unmodifiable**: Eliminated the expensive unmodifiable map wrapper in the hot path, drastically reducing GC pressure.
-  - **Optimized History**: History tracking now uses O(1) identity checks instead of O(N) map comparisons.
-  - **Massive Dependency Scale**: Triggering updates for 100,000 dependents is now ~43% faster (reduced from 332ms to **190ms**).
+- **High-Performance Dependency Tracking**:
+  - Re-engineered `_collectTransitiveDependents` with a high-speed BFS implementation using an index-based queue, reducing traversal time for 100,000-field chains from **332ms to ~160ms**.
+  - Optimized internal dependents map access with zero-allocation iterables.
+- **Async Validation Stability**:
+  - Fixed a critical race condition where `submit()` could hang indefinitely if called while an async validation was already pending.
+  - Corrected `pendingCount` double-increment bug during concurrent validation cycles.
+  - Consolidated "validating" state transitions into primary batch updates, eliminating redundant UI rebuilds.
+- **Optimized State Engine**:
+  - Implemented **Lazy Map Cloning** for validation results, avoiding O(N) penalties when field values change but validation results remain constant.
+  - Shared `FormixData` validation contexts across batch updates to drastically reduce GC pressure in cross-field validation chains.
+  - Replaced functional filter/map operations in hot paths with high-performance manual loops for count calculations.
+- **Validation Fixes**:
+  - Fixed `onUserInteraction` mode regression where valid results weren't properly cached to track the "previously validated" state.
+  - Corrected `FormixAutovalidateMode.always` behavior during initial field registration.
 - **DevTools Integration**: Forms without an explicit `formId` now automatically register with DevTools using their internal namespace as a fallback, ensuring full visibility.
 
 ### 🛠️ Developer Experience

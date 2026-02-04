@@ -17,7 +17,7 @@ class FormixField<T> {
     this.asyncValidator,
     this.debounceDuration,
     this.emptyValue,
-    this.validationMode = FormixAutovalidateMode.always,
+    this.validationMode = FormixAutovalidateMode.auto,
     this.inputFormatters,
     this.textInputAction,
     this.onSubmitted,

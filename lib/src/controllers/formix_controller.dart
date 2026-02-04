@@ -23,6 +23,7 @@ class FormixController extends RiverpodFormController {
     super.formId,
     super.analytics,
     super.namespace,
+    super.autovalidateMode = FormixAutovalidateMode.always,
   }) {
     addListener(_onStateChanged);
   }
