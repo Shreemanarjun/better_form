@@ -424,7 +424,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
   /// Throws an [ArgumentError] if the value type doesn't match the field's
   /// expected type (based on initial value).
   void setValue<T>(FormixFieldID<T> fieldId, T value) {
-    _batchUpdate({fieldId.key: value});
+    _batchUpdate({fieldId.key: value}, strict: true);
   }
 
   /// Updates multiple field values at once in a single state update.
@@ -473,7 +473,6 @@ class RiverpodFormController extends StateNotifier<FormixData> {
       final fieldDef = _fieldDefinitions[key];
       if (fieldDef == null) {
         missingFields.add(key);
-        continue;
       }
 
       final expectedInitialValue = initialValueMap[key];
@@ -511,8 +510,8 @@ class RiverpodFormController extends StateNotifier<FormixData> {
       final key = entry.key;
       dynamic value = entry.value;
 
-      final fieldDef = _fieldDefinitions[key]!;
-      final transformer = fieldDef.transformer;
+      final fieldDef = _fieldDefinitions[key];
+      final transformer = fieldDef?.transformer;
       if (transformer != null) {
         value = transformer(value);
       }
@@ -538,7 +537,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
         newDirtyCount += isDirty ? 1 : -1;
       }
 
-      final mode = fieldDef.validationMode;
+      final mode = fieldDef?.validationMode;
       if (mode == FormixAutovalidateMode.always ||
           (mode == FormixAutovalidateMode.onUserInteraction && isDirty)) {
         fieldsToValidate.add(key);

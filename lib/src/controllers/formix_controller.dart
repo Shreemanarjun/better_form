@@ -351,6 +351,7 @@ class FormixController extends RiverpodFormController {
   }
 
   /// Updates multiple field values using a type-safe [FormixBatch].
+  @override
   FormixBatchResult applyBatch(FormixBatch batch, {bool strict = false}) {
     return super.applyBatch(batch, strict: strict);
   }
