@@ -1,190 +1,252 @@
-# Formix Cookbook
+# 👨‍🍳 Formix Cookbook
 
-This cookbook provides solutions to common problems you might face when using Formix.
-
-## Table of Contents
-1. [Multi-Step Form (Wizard)](#multi-step-form-wizard)
-2. [Dynamic Arrays](#dynamic-arrays)
-3. [Dependent Fields (e.g., Country & State)](#dependent-fields)
-4. [Custom Form Field](#custom-form-field)
-5. [Internationalization (i18n)](#internationalization-i18n)
+This guide provides proven patterns and detailed recipes for building high-quality, professional forms with **Formix**. Whether you're building a simple settings page or a complex clinical trial wizard, these patterns maximize both **User Experience (UX)** and **Developer Experience (DX)**.
 
 ---
 
-## Multi-Step Form (Wizard)
+## 📑 Table of Contents
+1. [⚡ The Modern Login Form](#-the-modern-login-form)
+2. [🧙‍♂️ Advanced Multi-Step Wizard](#-advanced-multi-step-wizard)
+3. [📋 Dynamic Form Arrays (Lists)](#-dynamic-form-arrays-lists)
+4. [🔗 Dependent Fields (Async)](#-dependent-fields-async)
+5. [🧮 Computed Fields & Derivations](#-computed-fields--derivations)
+6. [✨ Headless UI & Custom Components](#-headless-ui--custom-components)
+7. [🛡️ Navigation Guards & Persistence](#-navigation-guards--persistence)
+8. [🚀 Performance at Scale](#-performance-at-scale)
 
-To create a multi-step form, you generally want to maintain a single `Formix` controller to hold all the data, but conditionally render fields based on the current step.
+---
+
+## ⚡ The Modern Login Form
+**Problem:** You need a performant login form with validation, submitting state, and auto-focusing on errors.
+
+**Solution:**
+```dart
+final emailField = FormixFieldID<String>('email');
+final passwordField = FormixFieldID<String>('password');
+
+Formix(
+  child: Column(
+    children: [
+      FormixTextFormField(
+        fieldId: emailField,
+        decoration: InputDecoration(labelText: 'Email'),
+        validator: FormixValidators.string().required().email().build(),
+      ),
+      FormixTextFormField(
+        fieldId: passwordField,
+        obscureText: true,
+        decoration: InputDecoration(labelText: 'Password'),
+        validator: FormixValidators.string().required().minLength(8).build(),
+      ),
+      FormixBuilder(
+        builder: (context, scope) => ElevatedButton(
+          onPressed: scope.watchIsSubmitting
+            ? null
+            : () => scope.submit(onValid: _doLogin),
+          child: scope.watchIsSubmitting
+            ? CircularProgressIndicator()
+            : Text('Login'),
+        ),
+      ),
+    ],
+  ),
+)
+```
+**💡 Why it works:**
+- **DX:** `FormixValidators` provides a human-readable fluent API.
+- **UX:** `scope.submit()` automatically scrolls to and focuses the first field with an error if validation fails.
+
+---
+
+## 🧙‍♂️ Advanced Multi-Step Wizard
+**Problem:** Maintaining state across multiple pages while ensuring only the "current" step is validated before moving forward.
+
+**Solution:** Use `FormixFieldRegistry` with `preserveStateOnDispose`.
 
 ```dart
-class WizardForm extends StatefulWidget {
-  @override
-  _WizardFormState createState() => _WizardFormState();
-}
+int _step = 0;
 
-class _WizardFormState extends State<WizardForm> {
-  int _step = 0;
-  final _controller = FormixController(); // Or use Riverpod/Provider
+Formix(
+  child: Column(
+    children: [
+      // Only mount the current step.
+      // Registration happens lazily, and state is preserved when switching.
+      Expanded(
+        child: switch(_step) {
+          0 => _StepOneFields(), // Personal Info
+          1 => _StepTwoFields(), // Address
+          _ => _Summary(),
+        },
+      ),
 
-  @override
-  Widget build(BuildContext context) {
-    return Formix(
-      controller: _controller,
-      child: Column(
-        children: [
-          if (_step == 0) ...[
-            FormixTextField('name', label: 'Name', validators: [FormixValidators.required()]),
-            FormixTextField('email', label: 'Email', validators: [FormixValidators.email()]),
+      FormixBuilder(
+        builder: (context, scope) => Row(
+          children: [
+            if (_step > 0) TextButton(onPressed: () => setState(() => _step--), child: Text('Back')),
+            ElevatedButton(
+              onPressed: () {
+                // scope.validate() only validates REGISTERED fields.
+                // Since only Step 1 is mounted, it only validates Step 1!
+                if (scope.validate()) {
+                  setState(() => _step++);
+                }
+              },
+              child: Text('Continue'),
+            ),
           ],
-          if (_step == 1) ...[
-             FormixNumberField('age', label: 'Age'),
-             FormixTextField('address', label: 'Address'),
-          ],
+        ),
+      ),
+    ],
+  ),
+)
+```
+**💡 Why it works:**
+- **DX:** No need for multiple `GlobalKeys` or manual state lifting.
+- **UX:** `preserveStateOnDispose` ensures that if a user goes "Back" to Step 1, their previous answers are still there.
 
-          Row(
-            children: [
-              if (_step > 0)
-                ElevatedButton(onPressed: () => setState(() => _step--), child: Text('Back')),
-              ElevatedButton(
-                onPressed: () async {
-                  // Validate current step fields before moving on?
-                  // Currently Formix validates everything on submit.
-                  // For manual step validation, you can check specific fields:
-                  final errors = _controller.validate(
-                    fields: _step == 0 ? ['name', 'email'] : ['age', 'address']
-                  );
+---
 
-                  if (errors.isEmpty) {
-                    if (_step == 1) {
-                        _controller.submit(onValid: (values) => print(values));
-                    } else {
-                        setState(() => _step++);
-                    }
-                  }
-                },
-                child: Text(_step == 1 ? 'Submit' : 'Next'),
-              ),
-            ],
-          )
-        ],
+## 📋 Dynamic Form Arrays (Lists)
+**Problem:** Collecting a variable number of items, like "Emergency Contacts" or "Hobbies".
+
+**Solution:**
+```dart
+final contactsId = FormixArrayID<String>('contacts');
+
+FormixArray<String>(
+  id: contactsId,
+  itemBuilder: (context, index, itemId, scope) {
+    return ListTile(
+      title: FormixTextFormField(
+        fieldId: itemId, // Use the generated itemId for each row
+        decoration: InputDecoration(labelText: 'Contact #${index + 1}'),
+      ),
+      trailing: IconButton(
+        icon: Icon(Icons.delete),
+        onPressed: () => scope.removeArrayItemAt(contactsId, index),
       ),
     );
-  }
-}
+  },
+  emptyBuilder: (context, scope) => Center(child: Text('Add a contact')),
+)
 ```
+**💡 why it works:**
+- **DX:** `itemId` is automatically scoped to the correct index in the underlying list.
+- **UX:** Adding or removing items happens smoothly without losing focus on other fields in the list.
 
-## Dynamic Arrays
+---
 
-Render a list of fields dynamically.
+## 🔗 Dependent Fields (Async)
+**Problem:** Selecting a "Country" should trigger a fetch for "Cities", and changing the country should clear the city selection.
+
+**Solution:** Use `FormixDependentAsyncField`.
 
 ```dart
-FormixArray<String>(
-  id: FormixArrayID('emails'),
-  itemBuilder: (context, index, itemValue) {
-    return Row(
+FormixDependentAsyncField<List<String>, String>(
+  fieldId: cityOptionsField,
+  dependency: countryField,
+  resetField: cityField, // Auto-clears 'city' when 'country' changes
+  future: (country) => api.fetchCities(country),
+  builder: (context, state) {
+    final cities = state.asyncState.value ?? [];
+    return FormixDropdownFormField<String>(
+      fieldId: cityField,
+      enabled: cities.isNotEmpty,
+      items: cities.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+    );
+  },
+)
+```
+**💡 Why it works:**
+- **DX:** Eliminates manual `isLoading` state management and `onChanged` resets.
+- **UX:** Built-in race condition protection ensures that if a user switches countries twice quickly, only the *latest* request's results are applied.
+
+---
+
+## 🧮 Computed Fields & Derivations
+**Problem:** You need a field that automatically calculates a value based on other fields (e.g., `Total = Quantity * Price`).
+
+**Solution:** Use `FormixFieldDerivation`.
+
+```dart
+FormixFieldDerivation<double>(
+  id: totalField,
+  dependsOn: [quantityField, priceField],
+  derive: (scope) {
+    final qty = scope.getValue(quantityField) ?? 0;
+    final price = scope.getValue(priceField) ?? 0.0;
+    return qty * price;
+  },
+  builder: (context, value) => Text('Total: \$${value.toStringAsFixed(2)}'),
+)
+```
+
+**Need a 1-to-1 sync?** Use `FormixFieldTransformer`:
+```dart
+FormixFieldTransformer<String, int>(
+  sourceField: bioField,
+  targetField: bioLengthField,
+  transform: (bio) => bio?.length ?? 0,
+)
+```
+
+---
+
+## ✨ Headless UI & Custom Components
+**Problem:** You want to use a fancy third-party widget (like a Wheel Picker or a Signature Pad) that doesn't know about Formix.
+
+**Solution:** Use `FormixRawFormField`.
+
+```dart
+FormixRawFormField<Offset>(
+  fieldId: signatureField,
+  builder: (context, state) {
+    return Column(
       children: [
-        Expanded(
-          child: FormixTextField(
-            'emails.$index', // Unique key for each item
-            initialValue: itemValue,
-            validators: [FormixValidators.email()],
-          ),
+        SignaturePad(
+          points: state.value,
+          onUpdate: (val) => state.didChange(val), // Sync back to Formix state
         ),
-        IconButton(
-          icon: Icon(Icons.delete),
-          onPressed: () => Formix.of(context).removeArrayItemAt(FormixArrayID('emails'), index),
-        ),
+        if (state.hasError)
+          Text(state.validation.errorMessage!, style: TextStyle(color: Colors.red)),
       ],
     );
   },
-  emptyBuilder: (context) => Text('No emails added.'),
-),
-ElevatedButton(
-  onPressed: () => Formix.of(context).addArrayItem(FormixArrayID('emails'), ''),
-  child: Text('Add Email'),
 )
 ```
 
-## Dependent Fields
+---
 
-To make one field depend on another (e.g., resetting 'City' when 'Country' changes), use `onChanged` or a `dependencies` configuration if available (advanced).
+## 🛡️ Navigation Guards & Persistence
+**Problem:** Users accidentally navigating away from a half-filled form or losing data on app restart.
 
-Simple approach:
+**Solution:** `FormixNavigationGuard` and `FormixPersistence`.
 
 ```dart
-FormixDropdownField(
-  'country',
-  items: ['US', 'CA', 'IN'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-  onChanged: (value, controller) {
-    // Reset city when country changes
-    controller.setValue('city', null);
+FormixNavigationGuard(
+  onPopInvoked: (didPop, isDirty) {
+    if (isDirty && !didPop) {
+      // Show "Discard Changes?" dialog
+    }
   },
-),
-FormixListener(
-  builder: (context, controller, _) {
-    final country = controller.getValue<String>('country');
-    final cities = _getCitiesForCountry(country); // method returning list based on country
-
-    return FormixDropdownField(
-      'city',
-      items: cities.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
-      enabled: country != null, // Disable if no country selected
-    );
-  }
+  child: Formix(
+    formId: 'checkout_form',
+    persistence: LocalStoragePersistence(), // Your implementation
+    child: MyFormFields(),
+  ),
 )
 ```
 
-## Custom Form Field
+---
 
-To create a custom field (e.g., a Rating Star field), extend `FormixFieldWidget` or wrap an existing widget.
+## 🚀 Performance at Scale
+**Problem:** You have a massive form (500+ fields) and typing is becoming laggy.
 
-For full custom painting/interaction:
+**Optimization Patterns:**
+1. **Granular Rebuilds**: Always use `FormixBuilder` or `FormixFieldSelector` instead of wrapping your entire `Scaffold` in a single `Consumer`.
+2. **Batching**: If you need to update 50 fields at once, use `scope.applyBatch(batch)` instead of 50 `setValue` calls.
+3. **Lazy Registry**: In multi-step forms, wrap each step in a `FormixFieldRegistry`. This ensures that fields on Page 10 don't even exist in memory while the user is on Page 1.
 
-```dart
-class RatingField extends FormixFieldWidget<int> {
-  RatingField(
-    String key, {
-    super.initialValue,
-    super.validators,
-  }) : super(key);
-
-  @override
-  FormixFieldState<int, RatingField> createState() => _RatingFieldState();
-}
-
-class _RatingFieldState extends FormixFieldState<int, RatingField> {
-  @override
-  Widget buildField(BuildContext context) {
-    return Row(
-      children: List.generate(5, (index) {
-        final rating = index + 1;
-        return IconButton(
-          icon: Icon(
-            rating <= (value ?? 0) ? Icons.star : Icons.star_border,
-            color: Colors.amber,
-          ),
-          onPressed: () => didChange(rating),
-        );
-      }),
-    );
-  }
-}
-```
-
-## Internationalization (i18n)
-
-Formix supports localization out of the box.
-
-1. **Setup**: passing `messages` to the controller.
-
-```dart
-final controller = FormixController(
-  messages: MyCustomFormixMessages(), // Extend FormixMessages
-);
-```
-
-2. **Using Standard Validators**:
-`FormixValidators.required()` automatically uses the localized string from `FormixMessages.required()`.
-
-3. **Custom Messages**:
-You can still override messages per field:
-`FormixValidators.required('Must have a name!')`
+---
+ 
+**Pro-Tip:** Use the **Formix DevTools** (v2) to visualize your `Dependency Graph` in real-time. It helps you catch circular dependencies and see exactly why a validation re-triggered.
