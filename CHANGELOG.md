@@ -1,6 +1,10 @@
 ## 0.0.5
 
 ### 🚀 Core Improvements & Fixes
+- **Type-Safe Value Retrieval**:
+  - Reverted `getValue<T>` to return `T?` for better safety and backwards compatibility.
+  - Added "smart fallback" to `getValue`: now recovers values from `initialValueMap` or field definitions if a field is not yet registered.
+  - Introduced `requireValue<T>`: returns `T` and throws a descriptive `StateError` if the value is null.
 - **New Field Transformers**:
   - `FormixFieldTransformer`: Synchronous 1-to-1 transformation between fields.
   - `FormixFieldAsyncTransformer`: Asynchronous transformation with built-in debounce and robust lifecycle management.

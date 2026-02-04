@@ -409,6 +409,8 @@ The `FormixController` is your command center.
 #### State Updates
 | Method | Description |
 | :--- | :--- |
+| `getValue(id)` | Retrieves the field value as `T?`. Supports smart fallback for unregistered fields. |
+| `requireValue(id)` | Retrieves the field value as `T` and throws a `StateError` if null. |
 | `setValue(val)` | Updates the field value. |
 | `setValues(updates)`| Updates multiple field values at once (Returns `FormixBatchResult`). |
 | `applyBatch(batch)` | Updates using a type-safe `FormixBatch` builder. |
