@@ -25,6 +25,10 @@
 - **Improved Pending State Management**: Fixed "Tried to modify a provider while the widget tree was building" error by moving pending state updates to microtasks.
 - **Multi-Step Form Reliability**: Fixed a bug where navigating back to a previous page in a multi-step form would show "required" validation errors even if fields were filled. Formix now correctly validates against preserved values during re-registration.
 - **Dropdown Field**: Migrated `FormixDropdownFormField` to use `InputDecorator` + `DropdownButton`. Now defensively handles values not present in the items list to prevent crashes during dynamic transitions.
+- **Global Validation Mode**:
+  - Introduced form-level `autovalidateMode` in `Formix` widget and `FormixController`.
+  - Added `FormixAutovalidateMode.auto` as the default for all fields, allowing them to inherit the form's global setting or explicitly override it.
+  - Improved `onUserInteraction` logic to ensure consistent feedback when values are changed and then reverted to their initial state.
 - **Infinite Loop Fix**: Optimized `FormixController` listener notifications to prevent infinite loops when fields trigger state changes during updates (e.g., in `FormixFieldAsyncTransformer`).
 - **Robust Bulk Update API**:
   - Added `FormixBatch` for compile-time type-safe batch building with a new fluent `setValue().to()` API for guaranteed lint enforcement.

@@ -44,6 +44,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
   final Map<String, FormixField<dynamic>> _fieldDefinitions = {};
   final Map<String, List<String>> _dependentsMap = {};
   final Map<String, Set<String>> _transitiveDependentsCache = {};
+  final FormixAutovalidateMode autovalidateMode;
 
   @visibleForTesting
   int get registeredFieldsCount => _fieldDefinitions.length;
@@ -165,6 +166,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
   static FormixData _createInitialState(
     Map<String, dynamic> initialValues,
     List<FormixField> fields,
+    FormixAutovalidateMode globalMode,
   ) {
     final values = {...initialValues};
     final validations = <String, ValidationResult>{};
@@ -180,10 +182,13 @@ class RiverpodFormController extends StateNotifier<FormixData> {
       touchedStates[key] = false;
 
       final val = values[key];
-      final mode = field.validationMode;
+      final rawMode = field.validationMode;
+      final effectiveMode = rawMode == FormixAutovalidateMode.auto
+          ? globalMode
+          : rawMode;
       final validator = field.wrappedValidator;
 
-      if (mode == FormixAutovalidateMode.always) {
+      if (effectiveMode == FormixAutovalidateMode.always) {
         if (validator != null && val != null) {
           try {
             final result = validator(val);
@@ -199,8 +204,6 @@ class RiverpodFormController extends StateNotifier<FormixData> {
         } else {
           validations[key] = ValidationResult.valid;
         }
-      } else {
-        validations[key] = ValidationResult.valid;
       }
     }
 
@@ -244,8 +247,9 @@ class RiverpodFormController extends StateNotifier<FormixData> {
     this.formId,
     this.analytics,
     String? namespace,
+    this.autovalidateMode = FormixAutovalidateMode.always,
   }) : _registeredDevToolsId = formId ?? namespace,
-       super(_createInitialState(initialValue, fields)) {
+       super(_createInitialState(initialValue, fields, autovalidateMode)) {
     _startTime = DateTime.now();
     analytics?.onFormStarted(formId);
     initialValueMap.addAll(initialValue);
@@ -454,8 +458,9 @@ class RiverpodFormController extends StateNotifier<FormixData> {
   FormixBatchResult _batchUpdate(
     Map<String, dynamic> updates, {
     bool strict = false,
+    Map<String, bool>? touchedStates,
   }) {
-    if (updates.isEmpty) {
+    if (updates.isEmpty && (touchedStates == null || touchedStates.isEmpty)) {
       return const FormixBatchResult(success: true);
     }
     if (!mounted) {
@@ -489,9 +494,10 @@ class RiverpodFormController extends StateNotifier<FormixData> {
       validUpdates[key] = value;
     }
 
-    if (validUpdates.isEmpty) {
+    if (validUpdates.isEmpty &&
+        (touchedStates == null || touchedStates.isEmpty)) {
       return FormixBatchResult(
-        success: false,
+        success: typeMismatches.isEmpty && missingFields.isEmpty,
         typeMismatches: typeMismatches,
         missingFields: missingFields,
       );
@@ -499,6 +505,10 @@ class RiverpodFormController extends StateNotifier<FormixData> {
 
     Map<String, dynamic>? newValues;
     Map<String, bool>? newDirtyStates;
+    Map<String, bool>? newTouchedStates =
+        (touchedStates != null && touchedStates.isNotEmpty)
+        ? {...state.touchedStates, ...touchedStates}
+        : null;
     Map<String, ValidationResult>? newValidations;
     final fieldsToValidate = <String>{};
     final changedFieldsInThisUpdate = <String>{};
@@ -506,21 +516,28 @@ class RiverpodFormController extends StateNotifier<FormixData> {
     int newDirtyCount = state.dirtyCount;
     int newErrorCount = state.errorCount;
 
-    for (final entry in validUpdates.entries) {
-      final key = entry.key;
-      dynamic value = entry.value;
+    final keysToProcess = {
+      ...validUpdates.keys,
+      if (newTouchedStates != null) ...newTouchedStates.keys,
+    };
 
-      final fieldDef = _fieldDefinitions[key];
-      final transformer = fieldDef?.transformer;
-      if (transformer != null) {
-        value = transformer(value);
-      }
+    for (final key in keysToProcess) {
+      final hasNewValue = validUpdates.containsKey(key);
+      dynamic value = hasNewValue ? validUpdates[key] : state.values[key];
 
-      if (value != (newValues != null ? newValues[key] : state.values[key])) {
-        newValues ??= {...state.values};
-        newValues[key] = value;
-        changedFieldsInThisUpdate.add(key);
-        analytics?.onFieldChanged(formId, key, value);
+      if (hasNewValue) {
+        final fieldDef = _fieldDefinitions[key];
+        final transformer = fieldDef?.transformer;
+        if (transformer != null) {
+          value = transformer(value);
+        }
+
+        if (value != (newValues != null ? newValues[key] : state.values[key])) {
+          newValues ??= {...state.values};
+          newValues[key] = value;
+          changedFieldsInThisUpdate.add(key);
+          analytics?.onFieldChanged(formId, key, value);
+        }
       }
 
       final isDirty = initialValueMap[key] == null
@@ -537,9 +554,24 @@ class RiverpodFormController extends StateNotifier<FormixData> {
         newDirtyCount += isDirty ? 1 : -1;
       }
 
-      final mode = fieldDef?.validationMode;
+      final fieldDef = _fieldDefinitions[key];
+      final rawMode = fieldDef?.validationMode ?? FormixAutovalidateMode.auto;
+      final mode = rawMode == FormixAutovalidateMode.auto
+          ? autovalidateMode
+          : rawMode;
+
+      final isTouched =
+          (newTouchedStates != null
+              ? newTouchedStates[key]
+              : state.touchedStates[key]) ??
+          false;
+      final wasValidated = state.validations.containsKey(key);
+
       if (mode == FormixAutovalidateMode.always ||
-          (mode == FormixAutovalidateMode.onUserInteraction && isDirty)) {
+          (mode == FormixAutovalidateMode.onUserInteraction &&
+              (isDirty || isTouched || wasValidated)) ||
+          (mode == FormixAutovalidateMode.onBlur &&
+              (isTouched || wasValidated))) {
         fieldsToValidate.add(key);
       }
 
@@ -547,9 +579,28 @@ class RiverpodFormController extends StateNotifier<FormixData> {
       for (final depKey in transitiveDependents) {
         final depDef = _fieldDefinitions[depKey];
         if (depDef != null) {
-          final depMode = depDef.validationMode;
+          final rawDepMode = depDef.validationMode;
+          final depMode = rawDepMode == FormixAutovalidateMode.auto
+              ? autovalidateMode
+              : rawDepMode;
+          final isDepTouched =
+              (newTouchedStates != null
+                  ? newTouchedStates[depKey]
+                  : state.touchedStates[depKey]) ??
+              false;
+          final depVal = newValues != null
+              ? newValues[depKey]
+              : state.values[depKey];
+          final isDepDirty = initialValueMap[depKey] == null
+              ? depVal != null
+              : depVal != initialValueMap[depKey];
+          final wasDepValidated = state.validations.containsKey(depKey);
+
           if (depMode == FormixAutovalidateMode.always ||
-              depMode == FormixAutovalidateMode.onUserInteraction) {
+              (depMode == FormixAutovalidateMode.onUserInteraction &&
+                  (isDepDirty || isDepTouched || wasDepValidated)) ||
+              (depMode == FormixAutovalidateMode.onBlur &&
+                  (isDepTouched || wasDepValidated))) {
             fieldsToValidate.add(depKey);
           }
         }
@@ -569,7 +620,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
           currentValidations: currentValidationsMap,
         );
 
-        if (oldRes != res) {
+        if (oldRes != res || !currentValidationsMap.containsKey(key)) {
           newValidations ??= {...state.validations};
           newValidations[key] = res;
 
@@ -582,10 +633,14 @@ class RiverpodFormController extends StateNotifier<FormixData> {
       }
     }
 
-    if (newValues != null || newDirtyStates != null || newValidations != null) {
+    if (newValues != null ||
+        newDirtyStates != null ||
+        newValidations != null ||
+        newTouchedStates != null) {
       state = state.copyWith(
         values: newValues,
         dirtyStates: newDirtyStates,
+        touchedStates: newTouchedStates,
         validations: newValidations,
         dirtyCount: newDirtyCount,
         errorCount: newErrorCount,
@@ -900,13 +955,20 @@ class RiverpodFormController extends StateNotifier<FormixData> {
       if (!newTouchedStates.containsKey(key)) {
         newTouchedStates[key] = false;
       }
+      final rawMode = field.validationMode;
+      final effectiveMode = rawMode == FormixAutovalidateMode.auto
+          ? autovalidateMode
+          : rawMode;
+
       if (!newValidations.containsKey(key)) {
-        newValidations[key] = _performSyncValidation(
-          key,
-          newValues[key],
-          newValues,
-          currentValidations: newValidations,
-        );
+        if (effectiveMode == FormixAutovalidateMode.always) {
+          newValidations[key] = _performSyncValidation(
+            key,
+            newValues[key],
+            newValues,
+            currentValidations: newValidations,
+          );
+        }
       }
     }
 
@@ -1002,13 +1064,20 @@ class RiverpodFormController extends StateNotifier<FormixData> {
         currentTouchedStates[key] = false;
       }
 
+      final rawMode = field.validationMode;
+      final effectiveMode = rawMode == FormixAutovalidateMode.auto
+          ? autovalidateMode
+          : rawMode;
+
       if (!currentValidations.containsKey(key)) {
-        currentValidations[key] = _performSyncValidation(
-          key,
-          currentValues[key],
-          currentValues,
-          currentValidations: currentValidations,
-        );
+        if (effectiveMode == FormixAutovalidateMode.always) {
+          currentValidations[key] = _performSyncValidation(
+            key,
+            currentValues[key],
+            currentValues,
+            currentValidations: currentValidations,
+          );
+        }
       }
 
       state = state.copyWith(
@@ -1700,6 +1769,7 @@ class FormixParameter {
     this.analytics,
     this.keepAlive = false,
     this.namespace,
+    this.autovalidateMode = FormixAutovalidateMode.always,
   });
 
   final Map<String, dynamic> initialValue;
@@ -1709,6 +1779,7 @@ class FormixParameter {
   final FormixAnalytics? analytics;
   final bool keepAlive;
   final String? namespace;
+  final FormixAutovalidateMode autovalidateMode;
 
   @override
   bool operator ==(Object other) =>
@@ -1716,6 +1787,7 @@ class FormixParameter {
       other is FormixParameter &&
           formId == other.formId &&
           namespace == other.namespace &&
+          autovalidateMode == other.autovalidateMode &&
           (formId != null
               ? true // Prioritize explicit formId for cross-page stability
               : const MapEquality().equals(initialValue, other.initialValue));
@@ -1724,6 +1796,7 @@ class FormixParameter {
   int get hashCode =>
       formId.hashCode ^
       namespace.hashCode ^
+      autovalidateMode.hashCode ^
       (formId == null ? const MapEquality().hash(initialValue) : 0);
 }
 
@@ -1742,6 +1815,7 @@ final formControllerProvider = StateNotifierProvider.autoDispose
         formId: param.formId,
         analytics: param.analytics,
         namespace: param.namespace,
+        autovalidateMode: param.autovalidateMode,
       );
     }, name: 'formControllerProvider');
 

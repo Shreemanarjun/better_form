@@ -437,6 +437,40 @@ The `FormixController` is your command center.
 | `bindField(id, target)` | Syncs two fields together. |
 
 
+### Global Validation Mode
+You can control when validation is triggered globally for the entire form or override it per field.
+
+```dart
+Formix(
+  // Global mode for all fields
+  autovalidateMode: FormixAutovalidateMode.onUserInteraction,
+  child: Column(
+    children: [
+      FormixTextFormField(
+        fieldId: nameField,
+        // Uses global onUserInteraction by default
+        validator: (v) => v!.isEmpty ? 'Error' : null,
+      ),
+      FormixTextFormField(
+        fieldId: pinField,
+        // Overrides global mode for this specific field
+        validationMode: FormixAutovalidateMode.always,
+        validator: (v) => v!.length < 4 ? 'Too short' : null,
+      ),
+    ],
+  ),
+)
+```
+
+| Mode | Behavior |
+| :--- | :--- |
+| `always` | (Default) Validates immediately on mount and every change. |
+| `onUserInteraction` | Starts validating only after the first change/interaction. |
+| `disabled` | Validation only happens when `validate()` or `submit()` is called. |
+| `onBlur` | Validation only happens when the field loses focus. |
+| `auto` | (Per-field default) Inherits from the global `Formix.autovalidateMode`. |
+
+
 ### Cross-Field Validation
 Validate fields based on the state of other fields.
 ```dart
