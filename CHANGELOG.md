@@ -1,3 +1,16 @@
+## 0.0.6
+
+### 📚 Documentation Improvements
+- **Enhanced Headless Documentation**:
+  - **FormixFieldStateSnapshot.valueNotifier**: Added comprehensive documentation with practical examples showing how to use `ValueListenableBuilder` for granular reactivity and optimized rebuilds.
+  - **FormixRawNotifierField**: Complete class documentation explaining its purpose as a performance-optimized widget for ValueNotifier-based updates, with detailed examples demonstrating the difference between full rebuilds and granular updates.
+  - **Cookbook Section**: Added extensive "Headless Widgets" cookbook with three production-ready patterns:
+    - `FormixRawFormField` for custom controls (star rating example)
+    - `FormixRawTextField` for custom text inputs (feedback field with character counter)
+    - `FormixRawNotifierField` for performance optimization (counter with granular rebuilds)
+  - **Updated Example App**: Completely rewrote the headless form example to showcase all `FormixFieldStateSnapshot` properties with real-time state indicators and latest API usage.
+  - **Table of Contents**: Added Cookbook section to README with proper navigation links.
+
 ## 0.0.5
 
 ### 💎 DevTools Extension Redesign (v2)

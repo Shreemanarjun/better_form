@@ -32,6 +32,12 @@ Powered by Riverpod, Formix delivers lightning-fast performance, zero boilerplat
 - [🚥 Validation](#-validation)
 - [🕹️ Controlling the Form](#-controlling-the-form)
 - [🧪 Advanced Features](#-advanced-features)
+- [👨‍🍳 Cookbook](#-cookbook)
+    - [Multi-step Form (Wizard)](#multi-step-form-wizard)
+    - [Dependent Fields](#dependent-fields)
+    - [Complex Object Array](#complex-object-array)
+    - [Custom Field Implementation](#custom-field-implementation)
+    - [Headless Widgets](#headless-widgets)
 - [⚡ Performance](#-performance)
 - [📊 Analytics & Debugging](#-analytics--debugging)
 
