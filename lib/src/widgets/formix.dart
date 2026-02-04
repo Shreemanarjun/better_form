@@ -92,15 +92,13 @@ class Formix extends ConsumerStatefulWidget {
   static AutoDisposeStateNotifierProvider<FormixController, FormixData>? of(
     BuildContext context,
   ) {
-    final _FormixScope? scope = context
-        .dependOnInheritedWidgetOfExactType<_FormixScope>();
+    final _FormixScope? scope = context.dependOnInheritedWidgetOfExactType<_FormixScope>();
     return scope?.controllerProvider;
   }
 
   /// Get the [FormixController] instance from the nearest [Formix] ancestor.
   static FormixController? controllerOf(BuildContext context) {
-    final _FormixScope? scope = context
-        .dependOnInheritedWidgetOfExactType<_FormixScope>();
+    final _FormixScope? scope = context.dependOnInheritedWidgetOfExactType<_FormixScope>();
     return scope?.controller;
   }
 }
@@ -162,8 +160,7 @@ class FormixState extends ConsumerState<Formix> {
   ///   });
   /// }
   /// ```
-  AutoDisposeStateNotifierProvider<FormixController, FormixData> get provider =>
-      _provider;
+  AutoDisposeStateNotifierProvider<FormixController, FormixData> get provider => _provider;
 
   @override
   Widget build(BuildContext context) {
@@ -186,8 +183,7 @@ class FormixState extends ConsumerState<Formix> {
 
     return ProviderScope(
       overrides: [
-        if (widget.controller != null)
-          provider.overrideWith((ref) => widget.controller!),
+        if (widget.controller != null) provider.overrideWith((ref) => widget.controller!),
         currentControllerProvider.overrideWithValue(provider),
       ],
       child: Semantics(
@@ -218,15 +214,12 @@ class _FormixScope extends InheritedWidget {
   });
 
   final FormixController controller;
-  final AutoDisposeStateNotifierProvider<FormixController, FormixData>
-  controllerProvider;
+  final AutoDisposeStateNotifierProvider<FormixController, FormixData> controllerProvider;
   final List<FormixFieldConfig<dynamic>> fields;
 
   @override
   bool updateShouldNotify(_FormixScope oldWidget) {
-    return controller != oldWidget.controller ||
-        controllerProvider != oldWidget.controllerProvider ||
-        !const ListEquality().equals(fields, oldWidget.fields);
+    return controller != oldWidget.controller || controllerProvider != oldWidget.controllerProvider || !const ListEquality().equals(fields, oldWidget.fields);
   }
 }
 
@@ -237,8 +230,7 @@ class _FieldRegistrar extends ConsumerStatefulWidget {
     required this.child,
   });
 
-  final AutoDisposeStateNotifierProvider<FormixController, FormixData>
-  controllerProvider;
+  final AutoDisposeStateNotifierProvider<FormixController, FormixData> controllerProvider;
   final List<FormixFieldConfig<dynamic>> fields;
   final Widget child;
 

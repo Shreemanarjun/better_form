@@ -53,9 +53,7 @@ class FormixController extends RiverpodFormController {
       if (notifiers.isEmpty) return;
 
       // If we have a delta, only check relevant keys that we are actually listening to
-      final keysToCheck = changedKeys != null
-          ? changedKeys.where((k) => notifiers.containsKey(k))
-          : notifiers.keys;
+      final keysToCheck = changedKeys != null ? changedKeys.where((k) => notifiers.containsKey(k)) : notifiers.keys;
 
       for (final key in keysToCheck) {
         final notifier = notifiers[key];
@@ -93,12 +91,10 @@ class FormixController extends RiverpodFormController {
     if (_isValidNotifier != null && _isValidNotifier!.value != state.isValid) {
       _isValidNotifier!.value = state.isValid;
     }
-    if (_isSubmittingNotifier != null &&
-        _isSubmittingNotifier!.value != state.isSubmitting) {
+    if (_isSubmittingNotifier != null && _isSubmittingNotifier!.value != state.isSubmitting) {
       _isSubmittingNotifier!.value = state.isSubmitting;
     }
-    if (_isPendingNotifier != null &&
-        _isPendingNotifier!.value != state.isPending) {
+    if (_isPendingNotifier != null && _isPendingNotifier!.value != state.isPending) {
       _isPendingNotifier!.value = state.isPending;
     }
 
@@ -303,8 +299,7 @@ class FormixController extends RiverpodFormController {
     Duration duration = const Duration(milliseconds: 300),
     Curve curve = Curves.easeInOut,
     double alignment = 0.5,
-    ScrollPositionAlignmentPolicy alignmentPolicy =
-        ScrollPositionAlignmentPolicy.explicit,
+    ScrollPositionAlignmentPolicy alignmentPolicy = ScrollPositionAlignmentPolicy.explicit,
   }) {
     final context = _contexts[id.key];
     if (context != null && context.mounted) {
@@ -350,10 +345,7 @@ class FormixController extends RiverpodFormController {
   /// This is important for accessibility (a11y) so that screen reader users
   /// are notified when a form submission fails due to validation errors.
   void announceErrors() {
-    final firstErrorKey = state.validations.entries
-        .where((e) => !e.value.isValid)
-        .firstOrNull
-        ?.key;
+    final firstErrorKey = state.validations.entries.where((e) => !e.value.isValid).firstOrNull?.key;
 
     if (firstErrorKey != null) {
       final error = state.validations[firstErrorKey]?.errorMessage;

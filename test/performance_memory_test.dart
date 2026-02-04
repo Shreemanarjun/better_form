@@ -15,8 +15,7 @@ void main() {
           child: Formix(
             child: FormixBuilder(
               builder: (context, _) {
-                controller =
-                    Formix.controllerOf(context) as RiverpodFormController;
+                controller = Formix.controllerOf(context) as RiverpodFormController;
                 return Container();
               },
             ),
@@ -96,8 +95,7 @@ void main() {
           child: Formix(
             child: FormixBuilder(
               builder: (context, _) {
-                controller =
-                    Formix.controllerOf(context) as RiverpodFormController;
+                controller = Formix.controllerOf(context) as RiverpodFormController;
                 return ValueListenableBuilder<bool>(
                   valueListenable: showRegistry,
                   builder: (context, show, child) {
@@ -151,8 +149,7 @@ void main() {
           child: Formix(
             child: FormixBuilder(
               builder: (context, _) {
-                controller =
-                    Formix.controllerOf(context) as RiverpodFormController;
+                controller = Formix.controllerOf(context) as RiverpodFormController;
                 return Container();
               },
             ),

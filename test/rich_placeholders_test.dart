@@ -56,8 +56,7 @@ void main() {
                   FormixFieldConfig<int>(
                     id: ageField,
                     label: 'Age',
-                    validator: (v) =>
-                        (v ?? 0) < 18 ? 'Too young! {value} < 18' : null,
+                    validator: (v) => (v ?? 0) < 18 ? 'Too young! {value} < 18' : null,
                   ),
                 ],
                 child: FormixBuilder(

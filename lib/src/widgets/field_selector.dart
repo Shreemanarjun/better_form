@@ -27,12 +27,10 @@ class FieldChangeInfo<T> {
   bool get valueChanged => previousValue != null && value != previousValue;
 
   /// Whether the validation changed
-  bool get validationChanged =>
-      previousValidation != null && validation != previousValidation;
+  bool get validationChanged => previousValidation != null && validation != previousValidation;
 
   /// Whether the dirty state changed
-  bool get dirtyStateChanged =>
-      previousIsDirty != null && isDirty != previousIsDirty;
+  bool get dirtyStateChanged => previousIsDirty != null && isDirty != previousIsDirty;
 
   /// Whether any aspect changed
   bool get hasChanged => valueChanged || validationChanged || dirtyStateChanged;

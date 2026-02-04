@@ -261,14 +261,13 @@ void main() {
       tester,
     ) async {
       const customField = FormixFieldID<String>('custom_field');
-      final customProvider =
-          StateNotifierProvider.autoDispose<FormixController, FormixData>((
-            ref,
-          ) {
-            return FormixController(
-              initialValue: {'custom_field': 'custom_value'},
-            );
-          });
+      final customProvider = StateNotifierProvider.autoDispose<FormixController, FormixData>((
+        ref,
+      ) {
+        return FormixController(
+          initialValue: {'custom_field': 'custom_value'},
+        );
+      });
 
       await tester.pumpWidget(
         ProviderScope(

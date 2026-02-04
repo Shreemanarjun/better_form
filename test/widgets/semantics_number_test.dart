@@ -21,8 +21,7 @@ void main() {
                   id: fieldId,
                   // Use non-null invalid value to trigger validation in Formix
                   initialValue: -1,
-                  validator: (val) =>
-                      (val == null || val < 0) ? 'Must be positive' : null,
+                  validator: (val) => (val == null || val < 0) ? 'Must be positive' : null,
                 ),
               ],
               child: const FormixNumberFormField<int>(

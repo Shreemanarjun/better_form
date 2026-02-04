@@ -423,8 +423,7 @@ class FormSchema {
   /// Get a field schema by ID
   FormFieldSchema<T>? getField<T>(FormixFieldID<T> fieldId) {
     try {
-      return fields.firstWhere((field) => field.id == fieldId)
-          as FormFieldSchema<T>;
+      return fields.firstWhere((field) => field.id == fieldId) as FormFieldSchema<T>;
     } catch (_) {
       return null;
     }

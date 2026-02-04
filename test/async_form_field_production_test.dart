@@ -73,13 +73,11 @@ void main() {
                 child: FormixAsyncField<String>(
                   fieldId: fieldId,
                   future: future,
-                  validator: (value) =>
-                      value == 'invalid_value' ? 'Invalid Value' : null,
+                  validator: (value) => value == 'invalid_value' ? 'Invalid Value' : null,
                   builder: (context, state) => Column(
                     children: [
                       Text('Value: ${state.value}'),
-                      if (state.validation.errorMessage != null)
-                        Text(state.validation.errorMessage!),
+                      if (state.validation.errorMessage != null) Text(state.validation.errorMessage!),
                     ],
                   ),
                 ),
@@ -164,8 +162,7 @@ void main() {
                     return FormixAsyncField<String>(
                       fieldId: fieldId,
                       future: future,
-                      builder: (context, state) =>
-                          Text(state.value ?? 'No Data'),
+                      builder: (context, state) => Text(state.value ?? 'No Data'),
                     );
                   },
                 ),

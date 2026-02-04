@@ -750,9 +750,7 @@ void main() {
                   fieldId: id,
                   builder: (context, snapshot) {
                     return Text(
-                      snapshot.validation.isValid
-                          ? 'STATE: VALID'
-                          : 'STATE: INVALID',
+                      snapshot.validation.isValid ? 'STATE: VALID' : 'STATE: INVALID',
                     );
                   },
                 ),

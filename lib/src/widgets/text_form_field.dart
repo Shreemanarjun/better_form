@@ -107,8 +107,7 @@ class FormixTextFormField extends FormixFieldWidget<String> {
   FormixTextFormFieldState createState() => FormixTextFormFieldState();
 }
 
-class FormixTextFormFieldState extends FormixFieldWidgetState<String>
-    with FormixFieldTextMixin<String> {
+class FormixTextFormFieldState extends FormixFieldWidgetState<String> with FormixFieldTextMixin<String> {
   @override
   String valueToString(String? value) => value ?? '';
 
@@ -135,8 +134,7 @@ class FormixTextFormFieldState extends FormixFieldWidgetState<String>
 
         final showImmediate = validationMode == FormixAutovalidateMode.always;
 
-        final shouldShowError =
-            (isTouched || isSubmitting || showImmediate) && !validation.isValid;
+        final shouldShowError = (isTouched || isSubmitting || showImmediate) && !validation.isValid;
 
         Widget? suffixIcon;
         if (validation.isValidating) {

@@ -38,12 +38,10 @@ class FormixFieldTransformer<T, S> extends ConsumerStatefulWidget {
   final S Function(T? value) transform;
 
   @override
-  ConsumerState<FormixFieldTransformer<T, S>> createState() =>
-      _FormixFieldTransformerState<T, S>();
+  ConsumerState<FormixFieldTransformer<T, S>> createState() => _FormixFieldTransformerState<T, S>();
 }
 
-class _FormixFieldTransformerState<T, S>
-    extends ConsumerState<FormixFieldTransformer<T, S>> {
+class _FormixFieldTransformerState<T, S> extends ConsumerState<FormixFieldTransformer<T, S>> {
   FormixController? _controller;
   late VoidCallback _listener;
 

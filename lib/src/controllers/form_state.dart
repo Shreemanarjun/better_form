@@ -80,9 +80,7 @@ class FormixData {
       resetCount: resetCount,
       errorCount: validations.values.where((v) => !v.isValid).length,
       dirtyCount: dirtyStates.values.where((d) => d).length,
-      pendingCount:
-          pendingStates.values.where((p) => p).length +
-          validations.values.where((v) => v.isValidating).length,
+      pendingCount: pendingStates.values.where((p) => p).length + validations.values.where((v) => v.isValidating).length,
       changedFields: changedFields,
     );
   }
@@ -113,9 +111,7 @@ class FormixData {
       errorCount: errorCount ?? this.errorCount,
       dirtyCount: dirtyCount ?? this.dirtyCount,
       pendingCount: pendingCount ?? this.pendingCount,
-      changedFields: clearChangedFields
-          ? null
-          : (changedFields ?? this.changedFields),
+      changedFields: clearChangedFields ? null : (changedFields ?? this.changedFields),
     );
   }
 
@@ -183,16 +179,12 @@ class FormixData {
   ///
   /// A group is identified by its key prefix (e.g., 'user').
   bool isGroupValid(String prefix) {
-    return validations.entries
-        .where((e) => e.key.startsWith('$prefix.'))
-        .every((e) => e.value.isValid);
+    return validations.entries.where((e) => e.key.startsWith('$prefix.')).every((e) => e.value.isValid);
   }
 
   /// Checks if a specific group of fields contains any modifications.
   bool isGroupDirty(String prefix) {
-    return dirtyStates.entries
-        .where((e) => e.key.startsWith('$prefix.'))
-        .any((e) => e.value);
+    return dirtyStates.entries.where((e) => e.key.startsWith('$prefix.')).any((e) => e.value);
   }
 
   void _setNestedValue(Map<String, dynamic> map, String path, dynamic value) {
@@ -252,10 +244,7 @@ class FormixData {
         mapEquals.equals(dirtyStates, other.dirtyStates) &&
         mapEquals.equals(touchedStates, other.touchedStates) &&
         mapEquals.equals(pendingStates, other.pendingStates) &&
-        ((changedFields == null && other.changedFields == null) ||
-            (changedFields != null &&
-                other.changedFields != null &&
-                setEquals.equals(changedFields, other.changedFields)));
+        ((changedFields == null && other.changedFields == null) || (changedFields != null && other.changedFields != null && setEquals.equals(changedFields, other.changedFields)));
   }
 
   @override

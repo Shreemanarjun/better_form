@@ -20,8 +20,7 @@ void main() {
                 FormixFieldConfig<String>(
                   id: fieldId,
                   initialValue: '',
-                  validator: (val) =>
-                      (val == null || val.isEmpty) ? 'Required' : null,
+                  validator: (val) => (val == null || val.isEmpty) ? 'Required' : null,
                 ),
               ],
               child: const FormixDropdownFormField<String>(

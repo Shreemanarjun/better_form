@@ -86,16 +86,13 @@ class _FormixFieldSelectorState<T> extends State<FormixFieldSelector<T>> {
   }
 
   void _updateCurrentState() {
-    _currentValue =
-        _controller.getValue(widget.fieldId) ??
-        _controller.initialValue[widget.fieldId.key] as T?;
+    _currentValue = _controller.getValue(widget.fieldId) ?? _controller.initialValue[widget.fieldId.key] as T?;
     _currentValidation = _controller.getValidation(widget.fieldId);
     _currentIsDirty = _controller.isFieldDirty(widget.fieldId);
 
     // Check if initial value has changed
     final initialValue = _controller.initialValue[widget.fieldId.key];
-    _hasInitialValueChanged =
-        initialValue != null && _currentValue != initialValue;
+    _hasInitialValueChanged = initialValue != null && _currentValue != initialValue;
   }
 
   void _onFieldChanged() {
@@ -114,8 +111,7 @@ class _FormixFieldSelectorState<T> extends State<FormixFieldSelector<T>> {
       shouldRebuild = true;
     }
 
-    if (widget.listenToValidation &&
-        _currentValidation != _previousValidation) {
+    if (widget.listenToValidation && _currentValidation != _previousValidation) {
       shouldRebuild = true;
     }
 

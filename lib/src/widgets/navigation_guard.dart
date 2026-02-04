@@ -34,8 +34,7 @@ class FormixNavigationGuard extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<FormixNavigationGuard> createState() =>
-      _FormixNavigationGuardState();
+  ConsumerState<FormixNavigationGuard> createState() => _FormixNavigationGuardState();
 }
 
 class _FormixNavigationGuardState extends ConsumerState<FormixNavigationGuard> {

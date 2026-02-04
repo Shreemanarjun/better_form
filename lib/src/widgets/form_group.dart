@@ -38,8 +38,7 @@ class FormixGroup extends ConsumerStatefulWidget {
 
   /// Get the current combined prefix for the given [context].
   static String? prefixOf(BuildContext context) {
-    final scope = context
-        .dependOnInheritedWidgetOfExactType<_FormixGroupScope>();
+    final scope = context.dependOnInheritedWidgetOfExactType<_FormixGroupScope>();
     return scope?.fullPrefix;
   }
 
@@ -57,11 +56,8 @@ class FormixGroup extends ConsumerStatefulWidget {
 class _FormixGroupState extends ConsumerState<FormixGroup> {
   @override
   Widget build(BuildContext context) {
-    final parent = context
-        .dependOnInheritedWidgetOfExactType<_FormixGroupScope>();
-    final fullPrefix = parent == null
-        ? widget.prefix
-        : '${parent.fullPrefix}.${widget.prefix}';
+    final parent = context.dependOnInheritedWidgetOfExactType<_FormixGroupScope>();
+    final fullPrefix = parent == null ? widget.prefix : '${parent.fullPrefix}.${widget.prefix}';
 
     return _FormixGroupScope(
       prefix: widget.prefix,
@@ -82,6 +78,5 @@ class _FormixGroupScope extends InheritedWidget {
   final String fullPrefix;
 
   @override
-  bool updateShouldNotify(_FormixGroupScope oldWidget) =>
-      prefix != oldWidget.prefix || fullPrefix != oldWidget.fullPrefix;
+  bool updateShouldNotify(_FormixGroupScope oldWidget) => prefix != oldWidget.prefix || fullPrefix != oldWidget.fullPrefix;
 }

@@ -728,8 +728,7 @@ void main() {
                 fields: [FormixFieldConfig(id: stringField)],
                 child: TestValueSelector<String>(
                   fieldId: stringField,
-                  builder: (context, value, child) =>
-                      Text('Value: ${value ?? "null"}'),
+                  builder: (context, value, child) => Text('Value: ${value ?? "null"}'),
                 ),
               ),
             ),
@@ -842,13 +841,11 @@ void main() {
                   children: [
                     TestValueSelector<String>(
                       fieldId: field1,
-                      builder: (context, value, child) =>
-                          Text('Field1: $value'),
+                      builder: (context, value, child) => Text('Field1: $value'),
                     ),
                     TestValueSelector<String>(
                       fieldId: field2,
-                      builder: (context, value, child) =>
-                          Text('Field2: $value'),
+                      builder: (context, value, child) => Text('Field2: $value'),
                     ),
                   ],
                 ),

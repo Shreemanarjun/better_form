@@ -23,12 +23,10 @@ class ChineseFormixMessages extends FormixMessages {
   String maxValue(String label, num max) => '$label最大值为$max';
 
   @override
-  String minDate(String label, DateTime minDate) =>
-      '$label日期必须在${_formatDate(minDate)}之后';
+  String minDate(String label, DateTime minDate) => '$label日期必须在${_formatDate(minDate)}之后';
 
   @override
-  String maxDate(String label, DateTime maxDate) =>
-      '$label日期必须在${_formatDate(maxDate)}之前';
+  String maxDate(String label, DateTime maxDate) => '$label日期必须在${_formatDate(maxDate)}之前';
 
   @override
   String invalidSelection(String label) => '$label选择无效';

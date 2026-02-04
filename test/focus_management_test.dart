@@ -81,8 +81,7 @@ void main() {
                   FormixFieldConfig<String>(
                     id: requiredField,
                     initialValue: '',
-                    validator: (v) =>
-                        (v == null || v.isEmpty) ? 'Required' : null,
+                    validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
                   ),
                 ],
                 child: FormixBuilder(

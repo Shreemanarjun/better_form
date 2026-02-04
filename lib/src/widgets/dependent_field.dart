@@ -39,15 +39,11 @@ class FormixDependentField<T> extends ConsumerWidget {
   final Widget Function(BuildContext context, T? value) builder;
 
   /// Optional explicit controller provider. If null, it looks up the nearest [Formix].
-  final AutoDisposeStateNotifierProvider<FormixController, FormixData>?
-  controllerProvider;
+  final AutoDisposeStateNotifierProvider<FormixController, FormixData>? controllerProvider;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final provider =
-        controllerProvider ??
-        Formix.of(context) ??
-        formControllerProvider(const FormixParameter(initialValue: {}));
+    final provider = controllerProvider ?? Formix.of(context) ?? formControllerProvider(const FormixParameter(initialValue: {}));
 
     // We use ProviderScope override to ensure we are watching the correct controller
     // if we are using the global fieldValueProvider

@@ -65,8 +65,7 @@ void main() {
                                 ),
                               ),
                               loading: () => const Text('Loading models...'),
-                              error: (e, _) =>
-                                  Text('Error: $e'), // Should check errors
+                              error: (e, _) => Text('Error: $e'), // Should check errors
                             );
                           },
                         );

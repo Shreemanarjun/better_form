@@ -205,9 +205,7 @@ void main() {
       );
 
       expect(
-        messages
-            .maxDate('Field', DateTime(2023, 12, 31))
-            .contains('2023-12-31'),
+        messages.maxDate('Field', DateTime(2023, 12, 31)).contains('2023-12-31'),
         true,
       );
       expect(
@@ -373,12 +371,10 @@ class CustomTestMessages extends FormixMessages {
   String invalidFormat() => 'CUSTOM: Invalid format!';
 
   @override
-  String minLength(String label, int minLength) =>
-      'CUSTOM: At least $minLength characters';
+  String minLength(String label, int minLength) => 'CUSTOM: At least $minLength characters';
 
   @override
-  String maxLength(String label, int maxLength) =>
-      'CUSTOM: At most $maxLength characters';
+  String maxLength(String label, int maxLength) => 'CUSTOM: At most $maxLength characters';
 
   @override
   String minValue(String label, num min) => 'CUSTOM: Must be at least $min';
@@ -387,12 +383,10 @@ class CustomTestMessages extends FormixMessages {
   String maxValue(String label, num max) => 'CUSTOM: Must be at most $max';
 
   @override
-  String minDate(String label, DateTime minDate) =>
-      'CUSTOM: Must be after ${minDate.toString().split(' ')[0]}';
+  String minDate(String label, DateTime minDate) => 'CUSTOM: Must be after ${minDate.toString().split(' ')[0]}';
 
   @override
-  String maxDate(String label, DateTime maxDate) =>
-      'CUSTOM: Must be before ${maxDate.toString().split(' ')[0]}';
+  String maxDate(String label, DateTime maxDate) => 'CUSTOM: Must be before ${maxDate.toString().split(' ')[0]}';
 
   @override
   String invalidSelection(String label) => 'CUSTOM: Invalid selection!';

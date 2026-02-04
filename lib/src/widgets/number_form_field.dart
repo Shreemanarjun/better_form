@@ -93,13 +93,10 @@ class FormixNumberFormField<T extends num> extends FormixFieldWidget<T> {
   final MaxLengthEnforcement? maxLengthEnforcement;
 
   @override
-  FormixNumberFormFieldState<T> createState() =>
-      FormixNumberFormFieldState<T>();
+  FormixNumberFormFieldState<T> createState() => FormixNumberFormFieldState<T>();
 }
 
-class FormixNumberFormFieldState<T extends num>
-    extends FormixFieldWidgetState<T>
-    with FormixFieldTextMixin<T> {
+class FormixNumberFormFieldState<T extends num> extends FormixFieldWidgetState<T> with FormixFieldTextMixin<T> {
   @override
   String valueToString(T? value) {
     if (value == null) return '';
@@ -156,8 +153,7 @@ class FormixNumberFormFieldState<T extends num>
 
         final showImmediate = validationMode == FormixAutovalidateMode.always;
 
-        final shouldShowError =
-            (isTouched || isSubmitting || showImmediate) && !validation.isValid;
+        final shouldShowError = (isTouched || isSubmitting || showImmediate) && !validation.isValid;
 
         Widget? suffixIcon;
         if (validation.isValidating) {
@@ -177,9 +173,7 @@ class FormixNumberFormFieldState<T extends num>
 
         return MergeSemantics(
           child: Semantics(
-            validationResult: validation.isValid
-                ? SemanticsValidationResult.valid
-                : SemanticsValidationResult.invalid,
+            validationResult: validation.isValid ? SemanticsValidationResult.valid : SemanticsValidationResult.invalid,
             child: TextFormField(
               controller: textController,
               focusNode: focusNode,
@@ -219,8 +213,7 @@ class FormixNumberFormFieldState<T extends num>
                 ...?fieldWidget.inputFormatters,
               ],
               scrollPadding: fieldWidget.scrollPadding,
-              enableInteractiveSelection:
-                  fieldWidget.enableInteractiveSelection,
+              enableInteractiveSelection: fieldWidget.enableInteractiveSelection,
               selectionControls: fieldWidget.selectionControls,
               buildCounter: fieldWidget.buildCounter,
               scrollPhysics: fieldWidget.scrollPhysics,

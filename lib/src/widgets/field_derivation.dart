@@ -57,8 +57,7 @@ class FormixFieldDerivation extends ConsumerStatefulWidget {
   final FormixFieldID<dynamic> targetField;
 
   @override
-  ConsumerState<FormixFieldDerivation> createState() =>
-      _FormixFieldDerivationState();
+  ConsumerState<FormixFieldDerivation> createState() => _FormixFieldDerivationState();
 }
 
 class _FormixFieldDerivationState extends ConsumerState<FormixFieldDerivation> {
@@ -202,12 +201,10 @@ class FormixFieldDerivations extends ConsumerStatefulWidget {
   final List<FieldDerivationConfig> derivations;
 
   @override
-  ConsumerState<FormixFieldDerivations> createState() =>
-      _FormixFieldDerivationsState();
+  ConsumerState<FormixFieldDerivations> createState() => _FormixFieldDerivationsState();
 }
 
-class _FormixFieldDerivationsState
-    extends ConsumerState<FormixFieldDerivations> {
+class _FormixFieldDerivationsState extends ConsumerState<FormixFieldDerivations> {
   FormixController? _controller;
   final Map<String, VoidCallback> _listeners = {};
 
@@ -347,9 +344,7 @@ class FieldDerivationConfig {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is FieldDerivationConfig &&
-        listEquals(dependencies, other.dependencies) &&
-        targetField == other.targetField;
+    return other is FieldDerivationConfig && listEquals(dependencies, other.dependencies) && targetField == other.targetField;
   }
 
   @override

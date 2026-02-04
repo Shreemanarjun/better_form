@@ -161,9 +161,7 @@ void main() {
                     return ValueListenableBuilder<bool>(
                       valueListenable: showField,
                       builder: (context, show, _) {
-                        return show
-                            ? const FormixTextFormField(fieldId: fieldId)
-                            : Container();
+                        return show ? const FormixTextFormField(fieldId: fieldId) : Container();
                       },
                     );
                   },
@@ -315,11 +313,7 @@ void main() {
         );
 
         print('Found text widgets:');
-        find
-            .byType(Text)
-            .evaluate()
-            .map((e) => (e.widget as Text).data)
-            .forEach(print);
+        find.byType(Text).evaluate().map((e) => (e.widget as Text).data).forEach(print);
 
         rethrow;
       }

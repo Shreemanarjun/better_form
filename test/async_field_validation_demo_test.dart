@@ -34,10 +34,8 @@ void main() {
                   return Column(
                     children: [
                       Text('Current Value: ${state.value}'),
-                      if (state.validation.isValidating)
-                        const Text('Validating...'),
-                      if (state.validation.errorMessage != null)
-                        Text('Error: ${state.validation.errorMessage}'),
+                      if (state.validation.isValidating) const Text('Validating...'),
+                      if (state.validation.errorMessage != null) Text('Error: ${state.validation.errorMessage}'),
                     ],
                   );
                 },

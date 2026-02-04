@@ -116,8 +116,7 @@ class FormixLocalizations extends InheritedWidget {
   ///   ],
   /// )
   /// ```
-  static const LocalizationsDelegate<FormixLocalizations> delegate =
-      _FormixLocalizationsDelegate();
+  static const LocalizationsDelegate<FormixLocalizations> delegate = _FormixLocalizationsDelegate();
 
   /// Get the [FormixMessages] for the current locale from the widget tree.
   ///
@@ -131,8 +130,7 @@ class FormixLocalizations extends InheritedWidget {
   /// return messages.required('Email');
   /// ```
   static FormixMessages of(BuildContext context) {
-    final localizations = context
-        .dependOnInheritedWidgetOfExactType<FormixLocalizations>();
+    final localizations = context.dependOnInheritedWidgetOfExactType<FormixLocalizations>();
 
     if (localizations != null) {
       return localizations.messages;
@@ -206,12 +204,10 @@ class FormixLocalizations extends InheritedWidget {
   }
 
   /// Get all registered locale codes.
-  static List<String> get supportedLocales =>
-      _localeRegistry.keys.toList(growable: false);
+  static List<String> get supportedLocales => _localeRegistry.keys.toList(growable: false);
 
   /// Check if a locale is supported.
-  static bool isSupported(String localeCode) =>
-      _localeRegistry.containsKey(localeCode);
+  static bool isSupported(String localeCode) => _localeRegistry.containsKey(localeCode);
 
   @override
   bool updateShouldNotify(FormixLocalizations oldWidget) {
@@ -223,8 +219,7 @@ class FormixLocalizations extends InheritedWidget {
 ///
 /// This delegate is responsible for loading the appropriate [FormixMessages]
 /// implementation based on the current locale.
-class _FormixLocalizationsDelegate
-    extends LocalizationsDelegate<FormixLocalizations> {
+class _FormixLocalizationsDelegate extends LocalizationsDelegate<FormixLocalizations> {
   const _FormixLocalizationsDelegate();
 
   @override

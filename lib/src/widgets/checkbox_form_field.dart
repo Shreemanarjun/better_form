@@ -82,14 +82,11 @@ class FormixCheckboxFormFieldState extends FormixFieldWidgetState<bool> {
 
         final showImmediate = validationMode == FormixAutovalidateMode.always;
 
-        final shouldShowError =
-            (isTouched || isSubmitting || showImmediate) && !validation.isValid;
+        final shouldShowError = (isTouched || isSubmitting || showImmediate) && !validation.isValid;
 
         return MergeSemantics(
           child: Semantics(
-            validationResult: validation.isValid
-                ? SemanticsValidationResult.valid
-                : SemanticsValidationResult.invalid,
+            validationResult: validation.isValid ? SemanticsValidationResult.valid : SemanticsValidationResult.invalid,
             child: CheckboxListTile(
               value: value ?? false,
               title: checkboxWidget.title,

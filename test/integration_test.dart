@@ -30,27 +30,22 @@ void main() {
                   FormixFieldConfig<String>(
                     id: nameField,
                     initialValue: '',
-                    validator: (value) =>
-                        (value?.isEmpty ?? true) ? 'Name is required' : null,
+                    validator: (value) => (value?.isEmpty ?? true) ? 'Name is required' : null,
                   ),
                   FormixFieldConfig<String>(
                     id: emailField,
                     initialValue: '',
-                    validator: (value) => (value?.contains('@') ?? false)
-                        ? null
-                        : 'Invalid email',
+                    validator: (value) => (value?.contains('@') ?? false) ? null : 'Invalid email',
                   ),
                   FormixFieldConfig<num>(
                     id: ageField,
                     initialValue: 18,
-                    validator: (value) =>
-                        (value ?? 0) >= 18 ? null : 'Must be 18 or older',
+                    validator: (value) => (value ?? 0) >= 18 ? null : 'Must be 18 or older',
                   ),
                   FormixFieldConfig<bool>(
                     id: agreeField,
                     initialValue: false,
-                    validator: (value) =>
-                        value == true ? null : 'You must agree to terms',
+                    validator: (value) => value == true ? null : 'You must agree to terms',
                   ),
                 ],
                 child: SingleChildScrollView(
@@ -390,14 +385,12 @@ void main() {
                   FormixFieldConfig<String>(
                     id: nameField,
                     initialValue: '',
-                    validator: (value) =>
-                        (value?.isEmpty ?? true) ? 'Required' : null,
+                    validator: (value) => (value?.isEmpty ?? true) ? 'Required' : null,
                   ),
                   FormixFieldConfig<String>(
                     id: emailField,
                     initialValue: '',
-                    validator: (value) =>
-                        (value?.contains('@') ?? false) ? null : 'Invalid',
+                    validator: (value) => (value?.contains('@') ?? false) ? null : 'Invalid',
                   ),
                 ],
                 child: Column(

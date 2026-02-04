@@ -3,10 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:formix/formix.dart';
 
 // Test-specific providers for easier testing
-final testControllerProvider =
-    StateNotifierProvider.autoDispose<FormixController, FormixData>((ref) {
-      return FormixController(initialValue: {});
-    });
+final testControllerProvider = StateNotifierProvider.autoDispose<FormixController, FormixData>((ref) {
+  return FormixController(initialValue: {});
+});
 
 void main() {
   group('FormixTextFormField', () {
@@ -71,9 +70,7 @@ void main() {
                   FormixFieldConfig<String>(
                     id: emailField,
                     initialValue: '',
-                    validator: (value) => (value?.contains('@') ?? false)
-                        ? null
-                        : 'Invalid email',
+                    validator: (value) => (value?.contains('@') ?? false) ? null : 'Invalid email',
                   ),
                 ],
                 child: const FormixTextFormField(
@@ -257,8 +254,7 @@ void main() {
                   FormixFieldConfig<bool>(
                     id: agreeField,
                     initialValue: false,
-                    validator: (value) =>
-                        value == true ? null : 'You must agree',
+                    validator: (value) => value == true ? null : 'You must agree',
                     validationMode: FormixAutovalidateMode.always,
                   ),
                 ],

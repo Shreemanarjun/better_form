@@ -83,10 +83,9 @@ void main() {
                       builder: (context) {
                         return ElevatedButton(
                           onPressed: () {
-                            final state = tester
-                                .state<FormixAsyncFieldState<String>>(
-                                  find.byType(FormixAsyncField<String>),
-                                );
+                            final state = tester.state<FormixAsyncFieldState<String>>(
+                              find.byType(FormixAsyncField<String>),
+                            );
                             state.refresh();
                           },
                           child: const Text('Retry'),

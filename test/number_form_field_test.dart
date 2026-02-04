@@ -291,8 +291,7 @@ void main() {
                 fields: [
                   FormixFieldConfig(
                     id: numField,
-                    validator: (value) =>
-                        (value ?? 0) < 10 ? 'Must be at least 10' : null,
+                    validator: (value) => (value ?? 0) < 10 ? 'Must be at least 10' : null,
                   ),
                 ],
                 child: FormixNumberFormField(

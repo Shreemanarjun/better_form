@@ -22,8 +22,7 @@ void main() {
                     FormixAsyncField<String>(
                       fieldId: fieldId,
                       future: completer.future,
-                      builder: (context, state) =>
-                          Text(state.value ?? 'No Value'),
+                      builder: (context, state) => Text(state.value ?? 'No Value'),
                       loadingBuilder: (context) => const Text('Loading...'),
                     ),
                     FormixBuilder(
@@ -156,8 +155,7 @@ void main() {
                     builder: (context, future, _) => FormixAsyncField<String>(
                       fieldId: fieldId,
                       future: future,
-                      builder: (context, state) =>
-                          Text(state.value ?? 'No Value'),
+                      builder: (context, state) => Text(state.value ?? 'No Value'),
                       loadingBuilder: (context) => const Text('Loading'),
                     ),
                   ),
@@ -215,10 +213,9 @@ void main() {
                         builder: (context, scope) {
                           return ElevatedButton(
                             onPressed: () {
-                              final state = tester
-                                  .state<FormixAsyncFieldState<String>>(
-                                    find.byType(FormixAsyncField<String>),
-                                  );
+                              final state = tester.state<FormixAsyncFieldState<String>>(
+                                find.byType(FormixAsyncField<String>),
+                              );
                               state.refresh();
                             },
                             child: const Text('Retry'),

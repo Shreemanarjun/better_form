@@ -27,8 +27,7 @@ void main() {
         FormixField<String>(
           id: const FormixFieldID<String>('email'),
           initialValue: 'john@example.com',
-          validator: (value) =>
-              (value?.contains('@') ?? false) ? null : 'Invalid email',
+          validator: (value) => (value?.contains('@') ?? false) ? null : 'Invalid email',
         ),
       );
 

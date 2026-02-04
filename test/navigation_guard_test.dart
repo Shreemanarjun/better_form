@@ -121,8 +121,7 @@ void main() {
                                 child: FormixTextFormField(fieldId: nameField),
                               ),
                               ElevatedButton(
-                                onPressed: () =>
-                                    Navigator.of(context).maybePop(),
+                                onPressed: () => Navigator.of(context).maybePop(),
                                 child: const Text('Back'),
                               ),
                             ],
@@ -165,8 +164,7 @@ void main() {
                   MaterialPageRoute(
                     builder: (context) => Formix(
                       child: FormixNavigationGuard(
-                        showDirtyDialog: (context) async =>
-                            false, // Don't discard
+                        showDirtyDialog: (context) async => false, // Don't discard
                         child: Scaffold(
                           body: Column(
                             children: [
@@ -175,8 +173,7 @@ void main() {
                                 child: FormixTextFormField(fieldId: nameField),
                               ),
                               ElevatedButton(
-                                onPressed: () =>
-                                    Navigator.of(context).maybePop(),
+                                onPressed: () => Navigator.of(context).maybePop(),
                                 child: const Text('Back'),
                               ),
                             ],

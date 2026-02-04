@@ -81,8 +81,7 @@ class TestNumberFormFieldWidget extends FormixNumberFormFieldWidget {
   });
 
   @override
-  TestNumberFormFieldWidgetState createState() =>
-      TestNumberFormFieldWidgetState();
+  TestNumberFormFieldWidgetState createState() => TestNumberFormFieldWidgetState();
 }
 
 class TestNumberFormFieldWidgetState extends FormixNumberFormFieldWidgetState {
@@ -539,8 +538,7 @@ void main() {
                 ],
                 child: FormixRawFormField<String>(
                   fieldId: testField,
-                  errorBuilder: (context, error) =>
-                      Text('Custom Error: $error'),
+                  errorBuilder: (context, error) => Text('Custom Error: $error'),
                   builder: (context, snapshot) {
                     if (snapshot.shouldShowError) {
                       return snapshot.errorBuilder!(

@@ -59,8 +59,7 @@ class FormixBatch {
   /// batch.setValue(nameFieldId).to('John'); // Correct
   /// batch.setValue(nameFieldId).to(123);    // Lint Error!
   /// ```
-  FormixBatchUpdate<T> setValue<T>(FormixFieldID<T> fieldId) =>
-      FormixBatchUpdate._(this, fieldId.key);
+  FormixBatchUpdate<T> setValue<T>(FormixFieldID<T> fieldId) => FormixBatchUpdate._(this, fieldId.key);
 
   /// Adds an update for a specific field using the field definition.
   void setField<T>(FormixField<T> field, T value) {
@@ -68,8 +67,7 @@ class FormixBatch {
   }
 
   /// Adds an update for a specific field using the field definition with lint enforcement.
-  FormixBatchUpdate<T> forField<T>(FormixField<T> field) =>
-      FormixBatchUpdate._(this, field.id.key);
+  FormixBatchUpdate<T> forField<T>(FormixField<T> field) => FormixBatchUpdate._(this, field.id.key);
 
   /// Adds all updates from a raw map.
   void addAll(Map<String, dynamic> rawUpdates) {

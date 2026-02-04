@@ -53,12 +53,10 @@ class FormixFieldAsyncTransformer<T, S> extends ConsumerStatefulWidget {
   final bool retransformOnSubmit;
 
   @override
-  ConsumerState<FormixFieldAsyncTransformer<T, S>> createState() =>
-      _FormixFieldAsyncTransformerState<T, S>();
+  ConsumerState<FormixFieldAsyncTransformer<T, S>> createState() => _FormixFieldAsyncTransformerState<T, S>();
 }
 
-class _FormixFieldAsyncTransformerState<T, S>
-    extends ConsumerState<FormixFieldAsyncTransformer<T, S>> {
+class _FormixFieldAsyncTransformerState<T, S> extends ConsumerState<FormixFieldAsyncTransformer<T, S>> {
   FormixController? _controller;
   late VoidCallback _listener;
   final _inputController = StreamController<T?>.broadcast(sync: true);

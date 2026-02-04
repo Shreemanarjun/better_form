@@ -281,8 +281,7 @@ void main() {
                                     children: [
                                       const FormixTextFormField(fieldId: nameField),
                                       ElevatedButton(
-                                        onPressed: () =>
-                                            Navigator.of(context).maybePop(),
+                                        onPressed: () => Navigator.of(context).maybePop(),
                                         child: const Text('Back'),
                                       ),
                                     ],
@@ -343,8 +342,7 @@ void main() {
                                     children: [
                                       const FormixTextFormField(fieldId: nameField),
                                       ElevatedButton(
-                                        onPressed: () =>
-                                            Navigator.of(context).maybePop(),
+                                        onPressed: () => Navigator.of(context).maybePop(),
                                         child: const Text('Back'),
                                       ),
                                     ],
@@ -630,8 +628,7 @@ void main() {
                 child: FormixArray<String>(
                   id: arrayId,
                   scrollable: true,
-                  itemBuilder: (context, index, id, scope) =>
-                      Text('Item $index'),
+                  itemBuilder: (context, index, id, scope) => Text('Item $index'),
                 ),
               ),
             ),

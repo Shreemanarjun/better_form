@@ -69,8 +69,7 @@ void main() {
                       title: Text('Item $index'),
                       trailing: IconButton(
                         icon: const Icon(Icons.delete),
-                        onPressed: () =>
-                            scope.removeArrayItemAt(arrayId, index),
+                        onPressed: () => scope.removeArrayItemAt(arrayId, index),
                       ),
                     );
                   },

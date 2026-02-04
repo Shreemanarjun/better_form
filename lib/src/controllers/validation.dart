@@ -32,13 +32,8 @@ class ValidationResult {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is ValidationResult &&
-          runtimeType == other.runtimeType &&
-          isValid == other.isValid &&
-          errorMessage == other.errorMessage &&
-          isValidating == other.isValidating;
+      other is ValidationResult && runtimeType == other.runtimeType && isValid == other.isValid && errorMessage == other.errorMessage && isValidating == other.isValidating;
 
   @override
-  int get hashCode =>
-      isValid.hashCode ^ errorMessage.hashCode ^ isValidating.hashCode;
+  int get hashCode => isValid.hashCode ^ errorMessage.hashCode ^ isValidating.hashCode;
 }

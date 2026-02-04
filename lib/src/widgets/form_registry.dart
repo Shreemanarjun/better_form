@@ -47,8 +47,7 @@ class FormixFieldRegistry extends ConsumerStatefulWidget {
   final bool preserveStateOnDispose;
 
   @override
-  ConsumerState<FormixFieldRegistry> createState() =>
-      _FormixFieldRegistryState();
+  ConsumerState<FormixFieldRegistry> createState() => _FormixFieldRegistryState();
 }
 
 class _FormixFieldRegistryState extends ConsumerState<FormixFieldRegistry> {
@@ -99,10 +98,7 @@ class _FormixFieldRegistryState extends ConsumerState<FormixFieldRegistry> {
   void _registerFields() {
     if (_controller == null || !mounted) return;
 
-    final fieldsToRegister = widget.fields
-        .where((f) => !_controller!.isFieldRegistered(f.id))
-        .map((f) => f.toField())
-        .toList();
+    final fieldsToRegister = widget.fields.where((f) => !_controller!.isFieldRegistered(f.id)).map((f) => f.toField()).toList();
 
     if (fieldsToRegister.isNotEmpty) {
       _controller!.registerFields(fieldsToRegister);

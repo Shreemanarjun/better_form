@@ -43,16 +43,12 @@ void main() {
                               FormixFieldConfig<String>(
                                 id: nameId,
                                 initialValue: '',
-                                validator: (v) => (v?.isEmpty ?? true)
-                                    ? 'Name required'
-                                    : null,
+                                validator: (v) => (v?.isEmpty ?? true) ? 'Name required' : null,
                               ),
                               FormixFieldConfig<String>(
                                 id: phoneId,
                                 initialValue: '',
-                                validator: (v) => (v?.isEmpty ?? true)
-                                    ? 'Phone required'
-                                    : null,
+                                validator: (v) => (v?.isEmpty ?? true) ? 'Phone required' : null,
                               ),
                             ],
                             child: Column(
@@ -211,15 +207,12 @@ void main() {
                       children: [
                         if (step == 1)
                           FormixSection(
-                            keepAlive:
-                                true, // IMPORTANT: Keep state when switching away
+                            keepAlive: true, // IMPORTANT: Keep state when switching away
                             fields: [
                               FormixFieldConfig<String>(
                                 id: nameField,
                                 initialValue: '',
-                                validator: (v) => (v?.isEmpty ?? true)
-                                    ? 'Name required'
-                                    : null,
+                                validator: (v) => (v?.isEmpty ?? true) ? 'Name required' : null,
                               ),
                             ],
                             child: const FormixTextFormField(
@@ -234,9 +227,7 @@ void main() {
                               FormixFieldConfig<String>(
                                 id: cityField,
                                 initialValue: '',
-                                validator: (v) => (v?.isEmpty ?? true)
-                                    ? 'City required'
-                                    : null,
+                                validator: (v) => (v?.isEmpty ?? true) ? 'City required' : null,
                               ),
                             ],
                             child: const FormixTextFormField(
@@ -248,13 +239,11 @@ void main() {
                           children: [
                             Text('Current Step: $step'),
                             ElevatedButton(
-                              onPressed: () =>
-                                  scope.controller.setValue(stepField, 1),
+                              onPressed: () => scope.controller.setValue(stepField, 1),
                               child: const Text('Go Step 1'),
                             ),
                             ElevatedButton(
-                              onPressed: () =>
-                                  scope.controller.setValue(stepField, 2),
+                              onPressed: () => scope.controller.setValue(stepField, 2),
                               child: const Text('Go Step 2'),
                             ),
                             ElevatedButton(

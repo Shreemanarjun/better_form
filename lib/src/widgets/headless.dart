@@ -80,8 +80,7 @@ class FormixRawFormField<T> extends FormixFieldWidget<T> {
     super.restorationId,
   });
 
-  final Widget Function(BuildContext context, FormixFieldStateSnapshot<T> state)
-  builder;
+  final Widget Function(BuildContext context, FormixFieldStateSnapshot<T> state) builder;
 
   @override
   FormixRawFormFieldState<T> createState() => FormixRawFormFieldState<T>();
@@ -183,15 +182,12 @@ class FormixRawTextField<T> extends FormixFieldWidget<T> {
   FormixRawTextFieldState<T> createState() => FormixRawTextFieldState<T>();
 }
 
-class FormixRawTextFieldState<T> extends FormixFieldWidgetState<T>
-    with FormixFieldTextMixin<T> {
+class FormixRawTextFieldState<T> extends FormixFieldWidgetState<T> with FormixFieldTextMixin<T> {
   @override
-  String valueToString(T? value) =>
-      (widget as FormixRawTextField<T>).valueToString(value);
+  String valueToString(T? value) => (widget as FormixRawTextField<T>).valueToString(value);
 
   @override
-  T? stringToValue(String text) =>
-      (widget as FormixRawTextField<T>).stringToValue(text);
+  T? stringToValue(String text) => (widget as FormixRawTextField<T>).stringToValue(text);
 
   @override
   void onFieldChanged(T? value) {

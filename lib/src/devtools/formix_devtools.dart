@@ -50,21 +50,15 @@ class FormixDevToolsService {
               final String base = serverUri.toString();
 
               // Construct the WebSocket URI (ws://.../token/ws)
-              final String wsScheme = serverUri.scheme == 'https'
-                  ? 'wss'
-                  : 'ws';
+              final String wsScheme = serverUri.scheme == 'https' ? 'wss' : 'ws';
               final String wsBase = base.replaceFirst(
                 serverUri.scheme,
                 wsScheme,
               );
-              final String wsUri = wsBase.endsWith('/')
-                  ? '${wsBase}ws'
-                  : '$wsBase/ws';
+              final String wsUri = wsBase.endsWith('/') ? '${wsBase}ws' : '$wsBase/ws';
 
               // Construct the DevTools Base (http://.../token/devtools/)
-              final String devToolsBase = base.endsWith('/')
-                  ? '${base}devtools/'
-                  : '$base/devtools/';
+              final String devToolsBase = base.endsWith('/') ? '${base}devtools/' : '$base/devtools/';
 
               // Build the final deep link to the formix_ext route
               final String fullUrl = "${devToolsBase}formix_ext?uri=$wsUri";
@@ -137,8 +131,7 @@ class FormixDevToolsService {
               'isSubmitting': state.isSubmitting,
               'fieldCount': state.values.length,
               'validationDurations': {
-                for (final entry in controller.validationDurations.entries)
-                  entry.key: entry.value.inMicroseconds,
+                for (final entry in controller.validationDurations.entries) entry.key: entry.value.inMicroseconds,
               },
             },
             toEncodable: (nonEncodable) {

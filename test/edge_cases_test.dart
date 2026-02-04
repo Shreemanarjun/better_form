@@ -54,8 +54,7 @@ void main() {
           FormixFieldConfig<String>(
             id: fieldA,
             initialValue: 'test',
-            debounceDuration:
-                Duration.zero, // Disable debounce to start immediately
+            debounceDuration: Duration.zero, // Disable debounce to start immediately
             asyncValidator: (val) async {
               return await completer.future;
             },

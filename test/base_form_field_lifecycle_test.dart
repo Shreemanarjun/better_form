@@ -10,8 +10,7 @@ class TestTextField extends FormixFieldWidget<String> {
   TestTextFieldState createState() => TestTextFieldState();
 }
 
-class TestTextFieldState extends FormixFieldWidgetState<String>
-    with FormixFieldTextMixin<String> {
+class TestTextFieldState extends FormixFieldWidgetState<String> with FormixFieldTextMixin<String> {
   @override
   String? stringToValue(String text) => text;
 

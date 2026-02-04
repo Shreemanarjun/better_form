@@ -181,8 +181,7 @@ void main() {
                           key: const Key('city_dropdown'),
                           items: (state.asyncState.value ?? [])
                               .map(
-                                (c) =>
-                                    DropdownMenuItem(value: c, child: Text(c)),
+                                (c) => DropdownMenuItem(value: c, child: Text(c)),
                               )
                               .toList(),
                         );
@@ -361,9 +360,7 @@ void main() {
                     builder: (context, state) {
                       final cities = state.asyncState.value ?? [];
                       return Column(
-                        children: cities
-                            .map((c) => Text('Option: $c'))
-                            .toList(),
+                        children: cities.map((c) => Text('Option: $c')).toList(),
                       );
                     },
                   ),

@@ -146,8 +146,7 @@ void main() {
 
       final widget = FormixFieldDerivation(
         dependencies: const [firstNameField, lastNameField],
-        derive: (values) =>
-            '${values[firstNameField]} ${values[lastNameField]}',
+        derive: (values) => '${values[firstNameField]} ${values[lastNameField]}',
         targetField: fullNameField,
       );
 
@@ -195,8 +194,7 @@ void main() {
 
           final now = DateTime.now();
           int age = now.year - dob.year;
-          if (now.month < dob.month ||
-              (now.month == dob.month && now.day < dob.day)) {
+          if (now.month < dob.month || (now.month == dob.month && now.day < dob.day)) {
             age--;
           }
           return age;
@@ -360,14 +358,12 @@ void main() {
       final configs = [
         FieldDerivationConfig(
           dependencies: [firstNameField, lastNameField],
-          derive: (values) =>
-              '${values[firstNameField]} ${values[lastNameField]}',
+          derive: (values) => '${values[firstNameField]} ${values[lastNameField]}',
           targetField: fullNameField,
         ),
         FieldDerivationConfig(
           dependencies: [firstNameField, emailField],
-          derive: (values) =>
-              '${values[firstNameField]} <${values[emailField]}>',
+          derive: (values) => '${values[firstNameField]} <${values[emailField]}>',
           targetField: displayNameField,
         ),
       ];

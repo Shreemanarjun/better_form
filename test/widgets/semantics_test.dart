@@ -51,9 +51,7 @@ void main() {
                     return TextField(
                       focusNode: state.focusNode,
                       decoration: InputDecoration(
-                        errorText: state.shouldShowError
-                            ? state.validation.errorMessage
-                            : null,
+                        errorText: state.shouldShowError ? state.validation.errorMessage : null,
                       ),
                     );
                   },

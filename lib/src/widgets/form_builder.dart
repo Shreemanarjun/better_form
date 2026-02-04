@@ -38,34 +38,27 @@ class FormixScope {
   }
 
   /// Watch a specific field's validation state.
-  ValidationResult watchValidation<T>(FormixFieldID<T> id) =>
-      ref.watch(fieldValidationProvider(id));
+  ValidationResult watchValidation<T>(FormixFieldID<T> id) => ref.watch(fieldValidationProvider(id));
 
   /// Watch only the error message of a field. Returns null if valid.
   ///
   /// More efficient than [watchValidation] if you only need the message.
-  String? watchError<T>(FormixFieldID<T> id) =>
-      ref.watch(fieldErrorProvider(id));
+  String? watchError<T>(FormixFieldID<T> id) => ref.watch(fieldErrorProvider(id));
 
   /// Watch if a field is currently being validated (async).
-  bool watchIsValidating<T>(FormixFieldID<T> id) =>
-      ref.watch(fieldValidatingProvider(id));
+  bool watchIsValidating<T>(FormixFieldID<T> id) => ref.watch(fieldValidatingProvider(id));
 
   /// Watch if a specific field is valid.
-  bool watchFieldIsValid<T>(FormixFieldID<T> id) =>
-      ref.watch(fieldIsValidProvider(id));
+  bool watchFieldIsValid<T>(FormixFieldID<T> id) => ref.watch(fieldIsValidProvider(id));
 
   /// Watch if a specific field is dirty (its value differs from initial).
-  bool watchIsDirty<T>(FormixFieldID<T> id) =>
-      ref.watch(fieldDirtyProvider(id));
+  bool watchIsDirty<T>(FormixFieldID<T> id) => ref.watch(fieldDirtyProvider(id));
 
   /// Watch if a specific field has been touched (focused or modified).
-  bool watchIsTouched<T>(FormixFieldID<T> id) =>
-      ref.watch(fieldTouchedProvider(id));
+  bool watchIsTouched<T>(FormixFieldID<T> id) => ref.watch(fieldTouchedProvider(id));
 
   /// Watch if a specific field is pending (optimistic update or async).
-  bool watchIsPending<T>(FormixFieldID<T> id) =>
-      ref.watch(fieldPendingProvider(id));
+  bool watchIsPending<T>(FormixFieldID<T> id) => ref.watch(fieldPendingProvider(id));
 
   /// Watch the overall validity of the form.
   bool get watchIsValid => ref.watch(formValidProvider);
@@ -84,12 +77,10 @@ class FormixScope {
   FormixData get watchState => ref.watch(Formix.of(context)!);
 
   /// Watch if a specific group of fields is valid.
-  bool watchGroupIsValid(String prefix) =>
-      ref.watch(groupValidProvider(prefix));
+  bool watchGroupIsValid(String prefix) => ref.watch(groupValidProvider(prefix));
 
   /// Watch if a specific group of fields contains any modifications.
-  bool watchGroupIsDirty(String prefix) =>
-      ref.watch(groupDirtyProvider(prefix));
+  bool watchGroupIsDirty(String prefix) => ref.watch(groupDirtyProvider(prefix));
 
   // --- Action Methods (Non-reactive) ---
 
@@ -97,23 +88,19 @@ class FormixScope {
   Map<String, dynamic> toNestedMap() => controller.currentState.toNestedMap();
 
   /// Checks if a specific group of fields is valid (non-reactive).
-  bool isGroupValid(String prefix) =>
-      controller.currentState.isGroupValid(prefix);
+  bool isGroupValid(String prefix) => controller.currentState.isGroupValid(prefix);
 
   /// Checks if a specific group of fields is dirty (non-reactive).
-  bool isGroupDirty(String prefix) =>
-      controller.currentState.isGroupDirty(prefix);
+  bool isGroupDirty(String prefix) => controller.currentState.isGroupDirty(prefix);
 
   /// Update a field's value and trigger validation.
-  void setValue<T>(FormixFieldID<T> id, T value) =>
-      controller.setValue(id, value);
+  void setValue<T>(FormixFieldID<T> id, T value) => controller.setValue(id, value);
 
   /// Mark a field as touched (usually called when a field loses focus).
   void markAsTouched<T>(FormixFieldID<T> id) => controller.markAsTouched(id);
 
   /// Checks if a field is pending (non-reactive).
-  bool isFieldPending<T>(FormixFieldID<T> id) =>
-      controller.currentState.isFieldPending(id);
+  bool isFieldPending<T>(FormixFieldID<T> id) => controller.currentState.isFieldPending(id);
 
   /// Request focus for a specific field.
   void focusField<T>(FormixFieldID<T> id) => controller.focusField(id);
@@ -151,20 +138,16 @@ class FormixScope {
   List<T> watchArray<T>(FormixArrayID<T> id) => watchValue(id) ?? <T>[];
 
   /// Add an item to a form array.
-  void addArrayItem<T>(FormixArrayID<T> id, T item) =>
-      controller.addArrayItem(id, item);
+  void addArrayItem<T>(FormixArrayID<T> id, T item) => controller.addArrayItem(id, item);
 
   /// Remove an item at index from a form array.
-  void removeArrayItemAt<T>(FormixArrayID<T> id, int index) =>
-      controller.removeArrayItemAt(id, index);
+  void removeArrayItemAt<T>(FormixArrayID<T> id, int index) => controller.removeArrayItemAt(id, index);
 
   /// Replace an item at index in a form array.
-  void replaceArrayItem<T>(FormixArrayID<T> id, int index, T item) =>
-      controller.replaceArrayItem(id, index, item);
+  void replaceArrayItem<T>(FormixArrayID<T> id, int index, T item) => controller.replaceArrayItem(id, index, item);
 
   /// Move an item in a form array.
-  void moveArrayItem<T>(FormixArrayID<T> id, int oldIndex, int newIndex) =>
-      controller.moveArrayItem(id, oldIndex, newIndex);
+  void moveArrayItem<T>(FormixArrayID<T> id, int oldIndex, int newIndex) => controller.moveArrayItem(id, oldIndex, newIndex);
 
   /// Clear a form array.
   void clearArray<T>(FormixArrayID<T> id) => controller.clearArray(id);

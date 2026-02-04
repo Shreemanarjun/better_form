@@ -130,16 +130,14 @@ class StringValidator extends ValidatorChain<String, StringValidator> {
   }
 }
 
-class NumberValidator<T extends num>
-    extends ValidatorChain<T, NumberValidator<T>> {
+class NumberValidator<T extends num> extends ValidatorChain<T, NumberValidator<T>> {
   NumberValidator(super.syncValidators);
 
   NumberValidator<T> min(T min, [String? message]) {
     return _add((val) {
       if (val == null) return null;
       if (val < min) {
-        return message ??
-            FormixValidationKeys.withParam(FormixValidationKeys.min, min);
+        return message ?? FormixValidationKeys.withParam(FormixValidationKeys.min, min);
       }
       return null;
     });
@@ -149,8 +147,7 @@ class NumberValidator<T extends num>
     return _add((val) {
       if (val == null) return null;
       if (val > max) {
-        return message ??
-            FormixValidationKeys.withParam(FormixValidationKeys.max, max);
+        return message ?? FormixValidationKeys.withParam(FormixValidationKeys.max, max);
       }
       return null;
     });

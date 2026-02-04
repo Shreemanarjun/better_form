@@ -23,12 +23,10 @@ class FormixFieldPerformanceMonitor<T> extends StatefulWidget {
   final FormixController? controller;
 
   @override
-  State<FormixFieldPerformanceMonitor<T>> createState() =>
-      _FormixFieldPerformanceMonitorState<T>();
+  State<FormixFieldPerformanceMonitor<T>> createState() => _FormixFieldPerformanceMonitorState<T>();
 }
 
-class _FormixFieldPerformanceMonitorState<T>
-    extends State<FormixFieldPerformanceMonitor<T>> {
+class _FormixFieldPerformanceMonitorState<T> extends State<FormixFieldPerformanceMonitor<T>> {
   int _rebuildCount = 0;
 
   @override

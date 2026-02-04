@@ -18,8 +18,7 @@ class FormixFieldID<T> {
 
   /// Returns a new identifier with the given [prefix] prepended to the key.
   /// Useful for namespacing fields within groups.
-  FormixFieldID<T> withPrefix(String prefix) =>
-      FormixFieldID<T>('$prefix.$key');
+  FormixFieldID<T> withPrefix(String prefix) => FormixFieldID<T>('$prefix.$key');
 
   /// Returns the parent path if this is a nested field, null otherwise.
   String? get parentKey {
@@ -34,8 +33,7 @@ class FormixFieldID<T> {
   }
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) || other is FormixFieldID && key == other.key;
+  bool operator ==(Object other) => identical(this, other) || other is FormixFieldID && key == other.key;
 
   @override
   int get hashCode => key.hashCode;
@@ -55,8 +53,7 @@ class FormixArrayID<T> extends FormixFieldID<List<T>> {
   FormixFieldID<T> item(int index) => FormixFieldID<T>('$key[$index]');
 
   @override
-  FormixArrayID<T> withPrefix(String prefix) =>
-      FormixArrayID<T>('$prefix.$key');
+  FormixArrayID<T> withPrefix(String prefix) => FormixArrayID<T>('$prefix.$key');
 
   @override
   String toString() => 'FormixArrayID<$T>($key)';

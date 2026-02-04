@@ -68,12 +68,10 @@ class DefaultFormixMessages extends FormixMessages {
   String invalidFormat() => 'Invalid format';
 
   @override
-  String minLength(String label, int minLength) =>
-      '$label must be at least $minLength characters';
+  String minLength(String label, int minLength) => '$label must be at least $minLength characters';
 
   @override
-  String maxLength(String label, int maxLength) =>
-      '$label must be at most $maxLength characters';
+  String maxLength(String label, int maxLength) => '$label must be at most $maxLength characters';
 
   @override
   String minValue(String label, num min) => '$label must be at least $min';
@@ -82,12 +80,10 @@ class DefaultFormixMessages extends FormixMessages {
   String maxValue(String label, num max) => '$label must be at most $max';
 
   @override
-  String minDate(String label, DateTime minDate) =>
-      '$label must be after ${minDate.toString().split(' ')[0]}';
+  String minDate(String label, DateTime minDate) => '$label must be after ${minDate.toString().split(' ')[0]}';
 
   @override
-  String maxDate(String label, DateTime maxDate) =>
-      '$label must be before ${maxDate.toString().split(' ')[0]}';
+  String maxDate(String label, DateTime maxDate) => '$label must be before ${maxDate.toString().split(' ')[0]}';
 
   @override
   String invalidSelection(String label) => 'Invalid selection for $label';

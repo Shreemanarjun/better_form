@@ -33,8 +33,7 @@ class FormixDropdownFormField<T> extends FormixFieldWidget<T> {
   final Widget? disabledHint;
 
   @override
-  FormixDropdownFormFieldState<T> createState() =>
-      FormixDropdownFormFieldState<T>();
+  FormixDropdownFormFieldState<T> createState() => FormixDropdownFormFieldState<T>();
 }
 
 class FormixDropdownFormFieldState<T> extends FormixFieldWidgetState<T> {
@@ -74,28 +73,20 @@ class FormixDropdownFormFieldState<T> extends FormixFieldWidgetState<T> {
         final validationMode = controller.getValidationMode(widget.fieldId);
         final showImmediate = validationMode == FormixAutovalidateMode.always;
 
-        final shouldShowError =
-            (isTouched || isSubmitting || showImmediate) && !validation.isValid;
+        final shouldShowError = (isTouched || isSubmitting || showImmediate) && !validation.isValid;
 
         return MergeSemantics(
           child: Semantics(
-            validationResult: validation.isValid
-                ? SemanticsValidationResult.valid
-                : SemanticsValidationResult.invalid,
+            validationResult: validation.isValid ? SemanticsValidationResult.valid : SemanticsValidationResult.invalid,
             child: InputDecorator(
-              decoration: (dropdownWidget.decoration ?? const InputDecoration())
-                  .copyWith(
-                    errorText: shouldShowError ? validation.errorMessage : null,
-                    suffixIcon: suffixIcon,
-                    helperText: validation.isValidating
-                        ? 'Validating...'
-                        : null,
-                  ),
+              decoration: (dropdownWidget.decoration ?? const InputDecoration()).copyWith(
+                errorText: shouldShowError ? validation.errorMessage : null,
+                suffixIcon: suffixIcon,
+                helperText: validation.isValidating ? 'Validating...' : null,
+              ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<T>(
-                  value: dropdownWidget.items.any((item) => item.value == value)
-                      ? value
-                      : null,
+                  value: dropdownWidget.items.any((item) => item.value == value) ? value : null,
                   items: dropdownWidget.items,
                   focusNode: focusNode,
                   hint: dropdownWidget.hint,

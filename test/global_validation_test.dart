@@ -140,9 +140,7 @@ void main() {
       await Future.delayed(const Duration(milliseconds: 50));
       expect(callCount, 0); // Should not have called async validator
 
-      controller.autovalidateMode ==
-          FormixAutovalidateMode
-              .always; // Note: autovalidateMode is final in implementation
+      controller.autovalidateMode == FormixAutovalidateMode.always; // Note: autovalidateMode is final in implementation
     });
 
     test('late registered fields inherit global mode', () {
@@ -209,8 +207,7 @@ void main() {
                   ),
                 ],
                 child: FormixBuilder(
-                  builder: (context, scope) =>
-                      Text(scope.watchError(fieldId) ?? 'Valid'),
+                  builder: (context, scope) => Text(scope.watchError(fieldId) ?? 'Valid'),
                 ),
               ),
             ),

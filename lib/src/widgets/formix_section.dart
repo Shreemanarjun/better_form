@@ -74,10 +74,7 @@ class _FormixSectionState extends ConsumerState<FormixSection> {
     if (_controller == null) return;
     final controller = _controller!;
 
-    final fieldsToRegister = widget.fields
-        .where((f) => !controller.isFieldRegistered(f.id))
-        .map((f) => f.toField())
-        .toList();
+    final fieldsToRegister = widget.fields.where((f) => !controller.isFieldRegistered(f.id)).map((f) => f.toField()).toList();
 
     if (fieldsToRegister.isNotEmpty) {
       controller.registerFields(fieldsToRegister);

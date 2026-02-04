@@ -11,12 +11,10 @@ class SpanishFormixMessages extends FormixMessages {
   String invalidFormat() => 'Formato inválido';
 
   @override
-  String minLength(String label, int minLength) =>
-      '$label debe tener al menos $minLength caracteres';
+  String minLength(String label, int minLength) => '$label debe tener al menos $minLength caracteres';
 
   @override
-  String maxLength(String label, int maxLength) =>
-      '$label debe tener como máximo $maxLength caracteres';
+  String maxLength(String label, int maxLength) => '$label debe tener como máximo $maxLength caracteres';
 
   @override
   String minValue(String label, num min) => '$label debe ser al menos $min';
@@ -25,12 +23,10 @@ class SpanishFormixMessages extends FormixMessages {
   String maxValue(String label, num max) => '$label debe ser como máximo $max';
 
   @override
-  String minDate(String label, DateTime minDate) =>
-      '$label debe ser posterior a ${_formatDate(minDate)}';
+  String minDate(String label, DateTime minDate) => '$label debe ser posterior a ${_formatDate(minDate)}';
 
   @override
-  String maxDate(String label, DateTime maxDate) =>
-      '$label debe ser anterior a ${_formatDate(maxDate)}';
+  String maxDate(String label, DateTime maxDate) => '$label debe ser anterior a ${_formatDate(maxDate)}';
 
   @override
   String invalidSelection(String label) => 'Selección inválida para $label';

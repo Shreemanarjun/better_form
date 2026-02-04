@@ -108,8 +108,7 @@ void main() {
       expect(
         controller.currentState.validations[d.key]?.errorMessage,
         'A too high',
-        reason:
-            'D should re-validate when A changes, propagating through both paths',
+        reason: 'D should re-validate when A changes, propagating through both paths',
       );
     });
 

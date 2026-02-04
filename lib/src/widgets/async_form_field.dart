@@ -85,8 +85,7 @@ class FormixAsyncField<T> extends FormixFieldWidget<T> {
   final Future<T> Function()? onRetry;
 
   /// Builder function that is called when data is available.
-  final Widget Function(BuildContext context, FormixAsyncFieldState<T> state)
-  builder;
+  final Widget Function(BuildContext context, FormixAsyncFieldState<T> state) builder;
 
   /// Optional builder shown while the data is loading.
   /// Defaults to a [CircularProgressIndicator].
@@ -156,8 +155,7 @@ class FormixAsyncFieldState<T> extends FormixFieldWidgetState<T> {
   }
 
   void _executeFuture() {
-    final widget =
-        this.widget as FormixAsyncField<T>; // Still needed for keepPreviousData
+    final widget = this.widget as FormixAsyncField<T>; // Still needed for keepPreviousData
     if (_currentFuture == null) return;
 
     final version = ++_activeFutureVersion;
@@ -243,9 +241,7 @@ class FormixAsyncFieldState<T> extends FormixFieldWidgetState<T> {
   }
 
   void _syncValue() {
-    if (_asyncState.hasValue &&
-        !_asyncState.isLoading &&
-        !_asyncState.hasError) {
+    if (_asyncState.hasValue && !_asyncState.isLoading && !_asyncState.hasError) {
       final val = _asyncState.value as T;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
@@ -263,11 +259,8 @@ class FormixAsyncFieldState<T> extends FormixFieldWidgetState<T> {
 
     return _asyncState.when(
       data: (_) => widget.builder(context, this),
-      error: (e, _) =>
-          widget.asyncErrorBuilder?.call(context, e) ?? Text('Error: $e'),
-      loading: () =>
-          widget.loadingBuilder?.call(context) ??
-          const Center(child: CircularProgressIndicator()),
+      error: (e, _) => widget.asyncErrorBuilder?.call(context, e) ?? Text('Error: $e'),
+      loading: () => widget.loadingBuilder?.call(context) ?? const Center(child: CircularProgressIndicator()),
     );
   }
 }

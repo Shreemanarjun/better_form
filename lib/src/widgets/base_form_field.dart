@@ -79,8 +79,7 @@ abstract class FormixFieldWidget<T> extends ConsumerStatefulWidget {
 }
 
 /// State class that provides simplified APIs for form field management
-abstract class FormixFieldWidgetState<T>
-    extends ConsumerState<FormixFieldWidget<T>> {
+abstract class FormixFieldWidgetState<T> extends ConsumerState<FormixFieldWidget<T>> {
   FormixController? _controller;
   FormixFieldID<T>? _currentAttachedFieldId;
   T? _currentValue;
@@ -118,9 +117,7 @@ abstract class FormixFieldWidgetState<T>
   /// Wraps the child with accessibility semantics.
   Widget wrapSemantics(Widget child) {
     return Semantics(
-      validationResult: validation.isValid
-          ? SemanticsValidationResult.valid
-          : SemanticsValidationResult.invalid,
+      validationResult: validation.isValid ? SemanticsValidationResult.valid : SemanticsValidationResult.invalid,
       child: child,
     );
   }
@@ -198,8 +195,7 @@ abstract class FormixFieldWidgetState<T>
     _controller!.registerFocusNode(widget.fieldId, _focusNode);
     _controller!.registerContext(widget.fieldId, context);
 
-    _currentValue =
-        _controller!.getValue(widget.fieldId) ?? widget.initialValue;
+    _currentValue = _controller!.getValue(widget.fieldId) ?? widget.initialValue;
     _controller!.addFieldListener(widget.fieldId, _onFieldChanged);
 
     if (_isMounted) {
@@ -218,34 +214,22 @@ abstract class FormixFieldWidgetState<T>
     if (existingField == null ||
         widget.validator != null ||
         widget.asyncValidator != null ||
-        (widget.autovalidateMode != null &&
-            widget.autovalidateMode != existingField.validationMode)) {
+        (widget.autovalidateMode != null && widget.autovalidateMode != existingField.validationMode)) {
       T? initialValue = widget.initialValue;
-      initialValue ??=
-          existingField?.initialValue ??
-          controller.initialValue[widget.fieldId.key] as T?;
+      initialValue ??= existingField?.initialValue ?? controller.initialValue[widget.fieldId.key] as T?;
 
       controller.registerField(
         FormixField<T>(
           id: widget.fieldId,
           initialValue: initialValue,
-          validator:
-              widget.validator ??
-              (existingField?.validator as String? Function(T?)?),
-          asyncValidator:
-              widget.asyncValidator ??
-              (existingField?.asyncValidator as Future<String?> Function(T?)?),
-          validationMode:
-              widget.autovalidateMode ??
-              existingField?.validationMode ??
-              FormixAutovalidateMode.auto,
+          validator: widget.validator ?? (existingField?.validator as String? Function(T?)?),
+          asyncValidator: widget.asyncValidator ?? (existingField?.asyncValidator as Future<String?> Function(T?)?),
+          validationMode: widget.autovalidateMode ?? existingField?.validationMode ?? FormixAutovalidateMode.auto,
           // Preserve other properties from config if they exist
           label: existingField?.label,
           hint: existingField?.hint,
           dependsOn: existingField?.dependsOn ?? const [],
-          crossFieldValidator:
-              existingField?.crossFieldValidator
-                  as String? Function(T?, FormixData)?,
+          crossFieldValidator: existingField?.crossFieldValidator as String? Function(T?, FormixData)?,
           transformer: existingField?.transformer as T Function(dynamic)?,
           inputFormatters: existingField?.inputFormatters,
           textInputAction: existingField?.textInputAction,
@@ -269,8 +253,7 @@ abstract class FormixFieldWidgetState<T>
       }
     }
 
-    if (widget.controller != oldWidget.controller ||
-        widget.fieldId != oldWidget.fieldId) {
+    if (widget.controller != oldWidget.controller || widget.fieldId != oldWidget.fieldId) {
       _setupControllerSubscription();
     }
   }
@@ -404,9 +387,7 @@ mixin FormixFieldTextMixin<T> on FormixFieldWidgetState<T> {
 
   void _syncText() {
     if (_textController == null) return;
-    final newText = _currentValue != null
-        ? valueToString(_currentValue as T)
-        : '';
+    final newText = _currentValue != null ? valueToString(_currentValue as T) : '';
     if (_textController!.text != newText) {
       _isSyncing = true;
       try {
@@ -462,9 +443,7 @@ abstract class FormixTextFormFieldWidget extends FormixFieldWidget<String> {
   FormixTextFormFieldWidgetState createState();
 }
 
-abstract class FormixTextFormFieldWidgetState
-    extends FormixFieldWidgetState<String>
-    with FormixFieldTextMixin<String> {
+abstract class FormixTextFormFieldWidgetState extends FormixFieldWidgetState<String> with FormixFieldTextMixin<String> {
   @override
   String valueToString(String? value) => value ?? '';
 
@@ -488,8 +467,7 @@ abstract class FormixTextFormFieldWidgetState
         final isDirty = this.isDirty;
         final isSubmitting = controller.isSubmitting;
 
-        final shouldShowError =
-            (isTouched || isSubmitting) && !validation.isValid;
+        final shouldShowError = (isTouched || isSubmitting) && !validation.isValid;
 
         Widget? suffixIcon;
         if (validation.isValidating) {
@@ -541,9 +519,7 @@ abstract class FormixNumberFormFieldWidget extends FormixFieldWidget<int> {
   FormixNumberFormFieldWidgetState createState();
 }
 
-abstract class FormixNumberFormFieldWidgetState
-    extends FormixFieldWidgetState<int>
-    with FormixFieldTextMixin<int> {
+abstract class FormixNumberFormFieldWidgetState extends FormixFieldWidgetState<int> with FormixFieldTextMixin<int> {
   @override
   String valueToString(int? value) => value?.toString() ?? '';
 
@@ -560,18 +536,13 @@ abstract class FormixNumberFormFieldWidgetState
         return ValueListenableBuilder<bool>(
           valueListenable: controller.fieldDirtyNotifier(widget.fieldId),
           builder: (context, isDirty, child) {
-            final shouldShowError =
-                validation.isValidating ||
-                (controller.isFieldTouched(widget.fieldId) ||
-                    controller.isSubmitting);
+            final shouldShowError = validation.isValidating || (controller.isFieldTouched(widget.fieldId) || controller.isSubmitting);
 
             return TextFormField(
               controller: textController,
               focusNode: focusNode,
               decoration: widget.decoration.copyWith(
-                errorText: shouldShowError && !validation.isValidating
-                    ? validation.errorMessage
-                    : null,
+                errorText: shouldShowError && !validation.isValidating ? validation.errorMessage : null,
                 helperText: validation.isValidating ? 'Validating...' : null,
                 suffixIcon: validation.isValidating
                     ? const SizedBox(

@@ -58,8 +58,7 @@ class FormixDependentAsyncField<T, D> extends ConsumerWidget {
   final Future<T> Function(D? dependencyValue) future;
 
   /// A builder function that is called when data is available.
-  final Widget Function(BuildContext context, FormixAsyncFieldState<T> state)
-  builder;
+  final Widget Function(BuildContext context, FormixAsyncFieldState<T> state) builder;
 
   /// Whether to keep the previous data while loading the new data.
   final bool keepPreviousData;

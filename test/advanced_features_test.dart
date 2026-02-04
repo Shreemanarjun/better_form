@@ -28,9 +28,7 @@ void main() {
                     FormixDependentField<bool>(
                       fieldId: visibilityField,
                       builder: (context, value) {
-                        return value == true
-                            ? const Text('Visible Content')
-                            : const SizedBox.shrink();
+                        return value == true ? const Text('Visible Content') : const SizedBox.shrink();
                       },
                     ),
                     const FormixCheckboxFormField(

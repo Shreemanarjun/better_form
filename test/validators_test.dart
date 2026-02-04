@@ -4,11 +4,7 @@ import 'package:formix/formix.dart';
 void main() {
   group('Chaining Validator API Tests', () {
     test('StringValidator rules work correctly', () {
-      final validator = FormixValidators.string()
-          .required('Required')
-          .email('Invalid Email')
-          .minLength(5, 'Too short')
-          .build();
+      final validator = FormixValidators.string().required('Required').email('Invalid Email').minLength(5, 'Too short').build();
 
       expect(validator(null), 'Required');
       expect(validator(''), 'Required');
@@ -16,21 +12,13 @@ void main() {
       expect(validator('valid@email.com'), isNull);
 
       // Test length after email
-      final lengthValidator = FormixValidators.string()
-          .email()
-          .minLength(20, 'Too short')
-          .build();
+      final lengthValidator = FormixValidators.string().email().minLength(20, 'Too short').build();
       expect(lengthValidator('test@example.com'), 'Too short');
       expect(lengthValidator('verylongemailaddress@example.com'), isNull);
     });
 
     test('NumberValidator rules work correctly', () {
-      final validator = FormixValidators.number<int>()
-          .required('Required')
-          .min(10, 'Min 10')
-          .max(20, 'Max 20')
-          .positive()
-          .build();
+      final validator = FormixValidators.number<int>().required('Required').min(10, 'Min 10').max(20, 'Max 20').positive().build();
 
       expect(validator(null), 'Required');
       expect(validator(5), 'Min 10');

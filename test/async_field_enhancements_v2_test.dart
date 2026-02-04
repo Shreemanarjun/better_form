@@ -19,8 +19,7 @@ void main() {
                 child: FormixAsyncField<String>(
                   fieldId: fieldId,
                   future: completer.future,
-                  builder: (context, state) =>
-                      Text('Resolved: ${state.asyncState.value}'),
+                  builder: (context, state) => Text('Resolved: ${state.asyncState.value}'),
                   loadingBuilder: (context) => const Text('Loading...'),
                 ),
               ),
@@ -64,8 +63,7 @@ void main() {
                         FormixAsyncField<String>(
                           fieldId: fieldId,
                           future: completer.future,
-                          builder: (context, state) =>
-                              Text('Value: ${state.asyncState.value}'),
+                          builder: (context, state) => Text('Value: ${state.asyncState.value}'),
                         ),
                         ElevatedButton(
                           onPressed: () {
@@ -135,8 +133,7 @@ void main() {
                   fieldId: fieldId,
                   future: fetchData(),
                   onRetry: fetchData, // Needed for re-triggering on reset
-                  builder: (context, state) =>
-                      Text('Value: ${state.asyncState.value}'),
+                  builder: (context, state) => Text('Value: ${state.asyncState.value}'),
                 ),
               ),
             ),
