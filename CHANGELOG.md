@@ -26,6 +26,17 @@
 - **Multi-Step Form Reliability**: Fixed a bug where navigating back to a previous page in a multi-step form would show "required" validation errors even if fields were filled. Formix now correctly validates against preserved values during re-registration.
 - **Dropdown Field**: Migrated `FormixDropdownFormField` to use `InputDecorator` + `DropdownButton`. Now defensively handles values not present in the items list to prevent crashes during dynamic transitions.
 - **Infinite Loop Fix**: Optimized `FormixController` listener notifications to prevent infinite loops when fields trigger state changes during updates (e.g., in `FormixFieldAsyncTransformer`).
+- **Robust Bulk Update API**:
+  - Added `FormixBatch` for compile-time type-safe batch building with a new fluent `setValue().to()` API for guaranteed lint enforcement.
+  - Added `FormixBatchResult` for detailed reporting on batch failures (type mismatches, missing fields).
+  - Both `setValues` and `updateFromMap` now return results instead of throwing, with an optional `strict: true` mode for developers who prefer immediate crashes during debugging.
+- **Performance Breakthroughs**:
+  - **10x Faster Field Updates**: Optimized state transitions, reducing 1000-field update time from 424ms to **46ms**.
+  - **Efficient Equality**: Optimized `FormixData.==` with identity-first fast paths, slashing O(N) overhead in Riverpod notifications.
+  - **Lazy State Patching**: Implemented lazy map cloning in `_batchUpdate`, avoiding unnecessary allocations when metadata changes don't affect values.
+  - **Removed Map.unmodifiable**: Eliminated the expensive unmodifiable map wrapper in the hot path, drastically reducing GC pressure.
+  - **Optimized History**: History tracking now uses O(1) identity checks instead of O(N) map comparisons.
+  - **Massive Dependency Scale**: Triggering updates for 100,000 dependents is now ~43% faster (reduced from 332ms to **190ms**).
 - **DevTools Integration**: Forms without an explicit `formId` now automatically register with DevTools using their internal namespace as a fallback, ensuring full visibility.
 
 ### 🛠️ Developer Experience

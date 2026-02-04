@@ -17,7 +17,7 @@ class MockPersistence implements FormixPersistence {
 void main() {
   group('FormState', () {
     test('constructor creates correct initial state', () {
-      final state = FormixData(
+      final state = FormixData.withCalculatedCounts(
         values: {'field1': 'value1'},
         validations: {'field1': ValidationResult.valid},
         dirtyStates: {'field1': false},
@@ -33,7 +33,7 @@ void main() {
     });
 
     test('copyWith creates new instance with updated values', () {
-      final original = FormixData(
+      final original = FormixData.withCalculatedCounts(
         values: {'field1': 'value1'},
         validations: {'field1': ValidationResult.valid},
         dirtyStates: {'field1': false},
@@ -52,7 +52,7 @@ void main() {
     });
 
     test('isValid returns true when all validations pass', () {
-      final state = FormixData(
+      final state = FormixData.withCalculatedCounts(
         validations: {
           'field1': ValidationResult.valid,
           'field2': ValidationResult.valid,
@@ -63,7 +63,7 @@ void main() {
     });
 
     test('isValid returns false when any validation fails', () {
-      final state = FormixData(
+      final state = FormixData.withCalculatedCounts(
         validations: {
           'field1': ValidationResult.valid,
           'field2': ValidationResult(isValid: false, errorMessage: 'Error'),
@@ -74,25 +74,29 @@ void main() {
     });
 
     test('isDirty returns true when any field is dirty', () {
-      final state = FormixData(dirtyStates: {'field1': false, 'field2': true});
+      final state = FormixData.withCalculatedCounts(
+        dirtyStates: {'field1': false, 'field2': true},
+      );
 
       expect(state.isDirty, true);
     });
 
     test('isDirty returns false when no fields are dirty', () {
-      final state = FormixData(dirtyStates: {'field1': false, 'field2': false});
+      final state = FormixData.withCalculatedCounts(
+        dirtyStates: {'field1': false, 'field2': false},
+      );
 
       expect(state.isDirty, false);
     });
 
     test('getValue returns typed value when type matches', () {
-      final state = FormixData(values: {'field1': 'test'});
+      final state = FormixData.withCalculatedCounts(values: {'field1': 'test'});
 
       expect(state.getValue<String>(FormixFieldID<String>('field1')), 'test');
     });
 
     test('getValue returns null when type does not match', () {
-      final state = FormixData(values: {'field1': 'test'});
+      final state = FormixData.withCalculatedCounts(values: {'field1': 'test'});
 
       expect(state.getValue<int>(FormixFieldID<int>('field1')), null);
     });
@@ -102,7 +106,9 @@ void main() {
         isValid: false,
         errorMessage: 'Error',
       );
-      final state = FormixData(validations: {'field1': validation});
+      final state = FormixData.withCalculatedCounts(
+        validations: {'field1': validation},
+      );
 
       expect(state.getValidation(FormixFieldID<String>('field1')), validation);
     });
@@ -117,14 +123,18 @@ void main() {
     });
 
     test('isFieldDirty returns dirty state for field', () {
-      final state = FormixData(dirtyStates: {'field1': true});
+      final state = FormixData.withCalculatedCounts(
+        dirtyStates: {'field1': true},
+      );
 
       expect(state.isFieldDirty(FormixFieldID<String>('field1')), true);
       expect(state.isFieldDirty(FormixFieldID<String>('field2')), false);
     });
 
     test('isFieldTouched returns touched state for field', () {
-      final state = FormixData(touchedStates: {'field1': true});
+      final state = FormixData.withCalculatedCounts(
+        touchedStates: {'field1': true},
+      );
 
       expect(state.isFieldTouched(FormixFieldID<String>('field1')), true);
       expect(state.isFieldTouched(FormixFieldID<String>('field2')), false);

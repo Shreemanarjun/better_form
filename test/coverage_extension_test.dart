@@ -81,7 +81,7 @@ void main() {
 
   group('FormixData Coverage', () {
     test('isGroupValid and isGroupDirty', () {
-      final state = FormixData(
+      final state = FormixData.withCalculatedCounts(
         values: const {'user.name': 'John', 'user.age': 30, 'other': 'value'},
         validations: {
           'user.name': ValidationResult.valid,
@@ -104,8 +104,8 @@ void main() {
     });
 
     test('toNestedMap with dot notation', () {
-      final state = const FormixData(
-        values: {
+      final state = FormixData.withCalculatedCounts(
+        values: const {
           'user.name': 'John',
           'user.profile.bio': 'Developer',
           'settings.theme': 'dark',
@@ -121,8 +121,8 @@ void main() {
     });
 
     test('getValue type mismatch', () {
-      final state = const FormixData(
-        values: {'age': '30'}, // String value
+      final state = FormixData.withCalculatedCounts(
+        values: const {'age': '30'}, // String value
       );
       final ageId = const FormixFieldID<int>('age');
       expect(state.getValue(ageId), isNull); // Type mismatch returns null

@@ -28,6 +28,15 @@ class FormixData {
   /// Number of times the form has been reset.
   final int resetCount;
 
+  /// The number of validation errors in the form.
+  final int errorCount;
+
+  /// The number of fields that are dirty.
+  final int dirtyCount;
+
+  /// The number of fields that are pending.
+  final int pendingCount;
+
   /// The set of field keys that changed in the last update.
   ///
   /// This is used for delta updates to optimize notification performance.
@@ -43,8 +52,40 @@ class FormixData {
     this.pendingStates = const {},
     this.isSubmitting = false,
     this.resetCount = 0,
+    this.errorCount = 0,
+    this.dirtyCount = 0,
+    this.pendingCount = 0,
     this.changedFields,
   });
+
+  /// Creates a form state and automatically calculates error, dirty and pending counts.
+  /// Useful for testing and manual state creation.
+  factory FormixData.withCalculatedCounts({
+    Map<String, dynamic> values = const {},
+    Map<String, ValidationResult> validations = const {},
+    Map<String, bool> dirtyStates = const {},
+    Map<String, bool> touchedStates = const {},
+    Map<String, bool> pendingStates = const {},
+    bool isSubmitting = false,
+    int resetCount = 0,
+    Set<String>? changedFields,
+  }) {
+    return FormixData(
+      values: values,
+      validations: validations,
+      dirtyStates: dirtyStates,
+      touchedStates: touchedStates,
+      pendingStates: pendingStates,
+      isSubmitting: isSubmitting,
+      resetCount: resetCount,
+      errorCount: validations.values.where((v) => !v.isValid).length,
+      dirtyCount: dirtyStates.values.where((d) => d).length,
+      pendingCount:
+          pendingStates.values.where((p) => p).length +
+          validations.values.where((v) => v.isValidating).length,
+      changedFields: changedFields,
+    );
+  }
 
   /// Creates a copy of this state with some properties replaced.
   FormixData copyWith({
@@ -55,6 +96,9 @@ class FormixData {
     Map<String, bool>? pendingStates,
     bool? isSubmitting,
     int? resetCount,
+    int? errorCount,
+    int? dirtyCount,
+    int? pendingCount,
     Set<String>? changedFields,
     bool clearChangedFields = false,
   }) {
@@ -66,6 +110,9 @@ class FormixData {
       pendingStates: pendingStates ?? this.pendingStates,
       isSubmitting: isSubmitting ?? this.isSubmitting,
       resetCount: resetCount ?? this.resetCount,
+      errorCount: errorCount ?? this.errorCount,
+      dirtyCount: dirtyCount ?? this.dirtyCount,
+      pendingCount: pendingCount ?? this.pendingCount,
       changedFields: clearChangedFields
           ? null
           : (changedFields ?? this.changedFields),
@@ -73,13 +120,13 @@ class FormixData {
   }
 
   /// returns `true` if all registered fields are valid.
-  bool get isValid => validations.values.every((v) => v.isValid);
+  bool get isValid => errorCount == 0;
 
   /// returns `true` if any registered field has been modified.
-  bool get isDirty => dirtyStates.values.any((d) => d);
+  bool get isDirty => dirtyCount > 0;
 
   /// returns `true` if any registered field is currently pending (e.g. async operation).
-  bool get isPending => pendingStates.values.any((p) => p);
+  bool get isPending => pendingCount > 0;
 
   /// Retrieves the current value for a specific field with type safety.
   T? getValue<T>(FormixFieldID<T> fieldId) {
@@ -159,33 +206,60 @@ class FormixData {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is! FormixData) return false;
-    final mapEquals = const DeepCollectionEquality().equals;
-    final setEquals = const SetEquality().equals;
 
-    return mapEquals(values, other.values) &&
-        mapEquals(validations, other.validations) &&
-        mapEquals(dirtyStates, other.dirtyStates) &&
-        mapEquals(touchedStates, other.touchedStates) &&
-        mapEquals(pendingStates, other.pendingStates) &&
-        isSubmitting == other.isSubmitting &&
+    // Fast path: check non-collection fields first
+    if (isSubmitting != other.isSubmitting ||
+        resetCount != other.resetCount ||
+        errorCount != other.errorCount ||
+        dirtyCount != other.dirtyCount ||
+        pendingCount != other.pendingCount) {
+      return false;
+    }
+
+    // Medium path: check collection identity
+    if (identical(values, other.values) &&
+        identical(validations, other.validations) &&
+        identical(dirtyStates, other.dirtyStates) &&
+        identical(touchedStates, other.touchedStates) &&
+        identical(pendingStates, other.pendingStates) &&
+        identical(changedFields, other.changedFields)) {
+      return true;
+    }
+
+    // Slow path: deep equality
+    // We use MapEquality for better performance than DeepCollectionEquality.
+    // Note: If users store nested collections in 'values', those will be checked
+    // by MapEquality's element comparison, but reference equality will be used for those elements.
+    // Given Formix's focus on flat form states, this is a significant optimization.
+    const mapEquals = MapEquality();
+    const setEquals = SetEquality();
+
+    return mapEquals.equals(values, other.values) &&
+        mapEquals.equals(validations, other.validations) &&
+        mapEquals.equals(dirtyStates, other.dirtyStates) &&
+        mapEquals.equals(touchedStates, other.touchedStates) &&
+        mapEquals.equals(pendingStates, other.pendingStates) &&
         ((changedFields == null && other.changedFields == null) ||
             (changedFields != null &&
                 other.changedFields != null &&
-                setEquals(changedFields, other.changedFields)));
+                setEquals.equals(changedFields, other.changedFields)));
   }
 
   @override
   int get hashCode {
-    final mapHash = const DeepCollectionEquality().hash;
-    final setHash = const SetEquality().hash;
+    // Faster hash combined from pre-calculated counts and identity hint
     return Object.hash(
-      mapHash(values),
-      mapHash(validations),
-      mapHash(dirtyStates),
-      mapHash(touchedStates),
-      mapHash(pendingStates),
       isSubmitting,
-      changedFields == null ? null : setHash(changedFields),
+      resetCount,
+      errorCount,
+      dirtyCount,
+      pendingCount,
+      // For collections, we hashing them is expensive (O(N)), so we use counts
+      // as entropy and hope identity takes care of the rest in most cases.
+      // But for correct Set/Map behavior, we should ideally hash them if we want to be perfect.
+      // However, we can use a simpler hash.
+      values.length,
+      validations.length,
     );
   }
 }

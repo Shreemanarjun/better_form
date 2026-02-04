@@ -11,6 +11,7 @@ export 'src/controllers/validation.dart';
 export 'src/controllers/form_state.dart';
 export 'src/controllers/formix_controller.dart';
 export 'src/controllers/riverpod_controller.dart';
+export 'src/controllers/batch.dart';
 export 'src/enums.dart';
 export 'src/form_schema.dart';
 export 'src/i18n.dart';

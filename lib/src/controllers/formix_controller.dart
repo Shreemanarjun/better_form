@@ -5,6 +5,7 @@ import 'field_id.dart';
 import 'validation.dart';
 import '../enums.dart';
 import '../i18n.dart';
+import 'batch.dart';
 
 /// A controller for managing form state that is compatible with vanilla Flutter.
 ///
@@ -339,14 +340,31 @@ class FormixController extends RiverpodFormController {
   }
 
   /// Updates multiple field values at once.
-  /// This triggers validation for updated fields.
-  void updateFromMap(Map<String, dynamic> data) {
+  /// This triggers validation for updated fields and is more efficient than
+  /// multiple [setValue] calls.
+  @override
+  FormixBatchResult setValues(
+    Map<FormixFieldID, dynamic> updates, {
+    bool strict = false,
+  }) {
+    return super.setValues(updates, strict: strict);
+  }
+
+  /// Updates multiple field values using a type-safe [FormixBatch].
+  FormixBatchResult applyBatch(FormixBatch batch, {bool strict = false}) {
+    return super.applyBatch(batch, strict: strict);
+  }
+
+  /// Updates multiple field values from a raw map.
+  FormixBatchResult updateFromMap(Map<String, dynamic> data) {
+    final updates = <FormixFieldID, dynamic>{};
     for (final entry in data.entries) {
       final fieldId = FormixFieldID<dynamic>(entry.key);
       if (isFieldRegistered(fieldId)) {
-        setValue(fieldId, entry.value);
+        updates[fieldId] = entry.value;
       }
     }
+    return setValues(updates);
   }
 
   /// Resets the form and sets a new set of initial values.
