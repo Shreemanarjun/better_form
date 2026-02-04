@@ -25,6 +25,9 @@ class FormixDropdownFormField<T> extends FormixFieldWidget<T> {
     super.enabled = true,
     super.autovalidateMode,
     super.restorationId,
+    this.textInputAction,
+    this.onSubmitted,
+    this.mouseCursor,
   });
 
   /// The list of items the user can select.
@@ -41,6 +44,15 @@ class FormixDropdownFormField<T> extends FormixFieldWidget<T> {
 
   /// A placeholder to show when the dropdown is disabled.
   final Widget? disabledHint;
+
+  /// Keyboard action (e.g. next, done)
+  final TextInputAction? textInputAction;
+
+  /// Callback when field is submitted
+  final void Function(T?)? onSubmitted;
+
+  /// The mouse cursor to use.
+  final MouseCursor? mouseCursor;
 
   @override
   FormixDropdownFormFieldState<T> createState() => FormixDropdownFormFieldState<T>();
@@ -95,21 +107,28 @@ class FormixDropdownFormFieldState<T> extends FormixFieldWidgetState<T> {
                 suffixIcon: suffixIcon,
                 helperText: validation.isValidating ? 'Validating...' : null,
               ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<T>(
-                  value: dropdownWidget.items.any((item) => item.value == value) ? value : null,
-                  items: dropdownWidget.items,
-                  focusNode: focusNode,
-                  hint: dropdownWidget.hint,
-                  disabledHint: dropdownWidget.disabledHint,
-                  onChanged: widget.enabled
-                      ? (newValue) {
-                          if (newValue != null) {
-                            didChange(newValue);
+              child: MouseRegion(
+                cursor: dropdownWidget.mouseCursor ?? MouseCursor.defer,
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<T>(
+                    value: dropdownWidget.items.any((item) => item.value == value) ? value : null,
+                    items: dropdownWidget.items,
+                    focusNode: focusNode,
+                    hint: dropdownWidget.hint,
+                    disabledHint: dropdownWidget.disabledHint,
+                    onChanged: widget.enabled
+                        ? (newValue) {
+                            if (newValue != null) {
+                              didChange(newValue);
+                              if (dropdownWidget.textInputAction == TextInputAction.next) {
+                                controller.focusNextField(widget.fieldId);
+                              }
+                              dropdownWidget.onSubmitted?.call(newValue);
+                            }
                           }
-                        }
-                      : null,
-                  isExpanded: true,
+                        : null,
+                    isExpanded: true,
+                  ),
                 ),
               ),
             ),

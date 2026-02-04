@@ -38,6 +38,7 @@ class FormixCheckboxFormField extends FormixFieldWidget<bool> {
     this.side,
     super.onChanged,
     this.visualDensity,
+    this.mouseCursor,
   });
 
   /// The primary content of the list tile.
@@ -91,6 +92,9 @@ class FormixCheckboxFormField extends FormixFieldWidget<bool> {
   /// The density of the tile's layout.
   final VisualDensity? visualDensity;
 
+  /// The mouse cursor to use.
+  final MouseCursor? mouseCursor;
+
   @override
   FormixCheckboxFormFieldState createState() => FormixCheckboxFormFieldState();
 }
@@ -142,6 +146,7 @@ class FormixCheckboxFormFieldState extends FormixFieldWidgetState<bool> {
               checkboxShape: checkboxWidget.checkboxShape,
               side: checkboxWidget.side,
               visualDensity: checkboxWidget.visualDensity,
+              mouseCursor: checkboxWidget.mouseCursor,
               subtitle: validation.isValidating
                   ? (checkboxWidget.validatingWidget ??
                         const Text(

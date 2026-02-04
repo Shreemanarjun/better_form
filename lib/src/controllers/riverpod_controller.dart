@@ -75,6 +75,12 @@ class RiverpodFormController extends StateNotifier<FormixData> {
   /// Get validation durations for DevTools
   Map<String, Duration> get validationDurations => Map.unmodifiable(_validationDurations);
 
+  /// Get the dependency map for DevTools
+  Map<String, List<String>> get dependentsMap => Map.unmodifiable(_dependentsMap);
+
+  /// Get the field definitions for DevTools
+  Map<String, FormixField<dynamic>> get formFieldDefinitions => Map.unmodifiable(_fieldDefinitions);
+
   /// Returns the number of active bindings (for testing).
   @visibleForTesting
   int get activeBindingsCount => _bindings.length;
@@ -317,6 +323,51 @@ class RiverpodFormController extends StateNotifier<FormixData> {
   /// Clears all items from a form array
   void clearArray<T>(FormixArrayID<T> id) {
     setValue(id, <T>[]);
+  }
+
+  // --- Debug & Testing ---
+
+  /// Fills registered fields with dummy data based on their types.
+  /// Primarily intended for use in DevTools or automated testing.
+  void debugFillDummyData() {
+    final updates = <String, dynamic>{};
+    for (final field in _fieldDefinitions.values) {
+      final key = field.id.key;
+      final initial = field.initialValue;
+
+      if (initial is String) {
+        updates[key] = 'Sample Text';
+      } else if (initial is int) {
+        updates[key] = 42;
+      } else if (initial is double) {
+        updates[key] = 3.14;
+      } else if (initial is bool) {
+        updates[key] = true;
+      } else if (initial is DateTime) {
+        updates[key] = DateTime.now();
+      }
+    }
+    _batchUpdate(updates);
+  }
+
+  /// Forces a form submission, bypassing synchronous validation.
+  /// Asynchronous validation may still be waited for if [waitForPending] is true.
+  Future<void> debugForceSubmit({
+    required Future<void> Function(Map<String, dynamic> values) onValid,
+    bool waitForPending = true,
+  }) async {
+    setSubmitting(true);
+    try {
+      if (waitForPending) {
+        while (state.isPending) {
+          await stream.first;
+          await Future<void>.delayed(Duration.zero);
+        }
+      }
+      await onValid(state.values);
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   // --- Internals ---
@@ -2069,4 +2120,14 @@ final fieldPendingProvider = Provider.autoDispose.family<bool, FormixFieldID<dyn
   },
   dependencies: [currentControllerProvider],
   name: 'fieldPendingProvider',
+);
+
+/// Provider for the entire form data state.
+final formDataProvider = Provider.autoDispose<FormixData>(
+  (ref) {
+    final controllerProvider = ref.watch(currentControllerProvider);
+    return ref.watch(controllerProvider);
+  },
+  dependencies: [currentControllerProvider],
+  name: 'formDataProvider',
 );

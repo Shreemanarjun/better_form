@@ -35,6 +35,7 @@ export 'src/widgets/async_form_field.dart';
 export 'src/widgets/formix_section.dart';
 export 'src/widgets/form_builder.dart';
 export 'src/widgets/form_array.dart';
+export 'src/widgets/sliver_form_array.dart';
 export 'src/widgets/form_group.dart';
 export 'src/widgets/navigation_guard.dart';
 export 'src/persistence/form_persistence.dart';

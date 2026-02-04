@@ -587,6 +587,86 @@ Updates no longer crash on type mismatches or missing fields. They return a resu
 
 ---
 
+## 👨‍🍳 Cookbook
+
+### Multi-step Form (Wizard)
+Easily manage multi-step forms by conditionally rendering fields. Formix preserves state for off-screen fields automatically.
+
+```dart
+int currentStep = 0;
+
+Formix(
+  child: Column(
+    children: [
+      if (currentStep == 0) ...[
+        FormixTextFormField(fieldId: emailField, label: 'Email'),
+        ElevatedButton(onPressed: () => setState(() => currentStep = 1), child: Text('Next')),
+      ] else ...[
+        FormixTextFormField(fieldId: passwordField, label: 'Password'),
+        ElevatedButton(onPressed: () => controller.submit(...), child: Text('Submit')),
+      ],
+    ],
+  ),
+)
+```
+
+### Dependent Fields
+Fields that update based on other fields' values.
+
+```dart
+FormixFieldConfig(
+  id: cityField,
+  dependsOn: [countryField],
+  validator: (val, data) {
+    final country = data.getValue(countryField);
+    if (country == 'USA' && val == 'London') return 'London is not in USA';
+    return null;
+  },
+)
+```
+
+### Complex Object Array
+Managing a list of complex objects (e.g., a list of addresses).
+
+```dart
+FormixArray(
+  id: addressesField,
+  itemBuilder: (context, index, itemId, scope) => FormixGroup(
+    prefix: 'address_$index',
+    child: Column(
+      children: [
+        FormixTextFormField(fieldId: streetField, label: 'Street'),
+        FormixTextFormField(fieldId: zipField, label: 'Zip Code'),
+      ],
+    ),
+  ),
+)
+```
+
+### Custom Field Implementation
+Create your own form fields by extending `FormixFieldWidget`.
+
+```dart
+class MyColorPicker extends FormixFieldWidget<Color> {
+  const MyColorPicker({super.key, required super.fieldId});
+
+  @override
+  FormixFieldWidgetState<Color> createState() => _MyColorPickerState();
+}
+
+class _MyColorPickerState extends FormixFieldWidgetState<Color> {
+  @override
+  Widget build(BuildContext context) {
+    return ColorTile(
+      color: value ?? Colors.blue,
+      onTap: () => didChange(Colors.red), // Updates form state
+    );
+  }
+}
+```
+
+---
+
 ## ⚡ Performance
 
 Formix is engineered for massive scale.

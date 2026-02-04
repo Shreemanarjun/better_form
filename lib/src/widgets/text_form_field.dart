@@ -61,6 +61,7 @@ class FormixTextFormField extends FormixFieldWidget<String> {
     this.textAlignVertical,
     this.textCapitalization = TextCapitalization.none,
     this.textDirection,
+    this.mouseCursor,
   });
 
   /// The decoration to show around the text field.
@@ -183,6 +184,9 @@ class FormixTextFormField extends FormixFieldWidget<String> {
   /// Directionality of the text.
   final TextDirection? textDirection;
 
+  /// The mouse cursor to use.
+  final MouseCursor? mouseCursor;
+
   @override
   FormixTextFormFieldState createState() => FormixTextFormFieldState();
 }
@@ -246,6 +250,7 @@ class FormixTextFormFieldState extends FormixFieldWidgetState<String> with Formi
             suffixIcon: suffixIcon,
             helperText: validation.isValidating ? 'Validating...' : null,
           ),
+          mouseCursor: fieldWidget.mouseCursor ?? (fieldWidget.readOnly ? SystemMouseCursors.basic : null),
           keyboardType: fieldWidget.keyboardType,
           maxLength: fieldWidget.maxLength,
           inputFormatters: formatters,

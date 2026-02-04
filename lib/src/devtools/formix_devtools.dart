@@ -3,6 +3,7 @@ import 'dart:developer' as dev;
 import 'package:flutter/foundation.dart';
 import 'package:collection/collection.dart'; // Added for lastOrNull
 import '../controllers/riverpod_controller.dart';
+import '../controllers/field_id.dart';
 
 /// Service for interacting with DevTools extension.
 class FormixDevToolsService {
@@ -116,8 +117,9 @@ class FormixDevToolsService {
         final state = controller.state;
         return dev.ServiceExtensionResponse.result(
           jsonEncode(
-            {
+            <String, dynamic>{
               'values': state.values,
+              'nestedValues': state.toNestedMap(),
               'validations': {
                 for (final entry in state.validations.entries)
                   entry.key: {
@@ -128,11 +130,24 @@ class FormixDevToolsService {
               },
               'dirtyStates': state.dirtyStates,
               'touchedStates': state.touchedStates,
+              'pendingStates': state.pendingStates,
               'isSubmitting': state.isSubmitting,
               'fieldCount': state.values.length,
+              'errorCount': state.errorCount,
+              'dirtyCount': state.dirtyCount,
+              'pendingCount': state.pendingCount,
+              'resetCount': state.resetCount,
               'validationDurations': {
                 for (final entry in controller.validationDurations.entries) entry.key: entry.value.inMicroseconds,
               },
+              'dependentsMap': {
+                for (final entry in controller.dependentsMap.entries) entry.key: entry.value.map((e) => e.toString()).toList(),
+              },
+              'dependsOnMap': {
+                for (final entry in controller.formFieldDefinitions.entries) entry.key: entry.value.dependsOn.map((e) => e.key).toList(),
+              },
+              'canUndo': controller.canUndo,
+              'canRedo': controller.canRedo,
             },
             toEncodable: (nonEncodable) {
               if (nonEncodable is DateTime) {
@@ -147,6 +162,157 @@ class FormixDevToolsService {
           dev.ServiceExtensionResponse.extensionError,
           e.toString(),
         );
+      }
+    });
+
+    // Fill dummy data
+    dev.registerExtension('ext.formix.debugFillDummyData', (
+      method,
+      parameters,
+    ) async {
+      final formId = parameters['formId'];
+      final controller = _activeControllers[formId];
+      if (controller != null) {
+        controller.debugFillDummyData();
+        return dev.ServiceExtensionResponse.result(jsonEncode({'success': true}));
+      }
+      return dev.ServiceExtensionResponse.error(
+        dev.ServiceExtensionResponse.invalidParams,
+        'Form not found',
+      );
+    });
+
+    // Force submit
+    dev.registerExtension('ext.formix.debugForceSubmit', (
+      method,
+      parameters,
+    ) async {
+      final formId = parameters['formId'];
+      final controller = _activeControllers[formId];
+      if (controller != null) {
+        // We can't easily pass a callback over RPC, but we can set the submitting state
+        // or trigger a "fake" successful submit for the devtools to see.
+        // For now, let's just trigger a validation and then set state.
+        controller.setSubmitting(true);
+        await Future.delayed(const Duration(milliseconds: 500));
+        controller.setSubmitting(false);
+        return dev.ServiceExtensionResponse.result(jsonEncode({'success': true}));
+      }
+      return dev.ServiceExtensionResponse.error(
+        dev.ServiceExtensionResponse.invalidParams,
+        'Form not found',
+      );
+    });
+
+    // Update field value
+    dev.registerExtension('ext.formix.updateFieldValue', (
+      method,
+      parameters,
+    ) async {
+      try {
+        final formId = parameters['formId'];
+        final fieldId = parameters['fieldId'];
+        final valueJson = parameters['value'];
+        final controller = _activeControllers[formId];
+
+        if (controller == null) {
+          return dev.ServiceExtensionResponse.error(
+            dev.ServiceExtensionResponse.invalidParams,
+            'Form not found',
+          );
+        }
+
+        if (fieldId == null || valueJson == null) {
+          return dev.ServiceExtensionResponse.error(
+            dev.ServiceExtensionResponse.invalidParams,
+            'Missing fieldId or value',
+          );
+        }
+
+        // Try to parse the value
+        final dynamic value = jsonDecode(valueJson);
+
+        // We use a generic ID because we don't know the exact type T here,
+        // but setValue handles dynamic values by runtime type checking.
+        final id = FormixFieldID<dynamic>(fieldId);
+        controller.setValue(id, value);
+
+        return dev.ServiceExtensionResponse.result(jsonEncode({'success': true}));
+      } catch (e) {
+        return dev.ServiceExtensionResponse.error(
+          dev.ServiceExtensionResponse.extensionError,
+          e.toString(),
+        );
+      }
+    });
+
+    // Reset Form
+    dev.registerExtension('ext.formix.resetForm', (method, parameters) async {
+      final formId = parameters['formId'];
+      final controller = _activeControllers[formId];
+      if (controller != null) {
+        controller.reset();
+        return dev.ServiceExtensionResponse.result(jsonEncode({'success': true}));
+      }
+      return dev.ServiceExtensionResponse.error(dev.ServiceExtensionResponse.invalidParams, 'Form not found');
+    });
+
+    // Undo
+    dev.registerExtension('ext.formix.undo', (method, parameters) async {
+      final formId = parameters['formId'];
+      final controller = _activeControllers[formId];
+      if (controller != null) {
+        controller.undo();
+        return dev.ServiceExtensionResponse.result(jsonEncode({'success': true}));
+      }
+      return dev.ServiceExtensionResponse.error(dev.ServiceExtensionResponse.invalidParams, 'Form not found');
+    });
+
+    // Redo
+    dev.registerExtension('ext.formix.redo', (method, parameters) async {
+      final formId = parameters['formId'];
+      final controller = _activeControllers[formId];
+      if (controller != null) {
+        controller.redo();
+        return dev.ServiceExtensionResponse.result(jsonEncode({'success': true}));
+      }
+      return dev.ServiceExtensionResponse.error(dev.ServiceExtensionResponse.invalidParams, 'Form not found');
+    });
+
+    // Validate specific field
+    dev.registerExtension('ext.formix.validateField', (method, parameters) async {
+      final formId = parameters['formId'];
+      final fieldId = parameters['fieldId'];
+      final controller = _activeControllers[formId];
+
+      if (controller != null && fieldId != null) {
+        final id = FormixFieldID<dynamic>(fieldId);
+        controller.validate(fields: [id]);
+        return dev.ServiceExtensionResponse.result(jsonEncode({'success': true}));
+      }
+      return dev.ServiceExtensionResponse.error(dev.ServiceExtensionResponse.invalidParams, 'Form or Field not found');
+    });
+
+    // Set entire form state
+    dev.registerExtension('ext.formix.setFormState', (method, parameters) async {
+      try {
+        final formId = parameters['formId'];
+        final stateJson = parameters['state'];
+        final controller = _activeControllers[formId];
+
+        if (controller != null && stateJson != null) {
+          final Map<String, dynamic> newState = (jsonDecode(stateJson) as Map).cast<String, dynamic>();
+
+          for (final entry in newState.entries) {
+            final id = FormixFieldID<dynamic>(entry.key);
+            controller.setValue(id, entry.value);
+          }
+
+          return dev.ServiceExtensionResponse.result(jsonEncode({'success': true}));
+        }
+        return dev.ServiceExtensionResponse.error(dev.ServiceExtensionResponse.invalidParams, 'Form or state missing');
+      } catch (e) {
+        return dev.ServiceExtensionResponse.error(dev.ServiceExtensionResponse.extensionError, e.toString());
       }
     });
   }

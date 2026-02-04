@@ -25,6 +25,9 @@ abstract class ValidatorChain<T, Self extends ValidatorChain<T, Self>> {
   @protected
   final List<Future<String?> Function(T?)> asyncValidators = [];
 
+  /// Optional debounce duration for asynchronous validation.
+  Duration? debounceDuration;
+
   /// Creates a [ValidatorChain].
   ValidatorChain(this.syncValidators);
 
@@ -50,6 +53,12 @@ abstract class ValidatorChain<T, Self extends ValidatorChain<T, Self>> {
   /// Add an asynchronous validation rule.
   Self async(Future<String?> Function(T?) validator) {
     asyncValidators.add(validator);
+    return this as Self;
+  }
+
+  /// Sets the debounce duration for asynchronous validation.
+  Self debounce(Duration duration) {
+    debounceDuration = duration;
     return this as Self;
   }
 

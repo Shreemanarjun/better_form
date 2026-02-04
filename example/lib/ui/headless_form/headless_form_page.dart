@@ -264,7 +264,7 @@ class _HeadlessFormExampleContentState
                         ),
                         Expanded(
                           child: Slider(
-                            value: value.toDouble(),
+                            value: value.toDouble().clamp(1, 10),
                             min: 1,
                             max: 10,
                             divisions: 9,

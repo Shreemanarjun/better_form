@@ -45,7 +45,7 @@ class FormixFieldConfig<T> {
       asyncValidator: (T? v) => rules.buildAsync()(v),
       label: label,
       hint: hint,
-      debounceDuration: debounceDuration,
+      debounceDuration: debounceDuration ?? rules.debounceDuration,
       validationMode: validationMode,
       inputFormatters: inputFormatters,
       textInputAction: textInputAction,

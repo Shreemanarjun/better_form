@@ -18,6 +18,7 @@ import 'ui/login_form_test/login_form_test_page.dart';
 import 'ui/formix_builder_test/formix_builder_test_page.dart';
 import 'ui/custom_widgets/custom_widgets_page.dart';
 import 'ui/advanced/async_field_submission_page.dart';
+import 'ui/dependency_graph_example.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -51,7 +52,7 @@ class _HomePageState extends State<HomePage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 18, vsync: this);
+    _tabController = TabController(length: 19, vsync: this);
   }
 
   @override
@@ -70,6 +71,7 @@ class _HomePageState extends State<HomePage>
           isScrollable: true,
           tabs: const [
             Tab(text: 'Basic'),
+            Tab(text: 'Graph Demo'),
             Tab(text: 'Schema'),
             Tab(text: 'Conditional'),
             Tab(text: 'Derived'),
@@ -94,6 +96,7 @@ class _HomePageState extends State<HomePage>
         controller: _tabController,
         children: [
           BasicFormExample(),
+          DependencyGraphExample(),
           SchemaFormExample(),
           ConditionalFormExample(),
           DerivedFieldsExample(),
