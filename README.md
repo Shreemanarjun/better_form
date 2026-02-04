@@ -687,7 +687,7 @@ Formix is engineered for massive scale.
 ## 📊 Analytics & Debugging
 
 - **Logging**: Enable `LoggingFormAnalytics` to see every value change and validation event in the console.
-- **DevTools**: Inspect the form state tree and performance metrics using the Formix DevTools extension.
+- **DevTools**: The Formix DevTools extension has been completely redesigned for v0.0.5! Inspect the form state tree, visualize dependency graphs, monitor validation performance, and edit field values in real-time with a premium tabbed interface. Available now on the DevTools sidebar.
 
 ---
 

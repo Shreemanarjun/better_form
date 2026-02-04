@@ -1,5 +1,16 @@
 ## 0.0.5
 
+### 💎 DevTools Extension Redesign (v2)
+- **Premium UI**: Completely overhauled the DevTools extension with a modern, tabbed interface (**Fields**, **Dependencies**, **Raw State**).
+- **Glassmorphic Aesthetics**: Implemented a premium design system with transparency, blur effects, and full support for Dark/Light modes.
+- **Enhanced Inspection**:
+  - **Raw State Tab**: Inspect structured, nested form data in real-time (powered by `toNestedMap`).
+  - **Dependency Graph**: Visualized field relationships showing exactly what a field depends on and what it affects.
+  - **Status Badges**: Circular indicators for **D**irty, **T**ouched, and **P**ending states.
+  - **Performance Metrics**: Reactive validation duration labels with color-coded status.
+- **Integrated refreshing**: New auto-refresh logic with customizable intervals (1s-10s) and a dedicated sync indicator.
+- **formDataProvider**: Added a reactive provider to expose the entire `FormixData` state.
+
 ### ✨ Accessibility & Semantics (shadcn-inspired)
 - **Form Semantics**: The `Formix` widget now automatically reports as a `SemanticsRole.form`, improving structural navigation for screen readers.
 - **Validation Semantics**: All fields (including headless ones) now communicate their validation status (`invalid`/`valid`) directly to the OS via `SemanticsValidationResult`.
