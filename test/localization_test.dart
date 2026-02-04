@@ -187,26 +187,38 @@ void main() {
     });
 
     test('minLength message', () {
-      expect(messages.minLength(8), equals('Minimum length is 8 characters'));
+      expect(
+        messages.minLength('Field', 8),
+        equals('Field must be at least 8 characters'),
+      );
     });
 
     test('maxLength message', () {
       expect(
-        messages.maxLength(100),
-        equals('Maximum length is 100 characters'),
+        messages.maxLength('Field', 100),
+        equals('Field must be at most 100 characters'),
       );
     });
 
     test('minValue message', () {
-      expect(messages.minValue(18), equals('Minimum value is 18'));
+      expect(
+        messages.minValue('Field', 18),
+        equals('Field must be at least 18'),
+      );
     });
 
     test('maxValue message', () {
-      expect(messages.maxValue(120), equals('Maximum value is 120'));
+      expect(
+        messages.maxValue('Field', 120),
+        equals('Field must be at most 120'),
+      );
     });
 
     test('invalidSelection message', () {
-      expect(messages.invalidSelection(), equals('Invalid selection'));
+      expect(
+        messages.invalidSelection('Field'),
+        equals('Invalid selection for Field'),
+      );
     });
 
     test('validationFailed message', () {
@@ -242,28 +254,37 @@ void main() {
 
     test('minLength message', () {
       expect(
-        messages.minLength(8),
-        equals('La longitud mínima es 8 caracteres'),
+        messages.minLength('Field', 8),
+        equals('Field debe tener al menos 8 caracteres'),
       );
     });
 
     test('maxLength message', () {
       expect(
-        messages.maxLength(100),
-        equals('La longitud máxima es 100 caracteres'),
+        messages.maxLength('Field', 100),
+        equals('Field debe tener como máximo 100 caracteres'),
       );
     });
 
     test('minValue message', () {
-      expect(messages.minValue(18), equals('El valor mínimo es 18'));
+      expect(
+        messages.minValue('Field', 18),
+        equals('Field debe ser al menos 18'),
+      );
     });
 
     test('maxValue message', () {
-      expect(messages.maxValue(120), equals('El valor máximo es 120'));
+      expect(
+        messages.maxValue('Field', 120),
+        equals('Field debe ser como máximo 120'),
+      );
     });
 
     test('invalidSelection message', () {
-      expect(messages.invalidSelection(), equals('Selección inválida'));
+      expect(
+        messages.invalidSelection('Field'),
+        equals('Selección inválida para Field'),
+      );
     });
 
     test('validationFailed message', () {
@@ -291,8 +312,8 @@ void main() {
 
     test('minLength message', () {
       expect(
-        messages.minLength(8),
-        equals('La longueur minimale est de 8 caractères'),
+        messages.minLength('Field', 8),
+        equals('Field doit comporter au moins 8 caractères'),
       );
     });
 
@@ -313,7 +334,10 @@ void main() {
     });
 
     test('minLength message', () {
-      expect(messages.minLength(8), equals('Mindestlänge ist 8 Zeichen'));
+      expect(
+        messages.minLength('Field', 8),
+        equals('Field muss mindestens 8 Zeichen lang sein'),
+      );
     });
 
     test('validating message', () {
@@ -333,7 +357,10 @@ void main() {
     });
 
     test('minLength message', () {
-      expect(messages.minLength(8), equals('न्यूनतम लंबाई 8 अक्षर है'));
+      expect(
+        messages.minLength('Field', 8),
+        equals('Field की न्यूनतम लंबाई 8 अक्षर होनी चाहिए'),
+      );
     });
 
     test('validating message', () {
@@ -353,7 +380,7 @@ void main() {
     });
 
     test('minLength message', () {
-      expect(messages.minLength(8), equals('最小长度为8个字符'));
+      expect(messages.minLength('Field', 8), equals('Field最小长度为8个字符'));
     });
 
     test('validating message', () {
@@ -366,27 +393,27 @@ void main() {
 
     test('English date format', () {
       const messages = DefaultFormixMessages();
-      expect(messages.minDate(testDate), contains('2024-03-15'));
+      expect(messages.minDate('Field', testDate), contains('2024-03-15'));
     });
 
     test('Spanish date format', () {
       const messages = SpanishFormixMessages();
-      expect(messages.minDate(testDate), contains('15/03/2024'));
+      expect(messages.minDate('Field', testDate), contains('15/03/2024'));
     });
 
     test('French date format', () {
       const messages = FrenchFormixMessages();
-      expect(messages.minDate(testDate), contains('15/03/2024'));
+      expect(messages.minDate('Field', testDate), contains('15/03/2024'));
     });
 
     test('German date format', () {
       const messages = GermanFormixMessages();
-      expect(messages.minDate(testDate), contains('15.03.2024'));
+      expect(messages.minDate('Field', testDate), contains('15.03.2024'));
     });
 
     test('Chinese date format', () {
       const messages = ChineseFormixMessages();
-      expect(messages.minDate(testDate), contains('2024年03月15日'));
+      expect(messages.minDate('Field', testDate), contains('2024年03月15日'));
     });
   });
 
@@ -534,9 +561,15 @@ void main() {
 
     test('handles numeric values correctly', () {
       const messages = DefaultFormixMessages();
-      expect(messages.minValue(0), equals('Minimum value is 0'));
-      expect(messages.minValue(-100), equals('Minimum value is -100'));
-      expect(messages.minValue(1.5), equals('Minimum value is 1.5'));
+      expect(messages.minValue('Field', 0), equals('Field must be at least 0'));
+      expect(
+        messages.minValue('Field', -100),
+        equals('Field must be at least -100'),
+      );
+      expect(
+        messages.minValue('Field', 1.5),
+        equals('Field must be at least 1.5'),
+      );
     });
   });
 
@@ -695,25 +728,25 @@ class _CustomTestMessages extends FormixMessages {
   String invalidFormat() => 'TEST: Invalid';
 
   @override
-  String minLength(int minLength) => 'TEST: Min $minLength';
+  String minLength(String label, int minLength) => 'TEST: Min $minLength';
 
   @override
-  String maxLength(int maxLength) => 'TEST: Max $maxLength';
+  String maxLength(String label, int maxLength) => 'TEST: Max $maxLength';
 
   @override
-  String minValue(num min) => 'TEST: Min value $min';
+  String minValue(String label, num min) => 'TEST: Min value $min';
 
   @override
-  String maxValue(num max) => 'TEST: Max value $max';
+  String maxValue(String label, num max) => 'TEST: Max value $max';
 
   @override
-  String minDate(DateTime minDate) => 'TEST: Min date';
+  String minDate(String label, DateTime minDate) => 'TEST: Min date';
 
   @override
-  String maxDate(DateTime maxDate) => 'TEST: Max date';
+  String maxDate(String label, DateTime maxDate) => 'TEST: Max date';
 
   @override
-  String invalidSelection() => 'TEST: Invalid selection';
+  String invalidSelection(String label) => 'TEST: Invalid selection';
 
   @override
   String validationFailed(String error) => 'TEST: Failed $error';

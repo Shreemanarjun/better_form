@@ -12,6 +12,7 @@ import 'field_config.dart';
 import 'formix_controller.dart';
 import '../analytics/form_analytics.dart';
 import '../i18n.dart';
+import '../validators/validation_keys.dart';
 import '../enums.dart';
 import 'batch.dart';
 import '../persistence/form_persistence.dart';
@@ -776,7 +777,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
         if (error != null) {
           finalResult = ValidationResult(
             isValid: false,
-            errorMessage: messages.format(error, {
+            errorMessage: _resolveErrorMessage(error, {
               'label': fieldDef.label ?? key,
               'value': value,
             }),
@@ -808,7 +809,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
           if (error != null) {
             finalResult = ValidationResult(
               isValid: false,
-              errorMessage: messages.format(error, {
+              errorMessage: _resolveErrorMessage(error, {
                 'label': fieldDef.label ?? key,
                 'value': value,
               }),
@@ -817,18 +818,61 @@ class RiverpodFormController extends StateNotifier<FormixData> {
         } catch (e) {
           finalResult = ValidationResult(
             isValid: false,
-            errorMessage: 'Cross-validation error: ${e.toString()}',
+            errorMessage: 'Cross-field validation error: ${e.toString()}',
           );
         }
       }
     }
 
     finalResult ??= ValidationResult.valid;
+
     if (sw != null) {
       sw.stop();
       _validationDurations[key] = sw.elapsed;
     }
+
     return finalResult;
+  }
+
+  String _resolveErrorMessage(String error, Map<String, dynamic> params) {
+    if (error.startsWith('formix_key_')) {
+      final parts = error.split(':');
+      final key = parts[0];
+      final param = parts.length > 1 ? parts[1] : null;
+
+      final label = params['label']?.toString() ?? 'Field';
+
+      switch (key) {
+        case FormixValidationKeys.required:
+          return messages.required(label);
+        case FormixValidationKeys.invalidFormat:
+          return messages.invalidFormat();
+        case FormixValidationKeys.invalidEmail:
+          // Fallback to invalidFormat if specific email message missing
+          return messages.invalidFormat();
+        case FormixValidationKeys.minLength:
+          if (param != null) {
+            return messages.minLength(label, int.tryParse(param) ?? 0);
+          }
+          break;
+        case FormixValidationKeys.maxLength:
+          if (param != null) {
+            return messages.maxLength(label, int.tryParse(param) ?? 0);
+          }
+          break;
+        case FormixValidationKeys.min:
+          if (param != null) {
+            return messages.minValue(label, num.tryParse(param) ?? 0);
+          }
+          break;
+        case FormixValidationKeys.max:
+          if (param != null) {
+            return messages.maxValue(label, num.tryParse(param) ?? 0);
+          }
+          break;
+      }
+    }
+    return messages.format(error, params);
   }
 
   void _startAsyncValidationTimer(String key, dynamic value) {

@@ -11,27 +11,29 @@ class GermanFormixMessages extends FormixMessages {
   String invalidFormat() => 'Ungültiges Format';
 
   @override
-  String minLength(int minLength) => 'Mindestlänge ist $minLength Zeichen';
+  String minLength(String label, int minLength) =>
+      '$label muss mindestens $minLength Zeichen lang sein';
 
   @override
-  String maxLength(int maxLength) => 'Maximale Länge ist $maxLength Zeichen';
+  String maxLength(String label, int maxLength) =>
+      '$label darf höchstens $maxLength Zeichen lang sein';
 
   @override
-  String minValue(num min) => 'Mindestwert ist $min';
+  String minValue(String label, num min) => '$label muss mindestens $min sein';
 
   @override
-  String maxValue(num max) => 'Maximalwert ist $max';
+  String maxValue(String label, num max) => '$label darf höchstens $max sein';
 
   @override
-  String minDate(DateTime minDate) =>
-      'Datum muss nach dem ${_formatDate(minDate)} liegen';
+  String minDate(String label, DateTime minDate) =>
+      '$label muss nach dem ${_formatDate(minDate)} liegen';
 
   @override
-  String maxDate(DateTime maxDate) =>
-      'Datum muss vor dem ${_formatDate(maxDate)} liegen';
+  String maxDate(String label, DateTime maxDate) =>
+      '$label muss vor dem ${_formatDate(maxDate)} liegen';
 
   @override
-  String invalidSelection() => 'Ungültige Auswahl';
+  String invalidSelection(String label) => 'Ungültige Auswahl für $label';
 
   @override
   String validationFailed(String error) => 'Validierung fehlgeschlagen: $error';

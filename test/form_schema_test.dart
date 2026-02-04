@@ -52,7 +52,7 @@ void main() {
         );
 
         final errors = await schema.validate('Hi', {});
-        expect(errors, contains('Minimum length is 3 characters'));
+        expect(errors, contains('name must be at least 3 characters'));
       });
 
       test('should validate maximum length', () async {
@@ -63,7 +63,7 @@ void main() {
         );
 
         final errors = await schema.validate('Hello World', {});
-        expect(errors, contains('Maximum length is 5 characters'));
+        expect(errors, contains('name must be at most 5 characters'));
       });
 
       test('should validate pattern', () async {
@@ -111,7 +111,7 @@ void main() {
         final schema = NumberFieldSchema(id: ageField, initialValue: 0, min: 0);
 
         final errors = await schema.validate(-1, {});
-        expect(errors, contains('Minimum value is 0'));
+        expect(errors, contains('age must be at least 0'));
       });
 
       test('should validate maximum value', () async {
@@ -122,7 +122,7 @@ void main() {
         );
 
         final errors = await schema.validate(150, {});
-        expect(errors, contains('Maximum value is 120'));
+        expect(errors, contains('age must be at most 120'));
       });
 
       test('should pass validation with valid number', () async {
@@ -177,7 +177,7 @@ void main() {
         expect(validErrors, isEmpty);
 
         final invalidErrors = await schema.validate('urgent', {});
-        expect(invalidErrors, contains('Invalid selection'));
+        expect(invalidErrors, contains('Invalid selection for priority'));
       });
     });
 

@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:formix/formix.dart';
-import 'package:formix/src/widgets/dropdown_form_field.dart';
 
 void main() {
   testWidgets('FormixDropdownFormField reports invalid semantics', (
@@ -51,18 +49,6 @@ void main() {
     // DropdownButton usually implements Semantics.
     final semantics = tester.getSemantics(finder);
     final data = semantics.getSemanticsData();
-
-    // Check validation result
-    // Note: DropdownButton might not automatically inherit InputDecorator's error semantics
-    // into its own 'validationResult' property unless explicitly wired or if InputDecorator covers it.
-    // Usually InputDecorator wraps the Dropdown.
-
-    // We want to see if the semantic node representing the dropdown indicates an error.
-    if (data.validationResult != SemanticsValidationResult.invalid) {
-      // It might be on a parent node (InputDecorator?)
-      // distinct from the button. But users interact with the button.
-      print('Dropdown semantics validationResult: ${data.validationResult}');
-    }
 
     expect(data.validationResult, equals(SemanticsValidationResult.invalid));
 

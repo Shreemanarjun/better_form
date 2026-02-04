@@ -11,25 +11,27 @@ class ChineseFormixMessages extends FormixMessages {
   String invalidFormat() => '格式无效';
 
   @override
-  String minLength(int minLength) => '最小长度为$minLength个字符';
+  String minLength(String label, int minLength) => '$label最小长度为$minLength个字符';
 
   @override
-  String maxLength(int maxLength) => '最大长度为$maxLength个字符';
+  String maxLength(String label, int maxLength) => '$label最大长度为$maxLength个字符';
 
   @override
-  String minValue(num min) => '最小值为$min';
+  String minValue(String label, num min) => '$label最小值为$min';
 
   @override
-  String maxValue(num max) => '最大值为$max';
+  String maxValue(String label, num max) => '$label最大值为$max';
 
   @override
-  String minDate(DateTime minDate) => '日期必须在${_formatDate(minDate)}之后';
+  String minDate(String label, DateTime minDate) =>
+      '$label日期必须在${_formatDate(minDate)}之后';
 
   @override
-  String maxDate(DateTime maxDate) => '日期必须在${_formatDate(maxDate)}之前';
+  String maxDate(String label, DateTime maxDate) =>
+      '$label日期必须在${_formatDate(maxDate)}之前';
 
   @override
-  String invalidSelection() => '选择无效';
+  String invalidSelection(String label) => '$label选择无效';
 
   @override
   String validationFailed(String error) => '验证失败：$error';

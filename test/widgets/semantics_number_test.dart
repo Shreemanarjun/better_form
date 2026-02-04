@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:formix/formix.dart';
-import 'package:formix/src/widgets/number_form_field.dart';
 
 void main() {
   testWidgets('FormixNumberFormField reports invalid semantics', (
@@ -52,9 +50,7 @@ void main() {
     final semantics = tester.getSemantics(finder);
     final data = semantics.getSemanticsData();
 
-    if (data.validationResult != SemanticsValidationResult.invalid) {
-      print('Number field validation result: ${data.validationResult}');
-    }
+    if (data.validationResult != SemanticsValidationResult.invalid) {}
 
     expect(data.validationResult, equals(SemanticsValidationResult.invalid));
 

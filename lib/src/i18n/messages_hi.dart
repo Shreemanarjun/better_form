@@ -11,27 +11,31 @@ class HindiFormixMessages extends FormixMessages {
   String invalidFormat() => 'अमान्य प्रारूप';
 
   @override
-  String minLength(int minLength) => 'न्यूनतम लंबाई $minLength अक्षर है';
+  String minLength(String label, int minLength) =>
+      '$label की न्यूनतम लंबाई $minLength अक्षर होनी चाहिए'; // Adapted
 
   @override
-  String maxLength(int maxLength) => 'अधिकतम लंबाई $maxLength अक्षर है';
+  String maxLength(String label, int maxLength) =>
+      '$label की अधिकतम लंबाई $maxLength अक्षर हो सकती है';
 
   @override
-  String minValue(num min) => 'न्यूनतम मान $min है';
+  String minValue(String label, num min) =>
+      '$label का न्यूनतम मान $min होना चाहिए';
 
   @override
-  String maxValue(num max) => 'अधिकतम मान $max है';
+  String maxValue(String label, num max) =>
+      '$label का अधिकतम मान $max हो सकता है';
 
   @override
-  String minDate(DateTime minDate) =>
-      'तारीख ${_formatDate(minDate)} के बाद होनी चाहिए';
+  String minDate(String label, DateTime minDate) =>
+      '$label की तारीख ${_formatDate(minDate)} के बाद होनी चाहिए';
 
   @override
-  String maxDate(DateTime maxDate) =>
-      'तारीख ${_formatDate(maxDate)} से पहले होनी चाहिए';
+  String maxDate(String label, DateTime maxDate) =>
+      '$label की तारीख ${_formatDate(maxDate)} से पहले होनी चाहिए';
 
   @override
-  String invalidSelection() => 'अमान्य चयन';
+  String invalidSelection(String label) => '$label के लिए अमान्य चयन';
 
   @override
   String validationFailed(String error) => 'सत्यापन विफल: $error';

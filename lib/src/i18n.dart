@@ -20,25 +20,25 @@ abstract class FormixMessages {
   String invalidFormat();
 
   /// Error for min length validation
-  String minLength(int minLength);
+  String minLength(String label, int minLength);
 
   /// Error for max length validation
-  String maxLength(int maxLength);
+  String maxLength(String label, int maxLength);
 
   /// Error for min value validation
-  String minValue(num min);
+  String minValue(String label, num min);
 
   /// Error for max value validation
-  String maxValue(num max);
+  String maxValue(String label, num max);
 
   /// Error for min date validation
-  String minDate(DateTime minDate);
+  String minDate(String label, DateTime minDate);
 
   /// Error for max date validation
-  String maxDate(DateTime maxDate);
+  String maxDate(String label, DateTime maxDate);
 
   /// Error for invalid selection
-  String invalidSelection();
+  String invalidSelection(String label);
 
   /// Error message when async validation fails unexpectedly
   String validationFailed(String error);
@@ -68,27 +68,29 @@ class DefaultFormixMessages extends FormixMessages {
   String invalidFormat() => 'Invalid format';
 
   @override
-  String minLength(int minLength) => 'Minimum length is $minLength characters';
+  String minLength(String label, int minLength) =>
+      '$label must be at least $minLength characters';
 
   @override
-  String maxLength(int maxLength) => 'Maximum length is $maxLength characters';
+  String maxLength(String label, int maxLength) =>
+      '$label must be at most $maxLength characters';
 
   @override
-  String minValue(num min) => 'Minimum value is $min';
+  String minValue(String label, num min) => '$label must be at least $min';
 
   @override
-  String maxValue(num max) => 'Maximum value is $max';
+  String maxValue(String label, num max) => '$label must be at most $max';
 
   @override
-  String minDate(DateTime minDate) =>
-      'Date must be after ${minDate.toString().split(' ')[0]}';
+  String minDate(String label, DateTime minDate) =>
+      '$label must be after ${minDate.toString().split(' ')[0]}';
 
   @override
-  String maxDate(DateTime maxDate) =>
-      'Date must be before ${maxDate.toString().split(' ')[0]}';
+  String maxDate(String label, DateTime maxDate) =>
+      '$label must be before ${maxDate.toString().split(' ')[0]}';
 
   @override
-  String invalidSelection() => 'Invalid selection';
+  String invalidSelection(String label) => 'Invalid selection for $label';
 
   @override
   String validationFailed(String error) => 'Validation failed: $error';

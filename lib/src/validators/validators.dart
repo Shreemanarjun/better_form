@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:meta/meta.dart';
+import 'validation_keys.dart';
 
 /// A fluent API for creating field validators.
 /// Inspired by Zod and other schema validation libraries.
@@ -32,9 +33,9 @@ abstract class ValidatorChain<T, Self extends ValidatorChain<T, Self>> {
   /// Mark the field as required.
   Self required([String? message]) {
     return _add((val) {
-      if (val == null) return message ?? '{label} is required';
+      if (val == null) return message ?? FormixValidationKeys.required;
       if (val is String && val.trim().isEmpty) {
-        return message ?? '{label} is required';
+        return message ?? FormixValidationKeys.required;
       }
       return null;
     });
@@ -83,7 +84,9 @@ class StringValidator extends ValidatorChain<String, StringValidator> {
     return _add((val) {
       if (val == null || val.isEmpty) return null;
       final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-      if (!emailRegex.hasMatch(val)) return message ?? 'Invalid email address';
+      if (!emailRegex.hasMatch(val)) {
+        return message ?? FormixValidationKeys.invalidEmail;
+      }
       return null;
     });
   }
@@ -92,8 +95,11 @@ class StringValidator extends ValidatorChain<String, StringValidator> {
     return _add((val) {
       if (val == null || val.isEmpty) return null;
       if (val.length < length) {
-        final msg = message ?? '{label} must be at least {min} characters';
-        return msg.replaceAll('{min}', length.toString());
+        return message ??
+            FormixValidationKeys.withParam(
+              FormixValidationKeys.minLength,
+              length,
+            );
       }
       return null;
     });
@@ -103,8 +109,11 @@ class StringValidator extends ValidatorChain<String, StringValidator> {
     return _add((val) {
       if (val == null || val.isEmpty) return null;
       if (val.length > length) {
-        final msg = message ?? '{label} must be at most {max} characters';
-        return msg.replaceAll('{max}', length.toString());
+        return message ??
+            FormixValidationKeys.withParam(
+              FormixValidationKeys.maxLength,
+              length,
+            );
       }
       return null;
     });
@@ -113,7 +122,9 @@ class StringValidator extends ValidatorChain<String, StringValidator> {
   StringValidator pattern(RegExp regex, [String? message]) {
     return _add((val) {
       if (val == null || val.isEmpty) return null;
-      if (!regex.hasMatch(val)) return message ?? 'Invalid format';
+      if (!regex.hasMatch(val)) {
+        return message ?? FormixValidationKeys.invalidFormat;
+      }
       return null;
     });
   }
@@ -127,8 +138,8 @@ class NumberValidator<T extends num>
     return _add((val) {
       if (val == null) return null;
       if (val < min) {
-        final msg = message ?? '{label} must be at least {min}';
-        return msg.replaceAll('{min}', min.toString());
+        return message ??
+            FormixValidationKeys.withParam(FormixValidationKeys.min, min);
       }
       return null;
     });
@@ -138,15 +149,17 @@ class NumberValidator<T extends num>
     return _add((val) {
       if (val == null) return null;
       if (val > max) {
-        final msg = message ?? '{label} must be at most {max}';
-        return msg.replaceAll('{max}', max.toString());
+        return message ??
+            FormixValidationKeys.withParam(FormixValidationKeys.max, max);
       }
       return null;
     });
   }
 
-  NumberValidator<T> positive([String? message]) =>
-      min(0 as T, message ?? '{label} must be positive');
+  NumberValidator<T> positive([String? message]) => min(
+    0 as T,
+    message ?? FormixValidationKeys.withParam(FormixValidationKeys.min, 0),
+  );
 }
 
 class GenericValidator<T> extends ValidatorChain<T, GenericValidator<T>> {

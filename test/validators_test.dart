@@ -47,8 +47,8 @@ void main() {
       final syncValidator = chain.build();
       final asyncValidator = chain.buildAsync();
 
-      // Sync should stop it early if empty
-      expect(syncValidator(''), '{label} is required');
+      // Sync should stop it early if empty - returns validation key
+      expect(syncValidator(''), 'formix_key_required');
 
       // Async should run if sync passes
       expect(await asyncValidator('available'), isNull);
@@ -63,7 +63,8 @@ void main() {
       );
 
       final field = config.toField();
-      expect(field.validator!('invalid'), 'Invalid email address');
+      // Validators return keys, not resolved messages
+      expect(field.validator!('invalid'), 'formix_key_invalid_email');
       expect(field.validator!('test@test.com'), isNull);
     });
   });

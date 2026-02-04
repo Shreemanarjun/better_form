@@ -319,9 +319,26 @@ class FormixController extends RiverpodFormController {
   }
 
   /// Focuses the first field that currently has a validation error.
-  void focusFirstError() {
+  /// Also scrolls to make the field visible if a context is registered.
+  void focusFirstError({
+    Duration scrollDuration = const Duration(milliseconds: 300),
+    Curve scrollCurve = Curves.easeInOut,
+  }) {
     for (final entry in state.validations.entries) {
       if (!entry.value.isValid) {
+        // Scroll to the field first
+        final context = _contexts[entry.key];
+        if (context != null && context.mounted) {
+          Scrollable.ensureVisible(
+            context,
+            duration: scrollDuration,
+            curve: scrollCurve,
+            alignment: 0.2, // Show field near top for better visibility
+            alignmentPolicy: ScrollPositionAlignmentPolicy.explicit,
+          );
+        }
+
+        // Then focus it
         _focusNodes[entry.key]?.requestFocus();
         return;
       }
