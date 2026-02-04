@@ -5,7 +5,7 @@ import 'package:formix/formix.dart';
 void main() {
   group('FormixDependentField', () {
     testWidgets('rebuilds when watched field value changes', (tester) async {
-      final watchedField = FormixFieldID<String>('watched_field');
+      const watchedField = FormixFieldID<String>('watched_field');
       int buildCount = 0;
 
       await tester.pumpWidget(
@@ -14,7 +14,7 @@ void main() {
             home: Scaffold(
               body: Formix(
                 initialValue: const {'watched_field': 'initial'},
-                fields: [
+                fields: const [
                   FormixFieldConfig(id: watchedField, initialValue: 'initial'),
                 ],
                 child: FormixDependentField<String>(
@@ -56,8 +56,8 @@ void main() {
     testWidgets('does not rebuild when unwatched field changes', (
       tester,
     ) async {
-      final watchedField = FormixFieldID<String>('watched_field');
-      final otherField = FormixFieldID<String>('other_field');
+      const watchedField = FormixFieldID<String>('watched_field');
+      const otherField = FormixFieldID<String>('other_field');
       int buildCount = 0;
 
       await tester.pumpWidget(
@@ -69,7 +69,7 @@ void main() {
                   'watched_field': 'initial',
                   'other_field': 'other',
                 },
-                fields: [
+                fields: const [
                   FormixFieldConfig(id: watchedField, initialValue: 'initial'),
                   FormixFieldConfig(id: otherField, initialValue: 'other'),
                 ],
@@ -106,7 +106,7 @@ void main() {
     });
 
     testWidgets('works with different field types - int', (tester) async {
-      final intField = FormixFieldID<int>('int_field');
+      const intField = FormixFieldID<int>('int_field');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -114,7 +114,7 @@ void main() {
             home: Scaffold(
               body: Formix(
                 initialValue: const {'int_field': 42},
-                fields: [FormixFieldConfig(id: intField, initialValue: 42)],
+                fields: const [FormixFieldConfig(id: intField, initialValue: 42)],
                 child: FormixDependentField<int>(
                   fieldId: intField,
                   builder: (context, value) {
@@ -142,7 +142,7 @@ void main() {
     });
 
     testWidgets('works with different field types - bool', (tester) async {
-      final boolField = FormixFieldID<bool>('bool_field');
+      const boolField = FormixFieldID<bool>('bool_field');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -150,7 +150,7 @@ void main() {
             home: Scaffold(
               body: Formix(
                 initialValue: const {'bool_field': true},
-                fields: [FormixFieldConfig(id: boolField, initialValue: true)],
+                fields: const [FormixFieldConfig(id: boolField, initialValue: true)],
                 child: FormixDependentField<bool>(
                   fieldId: boolField,
                   builder: (context, value) {
@@ -178,7 +178,7 @@ void main() {
     });
 
     testWidgets('works with different field types - double', (tester) async {
-      final doubleField = FormixFieldID<double>('double_field');
+      const doubleField = FormixFieldID<double>('double_field');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -186,7 +186,7 @@ void main() {
             home: Scaffold(
               body: Formix(
                 initialValue: const {'double_field': 3.14},
-                fields: [
+                fields: const [
                   FormixFieldConfig(id: doubleField, initialValue: 3.14),
                 ],
                 child: FormixDependentField<double>(
@@ -216,14 +216,14 @@ void main() {
     });
 
     testWidgets('handles null values correctly', (tester) async {
-      final nullableField = FormixFieldID<String>('nullable_field');
+      const nullableField = FormixFieldID<String>('nullable_field');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
-                fields: [FormixFieldConfig(id: nullableField)],
+                fields: const [FormixFieldConfig(id: nullableField)],
                 child: FormixDependentField<String>(
                   fieldId: nullableField,
                   builder: (context, value) {
@@ -260,7 +260,7 @@ void main() {
     testWidgets('uses custom controller provider when provided', (
       tester,
     ) async {
-      final customField = FormixFieldID<String>('custom_field');
+      const customField = FormixFieldID<String>('custom_field');
       final customProvider =
           StateNotifierProvider.autoDispose<FormixController, FormixData>((
             ref,
@@ -292,7 +292,7 @@ void main() {
     testWidgets(
       'falls back to Formix.of(context) when no controller provider',
       (tester) async {
-        final contextField = FormixFieldID<String>('context_field');
+        const contextField = FormixFieldID<String>('context_field');
 
         await tester.pumpWidget(
           ProviderScope(
@@ -300,7 +300,7 @@ void main() {
               home: Scaffold(
                 body: Formix(
                   initialValue: const {'context_field': 'from_context'},
-                  fields: [
+                  fields: const [
                     FormixFieldConfig(
                       id: contextField,
                       initialValue: 'from_context',
@@ -325,7 +325,7 @@ void main() {
     testWidgets(
       'falls back to default provider when no context or custom provider',
       (tester) async {
-        final defaultField = FormixFieldID<String>('default_field');
+        const defaultField = FormixFieldID<String>('default_field');
 
         await tester.pumpWidget(
           ProviderScope(
@@ -356,7 +356,7 @@ void main() {
     );
 
     testWidgets('builder receives correct BuildContext', (tester) async {
-      final contextField = FormixFieldID<String>('context_field');
+      const contextField = FormixFieldID<String>('context_field');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -364,7 +364,7 @@ void main() {
             home: Scaffold(
               body: Formix(
                 initialValue: const {'context_field': 'test'},
-                fields: [
+                fields: const [
                   FormixFieldConfig(id: contextField, initialValue: 'test'),
                 ],
                 child: FormixDependentField<String>(
@@ -388,7 +388,7 @@ void main() {
     });
 
     testWidgets('handles complex data types', (tester) async {
-      final listField = FormixFieldID<List<String>>('list_field');
+      const listField = FormixFieldID<List<String>>('list_field');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -398,7 +398,7 @@ void main() {
                 initialValue: const {
                   'list_field': ['a', 'b', 'c'],
                 },
-                fields: [
+                fields: const [
                   FormixFieldConfig(
                     id: listField,
                     initialValue: ['a', 'b', 'c'],
@@ -431,7 +431,7 @@ void main() {
     });
 
     testWidgets('works with enum-like string values', (tester) async {
-      final statusField = FormixFieldID<String>('status');
+      const statusField = FormixFieldID<String>('status');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -439,7 +439,7 @@ void main() {
             home: Scaffold(
               body: Formix(
                 initialValue: const {'status': 'active'},
-                fields: [
+                fields: const [
                   FormixFieldConfig(id: statusField, initialValue: 'active'),
                 ],
                 child: FormixDependentField<String>(
@@ -469,7 +469,7 @@ void main() {
     });
 
     testWidgets('handles rapid consecutive changes', (tester) async {
-      final counterField = FormixFieldID<int>('counter');
+      const counterField = FormixFieldID<int>('counter');
       int buildCount = 0;
 
       await tester.pumpWidget(
@@ -478,7 +478,7 @@ void main() {
             home: Scaffold(
               body: Formix(
                 initialValue: const {'counter': 0},
-                fields: [FormixFieldConfig(id: counterField, initialValue: 0)],
+                fields: const [FormixFieldConfig(id: counterField, initialValue: 0)],
                 child: FormixDependentField<int>(
                   fieldId: counterField,
                   builder: (context, value) {
@@ -517,7 +517,7 @@ void main() {
     });
 
     testWidgets('works with validation state changes', (tester) async {
-      final validatedField = FormixFieldID<String>('validated_field');
+      const validatedField = FormixFieldID<String>('validated_field');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -566,8 +566,8 @@ void main() {
     testWidgets(
       'works with multiple dependent fields watching different fields',
       (tester) async {
-        final field1 = FormixFieldID<String>('field1');
-        final field2 = FormixFieldID<String>('field2');
+        const field1 = FormixFieldID<String>('field1');
+        const field2 = FormixFieldID<String>('field2');
 
         int buildCount1 = 0;
         int buildCount2 = 0;
@@ -578,7 +578,7 @@ void main() {
               home: Scaffold(
                 body: Formix(
                   initialValue: const {'field1': 'value1', 'field2': 'value2'},
-                  fields: [
+                  fields: const [
                     FormixFieldConfig(id: field1, initialValue: 'value1'),
                     FormixFieldConfig(id: field2, initialValue: 'value2'),
                   ],
@@ -630,7 +630,7 @@ void main() {
     );
 
     testWidgets('handles field removal gracefully', (tester) async {
-      final tempField = FormixFieldID<String>('temp_field');
+      const tempField = FormixFieldID<String>('temp_field');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -638,7 +638,7 @@ void main() {
             home: Scaffold(
               body: Formix(
                 initialValue: const {'temp_field': 'exists'},
-                fields: [
+                fields: const [
                   FormixFieldConfig(id: tempField, initialValue: 'exists'),
                 ],
                 child: FormixDependentField<String>(

@@ -5,8 +5,8 @@ import 'package:formix/formix.dart';
 
 void main() {
   group('Advanced UX Widget Integration Tests', () {
-    final fieldA = FormixFieldID<String>('fieldA');
-    final fieldB = FormixFieldID<String>('fieldB');
+    const fieldA = FormixFieldID<String>('fieldA');
+    const fieldB = FormixFieldID<String>('fieldB');
 
     testWidgets('Validates visual feedback for Optimistic Update (Pending State)', (
       tester,
@@ -19,8 +19,8 @@ void main() {
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
-                initialValue: {'fieldA': 'initial'},
-                fields: [
+                initialValue: const {'fieldA': 'initial'},
+                fields: const [
                   FormixFieldConfig<String>(
                     id: fieldA,
                     initialValue: 'initial',
@@ -33,7 +33,7 @@ void main() {
 
                     return Column(
                       children: [
-                        FormixTextFormField(fieldId: fieldA),
+                        const FormixTextFormField(fieldId: fieldA),
                         if (isPending)
                           const CircularProgressIndicator(
                             key: Key('pending_indicator'),
@@ -100,24 +100,24 @@ void main() {
                 children: [
                   Formix(
                     key: keyA,
-                    initialValue: {'fieldA': 'A'},
-                    fields: [
+                    initialValue: const {'fieldA': 'A'},
+                    fields: const [
                       FormixFieldConfig<String>(id: fieldA, initialValue: 'A'),
                     ],
-                    child: FormixTextFormField(
+                    child: const FormixTextFormField(
                       fieldId: fieldA,
-                      decoration: const InputDecoration(labelText: 'Form A'),
+                      decoration: InputDecoration(labelText: 'Form A'),
                     ),
                   ),
                   Formix(
                     key: keyB,
-                    initialValue: {'fieldB': 'B'},
-                    fields: [
+                    initialValue: const {'fieldB': 'B'},
+                    fields: const [
                       FormixFieldConfig<String>(id: fieldB, initialValue: 'B'),
                     ],
-                    child: FormixTextFormField(
+                    child: const FormixTextFormField(
                       fieldId: fieldB,
-                      decoration: const InputDecoration(labelText: 'Form B'),
+                      decoration: InputDecoration(labelText: 'Form B'),
                     ),
                   ),
                 ],

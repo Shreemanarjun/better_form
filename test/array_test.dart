@@ -6,7 +6,7 @@ void main() {
   group('FormArray Logic', () {
     test('addArrayItem adds item to list', () {
       final controller = FormixController();
-      final arrayId = FormixArrayID<String>('tags');
+      const arrayId = FormixArrayID<String>('tags');
 
       controller.addArrayItem(arrayId, 'tag1');
       expect(controller.getValue(arrayId), ['tag1']);
@@ -21,7 +21,7 @@ void main() {
 
     test('removeArrayItemAt removes correct item', () {
       final controller = FormixController();
-      final arrayId = FormixArrayID<String>('tags');
+      const arrayId = FormixArrayID<String>('tags');
 
       controller.setValue(arrayId, ['tag1', 'tag2', 'tag3']);
 
@@ -31,7 +31,7 @@ void main() {
 
     test('replaceArrayItem replaces item at index', () {
       final controller = FormixController();
-      final arrayId = FormixArrayID<String>('tags');
+      const arrayId = FormixArrayID<String>('tags');
 
       controller.setValue(arrayId, ['tag1', 'tag2']);
 
@@ -41,7 +41,7 @@ void main() {
 
     test('moveArrayItem reorders items', () {
       final controller = FormixController();
-      final arrayId = FormixArrayID<String>('tags');
+      const arrayId = FormixArrayID<String>('tags');
 
       controller.setValue(arrayId, ['tag1', 'tag2', 'tag3']);
 
@@ -52,7 +52,7 @@ void main() {
 
   group('FormixArray Widget', () {
     testWidgets('renders items and handles adding/removing', (tester) async {
-      final arrayId = FormixArrayID<String>('hobbies');
+      const arrayId = FormixArrayID<String>('hobbies');
 
       await tester.pumpWidget(
         ProviderScope(

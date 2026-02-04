@@ -8,7 +8,7 @@ void main() {
     tester,
   ) async {
     final handle = tester.ensureSemantics();
-    final fieldId = FormixFieldID<String>('role');
+    const fieldId = FormixFieldID<String>('role');
 
     await tester.pumpWidget(
       ProviderScope(
@@ -24,13 +24,13 @@ void main() {
                       (val == null || val.isEmpty) ? 'Required' : null,
                 ),
               ],
-              child: FormixDropdownFormField<String>(
+              child: const FormixDropdownFormField<String>(
                 fieldId: fieldId,
-                items: const [
+                items: [
                   DropdownMenuItem(value: 'admin', child: Text('Admin')),
                   DropdownMenuItem(value: 'user', child: Text('User')),
                 ],
-                decoration: const InputDecoration(labelText: 'Role'),
+                decoration: InputDecoration(labelText: 'Role'),
               ),
             ),
           ),

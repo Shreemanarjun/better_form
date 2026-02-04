@@ -164,9 +164,9 @@ void main() {
 
       // 1. Stress Test History
       const updatesCount = 100;
-      final field = FormixFieldID<int>('counter');
+      const field = FormixFieldID<int>('counter');
       controller.registerField(
-        FormixFieldConfig<int>(id: field, initialValue: 0).toField(),
+        const FormixFieldConfig<int>(id: field, initialValue: 0).toField(),
       );
 
       for (int i = 0; i < updatesCount; i++) {

@@ -23,8 +23,8 @@ class _CustomToggleFieldState extends FormixFieldWidgetState<bool> {
 
 void main() {
   group('Manual Validation & Custom Widget Tests', () {
-    final nameField = FormixFieldID<String>('name');
-    final toggleField = FormixFieldID<bool>('toggle');
+    const nameField = FormixFieldID<String>('name');
+    const toggleField = FormixFieldID<bool>('toggle');
 
     testWidgets('setFieldError manually updates field error', (tester) async {
       late FormixController controller;
@@ -34,13 +34,13 @@ void main() {
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
-                fields: [
+                fields: const [
                   FormixFieldConfig<String>(id: nameField, initialValue: ''),
                 ],
                 child: FormixBuilder(
                   builder: (context, scope) {
                     controller = Formix.controllerOf(context)!;
-                    return FormixTextFormField(fieldId: nameField);
+                    return const FormixTextFormField(fieldId: nameField);
                   },
                 ),
               ),
@@ -74,7 +74,7 @@ void main() {
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
-                fields: [
+                fields: const [
                   FormixFieldConfig<String>(id: nameField, initialValue: ''),
                 ],
                 child: FormixBuilder(
@@ -110,13 +110,13 @@ void main() {
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
-                fields: [
+                fields: const [
                   FormixFieldConfig<bool>(id: toggleField, initialValue: false),
                 ],
                 child: FormixBuilder(
                   builder: (context, scope) {
                     controller = Formix.controllerOf(context)!;
-                    return CustomToggleField(fieldId: toggleField);
+                    return const CustomToggleField(fieldId: toggleField);
                   },
                 ),
               ),

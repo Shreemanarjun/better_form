@@ -9,7 +9,7 @@ void main() {
       tester,
     ) async {
       final completer = Completer<String>();
-      final fieldId = const FormixFieldID<String>('async_field');
+      const fieldId = FormixFieldID<String>('async_field');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -49,7 +49,7 @@ void main() {
 
     testWidgets('submit waits for pending field by default', (tester) async {
       final completer = Completer<String>();
-      final fieldId = const FormixFieldID<String>('async_field');
+      const fieldId = FormixFieldID<String>('async_field');
       Map<String, dynamic>? submittedValues;
 
       await tester.pumpWidget(
@@ -114,7 +114,7 @@ void main() {
       tester,
     ) async {
       int fetchCount = 0;
-      final fieldId = const FormixFieldID<String>('async_field');
+      const fieldId = FormixFieldID<String>('async_field');
 
       Completer<String>? secondFetchCompleter;
       Future<String> fetchData() async {

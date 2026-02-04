@@ -8,8 +8,8 @@ void main() {
     late FormixFieldID<String> targetField;
 
     setUp(() {
-      sourceField = FormixFieldID<String>('source');
-      targetField = FormixFieldID<String>('target');
+      sourceField = const FormixFieldID<String>('source');
+      targetField = const FormixFieldID<String>('target');
     });
 
     testWidgets('build returns SizedBox.shrink', (tester) async {

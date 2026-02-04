@@ -4,13 +4,13 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   testWidgets('FormixSection registers fields when built', (tester) async {
-    final field1 = FormixFieldConfig(
+    const field1 = FormixFieldConfig(
       id: FormixFieldID<String>('field1'),
       initialValue: 'value1',
       label: 'Field 1',
     );
 
-    final field2 = FormixFieldConfig(
+    const field2 = FormixFieldConfig(
       id: FormixFieldID<String>('field2'),
       initialValue: 'value2',
       label: 'Field 2',
@@ -21,7 +21,7 @@ void main() {
         child: MaterialApp(
           home: Scaffold(
             body: Formix(
-              fields: [field1], // Only field1 is registered initially
+              fields: const [field1], // Only field1 is registered initially
               child: Column(
                 children: [
                   FormixTextFormField(
@@ -46,7 +46,7 @@ void main() {
         child: MaterialApp(
           home: Scaffold(
             body: Formix(
-              fields: [field1],
+              fields: const [field1],
               child: Column(
                 children: [
                   FormixTextFormField(
@@ -54,7 +54,7 @@ void main() {
                     decoration: const InputDecoration(labelText: 'Field 1'),
                   ),
                   FormixSection(
-                    fields: [field2],
+                    fields: const [field2],
                     child: FormixTextFormField(
                       fieldId: field2.id,
                       decoration: const InputDecoration(labelText: 'Field 2'),
@@ -77,7 +77,7 @@ void main() {
   testWidgets('FormixSection with keepAlive=false unregisters fields', (
     tester,
   ) async {
-    final field1 = FormixFieldConfig(
+    const field1 = FormixFieldConfig(
       id: FormixFieldID<String>('field1'),
       initialValue: 'one',
     );
@@ -89,7 +89,7 @@ void main() {
             body: Formix(
               child: FormixSection(
                 keepAlive: false,
-                fields: [field1],
+                fields: const [field1],
                 child: FormixTextFormField(fieldId: field1.id),
               ),
             ),
@@ -125,7 +125,7 @@ void main() {
             body: Formix(
               child: FormixSection(
                 keepAlive: false,
-                fields: [field1],
+                fields: const [field1],
                 child: FormixTextFormField(fieldId: field1.id),
               ),
             ),

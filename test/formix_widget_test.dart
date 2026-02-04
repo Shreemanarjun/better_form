@@ -5,19 +5,19 @@ import 'package:formix/formix.dart';
 void main() {
   group('Formix Widget Tests', () {
     testWidgets('should render child and provide controller', (tester) async {
-      final nameField = FormixFieldID<String>('name');
+      const nameField = FormixFieldID<String>('name');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
-                initialValue: {'name': 'Default Name'},
+                initialValue: const {'name': 'Default Name'},
                 child: Column(
                   children: [
-                    FormixTextFormField(
+                    const FormixTextFormField(
                       fieldId: nameField,
-                      decoration: const InputDecoration(labelText: 'Name'),
+                      decoration: InputDecoration(labelText: 'Name'),
                     ),
                     Consumer(
                       builder: (context, ref, child) {
@@ -41,7 +41,7 @@ void main() {
     testWidgets('should register fields passed to Formix constructor', (
       tester,
     ) async {
-      final emailField = FormixFieldID<String>('email');
+      const emailField = FormixFieldID<String>('email');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -59,9 +59,9 @@ void main() {
                 ],
                 child: Column(
                   children: [
-                    FormixTextFormField(
+                    const FormixTextFormField(
                       fieldId: emailField,
-                      decoration: const InputDecoration(labelText: 'Email'),
+                      decoration: InputDecoration(labelText: 'Email'),
                     ),
                     Consumer(
                       builder: (context, ref, child) {
@@ -92,17 +92,17 @@ void main() {
     testWidgets('should handle reset via controller from Formix.of', (
       tester,
     ) async {
-      final nameField = FormixFieldID<String>('name');
+      const nameField = FormixFieldID<String>('name');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
-                initialValue: {'name': 'Original'},
+                initialValue: const {'name': 'Original'},
                 child: Column(
                   children: [
-                    FormixTextFormField(fieldId: nameField),
+                    const FormixTextFormField(fieldId: nameField),
                     Consumer(
                       builder: (context, ref, child) {
                         return ElevatedButton(
@@ -140,32 +140,32 @@ void main() {
     testWidgets('should support nested Formixs with independent states', (
       tester,
     ) async {
-      final fieldA = FormixFieldID<String>('field');
-      final fieldB = FormixFieldID<String>('field');
+      const fieldA = FormixFieldID<String>('field');
+      const fieldB = FormixFieldID<String>('field');
 
       await tester.pumpWidget(
-        ProviderScope(
+        const ProviderScope(
           child: MaterialApp(
             home: Scaffold(
               body: Column(
                 children: [
                   Formix(
-                    key: const Key('form_a'),
+                    key: Key('form_a'),
                     initialValue: {'field': 'Form A'},
                     child: Column(
                       children: [
-                        const Text('Scope A'),
+                        Text('Scope A'),
                         FormixTextFormField(fieldId: fieldA),
                       ],
                     ),
                   ),
-                  const Divider(),
+                  Divider(),
                   Formix(
-                    key: const Key('form_b'),
+                    key: Key('form_b'),
                     initialValue: {'field': 'Form B'},
                     child: Column(
                       children: [
-                        const Text('Scope B'),
+                        Text('Scope B'),
                         FormixTextFormField(fieldId: fieldB),
                       ],
                     ),

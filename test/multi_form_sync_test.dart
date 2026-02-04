@@ -3,8 +3,8 @@ import 'package:formix/formix.dart';
 
 void main() {
   group('Multi-Form Synchronization Tests', () {
-    final fieldA = FormixFieldID<String>('fieldA');
-    final fieldB = FormixFieldID<String>('fieldB');
+    const fieldA = FormixFieldID<String>('fieldA');
+    const fieldB = FormixFieldID<String>('fieldB');
 
     testWidgets('One-way binding updates target field', (tester) async {
       late RiverpodFormController controllerA;
@@ -15,12 +15,12 @@ void main() {
 
       controllerA = RiverpodFormController(
         fields: [
-          FormixFieldConfig<String>(id: fieldA, initialValue: 'A').toField(),
+          const FormixFieldConfig<String>(id: fieldA, initialValue: 'A').toField(),
         ],
       );
       controllerB = RiverpodFormController(
         fields: [
-          FormixFieldConfig<String>(id: fieldB, initialValue: 'B').toField(),
+          const FormixFieldConfig<String>(id: fieldB, initialValue: 'B').toField(),
         ],
       );
 
@@ -55,12 +55,12 @@ void main() {
 
       controllerA = RiverpodFormController(
         fields: [
-          FormixFieldConfig<String>(id: fieldA, initialValue: 'A').toField(),
+          const FormixFieldConfig<String>(id: fieldA, initialValue: 'A').toField(),
         ],
       );
       controllerB = RiverpodFormController(
         fields: [
-          FormixFieldConfig<String>(id: fieldB, initialValue: 'B').toField(),
+          const FormixFieldConfig<String>(id: fieldB, initialValue: 'B').toField(),
         ],
       );
 

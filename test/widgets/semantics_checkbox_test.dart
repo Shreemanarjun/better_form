@@ -8,7 +8,7 @@ void main() {
     tester,
   ) async {
     final handle = tester.ensureSemantics();
-    final fieldId = FormixFieldID<bool>('agree');
+    const fieldId = FormixFieldID<bool>('agree');
 
     await tester.pumpWidget(
       ProviderScope(
@@ -23,7 +23,7 @@ void main() {
                   validator: (val) => (val == true) ? null : 'Must agree',
                 ),
               ],
-              child: FormixCheckboxFormField(
+              child: const FormixCheckboxFormField(
                 fieldId: fieldId,
                 title: Text('Agree to terms'),
               ),

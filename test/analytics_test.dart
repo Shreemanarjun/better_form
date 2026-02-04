@@ -43,13 +43,13 @@ class FakeFormixAnalytics implements FormixAnalytics {
 
 void main() {
   group('Form Analytics Tests', () {
-    final fieldA = FormixFieldID<String>('fieldA');
+    const fieldA = FormixFieldID<String>('fieldA');
 
     test('Tracks basic lifecycle events', () async {
       final analytics = FakeFormixAnalytics();
       final controller = RiverpodFormController(
         fields: [
-          FormixFieldConfig<String>(id: fieldA, initialValue: 'A').toField(),
+          const FormixFieldConfig<String>(id: fieldA, initialValue: 'A').toField(),
         ],
         formId: 'test_form',
         analytics: analytics,
@@ -83,7 +83,7 @@ void main() {
       final analytics = FakeFormixAnalytics();
       final controller = RiverpodFormController(
         fields: [
-          FormixFieldConfig<String>(id: fieldA, initialValue: 'A').toField(),
+          const FormixFieldConfig<String>(id: fieldA, initialValue: 'A').toField(),
         ],
         formId: 'test_form_aband',
         analytics: analytics,

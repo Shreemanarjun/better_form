@@ -6,7 +6,7 @@ import 'package:formix/formix.dart';
 
 void main() {
   group('Optimistic Field Updates Tests', () {
-    final fieldId = FormixFieldID<String>('field');
+    const fieldId = FormixFieldID<String>('field');
 
     testWidgets('Validates Optimistic Update Flow', (tester) async {
       late FormixController controller;
@@ -16,8 +16,8 @@ void main() {
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
-                initialValue: {'field': 'initial'},
-                fields: [
+                initialValue: const {'field': 'initial'},
+                fields: const [
                   FormixFieldConfig<String>(
                     id: fieldId,
                     initialValue: 'initial',
@@ -26,7 +26,7 @@ void main() {
                 child: FormixBuilder(
                   builder: (context, scope) {
                     controller = Formix.controllerOf(context)!;
-                    return Column(
+                    return const Column(
                       children: [FormixTextFormField(fieldId: fieldId)],
                     );
                   },
@@ -77,8 +77,8 @@ void main() {
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
-                initialValue: {'field': 'initial'},
-                fields: [
+                initialValue: const {'field': 'initial'},
+                fields: const [
                   FormixFieldConfig<String>(
                     id: fieldId,
                     initialValue: 'initial',
@@ -87,7 +87,7 @@ void main() {
                 child: FormixBuilder(
                   builder: (context, scope) {
                     controller = Formix.controllerOf(context)!;
-                    return Column(
+                    return const Column(
                       children: [FormixTextFormField(fieldId: fieldId)],
                     );
                   },

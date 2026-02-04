@@ -9,9 +9,9 @@ void main() {
     late FormixFieldID<double> doubleField;
 
     setUp(() {
-      numField = FormixFieldID<num>('num_field');
-      intField = FormixFieldID<int>('int_field');
-      doubleField = FormixFieldID<double>('double_field');
+      numField = const FormixFieldID<num>('num_field');
+      intField = const FormixFieldID<int>('int_field');
+      doubleField = const FormixFieldID<double>('double_field');
     });
 
     testWidgets('renders with initial numeric value', (tester) async {

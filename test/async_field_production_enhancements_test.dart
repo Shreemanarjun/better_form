@@ -8,7 +8,7 @@ void main() {
     testWidgets('Handles race conditions by only applying the latest future', (
       tester,
     ) async {
-      final fieldId = FormixFieldID<String>('race_condition');
+      const fieldId = FormixFieldID<String>('race_condition');
 
       final completer1 = Completer<String>();
       final completer2 = Completer<String>();
@@ -55,7 +55,7 @@ void main() {
     });
 
     testWidgets('supports retry via refresh()', (tester) async {
-      final fieldId = FormixFieldID<String>('retry_test');
+      const fieldId = FormixFieldID<String>('retry_test');
       int callCount = 0;
 
       // Define fetch function
@@ -125,7 +125,7 @@ void main() {
     testWidgets('keepPreviousData prevents flicker during loading', (
       tester,
     ) async {
-      final fieldId = FormixFieldID<String>('flicker_test');
+      const fieldId = FormixFieldID<String>('flicker_test');
 
       final completer1 = Completer<String>();
       final completer2 = Completer<String>();
@@ -169,7 +169,7 @@ void main() {
     testWidgets('debounce prevents execution of intermediate futures', (
       tester,
     ) async {
-      final fieldId = FormixFieldID<String>('debounce_real_test');
+      const fieldId = FormixFieldID<String>('debounce_real_test');
 
       final completer1 = Completer<String>();
       final futureNotifier = ValueNotifier<Future<String>>(completer1.future);

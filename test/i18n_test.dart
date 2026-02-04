@@ -6,7 +6,7 @@ void main() {
     test('FormixMessages is abstract and cannot be instantiated', () {
       // This should not compile if we try to instantiate it directly
       // We test this by ensuring the concrete implementation works
-      final messages = DefaultFormixMessages();
+      const messages = DefaultFormixMessages();
       expect(messages, isA<FormixMessages>());
     });
   });
@@ -283,14 +283,14 @@ void main() {
 
   group('Custom FormixMessages Implementation', () {
     test('can create custom implementation', () {
-      final customMessages = CustomTestMessages();
+      const customMessages = CustomTestMessages();
       expect(customMessages, isA<FormixMessages>());
       expect(customMessages.required('Test'), 'CUSTOM: Test is required!');
       expect(customMessages.invalidFormat(), 'CUSTOM: Invalid format!');
     });
 
     test('custom implementation can override all methods', () {
-      final customMessages = CustomTestMessages();
+      const customMessages = CustomTestMessages();
 
       expect(customMessages.minLength('F', 5), 'CUSTOM: At least 5 characters');
       expect(
@@ -307,7 +307,7 @@ void main() {
     });
 
     test('custom implementation handles dates', () {
-      final customMessages = CustomTestMessages();
+      const customMessages = CustomTestMessages();
       final date = DateTime(2023, 6, 15);
 
       expect(
@@ -321,7 +321,7 @@ void main() {
     });
 
     test('custom implementation handles validation errors', () {
-      final customMessages = CustomTestMessages();
+      const customMessages = CustomTestMessages();
 
       expect(
         customMessages.validationFailed('Network timeout'),
@@ -340,8 +340,8 @@ void main() {
     });
 
     test('messages are consistent across instances', () {
-      final messages1 = const DefaultFormixMessages();
-      final messages2 = const DefaultFormixMessages();
+      const messages1 = DefaultFormixMessages();
+      const messages2 = DefaultFormixMessages();
 
       expect(messages1.required('Test'), equals(messages2.required('Test')));
       expect(messages1.minLength('F', 5), equals(messages2.minLength('F', 5)));
@@ -349,7 +349,7 @@ void main() {
     });
 
     test('messages handle null or empty parameters gracefully', () {
-      final messages = const DefaultFormixMessages();
+      const messages = DefaultFormixMessages();
 
       // These should not crash
       expect(() => messages.required(''), returnsNormally);

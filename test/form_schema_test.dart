@@ -8,9 +8,9 @@ void main() {
     late FormixFieldID<bool> newsletterField;
 
     setUp(() {
-      nameField = FormixFieldID<String>('name');
-      ageField = FormixFieldID<num>('age');
-      newsletterField = FormixFieldID<bool>('newsletter');
+      nameField = const FormixFieldID<String>('name');
+      ageField = const FormixFieldID<num>('age');
+      newsletterField = const FormixFieldID<bool>('newsletter');
     });
 
     group('TextFieldSchema', () {
@@ -167,7 +167,7 @@ void main() {
 
     group('SelectionFieldSchema', () {
       test('should validate selection from options', () async {
-        final schema = SelectionFieldSchema<String>(
+        const schema = SelectionFieldSchema<String>(
           id: FormixFieldID<String>('priority'),
           initialValue: 'medium',
           options: ['low', 'medium', 'high'],
@@ -217,7 +217,7 @@ void main() {
         expect(field!.id, nameField);
 
         final nonExistent = formSchema.getField<String>(
-          FormixFieldID<String>('email'),
+          const FormixFieldID<String>('email'),
         );
         expect(nonExistent, isNull);
       });
@@ -402,7 +402,7 @@ void main() {
 
     group('FormValidationResult', () {
       test('should handle valid results', () {
-        final result = FormValidationResult(isValid: true);
+        const result = FormValidationResult(isValid: true);
         expect(result.isValid, true);
         expect(result.fieldErrors, isEmpty);
         expect(result.customErrors, isEmpty);
@@ -444,7 +444,7 @@ void main() {
       });
 
       test('should create failure result', () {
-        final validationResult = FormValidationResult(isValid: false);
+        const validationResult = FormValidationResult(isValid: false);
         final result = FormSubmissionResult.failure(
           error: 'Validation failed',
           validationResult: validationResult,

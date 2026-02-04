@@ -15,7 +15,7 @@ void main() {
     testWidgets('FormixDependentField responds to dependency changes', (
       tester,
     ) async {
-      final visibilityField = FormixFieldID<bool>('visible');
+      const visibilityField = FormixFieldID<bool>('visible');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -33,9 +33,9 @@ void main() {
                             : const SizedBox.shrink();
                       },
                     ),
-                    FormixCheckboxFormField(
+                    const FormixCheckboxFormField(
                       fieldId: visibilityField,
-                      title: const Text('Check me'),
+                      title: Text('Check me'),
                     ),
                   ],
                 ),
@@ -57,7 +57,7 @@ void main() {
     });
 
     testWidgets('Async validation shows loading indicator', (tester) async {
-      final usernameField = FormixFieldID<String>('username');
+      const usernameField = FormixFieldID<String>('username');
 
       // Mock async validator
       Future<String?> asyncValidator(String? value) async {
@@ -81,7 +81,7 @@ void main() {
                     debounceDuration: const Duration(milliseconds: 50),
                   ),
                 ],
-                child: FormixTextFormField(fieldId: usernameField),
+                child: const FormixTextFormField(fieldId: usernameField),
               ),
             ),
           ),
@@ -113,8 +113,8 @@ void main() {
     testWidgets('Persistence saves and restores state', (tester) async {
       // Use in-memory persistence
       final persistence = InMemoryFormPersistence();
-      final formId = 'test_form';
-      final nameField = FormixFieldID<String>('name');
+      const formId = 'test_form';
+      const nameField = FormixFieldID<String>('name');
 
       // Pre-save state
       await persistence.saveFormState(formId, {'name': 'Saved Name'});
@@ -128,13 +128,13 @@ void main() {
                 persistence: persistence,
                 initialValue: const {'name': 'Initial'},
                 // We must register the field to populate it
-                fields: [
+                fields: const [
                   FormixFieldConfig<String>(
                     id: nameField,
                     initialValue: 'Initial',
                   ),
                 ],
-                child: FormixTextFormField(fieldId: nameField),
+                child: const FormixTextFormField(fieldId: nameField),
               ),
             ),
           ),

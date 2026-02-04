@@ -5,9 +5,9 @@ import 'package:formix/formix.dart';
 void main() {
   group('FieldDerivationConfig', () {
     test('equality works correctly', () {
-      final fieldId1 = FormixFieldID<String>('field1');
-      final fieldId2 = FormixFieldID<String>('field2');
-      final targetId = FormixFieldID<String>('target');
+      const fieldId1 = FormixFieldID<String>('field1');
+      const fieldId2 = FormixFieldID<String>('field2');
+      const targetId = FormixFieldID<String>('target');
 
       final config1 = FieldDerivationConfig(
         dependencies: [fieldId1, fieldId2],
@@ -32,9 +32,9 @@ void main() {
     });
 
     test('hashCode works correctly', () {
-      final fieldId1 = FormixFieldID<String>('field1');
-      final fieldId2 = FormixFieldID<String>('field2');
-      final targetId = FormixFieldID<String>('target');
+      const fieldId1 = FormixFieldID<String>('field1');
+      const fieldId2 = FormixFieldID<String>('field2');
+      const targetId = FormixFieldID<String>('target');
 
       final config1 = FieldDerivationConfig(
         dependencies: [fieldId1, fieldId2],
@@ -59,10 +59,10 @@ void main() {
     late FormixFieldID<DateTime> dobField;
 
     setUp(() {
-      sourceField = FormixFieldID<String>('source');
-      targetField = FormixFieldID<String>('target');
-      ageField = FormixFieldID<int>('age');
-      dobField = FormixFieldID<DateTime>('dob');
+      sourceField = const FormixFieldID<String>('source');
+      targetField = const FormixFieldID<String>('target');
+      ageField = const FormixFieldID<int>('age');
+      dobField = const FormixFieldID<DateTime>('dob');
     });
 
     testWidgets('build returns SizedBox.shrink', (tester) async {
@@ -140,12 +140,12 @@ void main() {
     });
 
     testWidgets('handles multiple dependencies', (tester) async {
-      final firstNameField = FormixFieldID<String>('firstName');
-      final lastNameField = FormixFieldID<String>('lastName');
-      final fullNameField = FormixFieldID<String>('fullName');
+      const firstNameField = FormixFieldID<String>('firstName');
+      const lastNameField = FormixFieldID<String>('lastName');
+      const fullNameField = FormixFieldID<String>('fullName');
 
       final widget = FormixFieldDerivation(
-        dependencies: [firstNameField, lastNameField],
+        dependencies: const [firstNameField, lastNameField],
         derive: (values) =>
             '${values[firstNameField]} ${values[lastNameField]}',
         targetField: fullNameField,
@@ -160,7 +160,7 @@ void main() {
                 'lastName': 'Doe',
                 'fullName': '',
               },
-              fields: [
+              fields: const [
                 FormixFieldConfig(id: firstNameField),
                 FormixFieldConfig(id: lastNameField),
                 FormixFieldConfig(id: fullNameField),
@@ -274,7 +274,7 @@ void main() {
     });
 
     testWidgets('updates listeners when dependencies change', (tester) async {
-      final newSourceField = FormixFieldID<String>('newSource');
+      const newSourceField = FormixFieldID<String>('newSource');
 
       final widget = FormixFieldDerivation(
         dependencies: [sourceField],
@@ -294,7 +294,7 @@ void main() {
               fields: [
                 FormixFieldConfig(id: sourceField),
                 FormixFieldConfig(id: targetField),
-                FormixFieldConfig(id: newSourceField),
+                const FormixFieldConfig(id: newSourceField),
               ],
               child: widget,
             ),
@@ -325,10 +325,10 @@ void main() {
               fields: [
                 FormixFieldConfig(id: sourceField),
                 FormixFieldConfig(id: targetField),
-                FormixFieldConfig(id: newSourceField),
+                const FormixFieldConfig(id: newSourceField),
               ],
               child: FormixFieldDerivation(
-                dependencies: [newSourceField],
+                dependencies: const [newSourceField],
                 derive: (values) => values[newSourceField]?.toUpperCase(),
                 targetField: targetField,
               ),
@@ -349,11 +349,11 @@ void main() {
     late FormixFieldID<String> displayNameField;
 
     setUp(() {
-      firstNameField = FormixFieldID<String>('firstName');
-      lastNameField = FormixFieldID<String>('lastName');
-      fullNameField = FormixFieldID<String>('fullName');
-      emailField = FormixFieldID<String>('email');
-      displayNameField = FormixFieldID<String>('displayName');
+      firstNameField = const FormixFieldID<String>('firstName');
+      lastNameField = const FormixFieldID<String>('lastName');
+      fullNameField = const FormixFieldID<String>('fullName');
+      emailField = const FormixFieldID<String>('email');
+      displayNameField = const FormixFieldID<String>('displayName');
     });
 
     testWidgets('handles multiple derivations', (tester) async {
@@ -417,12 +417,12 @@ void main() {
     });
 
     testWidgets('build returns SizedBox.shrink', (tester) async {
-      final widget = FormixFieldDerivations(derivations: []);
+      const widget = FormixFieldDerivations(derivations: []);
 
       await tester.pumpWidget(
-        ProviderScope(
+        const ProviderScope(
           child: MaterialApp(
-            home: Formix(initialValue: const {}, fields: [], child: widget),
+            home: Formix(initialValue: {}, fields: [], child: widget),
           ),
         ),
       );

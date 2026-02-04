@@ -52,7 +52,7 @@ void main() {
   });
 
   testWidgets('Optimistic submission works correctly', (tester) async {
-    final nameField = FormixFieldID<String>('name');
+    const nameField = FormixFieldID<String>('name');
     bool shouldFail = false;
 
     await tester.pumpWidget(
@@ -68,7 +68,7 @@ void main() {
                     child: Column(
                       children: [
                         Text('Dirty: $isDirty'),
-                        FormixSection(
+                        const FormixSection(
                           fields: [FormixFieldConfig(id: nameField)],
                           child: FormixTextFormField(fieldId: nameField),
                         ),

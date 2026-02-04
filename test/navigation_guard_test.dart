@@ -8,7 +8,7 @@ void main() {
   ) async {
     bool confirmedDiscard = false;
 
-    final nameField = FormixFieldID<String>('name');
+    const nameField = FormixFieldID<String>('name');
 
     await tester.pumpWidget(
       ProviderScope(
@@ -33,7 +33,7 @@ void main() {
                                 return Column(
                                   children: [
                                     Text('Dirty: $isDirty'),
-                                    FormixSection(
+                                    const FormixSection(
                                       fields: [
                                         FormixFieldConfig(id: nameField),
                                       ],
@@ -97,7 +97,7 @@ void main() {
   ) async {
     bool dialogShown = false;
 
-    final nameField = FormixFieldID<String>('name');
+    const nameField = FormixFieldID<String>('name');
 
     await tester.pumpWidget(
       ProviderScope(
@@ -116,7 +116,7 @@ void main() {
                         child: Scaffold(
                           body: Column(
                             children: [
-                              FormixSection(
+                              const FormixSection(
                                 fields: [FormixFieldConfig(id: nameField)],
                                 child: FormixTextFormField(fieldId: nameField),
                               ),
@@ -153,7 +153,7 @@ void main() {
   testWidgets('FormixNavigationGuard prevents pop if dialog returns false', (
     tester,
   ) async {
-    final nameField = FormixFieldID<String>('name');
+    const nameField = FormixFieldID<String>('name');
 
     await tester.pumpWidget(
       ProviderScope(
@@ -170,7 +170,7 @@ void main() {
                         child: Scaffold(
                           body: Column(
                             children: [
-                              FormixSection(
+                              const FormixSection(
                                 fields: [FormixFieldConfig(id: nameField)],
                                 child: FormixTextFormField(fieldId: nameField),
                               ),

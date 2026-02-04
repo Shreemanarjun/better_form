@@ -4,13 +4,13 @@ import 'package:formix/formix.dart';
 
 void main() {
   group('Focus Management Tests', () {
-    final field1 = FormixFieldID<String>('field1');
-    final field2 = FormixFieldID<String>('field2');
-    final field3 = FormixFieldID<String>('field3');
+    const field1 = FormixFieldID<String>('field1');
+    const field2 = FormixFieldID<String>('field2');
+    const field3 = FormixFieldID<String>('field3');
 
     testWidgets('Enter-to-Next focuses next field', (tester) async {
       await tester.pumpWidget(
-        ProviderScope(
+        const ProviderScope(
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
@@ -69,7 +69,7 @@ void main() {
     });
 
     testWidgets('Validates Submit-to-Error functionality', (tester) async {
-      final requiredField = FormixFieldID<String>('required');
+      const requiredField = FormixFieldID<String>('required');
       late FormixController controller;
 
       await tester.pumpWidget(
@@ -88,7 +88,7 @@ void main() {
                 child: FormixBuilder(
                   builder: (context, scope) {
                     controller = Formix.controllerOf(context)!;
-                    return Column(
+                    return const Column(
                       children: [FormixTextFormField(fieldId: requiredField)],
                     );
                   },

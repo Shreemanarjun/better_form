@@ -9,7 +9,7 @@ void main() {
     testWidgets('Rapidly rebuilds field without leaking listeners', (
       tester,
     ) async {
-      final fieldId = FormixFieldID<String>('stress_field');
+      const fieldId = FormixFieldID<String>('stress_field');
       int rebuildCount = 0;
 
       await tester.pumpWidget(
@@ -102,10 +102,10 @@ void main() {
     });
 
     testWidgets('Fast typing updates do not lag', (tester) async {
-      final fieldId = FormixFieldID<String>('typing_field');
+      const fieldId = FormixFieldID<String>('typing_field');
 
       await tester.pumpWidget(
-        ProviderScope(
+        const ProviderScope(
           child: MaterialApp(
             home: Scaffold(
               body: Formix(child: FormixTextFormField(fieldId: fieldId)),
@@ -146,7 +146,7 @@ void main() {
     testWidgets('Widget disposal cleans up controller listeners', (
       tester,
     ) async {
-      final fieldId = FormixFieldID<String>('disposable_field');
+      const fieldId = FormixFieldID<String>('disposable_field');
       final showField = ValueNotifier(true);
       late RiverpodFormController controller;
 
@@ -162,7 +162,7 @@ void main() {
                       valueListenable: showField,
                       builder: (context, show, _) {
                         return show
-                            ? FormixTextFormField(fieldId: fieldId)
+                            ? const FormixTextFormField(fieldId: fieldId)
                             : Container();
                       },
                     );
@@ -197,7 +197,7 @@ void main() {
     testWidgets('Duplicate value updates do not trigger unnecessary rebuilds', (
       tester,
     ) async {
-      final fieldId = FormixFieldID<String>('idempotent_field');
+      const fieldId = FormixFieldID<String>('idempotent_field');
       int buildCount = 0;
 
       await tester.pumpWidget(
@@ -257,7 +257,7 @@ void main() {
     testWidgets('Cross-field dependency performance with many dependents', (
       tester,
     ) async {
-      final sourceField = FormixFieldID<String>('source');
+      const sourceField = FormixFieldID<String>('source');
       const dependentCount = 100;
 
       await tester.pumpWidget(
@@ -270,7 +270,7 @@ void main() {
                   itemCount: dependentCount + 1,
                   itemBuilder: (context, index) {
                     if (index == 0) {
-                      return FormixTextFormField(fieldId: sourceField);
+                      return const FormixTextFormField(fieldId: sourceField);
                     }
                     final dependentId = FormixFieldID<String>('dep_$index');
                     return FormixBuilder(

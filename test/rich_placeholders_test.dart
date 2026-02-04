@@ -4,7 +4,7 @@ import 'package:formix/formix.dart';
 
 void main() {
   group('Rich Error Placeholders Tests', () {
-    final ageField = FormixFieldID<int>('age');
+    const ageField = FormixFieldID<int>('age');
 
     testWidgets('Placeholders {label} and {min} are resolved', (tester) async {
       late FormixController controller;

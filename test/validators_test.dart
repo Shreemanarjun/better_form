@@ -56,7 +56,7 @@ void main() {
     });
 
     test('FormixFieldConfig.chain factory integrates correctly', () {
-      final emailField = FormixFieldID<String>('email');
+      const emailField = FormixFieldID<String>('email');
       final config = FormixFieldConfig.chain(
         id: emailField,
         rules: FormixValidators.string().required().email(),

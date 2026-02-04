@@ -19,8 +19,8 @@ final modelsProvider = FutureProvider.family<List<String>, String>((
 
 void main() {
   group('Async Data & Dependent Dropdowns', () {
-    final makeField = FormixFieldID<String>('make');
-    final modelField = FormixFieldID<String>('model');
+    const makeField = FormixFieldID<String>('make');
+    const modelField = FormixFieldID<String>('model');
 
     testWidgets('Async Dropdown loads options based on dependency', (
       tester,
@@ -32,13 +32,13 @@ void main() {
               body: Formix(
                 child: Column(
                   children: [
-                    FormixDropdownFormField<String>(
+                    const FormixDropdownFormField<String>(
                       fieldId: makeField,
-                      items: const [
+                      items: [
                         DropdownMenuItem(value: 'Tesla', child: Text('Tesla')),
                         DropdownMenuItem(value: 'Ford', child: Text('Ford')),
                       ],
-                      decoration: const InputDecoration(labelText: 'Make'),
+                      decoration: InputDecoration(labelText: 'Make'),
                     ),
                     FormixDependentField<String>(
                       fieldId: makeField,
@@ -119,7 +119,7 @@ void main() {
     testWidgets('Async value is correctly set via FormixAsyncField', (
       tester,
     ) async {
-      final fieldId = FormixFieldID<String>('async_field');
+      const fieldId = FormixFieldID<String>('async_field');
       final future = Future.delayed(
         const Duration(milliseconds: 10),
         () => 'Loaded Value',

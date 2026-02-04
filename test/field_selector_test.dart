@@ -53,9 +53,9 @@ void main() {
     late ValidationResult invalidResult;
 
     setUp(() {
-      testField = FormixFieldID<String>('test_field');
+      testField = const FormixFieldID<String>('test_field');
       validResult = ValidationResult.valid;
-      invalidResult = ValidationResult(isValid: false, errorMessage: 'Error');
+      invalidResult = const ValidationResult(isValid: false, errorMessage: 'Error');
     });
 
     test('constructor initializes all fields correctly', () {
@@ -294,11 +294,11 @@ void main() {
     late FormixFieldID<String> testField;
 
     setUp(() {
-      testField = FormixFieldID<String>('test_field');
+      testField = const FormixFieldID<String>('test_field');
     });
 
     testWidgets('constructor initializes correctly', (tester) async {
-      final selector = TestFieldSelector<String>(
+      const selector = TestFieldSelector<String>(
         fieldId: FormixFieldID<String>('test'),
         builder: _testBuilder,
         listenToValue: false,
@@ -324,7 +324,7 @@ void main() {
           child: MaterialApp(
             home: Scaffold(
               body: TestFieldSelector<String>(
-                fieldId: FormixFieldID<String>('custom_field'),
+                fieldId: const FormixFieldID<String>('custom_field'),
                 controller: customController,
                 builder: (context, info, child) {
                   return Text('Value: ${info.value}');
@@ -367,14 +367,14 @@ void main() {
     late FormixFieldID<bool> boolField;
 
     setUp(() {
-      stringField = FormixFieldID<String>('string_field');
-      intField = FormixFieldID<int>('int_field');
-      boolField = FormixFieldID<bool>('bool_field');
+      stringField = const FormixFieldID<String>('string_field');
+      intField = const FormixFieldID<int>('int_field');
+      boolField = const FormixFieldID<bool>('bool_field');
     });
 
     test('can be instantiated with required parameters', () {
       final selector = TestValueSelector<String>(
-        fieldId: FormixFieldID<String>('test'),
+        fieldId: const FormixFieldID<String>('test'),
         builder: (context, value, child) => Text('Value: $value'),
       );
 
@@ -406,7 +406,7 @@ void main() {
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
-                initialValue: {'string_field': 'initial_value'},
+                initialValue: const {'string_field': 'initial_value'},
                 fields: [
                   FormixFieldConfig(
                     id: stringField,
@@ -514,7 +514,7 @@ void main() {
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
-                initialValue: {'int_field': 42},
+                initialValue: const {'int_field': 42},
                 fields: [FormixFieldConfig(id: intField, initialValue: 42)],
                 child: TestValueSelector<int>(
                   fieldId: intField,
@@ -551,7 +551,7 @@ void main() {
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
-                initialValue: {'bool_field': true},
+                initialValue: const {'bool_field': true},
                 fields: [FormixFieldConfig(id: boolField, initialValue: true)],
                 child: TestValueSelector<bool>(
                   fieldId: boolField,
@@ -663,7 +663,7 @@ void main() {
           child: MaterialApp(
             home: Scaffold(
               body: TestValueSelector<String>(
-                fieldId: FormixFieldID<String>('custom_field'),
+                fieldId: const FormixFieldID<String>('custom_field'),
                 controller: customController,
                 builder: (context, value, child) => Text('Value: $value'),
               ),
@@ -743,17 +743,17 @@ void main() {
     });
 
     testWidgets('works with complex object types', (tester) async {
-      final listField = FormixFieldID<List<String>>('list_field');
+      const listField = FormixFieldID<List<String>>('list_field');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
-                initialValue: {
+                initialValue: const {
                   'list_field': ['a', 'b', 'c'],
                 },
-                fields: [
+                fields: const [
                   FormixFieldConfig(
                     id: listField,
                     initialValue: ['a', 'b', 'c'],
@@ -825,16 +825,16 @@ void main() {
     });
 
     testWidgets('multiple value selectors work independently', (tester) async {
-      final field1 = FormixFieldID<String>('field1');
-      final field2 = FormixFieldID<String>('field2');
+      const field1 = FormixFieldID<String>('field1');
+      const field2 = FormixFieldID<String>('field2');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
-                initialValue: {'field1': 'value1', 'field2': 'value2'},
-                fields: [
+                initialValue: const {'field1': 'value1', 'field2': 'value2'},
+                fields: const [
                   FormixFieldConfig(id: field1, initialValue: 'value1'),
                   FormixFieldConfig(id: field2, initialValue: 'value2'),
                 ],
@@ -879,7 +879,7 @@ void main() {
       bool shouldRebuildCalled = false;
 
       final selector = TestConditionalSelector<int>(
-        fieldId: FormixFieldID<int>('counter'),
+        fieldId: const FormixFieldID<int>('counter'),
         shouldRebuild: (info) {
           shouldRebuildCalled = true;
           return (info.value ?? 0) > 5;
@@ -891,7 +891,7 @@ void main() {
       expect(selector, isNotNull);
 
       // Test that the shouldRebuild function works
-      final testInfo = FieldChangeInfo<int>(
+      const testInfo = FieldChangeInfo<int>(
         fieldId: FormixFieldID<int>('counter'),
         value: 7,
         validation: ValidationResult.valid,
@@ -911,7 +911,7 @@ void main() {
   group('FormixFieldPerformanceMonitor', () {
     test('can be instantiated with rebuild counting builder', () {
       final monitor = TestPerformanceMonitor<String>(
-        fieldId: FormixFieldID<String>('test'),
+        fieldId: const FormixFieldID<String>('test'),
         builder: (context, info, count) => Text('Count: $count'),
       );
 

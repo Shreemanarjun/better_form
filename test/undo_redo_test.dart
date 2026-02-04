@@ -4,7 +4,7 @@ import 'package:formix/formix.dart';
 
 void main() {
   group('Undo/Redo History Tests', () {
-    final fieldId = FormixFieldID<String>('field');
+    const fieldId = FormixFieldID<String>('field');
 
     testWidgets('Validates Undo/Redo functionality', (tester) async {
       late FormixController controller;
@@ -14,8 +14,8 @@ void main() {
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
-                initialValue: {'field': 'initial'},
-                fields: [
+                initialValue: const {'field': 'initial'},
+                fields: const [
                   FormixFieldConfig<String>(
                     id: fieldId,
                     initialValue: 'initial',
@@ -24,7 +24,7 @@ void main() {
                 child: FormixBuilder(
                   builder: (context, scope) {
                     controller = Formix.controllerOf(context)!;
-                    return Column(
+                    return const Column(
                       children: [FormixTextFormField(fieldId: fieldId)],
                     );
                   },

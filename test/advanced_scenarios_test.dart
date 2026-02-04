@@ -4,12 +4,12 @@ import 'package:formix/formix.dart';
 void main() {
   group('Advanced Dependency Scenarios', () {
     test('Linear Transitive Chain (A -> B -> C)', () {
-      final a = FormixFieldID<String>('a');
-      final b = FormixFieldID<String>('b');
-      final c = FormixFieldID<String>('c');
+      const a = FormixFieldID<String>('a');
+      const b = FormixFieldID<String>('b');
+      const c = FormixFieldID<String>('c');
 
       final fields = [
-        FormixFieldConfig<String>(id: a, initialValue: 'valid'),
+        const FormixFieldConfig<String>(id: a, initialValue: 'valid'),
         FormixFieldConfig<String>(
           id: b,
           initialValue: 'valid',
@@ -62,13 +62,13 @@ void main() {
       //   B     C
       //    \   /
       //      D
-      final a = FormixFieldID<int>('a');
-      final b = FormixFieldID<int>('b');
-      final c = FormixFieldID<int>('c');
-      final d = FormixFieldID<int>('d');
+      const a = FormixFieldID<int>('a');
+      const b = FormixFieldID<int>('b');
+      const c = FormixFieldID<int>('c');
+      const d = FormixFieldID<int>('d');
 
       final fields = [
-        FormixFieldConfig<int>(id: a, initialValue: 1),
+        const FormixFieldConfig<int>(id: a, initialValue: 1),
         FormixFieldConfig<int>(
           id: b,
           initialValue: 1,
@@ -78,7 +78,7 @@ void main() {
             return null; // Logic in value transformation typically, but utilizing validator for state check
           },
         ),
-        FormixFieldConfig<int>(id: c, initialValue: 1, dependsOn: [a]),
+        const FormixFieldConfig<int>(id: c, initialValue: 1, dependsOn: [a]),
         FormixFieldConfig<int>(
           id: d,
           initialValue: 0,
@@ -114,12 +114,12 @@ void main() {
     });
 
     test('Circular Dependency Safety (A <-> B)', () {
-      final a = FormixFieldID<String>('a');
-      final b = FormixFieldID<String>('b');
+      const a = FormixFieldID<String>('a');
+      const b = FormixFieldID<String>('b');
 
       final fields = [
-        FormixFieldConfig<String>(id: a, initialValue: 'a', dependsOn: [b]),
-        FormixFieldConfig<String>(id: b, initialValue: 'b', dependsOn: [a]),
+        const FormixFieldConfig<String>(id: a, initialValue: 'a', dependsOn: [b]),
+        const FormixFieldConfig<String>(id: b, initialValue: 'b', dependsOn: [a]),
       ];
 
       final container = ProviderContainer();
@@ -134,9 +134,9 @@ void main() {
     });
 
     test('Self-Dependency Safety (A -> A)', () {
-      final a = FormixFieldID<String>('a');
+      const a = FormixFieldID<String>('a');
       final fields = [
-        FormixFieldConfig<String>(id: a, initialValue: 'a', dependsOn: [a]),
+        const FormixFieldConfig<String>(id: a, initialValue: 'a', dependsOn: [a]),
       ];
 
       final container = ProviderContainer();
@@ -151,8 +151,8 @@ void main() {
 
   group('Complex Data Structures', () {
     test('Form Array Item Validation triggers Aggregate', () {
-      final totalField = FormixFieldID<int>('total');
-      final itemsArray = FormixArrayID<int>('items');
+      const totalField = FormixFieldID<int>('total');
+      const itemsArray = FormixArrayID<int>('items');
 
       final fields = [
         FormixFieldConfig<int>(

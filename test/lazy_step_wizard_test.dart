@@ -5,12 +5,12 @@ import 'package:formix/formix.dart';
 void main() {
   group('Lazy Step Wizard Tests', () {
     // Step 1 Fields
-    final nameField = FormixFieldID<String>('name');
-    final ageField = FormixFieldID<String>('age');
+    const nameField = FormixFieldID<String>('name');
+    const ageField = FormixFieldID<String>('age');
 
     // Step 2 Fields
-    final streetField = FormixFieldID<String>('street');
-    final cityField = FormixFieldID<String>('city');
+    const streetField = FormixFieldID<String>('street');
+    const cityField = FormixFieldID<String>('city');
 
     testWidgets('Wizard flow with lazy loading preserves state across steps', (
       tester,
@@ -32,7 +32,7 @@ void main() {
                         return Column(
                           children: [
                             if (step == 0)
-                              FormixSection(
+                              const FormixSection(
                                 keepAlive: true,
                                 fields: [
                                   FormixFieldConfig<String>(
@@ -48,13 +48,13 @@ void main() {
                                   children: [
                                     FormixTextFormField(
                                       fieldId: nameField,
-                                      decoration: const InputDecoration(
+                                      decoration: InputDecoration(
                                         labelText: 'Name',
                                       ),
                                     ),
                                     FormixTextFormField(
                                       fieldId: ageField,
-                                      decoration: const InputDecoration(
+                                      decoration: InputDecoration(
                                         labelText: 'Age',
                                       ),
                                     ),
@@ -62,7 +62,7 @@ void main() {
                                 ),
                               ),
                             if (step == 1)
-                              FormixSection(
+                              const FormixSection(
                                 keepAlive: true,
                                 fields: [
                                   FormixFieldConfig<String>(
@@ -78,13 +78,13 @@ void main() {
                                   children: [
                                     FormixTextFormField(
                                       fieldId: streetField,
-                                      decoration: const InputDecoration(
+                                      decoration: InputDecoration(
                                         labelText: 'Street',
                                       ),
                                     ),
                                     FormixTextFormField(
                                       fieldId: cityField,
-                                      decoration: const InputDecoration(
+                                      decoration: InputDecoration(
                                         labelText: 'City',
                                       ),
                                     ),
@@ -95,7 +95,7 @@ void main() {
                               // Summary step - no registry needed as we just read data
                               Column(
                                 children: [
-                                  Text('Summary:'),
+                                  const Text('Summary:'),
                                   Text(
                                     'Name: ${controller.values[nameField.key]}',
                                   ),

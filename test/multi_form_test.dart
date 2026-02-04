@@ -7,30 +7,30 @@ void main() {
     testWidgets('Parallel forms should have independent states', (
       tester,
     ) async {
-      final nameField = FormixFieldID<String>('name');
+      const nameField = FormixFieldID<String>('name');
 
       await tester.pumpWidget(
-        ProviderScope(
+        const ProviderScope(
           child: MaterialApp(
             home: Scaffold(
               body: Column(
                 children: [
                   Formix(
-                    key: const Key('form_1'),
+                    key: Key('form_1'),
                     initialValue: {'name': 'Form 1'},
                     child: Column(
                       children: [
-                        const Text('Form One'),
+                        Text('Form One'),
                         FormixTextFormField(fieldId: nameField),
                       ],
                     ),
                   ),
                   Formix(
-                    key: const Key('form_2'),
+                    key: Key('form_2'),
                     initialValue: {'name': 'Form 2'},
                     child: Column(
                       children: [
-                        const Text('Form Two'),
+                        Text('Form Two'),
                         FormixTextFormField(fieldId: nameField),
                       ],
                     ),
@@ -77,9 +77,9 @@ void main() {
     });
 
     testWidgets('Nested forms should isolate inner scopes', (tester) async {
-      final outerField = FormixFieldID<String>('outer');
-      final innerField = FormixFieldID<String>('inner');
-      final sharedField = FormixFieldID<String>('shared');
+      const outerField = FormixFieldID<String>('outer');
+      const innerField = FormixFieldID<String>('inner');
+      const sharedField = FormixFieldID<String>('shared');
 
       FormixController? innerController;
 
@@ -89,19 +89,19 @@ void main() {
             home: Scaffold(
               body: Formix(
                 key: const Key('outer_form'),
-                initialValue: {'outer': 'O', 'shared': 'Outer Shared'},
+                initialValue: const {'outer': 'O', 'shared': 'Outer Shared'},
                 child: Column(
                   children: [
-                    FormixTextFormField(fieldId: outerField),
-                    FormixTextFormField(fieldId: sharedField),
+                    const FormixTextFormField(fieldId: outerField),
+                    const FormixTextFormField(fieldId: sharedField),
                     const Divider(),
                     Formix(
                       key: const Key('inner_form'),
-                      initialValue: {'inner': 'I', 'shared': 'Inner Shared'},
+                      initialValue: const {'inner': 'I', 'shared': 'Inner Shared'},
                       child: FormixBuilder(
                         builder: (context, scope) {
                           innerController = scope.controller;
-                          return Column(
+                          return const Column(
                             children: [
                               FormixTextFormField(fieldId: innerField),
                               FormixTextFormField(fieldId: sharedField),
@@ -146,7 +146,7 @@ void main() {
     testWidgets('Validation remains independent across multiple forms', (
       tester,
     ) async {
-      final fieldId = FormixFieldID<String>('field');
+      const fieldId = FormixFieldID<String>('field');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -183,7 +183,7 @@ void main() {
                         return Column(
                           children: [
                             Text('Form 2 Valid: ${scope.watchIsValid}'),
-                            FormixTextFormField(fieldId: fieldId),
+                            const FormixTextFormField(fieldId: fieldId),
                           ],
                         );
                       },
@@ -247,7 +247,7 @@ void main() {
 
     testWidgets('GlobalKey allows external form control', (tester) async {
       final formKey = GlobalKey<FormixState>();
-      final nameField = FormixFieldID<String>('name');
+      const nameField = FormixFieldID<String>('name');
       bool savePressed = false;
 
       await tester.pumpWidget(
@@ -273,8 +273,8 @@ void main() {
               ),
               body: Formix(
                 key: formKey,
-                initialValue: {'name': 'John'},
-                child: FormixTextFormField(fieldId: nameField),
+                initialValue: const {'name': 'John'},
+                child: const FormixTextFormField(fieldId: nameField),
               ),
             ),
           ),
@@ -294,8 +294,8 @@ void main() {
     });
 
     testWidgets('onChanged callback triggers on value updates', (tester) async {
-      final nameField = FormixFieldID<String>('name');
-      final emailField = FormixFieldID<String>('email');
+      const nameField = FormixFieldID<String>('name');
+      const emailField = FormixFieldID<String>('email');
       final changedValues = <Map<String, dynamic>>[];
 
       await tester.pumpWidget(
@@ -303,9 +303,9 @@ void main() {
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
-                initialValue: {'name': 'Alice', 'email': 'alice@example.com'},
+                initialValue: const {'name': 'Alice', 'email': 'alice@example.com'},
                 onChanged: (values) => changedValues.add(Map.from(values)),
-                child: Column(
+                child: const Column(
                   children: [
                     FormixTextFormField(fieldId: nameField),
                     FormixTextFormField(fieldId: emailField),
@@ -336,7 +336,7 @@ void main() {
     });
 
     testWidgets('Triple-nested forms maintain isolation', (tester) async {
-      final field = FormixFieldID<String>('value');
+      const field = FormixFieldID<String>('value');
 
       FormixController? level1Controller;
       FormixController? level2Controller;
@@ -347,7 +347,7 @@ void main() {
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
-                initialValue: {'value': 'L1'},
+                initialValue: const {'value': 'L1'},
                 child: FormixBuilder(
                   builder: (context, scope) {
                     level1Controller = scope.controller;
@@ -355,7 +355,7 @@ void main() {
                       children: [
                         Text('Level 1: ${scope.watchValue(field)}'),
                         Formix(
-                          initialValue: {'value': 'L2'},
+                          initialValue: const {'value': 'L2'},
                           child: FormixBuilder(
                             builder: (context, scope) {
                               level2Controller = scope.controller;
@@ -363,7 +363,7 @@ void main() {
                                 children: [
                                   Text('Level 2: ${scope.watchValue(field)}'),
                                   Formix(
-                                    initialValue: {'value': 'L3'},
+                                    initialValue: const {'value': 'L3'},
                                     child: FormixBuilder(
                                       builder: (context, scope) {
                                         level3Controller = scope.controller;
@@ -404,7 +404,7 @@ void main() {
     ) async {
       final formKey1 = GlobalKey<FormixState>();
       final formKey2 = GlobalKey<FormixState>();
-      final field = FormixFieldID<String>('value');
+      const field = FormixFieldID<String>('value');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -414,13 +414,13 @@ void main() {
                 children: [
                   Formix(
                     key: formKey1,
-                    initialValue: {'value': 'Initial 1'},
-                    child: FormixTextFormField(fieldId: field),
+                    initialValue: const {'value': 'Initial 1'},
+                    child: const FormixTextFormField(fieldId: field),
                   ),
                   Formix(
                     key: formKey2,
-                    initialValue: {'value': 'Initial 2'},
-                    child: FormixTextFormField(fieldId: field),
+                    initialValue: const {'value': 'Initial 2'},
+                    child: const FormixTextFormField(fieldId: field),
                   ),
                 ],
               ),
@@ -445,7 +445,7 @@ void main() {
     });
 
     testWidgets('Validation errors are isolated between forms', (tester) async {
-      final field = FormixFieldID<String>('email');
+      const field = FormixFieldID<String>('email');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -468,7 +468,7 @@ void main() {
                       builder: (context, scope) {
                         return Column(
                           children: [
-                            FormixTextFormField(fieldId: field),
+                            const FormixTextFormField(fieldId: field),
                             Text('Form 1 Valid: ${scope.watchIsValid}'),
                           ],
                         );
@@ -508,7 +508,7 @@ void main() {
     testWidgets('Dirty state is independent across forms', (tester) async {
       final formKey1 = GlobalKey<FormixState>();
       final formKey2 = GlobalKey<FormixState>();
-      final field = FormixFieldID<String>('value');
+      const field = FormixFieldID<String>('value');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -518,13 +518,13 @@ void main() {
                 children: [
                   Formix(
                     key: formKey1,
-                    initialValue: {'value': 'A'},
-                    child: FormixTextFormField(fieldId: field),
+                    initialValue: const {'value': 'A'},
+                    child: const FormixTextFormField(fieldId: field),
                   ),
                   Formix(
                     key: formKey2,
-                    initialValue: {'value': 'B'},
-                    child: FormixTextFormField(fieldId: field),
+                    initialValue: const {'value': 'B'},
+                    child: const FormixTextFormField(fieldId: field),
                   ),
                 ],
               ),
@@ -548,7 +548,7 @@ void main() {
     });
 
     testWidgets('Removing a form cleans up its resources', (tester) async {
-      final field = FormixFieldID<String>('value');
+      const field = FormixFieldID<String>('value');
       bool showForm = true;
 
       await tester.pumpWidget(
@@ -560,8 +560,8 @@ void main() {
                   return Column(
                     children: [
                       if (showForm)
-                        Formix(
-                          key: const Key('disposable_form'),
+                        const Formix(
+                          key: Key('disposable_form'),
                           initialValue: {'value': 'Test'},
                           child: FormixTextFormField(fieldId: field),
                         ),
@@ -612,14 +612,14 @@ class _DynamicFormSwitcherState extends State<_DynamicFormSwitcher> {
     return Column(
       children: [
         if (useFormA)
-          Formix(
-            key: const ValueKey('form_a'),
+          const Formix(
+            key: ValueKey('form_a'),
             initialValue: {'field': 'A'},
             child: FormixTextFormField(fieldId: FormixFieldID<String>('field')),
           )
         else
-          Formix(
-            key: const ValueKey('form_b'),
+          const Formix(
+            key: ValueKey('form_b'),
             initialValue: {'field': 'B'},
             child: FormixTextFormField(fieldId: FormixFieldID<String>('field')),
           ),

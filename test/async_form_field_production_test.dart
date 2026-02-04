@@ -5,7 +5,7 @@ import 'package:formix/formix.dart';
 void main() {
   group('FormixAsyncField Production Tests', () {
     testWidgets('Shows loading state initially', (tester) async {
-      final fieldId = FormixFieldID<String>('async_loading');
+      const fieldId = FormixFieldID<String>('async_loading');
       final future = Future.delayed(
         const Duration(milliseconds: 10),
         () => 'Loaded Data',
@@ -34,7 +34,7 @@ void main() {
     });
 
     testWidgets('Handles async errors gracefully', (tester) async {
-      final fieldId = FormixFieldID<String>('async_error');
+      const fieldId = FormixFieldID<String>('async_error');
       final future = Future<String>.delayed(
         const Duration(milliseconds: 10),
         () => throw 'Failed to load',
@@ -62,7 +62,7 @@ void main() {
     });
 
     testWidgets('Integrates with validation (sync & async)', (tester) async {
-      final fieldId = FormixFieldID<String>('async_validation');
+      const fieldId = FormixFieldID<String>('async_validation');
       final future = Future.value('invalid_value');
 
       await tester.pumpWidget(
@@ -102,7 +102,7 @@ void main() {
     });
 
     testWidgets('Form submission includes async value', (tester) async {
-      final fieldId = FormixFieldID<String>('async_submit');
+      const fieldId = FormixFieldID<String>('async_submit');
       final future = Future.value('Submission Data');
       Map<String, dynamic>? submittedData;
 
@@ -147,7 +147,7 @@ void main() {
     });
 
     testWidgets('Updates when future changes', (tester) async {
-      final fieldId = FormixFieldID<String>('async_update');
+      const fieldId = FormixFieldID<String>('async_update');
       final future1 = Future.value('Data 1');
       final future2 = Future.value('Data 2');
 
@@ -185,7 +185,7 @@ void main() {
     });
 
     testWidgets('Works with AsyncValue directly', (tester) async {
-      final fieldId = FormixFieldID<String>('async_value_direct');
+      const fieldId = FormixFieldID<String>('async_value_direct');
 
       await tester.pumpWidget(
         ProviderScope(

@@ -8,7 +8,7 @@ void main() {
       final focusNode = FocusNode();
       final snapshot = FormixFieldStateSnapshot<String>(
         value: 'test',
-        validation: ValidationResult(isValid: false, errorMessage: 'Error'),
+        validation: const ValidationResult(isValid: false, errorMessage: 'Error'),
         isDirty: true,
         isTouched: true,
         isSubmitting: false,
@@ -27,7 +27,7 @@ void main() {
       final focusNode = FocusNode();
       final snapshot = FormixFieldStateSnapshot<String>(
         value: 'test',
-        validation: ValidationResult(isValid: false, errorMessage: 'Error'),
+        validation: const ValidationResult(isValid: false, errorMessage: 'Error'),
         isDirty: true,
         isTouched: false,
         isSubmitting: true,
@@ -67,7 +67,7 @@ void main() {
         final focusNode = FocusNode();
         final snapshot = FormixFieldStateSnapshot<String>(
           value: 'test',
-          validation: ValidationResult(isValid: false, errorMessage: 'Error'),
+          validation: const ValidationResult(isValid: false, errorMessage: 'Error'),
           isDirty: true,
           isTouched: true,
           isSubmitting: false,
@@ -106,7 +106,7 @@ void main() {
       final focusNode = FocusNode();
       final snapshot = FormixFieldStateSnapshot<String>(
         value: 'test',
-        validation: ValidationResult(isValid: false, errorMessage: 'Error'),
+        validation: const ValidationResult(isValid: false, errorMessage: 'Error'),
         isDirty: true,
         isTouched: true,
         isSubmitting: false,
@@ -143,7 +143,7 @@ void main() {
 
   group('FormixRawFormField', () {
     testWidgets('provides snapshot with correct initial state', (tester) async {
-      final id = FormixFieldID<String>('test_field');
+      const id = FormixFieldID<String>('test_field');
       FormixFieldStateSnapshot<String>? capturedSnapshot;
 
       await tester.pumpWidget(
@@ -152,7 +152,7 @@ void main() {
             home: Scaffold(
               body: Formix(
                 initialValue: const {'test_field': 'initial'},
-                fields: [FormixFieldConfig(id: id, initialValue: 'initial')],
+                fields: const [FormixFieldConfig(id: id, initialValue: 'initial')],
                 child: FormixRawFormField<String>(
                   fieldId: id,
                   initialValue: 'initial',
@@ -179,7 +179,7 @@ void main() {
     });
 
     testWidgets('snapshot updates when value changes', (tester) async {
-      final id = FormixFieldID<String>('test_field');
+      const id = FormixFieldID<String>('test_field');
       FormixFieldStateSnapshot<String>? capturedSnapshot;
 
       await tester.pumpWidget(
@@ -188,7 +188,7 @@ void main() {
             home: Scaffold(
               body: Formix(
                 initialValue: const {'test_field': 'initial'},
-                fields: [FormixFieldConfig(id: id, initialValue: 'initial')],
+                fields: const [FormixFieldConfig(id: id, initialValue: 'initial')],
                 child: FormixRawFormField<String>(
                   fieldId: id,
                   initialValue: 'initial',
@@ -214,7 +214,7 @@ void main() {
     });
 
     testWidgets('snapshot updates when validation changes', (tester) async {
-      final id = FormixFieldID<String>('test_field');
+      const id = FormixFieldID<String>('test_field');
       FormixFieldStateSnapshot<String>? capturedSnapshot;
 
       await tester.pumpWidget(
@@ -259,7 +259,7 @@ void main() {
     });
 
     testWidgets('snapshot updates when touched state changes', (tester) async {
-      final id = FormixFieldID<String>('test_field');
+      const id = FormixFieldID<String>('test_field');
       FormixFieldStateSnapshot<String>? capturedSnapshot;
 
       await tester.pumpWidget(
@@ -267,7 +267,7 @@ void main() {
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
-                fields: [FormixFieldConfig(id: id)],
+                fields: const [FormixFieldConfig(id: id)],
                 child: FormixRawFormField<String>(
                   fieldId: id,
                   builder: (context, snapshot) {
@@ -295,7 +295,7 @@ void main() {
     testWidgets('snapshot updates when submitting state changes', (
       tester,
     ) async {
-      final id = FormixFieldID<String>('test_field');
+      const id = FormixFieldID<String>('test_field');
       FormixFieldStateSnapshot<String>? capturedSnapshot;
 
       await tester.pumpWidget(
@@ -303,7 +303,7 @@ void main() {
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
-                fields: [FormixFieldConfig(id: id)],
+                fields: const [FormixFieldConfig(id: id)],
                 child: FormixRawFormField<String>(
                   fieldId: id,
                   builder: (context, snapshot) {
@@ -339,7 +339,7 @@ void main() {
     testWidgets('provides text snapshot with correct initial state', (
       tester,
     ) async {
-      final id = FormixFieldID<String>('text_field');
+      const id = FormixFieldID<String>('text_field');
       FormixTextFieldStateSnapshot<String>? capturedSnapshot;
 
       await tester.pumpWidget(
@@ -348,7 +348,7 @@ void main() {
             home: Scaffold(
               body: Formix(
                 initialValue: const {'text_field': 'initial'},
-                fields: [FormixFieldConfig(id: id, initialValue: 'initial')],
+                fields: const [FormixFieldConfig(id: id, initialValue: 'initial')],
                 child: FormixRawTextField<String>(
                   fieldId: id,
                   initialValue: 'initial',
@@ -376,7 +376,7 @@ void main() {
     testWidgets('text controller updates when value changes externally', (
       tester,
     ) async {
-      final id = FormixFieldID<String>('text_field');
+      const id = FormixFieldID<String>('text_field');
       FormixTextFieldStateSnapshot<String>? capturedSnapshot;
 
       await tester.pumpWidget(
@@ -385,7 +385,7 @@ void main() {
             home: Scaffold(
               body: Formix(
                 initialValue: const {'text_field': 'initial'},
-                fields: [FormixFieldConfig(id: id, initialValue: 'initial')],
+                fields: const [FormixFieldConfig(id: id, initialValue: 'initial')],
                 child: FormixRawTextField<String>(
                   fieldId: id,
                   initialValue: 'initial',
@@ -420,7 +420,7 @@ void main() {
     });
 
     testWidgets('value updates when text controller changes', (tester) async {
-      final id = FormixFieldID<String>('text_field');
+      const id = FormixFieldID<String>('text_field');
       FormixTextFieldStateSnapshot<String>? capturedSnapshot;
 
       await tester.pumpWidget(
@@ -429,7 +429,7 @@ void main() {
             home: Scaffold(
               body: Formix(
                 initialValue: const {'text_field': 'initial'},
-                fields: [FormixFieldConfig(id: id, initialValue: 'initial')],
+                fields: const [FormixFieldConfig(id: id, initialValue: 'initial')],
                 child: FormixRawTextField<String>(
                   fieldId: id,
                   initialValue: 'initial',
@@ -460,7 +460,7 @@ void main() {
     testWidgets('custom valueToString and stringToValue work correctly', (
       tester,
     ) async {
-      final id = FormixFieldID<int>('number_field');
+      const id = FormixFieldID<int>('number_field');
       FormixTextFieldStateSnapshot<int>? capturedSnapshot;
 
       await tester.pumpWidget(
@@ -469,7 +469,7 @@ void main() {
             home: Scaffold(
               body: Formix(
                 initialValue: const {'number_field': 42},
-                fields: [FormixFieldConfig(id: id, initialValue: 42)],
+                fields: const [FormixFieldConfig(id: id, initialValue: 42)],
                 child: FormixRawTextField<int>(
                   fieldId: id,
                   initialValue: 42,
@@ -499,7 +499,7 @@ void main() {
     });
 
     testWidgets('handles null values correctly', (tester) async {
-      final id = FormixFieldID<String>('nullable_field');
+      const id = FormixFieldID<String>('nullable_field');
       FormixTextFieldStateSnapshot<String>? capturedSnapshot;
 
       await tester.pumpWidget(
@@ -507,7 +507,7 @@ void main() {
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
-                fields: [FormixFieldConfig(id: id)],
+                fields: const [FormixFieldConfig(id: id)],
                 child: FormixRawTextField<String>(
                   fieldId: id,
                   valueToString: (v) => v ?? '',
@@ -548,7 +548,7 @@ void main() {
     testWidgets('FormixRawTextField finds child after registration', (
       tester,
     ) async {
-      final id = FormixFieldID<String>('standalone');
+      const id = FormixFieldID<String>('standalone');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -556,7 +556,7 @@ void main() {
             home: Scaffold(
               body: Formix(
                 initialValue: const {'standalone': 'Initial'},
-                fields: <FormixFieldConfig<dynamic>>[
+                fields: const <FormixFieldConfig<dynamic>>[
                   FormixFieldConfig<String>(id: id, initialValue: 'Initial'),
                 ],
                 child: FormixRawTextField<String>(
@@ -601,7 +601,7 @@ void main() {
 
   group('FormixRawStringField', () {
     testWidgets('works with default string converters', (tester) async {
-      final id = FormixFieldID<String>('string_field');
+      const id = FormixFieldID<String>('string_field');
       FormixTextFieldStateSnapshot<String>? capturedSnapshot;
 
       await tester.pumpWidget(
@@ -610,7 +610,7 @@ void main() {
             home: Scaffold(
               body: Formix(
                 initialValue: const {'string_field': 'initial'},
-                fields: [FormixFieldConfig(id: id, initialValue: 'initial')],
+                fields: const [FormixFieldConfig(id: id, initialValue: 'initial')],
                 child: FormixRawStringField(
                   fieldId: id,
                   builder: (context, snapshot) {
@@ -638,7 +638,7 @@ void main() {
 
   group('FormixRawNotifierField', () {
     testWidgets('provides valueNotifier and updates correctly', (tester) async {
-      final id = FormixFieldID<String>('notifier_field');
+      const id = FormixFieldID<String>('notifier_field');
       FormixFieldStateSnapshot<String>? capturedSnapshot;
 
       await tester.pumpWidget(
@@ -647,7 +647,7 @@ void main() {
             home: Scaffold(
               body: Formix(
                 initialValue: const {'notifier_field': 'start'},
-                fields: [FormixFieldConfig(id: id, initialValue: 'start')],
+                fields: const [FormixFieldConfig(id: id, initialValue: 'start')],
                 child: FormixRawNotifierField<String>(
                   fieldId: id,
                   builder: (context, snapshot) {
@@ -691,7 +691,7 @@ void main() {
 
   group('Complex Headless Integration', () {
     testWidgets('Headless widgets react to form level resets', (tester) async {
-      final id = FormixFieldID<String>('reset_test');
+      const id = FormixFieldID<String>('reset_test');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -699,7 +699,7 @@ void main() {
             home: Scaffold(
               body: Formix(
                 initialValue: const {'reset_test': 'initial'},
-                fields: [FormixFieldConfig(id: id, initialValue: 'initial')],
+                fields: const [FormixFieldConfig(id: id, initialValue: 'initial')],
                 child: FormixRawStringField(
                   fieldId: id,
                   builder: (context, snapshot) {
@@ -731,7 +731,7 @@ void main() {
     testWidgets('Headless widgets reflect global validation status', (
       tester,
     ) async {
-      final id = FormixFieldID<String>('validation_test');
+      const id = FormixFieldID<String>('validation_test');
 
       await tester.pumpWidget(
         ProviderScope(

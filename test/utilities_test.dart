@@ -17,7 +17,7 @@ void main() {
 
       // Register fields
       controller.registerField(
-        FormixField<String>(
+        const FormixField<String>(
           id: FormixFieldID<String>('name'),
           initialValue: 'John',
         ),
@@ -25,7 +25,7 @@ void main() {
 
       controller.registerField(
         FormixField<String>(
-          id: FormixFieldID<String>('email'),
+          id: const FormixFieldID<String>('email'),
           initialValue: 'john@example.com',
           validator: (value) =>
               (value?.contains('@') ?? false) ? null : 'Invalid email',
@@ -33,11 +33,11 @@ void main() {
       );
 
       controller.registerField(
-        FormixField<num>(id: FormixFieldID<num>('age'), initialValue: 25),
+        const FormixField<num>(id: FormixFieldID<num>('age'), initialValue: 25),
       );
 
       controller.registerField(
-        FormixField<bool>(
+        const FormixField<bool>(
           id: FormixFieldID<bool>('active'),
           initialValue: true,
         ),
@@ -56,8 +56,8 @@ void main() {
 
       test('should return only changed values when form is dirty', () {
         // Modify some fields
-        controller.setValue(FormixFieldID<String>('name'), 'Jane');
-        controller.setValue(FormixFieldID<num>('age'), 30);
+        controller.setValue(const FormixFieldID<String>('name'), 'Jane');
+        controller.setValue(const FormixFieldID<num>('age'), 30);
 
         final changedValues = controller.getChangedValues();
 
@@ -70,19 +70,19 @@ void main() {
 
       test('should detect when field changes back to initial value', () {
         // Modify field
-        controller.setValue(FormixFieldID<String>('name'), 'Jane');
+        controller.setValue(const FormixFieldID<String>('name'), 'Jane');
         expect(controller.getChangedValues()['name'], 'Jane');
 
         // Change back to initial value
-        controller.setValue(FormixFieldID<String>('name'), 'John');
+        controller.setValue(const FormixFieldID<String>('name'), 'John');
         final changedValues = controller.getChangedValues();
         expect(changedValues.containsKey('name'), false);
       });
 
       test('should handle different data types', () {
-        controller.setValue(FormixFieldID<String>('name'), 'Jane');
-        controller.setValue(FormixFieldID<num>('age'), 30);
-        controller.setValue(FormixFieldID<bool>('active'), false);
+        controller.setValue(const FormixFieldID<String>('name'), 'Jane');
+        controller.setValue(const FormixFieldID<num>('age'), 30);
+        controller.setValue(const FormixFieldID<bool>('active'), false);
 
         final changedValues = controller.getChangedValues();
 
@@ -95,54 +95,54 @@ void main() {
     group('Reset Options', () {
       test('should reset to initial values by default', () {
         // Modify fields
-        controller.setValue(FormixFieldID<String>('name'), 'Jane');
-        controller.setValue(FormixFieldID<num>('age'), 30);
-        controller.setValue(FormixFieldID<bool>('active'), false);
+        controller.setValue(const FormixFieldID<String>('name'), 'Jane');
+        controller.setValue(const FormixFieldID<num>('age'), 30);
+        controller.setValue(const FormixFieldID<bool>('active'), false);
 
         expect(controller.isDirty, true);
 
         // Reset to initial values
         controller.reset();
 
-        expect(controller.getValue(FormixFieldID<String>('name')), 'John');
-        expect(controller.getValue(FormixFieldID<num>('age')), 25);
-        expect(controller.getValue(FormixFieldID<bool>('active')), true);
+        expect(controller.getValue(const FormixFieldID<String>('name')), 'John');
+        expect(controller.getValue(const FormixFieldID<num>('age')), 25);
+        expect(controller.getValue(const FormixFieldID<bool>('active')), true);
         expect(controller.isDirty, false);
       });
 
       test('should reset to initial values when explicitly specified', () {
         // Modify fields
-        controller.setValue(FormixFieldID<String>('name'), 'Jane');
+        controller.setValue(const FormixFieldID<String>('name'), 'Jane');
 
         // Reset with explicit strategy
         controller.reset(strategy: ResetStrategy.initialValues);
 
-        expect(controller.getValue(FormixFieldID<String>('name')), 'John');
+        expect(controller.getValue(const FormixFieldID<String>('name')), 'John');
         expect(controller.isDirty, false);
       });
 
       test('should clear all fields when using clear strategy', () {
         // Modify fields
-        controller.setValue(FormixFieldID<String>('name'), 'Jane');
-        controller.setValue(FormixFieldID<num>('age'), 30);
+        controller.setValue(const FormixFieldID<String>('name'), 'Jane');
+        controller.setValue(const FormixFieldID<num>('age'), 30);
 
         // Reset with clear strategy
         controller.reset(strategy: ResetStrategy.clear);
 
         // Fields should be cleared to their empty values
-        expect(controller.getValue(FormixFieldID<String>('name')), '');
-        expect(controller.getValue(FormixFieldID<num>('age')), 0);
-        expect(controller.getValue(FormixFieldID<bool>('active')), false);
+        expect(controller.getValue(const FormixFieldID<String>('name')), '');
+        expect(controller.getValue(const FormixFieldID<num>('age')), 0);
+        expect(controller.getValue(const FormixFieldID<bool>('active')), false);
         expect(controller.isDirty, false);
       });
 
       test('should reset validation state when resetting', () {
         // Set invalid value
-        controller.setValue(FormixFieldID<String>('email'), 'invalid-email');
+        controller.setValue(const FormixFieldID<String>('email'), 'invalid-email');
 
         // Should be invalid
         expect(
-          controller.getValidation(FormixFieldID<String>('email')).isValid,
+          controller.getValidation(const FormixFieldID<String>('email')).isValid,
           false,
         );
 
@@ -151,13 +151,13 @@ void main() {
 
         // Should be valid again (back to initial valid value)
         expect(
-          controller.getValidation(FormixFieldID<String>('email')).isValid,
+          controller.getValidation(const FormixFieldID<String>('email')).isValid,
           true,
         );
       });
 
       test('should reset touched state when resetting', () {
-        final nameField = FormixFieldID<String>('name');
+        const nameField = FormixFieldID<String>('name');
 
         // Mark as touched
         controller.markAsTouched(nameField);
@@ -173,7 +173,7 @@ void main() {
 
     group('Dirty State Tracking', () {
       test('should track dirty state correctly', () {
-        final nameField = FormixFieldID<String>('name');
+        const nameField = FormixFieldID<String>('name');
 
         expect(controller.isFieldDirty(nameField), false);
         expect(controller.isDirty, false);
@@ -193,9 +193,9 @@ void main() {
 
       test('should handle null vs non-null changes', () {
         // Add a field that can be null
-        final optionalField = FormixFieldID<String?>('optional');
+        const optionalField = FormixFieldID<String?>('optional');
         controller.registerField(
-          FormixField<String?>(id: optionalField, initialValue: null),
+          const FormixField<String?>(id: optionalField, initialValue: null),
         );
 
         expect(controller.isFieldDirty(optionalField), false);

@@ -4,12 +4,12 @@ import 'package:formix/formix.dart';
 void main() {
   group('Cross-field Validation', () {
     test('crossFieldValidator works and reacts to dependencies', () async {
-      final passwordId = FormixFieldID<String>('password');
-      final confirmPasswordId = FormixFieldID<String>('confirmPassword');
+      const passwordId = FormixFieldID<String>('password');
+      const confirmPasswordId = FormixFieldID<String>('confirmPassword');
 
       final controller = FormixController(
         fields: [
-          FormixField(id: passwordId, initialValue: ''),
+          const FormixField(id: passwordId, initialValue: ''),
           FormixField(
             id: confirmPasswordId,
             initialValue: '',
@@ -40,7 +40,7 @@ void main() {
     });
 
     test('FormixAutovalidateMode.onBlur only validates on touch', () {
-      final fieldId = FormixFieldID<String>('email');
+      const fieldId = FormixFieldID<String>('email');
       final controller = FormixController(
         fields: [
           FormixField(

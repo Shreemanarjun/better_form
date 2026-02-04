@@ -101,7 +101,7 @@ void main() {
     late FormixFieldID<String> testField;
 
     setUp(() {
-      testField = FormixFieldID<String>('test_field');
+      testField = const FormixFieldID<String>('test_field');
     });
 
     testWidgets('constructor initializes correctly', (tester) async {
@@ -201,7 +201,7 @@ void main() {
           child: MaterialApp(
             home: Scaffold(
               body: TestFormFieldWidget(
-                fieldId: FormixFieldID<String>('custom_field'),
+                fieldId: const FormixFieldID<String>('custom_field'),
                 controller: customController,
               ),
             ),
@@ -220,7 +220,7 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(
-        ProviderScope(
+        const ProviderScope(
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
@@ -292,11 +292,11 @@ void main() {
     });
 
     testWidgets('patchValue updates multiple fields', (tester) async {
-      final field1 = FormixFieldID<String>('field1');
-      final field2 = FormixFieldID<String>('field2');
+      const field1 = FormixFieldID<String>('field1');
+      const field2 = FormixFieldID<String>('field2');
 
       await tester.pumpWidget(
-        ProviderScope(
+        const ProviderScope(
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
@@ -394,11 +394,11 @@ void main() {
     testWidgets('didUpdateWidget handles controller and fieldId changes', (
       tester,
     ) async {
-      final field1 = FormixFieldID<String>('field1');
-      final field2 = FormixFieldID<String>('field2');
+      const field1 = FormixFieldID<String>('field1');
+      const field2 = FormixFieldID<String>('field2');
 
       await tester.pumpWidget(
-        ProviderScope(
+        const ProviderScope(
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
@@ -421,7 +421,7 @@ void main() {
 
       // Update widget with different field
       await tester.pumpWidget(
-        ProviderScope(
+        const ProviderScope(
           child: MaterialApp(
             home: Scaffold(
               body: Formix(

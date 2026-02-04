@@ -5,7 +5,7 @@ import 'package:formix/formix.dart';
 void main() {
   group('Global Validation Mode', () {
     test('defaults to auto/always which triggers validation', () {
-      final field = FormixFieldID<String>('name');
+      const field = FormixFieldID<String>('name');
       final controller = FormixController(
         fields: [
           FormixField<String>(
@@ -21,7 +21,7 @@ void main() {
     });
 
     test('setting global mode to disabled prevents auto-validation', () {
-      final field = FormixFieldID<String>('name');
+      const field = FormixFieldID<String>('name');
       final controller = FormixController(
         autovalidateMode: FormixAutovalidateMode.disabled,
         fields: [
@@ -42,8 +42,8 @@ void main() {
     });
 
     test('field level mode overrides global mode', () {
-      final fieldAlways = FormixFieldID<String>('always');
-      final fieldDisabled = FormixFieldID<String>('disabled');
+      const fieldAlways = FormixFieldID<String>('always');
+      const fieldDisabled = FormixFieldID<String>('disabled');
 
       final controller = FormixController(
         autovalidateMode: FormixAutovalidateMode.disabled,
@@ -68,7 +68,7 @@ void main() {
     });
 
     test('global onUserInteraction works correctly', () {
-      final field = FormixFieldID<String>('name');
+      const field = FormixFieldID<String>('name');
       final controller = FormixController(
         autovalidateMode: FormixAutovalidateMode.onUserInteraction,
         fields: [
@@ -89,13 +89,13 @@ void main() {
       expect(controller.getValidation(field).isValid, isFalse);
     });
     test('global mode affects dependencies correctly', () {
-      final source = FormixFieldID<String>('source');
-      final dependent = FormixFieldID<String>('dependent');
+      const source = FormixFieldID<String>('source');
+      const dependent = FormixFieldID<String>('dependent');
 
       final controller = FormixController(
         autovalidateMode: FormixAutovalidateMode.disabled,
         fields: [
-          FormixField<String>(id: source, initialValue: 'initial'),
+          const FormixField<String>(id: source, initialValue: 'initial'),
           FormixField<String>(
             id: dependent,
             initialValue: 'init',
@@ -119,7 +119,7 @@ void main() {
     });
 
     test('global mode affects async validation', () async {
-      final field = FormixFieldID<String>('async');
+      const field = FormixFieldID<String>('async');
       int callCount = 0;
 
       final controller = FormixController(
@@ -137,7 +137,7 @@ void main() {
       );
 
       controller.setValue(field, 'change');
-      await Future.delayed(Duration(milliseconds: 50));
+      await Future.delayed(const Duration(milliseconds: 50));
       expect(callCount, 0); // Should not have called async validator
 
       controller.autovalidateMode ==
@@ -150,7 +150,7 @@ void main() {
         autovalidateMode: FormixAutovalidateMode.disabled,
       );
 
-      final field = FormixFieldID<String>('late');
+      const field = FormixFieldID<String>('late');
       controller.registerField(
         FormixField<String>(
           id: field,
@@ -167,7 +167,7 @@ void main() {
     });
 
     test('onBlur global mode triggers on touch', () {
-      final field = FormixFieldID<String>('blur');
+      const field = FormixFieldID<String>('blur');
       final controller = FormixController(
         autovalidateMode: FormixAutovalidateMode.onBlur,
         fields: [
@@ -193,7 +193,7 @@ void main() {
     testWidgets('Formix widget propagates autovalidateMode to controller', (
       tester,
     ) async {
-      final fieldId = FormixFieldID<String>('test');
+      const fieldId = FormixFieldID<String>('test');
 
       await tester.pumpWidget(
         ProviderScope(

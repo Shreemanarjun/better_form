@@ -11,17 +11,17 @@ final testControllerProvider =
 void main() {
   group('FormixTextFormField', () {
     testWidgets('should render with initial value', (tester) async {
-      final nameField = FormixFieldID<String>('name');
+      const nameField = FormixFieldID<String>('name');
 
       await tester.pumpWidget(
-        ProviderScope(
+        const ProviderScope(
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
-                initialValue: const {'name': 'John'},
+                initialValue: {'name': 'John'},
                 child: FormixTextFormField(
                   fieldId: nameField,
-                  decoration: const InputDecoration(labelText: 'Name'),
+                  decoration: InputDecoration(labelText: 'Name'),
                 ),
               ),
             ),
@@ -34,17 +34,17 @@ void main() {
     });
 
     testWidgets('should update value when typing', (tester) async {
-      final nameField = FormixFieldID<String>('name');
+      const nameField = FormixFieldID<String>('name');
 
       await tester.pumpWidget(
-        ProviderScope(
+        const ProviderScope(
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
-                initialValue: const {'name': ''},
+                initialValue: {'name': ''},
                 child: FormixTextFormField(
                   fieldId: nameField,
-                  decoration: const InputDecoration(labelText: 'Name'),
+                  decoration: InputDecoration(labelText: 'Name'),
                 ),
               ),
             ),
@@ -60,7 +60,7 @@ void main() {
     });
 
     testWidgets('should show validation error', (tester) async {
-      final emailField = FormixFieldID<String>('email');
+      const emailField = FormixFieldID<String>('email');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -76,9 +76,9 @@ void main() {
                         : 'Invalid email',
                   ),
                 ],
-                child: FormixTextFormField(
+                child: const FormixTextFormField(
                   fieldId: emailField,
-                  decoration: const InputDecoration(labelText: 'Email'),
+                  decoration: InputDecoration(labelText: 'Email'),
                 ),
               ),
             ),
@@ -97,17 +97,17 @@ void main() {
 
   group('FormixNumberFormField', () {
     testWidgets('should render with initial numeric value', (tester) async {
-      final ageField = FormixFieldID<num>('age');
+      const ageField = FormixFieldID<num>('age');
 
       await tester.pumpWidget(
-        ProviderScope(
+        const ProviderScope(
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
-                initialValue: const {'age': 25},
+                initialValue: {'age': 25},
                 child: FormixNumberFormField(
                   fieldId: ageField,
-                  decoration: const InputDecoration(labelText: 'Age'),
+                  decoration: InputDecoration(labelText: 'Age'),
                 ),
               ),
             ),
@@ -120,17 +120,17 @@ void main() {
     });
 
     testWidgets('should accept numeric input', (tester) async {
-      final ageField = FormixFieldID<num>('age');
+      const ageField = FormixFieldID<num>('age');
 
       await tester.pumpWidget(
-        ProviderScope(
+        const ProviderScope(
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
-                initialValue: const {'age': 0},
+                initialValue: {'age': 0},
                 child: FormixNumberFormField(
                   fieldId: ageField,
-                  decoration: const InputDecoration(labelText: 'Age'),
+                  decoration: InputDecoration(labelText: 'Age'),
                 ),
               ),
             ),
@@ -145,19 +145,19 @@ void main() {
     });
 
     testWidgets('should enforce min/max constraints', (tester) async {
-      final ageField = FormixFieldID<num>('age');
+      const ageField = FormixFieldID<num>('age');
 
       await tester.pumpWidget(
-        ProviderScope(
+        const ProviderScope(
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
-                initialValue: const {'age': 25},
+                initialValue: {'age': 25},
                 child: FormixNumberFormField(
                   fieldId: ageField,
                   min: 18,
                   max: 100,
-                  decoration: const InputDecoration(labelText: 'Age'),
+                  decoration: InputDecoration(labelText: 'Age'),
                 ),
               ),
             ),
@@ -178,17 +178,17 @@ void main() {
 
   group('FormixCheckboxFormField', () {
     testWidgets('should render with initial boolean value', (tester) async {
-      final newsletterField = FormixFieldID<bool>('newsletter');
+      const newsletterField = FormixFieldID<bool>('newsletter');
 
       await tester.pumpWidget(
-        ProviderScope(
+        const ProviderScope(
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
-                initialValue: const {'newsletter': true},
+                initialValue: {'newsletter': true},
                 child: FormixCheckboxFormField(
                   fieldId: newsletterField,
-                  title: const Text('Subscribe to newsletter'),
+                  title: Text('Subscribe to newsletter'),
                 ),
               ),
             ),
@@ -205,7 +205,7 @@ void main() {
     });
 
     testWidgets('should toggle value when tapped', (tester) async {
-      final newsletterField = FormixFieldID<bool>('newsletter');
+      const newsletterField = FormixFieldID<bool>('newsletter');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -216,13 +216,13 @@ void main() {
               return FormixController(initialValue: {'newsletter': false});
             }),
           ],
-          child: MaterialApp(
+          child: const MaterialApp(
             home: Scaffold(
               body: Formix(
-                initialValue: const {'newsletter': false},
+                initialValue: {'newsletter': false},
                 child: FormixCheckboxFormField(
                   fieldId: newsletterField,
-                  title: const Text('Subscribe to newsletter'),
+                  title: Text('Subscribe to newsletter'),
                 ),
               ),
             ),
@@ -246,7 +246,7 @@ void main() {
     });
 
     testWidgets('should show validation error', (tester) async {
-      final agreeField = FormixFieldID<bool>('agree');
+      const agreeField = FormixFieldID<bool>('agree');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -262,9 +262,9 @@ void main() {
                     validationMode: FormixAutovalidateMode.always,
                   ),
                 ],
-                child: FormixCheckboxFormField(
+                child: const FormixCheckboxFormField(
                   fieldId: agreeField,
-                  title: const Text('I agree to terms'),
+                  title: Text('I agree to terms'),
                 ),
               ),
             ),
@@ -278,22 +278,22 @@ void main() {
 
   group('FormixDropdownFormField', () {
     testWidgets('should render with initial value', (tester) async {
-      final priorityField = FormixFieldID<String>('priority');
+      const priorityField = FormixFieldID<String>('priority');
 
       await tester.pumpWidget(
-        ProviderScope(
+        const ProviderScope(
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
-                initialValue: const {'priority': 'medium'},
+                initialValue: {'priority': 'medium'},
                 child: FormixDropdownFormField<String>(
                   fieldId: priorityField,
-                  items: const [
+                  items: [
                     DropdownMenuItem(value: 'low', child: Text('Low')),
                     DropdownMenuItem(value: 'medium', child: Text('Medium')),
                     DropdownMenuItem(value: 'high', child: Text('High')),
                   ],
-                  decoration: const InputDecoration(labelText: 'Priority'),
+                  decoration: InputDecoration(labelText: 'Priority'),
                 ),
               ),
             ),
@@ -306,22 +306,22 @@ void main() {
     });
 
     testWidgets('should change value when selected', (tester) async {
-      final priorityField = FormixFieldID<String>('priority');
+      const priorityField = FormixFieldID<String>('priority');
 
       await tester.pumpWidget(
-        ProviderScope(
+        const ProviderScope(
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
-                initialValue: const {'priority': 'medium'},
+                initialValue: {'priority': 'medium'},
                 child: FormixDropdownFormField<String>(
                   fieldId: priorityField,
-                  items: const [
+                  items: [
                     DropdownMenuItem(value: 'low', child: Text('Low')),
                     DropdownMenuItem(value: 'medium', child: Text('Medium')),
                     DropdownMenuItem(value: 'high', child: Text('High')),
                   ],
-                  decoration: const InputDecoration(labelText: 'Priority'),
+                  decoration: InputDecoration(labelText: 'Priority'),
                 ),
               ),
             ),
@@ -340,12 +340,12 @@ void main() {
   group('FormixFormStatus', () {
     testWidgets('should show form status', (tester) async {
       await tester.pumpWidget(
-        ProviderScope(
+        const ProviderScope(
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
-                initialValue: const {'name': 'John'},
-                child: const FormixFormStatus(),
+                initialValue: {'name': 'John'},
+                child: FormixFormStatus(),
               ),
             ),
           ),
@@ -360,10 +360,10 @@ void main() {
     testWidgets('should show dirty state when form is modified', (
       tester,
     ) async {
-      final nameField = FormixFieldID<String>('name');
+      const nameField = FormixFieldID<String>('name');
 
       await tester.pumpWidget(
-        ProviderScope(
+        const ProviderScope(
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
@@ -374,7 +374,7 @@ void main() {
                     initialValue: 'John',
                   ),
                 ],
-                child: const FormixFormStatus(),
+                child: FormixFormStatus(),
               ),
             ),
           ),

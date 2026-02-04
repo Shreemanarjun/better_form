@@ -4,7 +4,7 @@ import 'package:formix/formix.dart';
 
 void main() {
   group('Lazy Step Initialization Tests', () {
-    final fieldA = FormixFieldID<String>('fieldA');
+    const fieldA = FormixFieldID<String>('fieldA');
 
     testWidgets(
       'FormixFieldRegistry handles registration and state preservation',
@@ -27,7 +27,7 @@ void main() {
                           return Column(
                             children: [
                               if (show)
-                                FormixFieldRegistry(
+                                const FormixFieldRegistry(
                                   fields: [
                                     FormixFieldConfig<String>(
                                       id: fieldA,

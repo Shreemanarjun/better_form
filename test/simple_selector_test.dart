@@ -4,7 +4,7 @@ import 'package:formix/formix.dart';
 
 void main() {
   testWidgets('FormixFieldConditionalSelector simple test', (tester) async {
-    final fieldId = const FormixFieldID<String>('name');
+    const fieldId = FormixFieldID<String>('name');
     int buildCount = 0;
 
     await tester.pumpWidget(
@@ -13,7 +13,7 @@ void main() {
           home: Scaffold(
             body: Formix(
               initialValue: const {'name': 'A'},
-              fields: [FormixFieldConfig(id: fieldId)],
+              fields: const [FormixFieldConfig(id: fieldId)],
               child: FormixFieldConditionalSelector<String>(
                 fieldId: fieldId,
                 shouldRebuild: (info) => true,

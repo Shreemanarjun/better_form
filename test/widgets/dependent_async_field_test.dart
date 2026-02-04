@@ -16,13 +16,13 @@ void main() {
         home: Scaffold(
           body: Formix(
             initialValue: const {'country': 'USA', 'city': 'New York'},
-            fields: [
+            fields: const [
               FormixFieldConfig<String>(id: countryField),
               FormixFieldConfig<String>(id: cityField),
             ],
             child: Column(
               children: [
-                FormixTextFormField(fieldId: countryField),
+                const FormixTextFormField(fieldId: countryField),
                 FormixDependentAsyncField<List<String>, String>(
                   fieldId: cityOptionsField,
                   dependency: countryField,
@@ -35,7 +35,7 @@ void main() {
                     );
                   },
                 ),
-                FormixTextFormField(fieldId: cityField),
+                const FormixTextFormField(fieldId: cityField),
               ],
             ),
           ),
@@ -97,13 +97,13 @@ void main() {
               initialValue: const {'country': 'USA', 'city': 'NYC'},
               child: Column(
                 children: [
-                  FormixTextFormField(
+                  const FormixTextFormField(
                     fieldId: countryField,
-                    key: const Key('country_input'),
+                    key: Key('country_input'),
                   ),
-                  FormixTextFormField(
+                  const FormixTextFormField(
                     fieldId: cityField,
-                    key: const Key('city_input'),
+                    key: Key('city_input'),
                   ),
                   FormixDependentAsyncField<List<String>, String>(
                     fieldId: cityOptionsField,
@@ -164,9 +164,9 @@ void main() {
                 initialValue: const {'country': 'USA', 'city': 'NY'},
                 child: Column(
                   children: [
-                    FormixTextFormField(
+                    const FormixTextFormField(
                       fieldId: countryField,
-                      key: const Key('country'),
+                      key: Key('country'),
                     ),
                     FormixDependentAsyncField<List<String>, String>(
                       fieldId: cityOptionsField,
@@ -268,9 +268,9 @@ void main() {
               initialValue: const {'country': 'USA', 'city': 'NY'},
               child: Column(
                 children: [
-                  FormixTextFormField(
+                  const FormixTextFormField(
                     fieldId: countryField,
-                    key: const Key('country'),
+                    key: Key('country'),
                   ),
                   FormixDependentAsyncField<List<String>, String>(
                     fieldId: cityOptionsField,
@@ -348,9 +348,9 @@ void main() {
               initialValue: const {'country': 'USA'},
               child: Column(
                 children: [
-                  FormixTextFormField(
+                  const FormixTextFormField(
                     fieldId: countryField,
-                    key: const Key('country'),
+                    key: Key('country'),
                   ),
                   FormixDependentAsyncField<List<String>, String>(
                     fieldId: cityOptionsField,

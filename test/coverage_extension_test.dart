@@ -57,7 +57,7 @@ class MyTextFieldState extends FormixTextFormFieldWidgetState {}
 void main() {
   group('FieldID Coverage', () {
     test('FormixFieldID methods', () {
-      final id = const FormixFieldID<String>('user.profile.name');
+      const id = FormixFieldID<String>('user.profile.name');
       expect(id.parentKey, 'user.profile');
       expect(id.localName, 'name');
       expect(
@@ -65,13 +65,13 @@ void main() {
         contains('FormixFieldID<String>(user.profile.name)'),
       );
 
-      final rootId = const FormixFieldID<String>('name');
+      const rootId = FormixFieldID<String>('name');
       expect(rootId.parentKey, isNull);
       expect(rootId.localName, 'name');
     });
 
     test('FormixArrayID methods', () {
-      final arrayId = const FormixArrayID<String>('items');
+      const arrayId = FormixArrayID<String>('items');
       final itemId = arrayId.item(0);
       expect(itemId.key, 'items[0]');
       expect(arrayId.withPrefix('group').key, 'group.items');
@@ -124,15 +124,15 @@ void main() {
       final state = FormixData.withCalculatedCounts(
         values: const {'age': '30'}, // String value
       );
-      final ageId = const FormixFieldID<int>('age');
+      const ageId = FormixFieldID<int>('age');
       expect(state.getValue(ageId), isNull); // Type mismatch returns null
     });
   });
 
   group('FormixScope Coverage', () {
     testWidgets('Granular watchers and non-reactive methods', (tester) async {
-      final nameField = const FormixFieldID<String>('name');
-      final arrayField = const FormixArrayID<String>('items');
+      const nameField = FormixFieldID<String>('name');
+      const arrayField = FormixArrayID<String>('items');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -143,7 +143,7 @@ void main() {
                   'name': 'Initial',
                   'items': ['Item 1'],
                 },
-                fields: [
+                fields: const [
                   FormixFieldConfig(id: nameField),
                   FormixFieldConfig(id: arrayField),
                 ],
@@ -217,13 +217,13 @@ void main() {
 
     testWidgets('Guard with onDirtyPop', (tester) async {
       bool onDirtyPopCalled = false;
-      final nameField = const FormixFieldID<String>('name');
+      const nameField = FormixFieldID<String>('name');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Formix(
-              fields: [FormixFieldConfig(id: nameField)],
+              fields: const [FormixFieldConfig(id: nameField)],
               child: FormixNavigationGuard(
                 onDirtyPop: (context) async {
                   onDirtyPopCalled = true;
@@ -234,7 +234,7 @@ void main() {
                     builder: (context, scope) {
                       return Column(
                         children: [
-                          FormixTextFormField(fieldId: nameField),
+                          const FormixTextFormField(fieldId: nameField),
                           ElevatedButton(
                             onPressed: () => Navigator.of(context).maybePop(),
                             child: const Text('Back'),
@@ -259,7 +259,7 @@ void main() {
     });
 
     testWidgets('Guard default dialog - Discard', (tester) async {
-      final nameField = const FormixFieldID<String>('name');
+      const nameField = FormixFieldID<String>('name');
       bool popped = false;
 
       await tester.pumpWidget(
@@ -272,14 +272,14 @@ void main() {
                     await Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (context) => Formix(
-                          fields: [FormixFieldConfig(id: nameField)],
+                          fields: const [FormixFieldConfig(id: nameField)],
                           child: FormixNavigationGuard(
                             child: Scaffold(
                               body: FormixBuilder(
                                 builder: (context, scope) {
                                   return Column(
                                     children: [
-                                      FormixTextFormField(fieldId: nameField),
+                                      const FormixTextFormField(fieldId: nameField),
                                       ElevatedButton(
                                         onPressed: () =>
                                             Navigator.of(context).maybePop(),
@@ -321,7 +321,7 @@ void main() {
     });
 
     testWidgets('Guard default dialog - Cancel', (tester) async {
-      final nameField = const FormixFieldID<String>('name');
+      const nameField = FormixFieldID<String>('name');
       bool popped = false;
 
       await tester.pumpWidget(
@@ -334,14 +334,14 @@ void main() {
                     await Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (context) => Formix(
-                          fields: [FormixFieldConfig(id: nameField)],
+                          fields: const [FormixFieldConfig(id: nameField)],
                           child: FormixNavigationGuard(
                             child: Scaffold(
                               body: FormixBuilder(
                                 builder: (context, scope) {
                                   return Column(
                                     children: [
-                                      FormixTextFormField(fieldId: nameField),
+                                      const FormixTextFormField(fieldId: nameField),
                                       ElevatedButton(
                                         onPressed: () =>
                                             Navigator.of(context).maybePop(),
@@ -397,7 +397,7 @@ void main() {
     });
 
     testWidgets('FormixFieldConditionalSelector', (tester) async {
-      final fieldId = const FormixFieldID<String>('name');
+      const fieldId = FormixFieldID<String>('name');
       int buildCount = 0;
 
       await tester.pumpWidget(
@@ -405,7 +405,7 @@ void main() {
           child: MaterialApp(
             home: Formix(
               initialValue: const {'name': 'A'},
-              fields: [FormixFieldConfig(id: fieldId)],
+              fields: const [FormixFieldConfig(id: fieldId)],
               child: FormixFieldConditionalSelector<String>(
                 fieldId: fieldId,
                 shouldRebuild: (info) => true, // Ensure it builds
@@ -423,7 +423,7 @@ void main() {
     });
 
     testWidgets('FormixFieldPerformanceMonitor', (tester) async {
-      final fieldId = const FormixFieldID<String>('name');
+      const fieldId = FormixFieldID<String>('name');
       int lastCount = 0;
 
       await tester.pumpWidget(
@@ -431,7 +431,7 @@ void main() {
           child: MaterialApp(
             home: Formix(
               initialValue: const {'name': 'A'},
-              fields: [FormixFieldConfig(id: fieldId)],
+              fields: const [FormixFieldConfig(id: fieldId)],
               child: FormixBuilder(
                 builder: (context, scope) => Column(
                   children: [
@@ -463,7 +463,7 @@ void main() {
 
   group('FormixController Extra Coverage', () {
     testWidgets('resetToValues and focusFirstError', (tester) async {
-      final nameField = const FormixFieldID<String>('name');
+      const nameField = FormixFieldID<String>('name');
       late FormixController controller;
 
       await tester.pumpWidget(
@@ -480,7 +480,7 @@ void main() {
                 child: FormixBuilder(
                   builder: (context, scope) {
                     controller = scope.controller;
-                    return FormixTextFormField(fieldId: nameField);
+                    return const FormixTextFormField(fieldId: nameField);
                   },
                 ),
               ),
@@ -504,14 +504,14 @@ void main() {
 
   group('FormixFieldWidget Extra Coverage', () {
     testWidgets('Custom field interactions', (tester) async {
-      final nameField = const FormixFieldID<String>('name');
+      const nameField = FormixFieldID<String>('name');
 
       await tester.pumpWidget(
-        ProviderScope(
+        const ProviderScope(
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
-                initialValue: const {'name': 'Initial', 'age': 20},
+                initialValue: {'name': 'Initial', 'age': 20},
                 child: Column(children: [MyCustomField(fieldId: nameField)]),
               ),
             ),
@@ -539,15 +539,15 @@ void main() {
     testWidgets('FormixNumberFormFieldWidget and FormixTextFormFieldWidget', (
       tester,
     ) async {
-      final numberField = const FormixFieldID<int>('count');
-      final textField = const FormixFieldID<String>('desc');
+      const numberField = FormixFieldID<int>('count');
+      const textField = FormixFieldID<String>('desc');
 
       await tester.pumpWidget(
-        ProviderScope(
+        const ProviderScope(
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
-                initialValue: const {'count': 10, 'desc': 'Hello'},
+                initialValue: {'count': 10, 'desc': 'Hello'},
                 child: Column(
                   children: [
                     MyNumberField(fieldId: numberField),
@@ -575,10 +575,10 @@ void main() {
 
     testWidgets('didUpdateWidget coverage', (tester) async {
       // Just testing manual field register if not already there
-      final fieldId = const FormixFieldID<String>('manual');
+      const fieldId = FormixFieldID<String>('manual');
 
       await tester.pumpWidget(
-        ProviderScope(
+        const ProviderScope(
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
@@ -595,7 +595,7 @@ void main() {
 
   group('FormixArray and FormGroup Extra Coverage', () {
     testWidgets('Empty array builder', (tester) async {
-      final arrayId = const FormixArrayID<String>('items');
+      const arrayId = FormixArrayID<String>('items');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -617,7 +617,7 @@ void main() {
     });
 
     testWidgets('Scrollable array', (tester) async {
-      final arrayId = const FormixArrayID<String>('items');
+      const arrayId = FormixArrayID<String>('items');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -673,7 +673,7 @@ void main() {
     });
 
     testWidgets('FormixArray outside Formix', (tester) async {
-      final arrayId = const FormixArrayID<String>('items');
+      const arrayId = FormixArrayID<String>('items');
       await tester.pumpWidget(
         MaterialApp(
           home: FormixArray<String>(

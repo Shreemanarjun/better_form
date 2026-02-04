@@ -8,7 +8,7 @@ void main() {
     tester,
   ) async {
     final handle = tester.ensureSemantics();
-    final fieldId = FormixFieldID<int>('age');
+    const fieldId = FormixFieldID<int>('age');
 
     await tester.pumpWidget(
       ProviderScope(
@@ -25,9 +25,9 @@ void main() {
                       (val == null || val < 0) ? 'Must be positive' : null,
                 ),
               ],
-              child: FormixNumberFormField<int>(
+              child: const FormixNumberFormField<int>(
                 fieldId: fieldId,
-                decoration: const InputDecoration(labelText: 'Age'),
+                decoration: InputDecoration(labelText: 'Age'),
               ),
             ),
           ),

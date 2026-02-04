@@ -8,11 +8,11 @@ void main() {
       tester,
     ) async {
       // Define form fields
-      final nameField = FormixFieldID<String>('name');
-      final emailField = FormixFieldID<String>('email');
-      final ageField = FormixFieldID<num>('age');
-      final newsletterField = FormixFieldID<bool>('newsletter');
-      final agreeField = FormixFieldID<bool>('agree');
+      const nameField = FormixFieldID<String>('name');
+      const emailField = FormixFieldID<String>('email');
+      const ageField = FormixFieldID<num>('age');
+      const newsletterField = FormixFieldID<bool>('newsletter');
+      const agreeField = FormixFieldID<bool>('agree');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -57,26 +57,26 @@ void main() {
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     children: [
-                      FormixTextFormField(
+                      const FormixTextFormField(
                         fieldId: nameField,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'Full Name',
                           hintText: 'Enter your full name',
                         ),
                       ),
                       const SizedBox(height: 16),
-                      FormixTextFormField(
+                      const FormixTextFormField(
                         fieldId: emailField,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'Email',
                           hintText: 'Enter your email',
                         ),
                         keyboardType: TextInputType.emailAddress,
                       ),
                       const SizedBox(height: 16),
-                      FormixNumberFormField(
+                      const FormixNumberFormField(
                         fieldId: ageField,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'Age',
                           hintText: 'Enter your age',
                         ),
@@ -84,14 +84,14 @@ void main() {
                         max: 120,
                       ),
                       const SizedBox(height: 16),
-                      FormixCheckboxFormField(
+                      const FormixCheckboxFormField(
                         fieldId: newsletterField,
-                        title: const Text('Subscribe to newsletter'),
+                        title: Text('Subscribe to newsletter'),
                       ),
                       const SizedBox(height: 16),
-                      FormixCheckboxFormField(
+                      const FormixCheckboxFormField(
                         fieldId: agreeField,
-                        title: const Text('I agree to terms and conditions'),
+                        title: Text('I agree to terms and conditions'),
                       ),
                       const SizedBox(height: 24),
                       FormixBuilder(
@@ -173,8 +173,8 @@ void main() {
     });
 
     testWidgets('should handle form reset functionality', (tester) async {
-      final nameField = FormixFieldID<String>('name');
-      final emailField = FormixFieldID<String>('email');
+      const nameField = FormixFieldID<String>('name');
+      const emailField = FormixFieldID<String>('email');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -187,13 +187,13 @@ void main() {
                 },
                 child: Column(
                   children: [
-                    FormixTextFormField(
+                    const FormixTextFormField(
                       fieldId: nameField,
-                      decoration: const InputDecoration(labelText: 'Name'),
+                      decoration: InputDecoration(labelText: 'Name'),
                     ),
-                    FormixTextFormField(
+                    const FormixTextFormField(
                       fieldId: emailField,
-                      decoration: const InputDecoration(labelText: 'Email'),
+                      decoration: InputDecoration(labelText: 'Email'),
                     ),
                     FormixBuilder(
                       builder: (context, scope) {
@@ -240,8 +240,8 @@ void main() {
     });
 
     testWidgets('should handle complex validation scenarios', (tester) async {
-      final passwordField = FormixFieldID<String>('password');
-      final confirmPasswordField = FormixFieldID<String>('confirmPassword');
+      const passwordField = FormixFieldID<String>('password');
+      const confirmPasswordField = FormixFieldID<String>('confirmPassword');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -319,8 +319,8 @@ void main() {
     });
 
     testWidgets('should handle dynamic field visibility', (tester) async {
-      final showExtraField = FormixFieldID<bool>('showExtra');
-      final extraField = FormixFieldID<String>('extra');
+      const showExtraField = FormixFieldID<bool>('showExtra');
+      const extraField = FormixFieldID<String>('extra');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -333,15 +333,15 @@ void main() {
                     final showExtra = scope.watchValue(showExtraField) ?? false;
                     return Column(
                       children: [
-                        FormixCheckboxFormField(
+                        const FormixCheckboxFormField(
                           fieldId: showExtraField,
-                          title: const Text('Show extra field'),
+                          title: Text('Show extra field'),
                         ),
                         if (showExtra) ...[
                           const SizedBox(height: 16),
-                          FormixTextFormField(
+                          const FormixTextFormField(
                             fieldId: extraField,
-                            decoration: const InputDecoration(
+                            decoration: InputDecoration(
                               labelText: 'Extra Information',
                             ),
                           ),
@@ -377,15 +377,15 @@ void main() {
 
   group('Formix Widget Integration', () {
     testWidgets('should work with dedicated Formix widget', (tester) async {
-      final nameField = FormixFieldID<String>('name');
-      final emailField = FormixFieldID<String>('email');
+      const nameField = FormixFieldID<String>('name');
+      const emailField = FormixFieldID<String>('email');
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
             home: Scaffold(
               body: Formix(
-                initialValue: {'name': 'Jane Doe', 'email': 'jane@example.com'},
+                initialValue: const {'name': 'Jane Doe', 'email': 'jane@example.com'},
                 fields: [
                   FormixFieldConfig<String>(
                     id: nameField,
@@ -402,13 +402,13 @@ void main() {
                 ],
                 child: Column(
                   children: [
-                    FormixTextFormField(
+                    const FormixTextFormField(
                       fieldId: nameField,
-                      decoration: const InputDecoration(labelText: 'Name'),
+                      decoration: InputDecoration(labelText: 'Name'),
                     ),
-                    FormixTextFormField(
+                    const FormixTextFormField(
                       fieldId: emailField,
-                      decoration: const InputDecoration(labelText: 'Email'),
+                      decoration: InputDecoration(labelText: 'Email'),
                     ),
                     Consumer(
                       builder: (context, ref, child) {

@@ -8,8 +8,8 @@ void main() {
     late FormixFieldID<int> targetField;
 
     setUp(() {
-      sourceField = FormixFieldID<String>('source');
-      targetField = FormixFieldID<int>('target');
+      sourceField = const FormixFieldID<String>('source');
+      targetField = const FormixFieldID<int>('target');
     });
 
     testWidgets('build returns SizedBox.shrink', (tester) async {
@@ -156,7 +156,7 @@ void main() {
     });
 
     testWidgets('updates listeners when properties change', (tester) async {
-      final newSourceField = FormixFieldID<String>('newSource');
+      const newSourceField = FormixFieldID<String>('newSource');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -169,7 +169,7 @@ void main() {
               },
               fields: [
                 FormixFieldConfig(id: sourceField),
-                FormixFieldConfig(id: newSourceField),
+                const FormixFieldConfig(id: newSourceField),
                 FormixFieldConfig(id: targetField),
               ],
               child: FormixFieldTransformer<String, int>(
@@ -204,7 +204,7 @@ void main() {
               },
               fields: [
                 FormixFieldConfig(id: sourceField),
-                FormixFieldConfig(id: newSourceField),
+                const FormixFieldConfig(id: newSourceField),
                 FormixFieldConfig(id: targetField),
               ],
               child: FormixFieldTransformer<String, int>(

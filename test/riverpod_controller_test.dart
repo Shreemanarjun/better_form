@@ -66,7 +66,7 @@ void main() {
       final state = FormixData.withCalculatedCounts(
         validations: {
           'field1': ValidationResult.valid,
-          'field2': ValidationResult(isValid: false, errorMessage: 'Error'),
+          'field2': const ValidationResult(isValid: false, errorMessage: 'Error'),
         },
       );
 
@@ -92,25 +92,25 @@ void main() {
     test('getValue returns typed value when type matches', () {
       final state = FormixData.withCalculatedCounts(values: {'field1': 'test'});
 
-      expect(state.getValue<String>(FormixFieldID<String>('field1')), 'test');
+      expect(state.getValue<String>(const FormixFieldID<String>('field1')), 'test');
     });
 
     test('getValue returns null when type does not match', () {
       final state = FormixData.withCalculatedCounts(values: {'field1': 'test'});
 
-      expect(state.getValue<int>(FormixFieldID<int>('field1')), null);
+      expect(state.getValue<int>(const FormixFieldID<int>('field1')), null);
     });
 
     test('requireValue throws when value is null', () {
-      final state = FormixData();
+      const state = FormixData();
       expect(
-        () => state.requireValue(FormixFieldID<String>('field1')),
+        () => state.requireValue(const FormixFieldID<String>('field1')),
         throwsA(isA<StateError>()),
       );
     });
 
     test('getValidation returns validation result for field', () {
-      final validation = ValidationResult(
+      const validation = ValidationResult(
         isValid: false,
         errorMessage: 'Error',
       );
@@ -118,14 +118,14 @@ void main() {
         validations: {'field1': validation},
       );
 
-      expect(state.getValidation(FormixFieldID<String>('field1')), validation);
+      expect(state.getValidation(const FormixFieldID<String>('field1')), validation);
     });
 
     test('getValidation returns valid result for unregistered field', () {
-      final state = FormixData();
+      const state = FormixData();
 
       expect(
-        state.getValidation(FormixFieldID<String>('field1')).isValid,
+        state.getValidation(const FormixFieldID<String>('field1')).isValid,
         true,
       );
     });
@@ -135,8 +135,8 @@ void main() {
         dirtyStates: {'field1': true},
       );
 
-      expect(state.isFieldDirty(FormixFieldID<String>('field1')), true);
-      expect(state.isFieldDirty(FormixFieldID<String>('field2')), false);
+      expect(state.isFieldDirty(const FormixFieldID<String>('field1')), true);
+      expect(state.isFieldDirty(const FormixFieldID<String>('field2')), false);
     });
 
     test('isFieldTouched returns touched state for field', () {
@@ -144,14 +144,14 @@ void main() {
         touchedStates: {'field1': true},
       );
 
-      expect(state.isFieldTouched(FormixFieldID<String>('field1')), true);
-      expect(state.isFieldTouched(FormixFieldID<String>('field2')), false);
+      expect(state.isFieldTouched(const FormixFieldID<String>('field1')), true);
+      expect(state.isFieldTouched(const FormixFieldID<String>('field2')), false);
     });
   });
 
   group('FormixFieldConfig', () {
     test('constructor creates config correctly', () {
-      final id = FormixFieldID<String>('test');
+      const id = FormixFieldID<String>('test');
       final config = FormixFieldConfig<String>(
         id: id,
         initialValue: 'initial',
@@ -169,7 +169,7 @@ void main() {
     });
 
     test('toField converts config to field correctly', () {
-      final id = FormixFieldID<String>('test');
+      const id = FormixFieldID<String>('test');
       final config = FormixFieldConfig<String>(
         id: id,
         initialValue: 'initial',
@@ -186,12 +186,12 @@ void main() {
     });
 
     test('equality works correctly', () {
-      final id1 = FormixFieldID<String>('test');
-      final id2 = FormixFieldID<String>('test');
+      const id1 = FormixFieldID<String>('test');
+      const id2 = FormixFieldID<String>('test');
 
-      final config1 = FormixFieldConfig<String>(id: id1, initialValue: 'test');
-      final config2 = FormixFieldConfig<String>(id: id2, initialValue: 'test');
-      final config3 = FormixFieldConfig<String>(
+      const config1 = FormixFieldConfig<String>(id: id1, initialValue: 'test');
+      const config2 = FormixFieldConfig<String>(id: id2, initialValue: 'test');
+      const config3 = FormixFieldConfig<String>(
         id: id1,
         initialValue: 'different',
       );
@@ -201,9 +201,9 @@ void main() {
     });
 
     test('hashCode works correctly', () {
-      final id = FormixFieldID<String>('test');
-      final config1 = FormixFieldConfig<String>(id: id, initialValue: 'test');
-      final config2 = FormixFieldConfig<String>(id: id, initialValue: 'test');
+      const id = FormixFieldID<String>('test');
+      const config1 = FormixFieldConfig<String>(id: id, initialValue: 'test');
+      const config2 = FormixFieldConfig<String>(id: id, initialValue: 'test');
 
       expect(config1.hashCode, config2.hashCode);
     });
@@ -214,15 +214,15 @@ void main() {
     late FormixFieldID<int> intField;
 
     setUp(() {
-      stringField = FormixFieldID<String>('string_field');
-      intField = FormixFieldID<int>('int_field');
+      stringField = const FormixFieldID<String>('string_field');
+      intField = const FormixFieldID<int>('int_field');
     });
 
     test('constructor initializes with correct state', () {
       final controller = FormixController(
         initialValue: {'field1': 'value1'},
         fields: [
-          FormixField<String>(
+          const FormixField<String>(
             id: FormixFieldID<String>('field1'),
             initialValue: 'value1',
           ),
@@ -232,7 +232,7 @@ void main() {
       expect(controller.state.values['field1'], 'value1');
       expect(controller.initialValue['field1'], 'value1');
       expect(
-        controller.isFieldRegistered(FormixFieldID<String>('field1')),
+        controller.isFieldRegistered(const FormixFieldID<String>('field1')),
         true,
       );
     });
@@ -240,7 +240,7 @@ void main() {
     test('getValue returns correct typed value', () {
       final controller = FormixController(initialValue: {'field1': 'test'});
 
-      expect(controller.getValue(FormixFieldID<String>('field1')), 'test');
+      expect(controller.getValue(const FormixFieldID<String>('field1')), 'test');
     });
 
     test(
@@ -249,19 +249,19 @@ void main() {
         final controller = FormixController(
           initialValue: {'field1': 'initial'},
         );
-        expect(controller.getValue(FormixFieldID<String>('field1')), 'initial');
+        expect(controller.getValue(const FormixFieldID<String>('field1')), 'initial');
       },
     );
 
     test('getValue returns null for unknown fields', () {
       final controller = FormixController();
-      expect(controller.getValue(FormixFieldID<String>('unknown')), null);
+      expect(controller.getValue(const FormixFieldID<String>('unknown')), null);
     });
 
     test('requireValue throws on null value', () {
       final controller = FormixController();
       expect(
-        () => controller.requireValue(FormixFieldID<String>('unknown')),
+        () => controller.requireValue(const FormixFieldID<String>('unknown')),
         throwsA(isA<StateError>()),
       );
     });
@@ -288,7 +288,7 @@ void main() {
       final controller = FormixController(initialValue: {'field1': 'string'});
 
       expect(
-        () => controller.setValue(FormixFieldID<int>('field1'), 123),
+        () => controller.setValue(const FormixFieldID<int>('field1'), 123),
         throwsA(isA<ArgumentError>()),
       );
     });
@@ -371,31 +371,31 @@ void main() {
       final controller = FormixController(
         initialValue: {'field1': 'initial'},
         fields: [
-          FormixField<String>(
+          const FormixField<String>(
             id: FormixFieldID<String>('field1'),
             initialValue: 'initial',
           ),
         ],
       );
 
-      controller.setValue(FormixFieldID<String>('field1'), 'changed');
-      expect(controller.getValue(FormixFieldID<String>('field1')), 'changed');
+      controller.setValue(const FormixFieldID<String>('field1'), 'changed');
+      expect(controller.getValue(const FormixFieldID<String>('field1')), 'changed');
 
       controller.reset();
 
-      expect(controller.getValue(FormixFieldID<String>('field1')), 'initial');
-      expect(controller.isFieldDirty(FormixFieldID<String>('field1')), false);
+      expect(controller.getValue(const FormixFieldID<String>('field1')), 'initial');
+      expect(controller.isFieldDirty(const FormixFieldID<String>('field1')), false);
     });
 
     test('resetFields resets specific fields', () {
-      final field1 = FormixFieldID<String>('field1');
-      final field2 = FormixFieldID<String>('field2');
+      const field1 = FormixFieldID<String>('field1');
+      const field2 = FormixFieldID<String>('field2');
 
       final controller = FormixController(
         initialValue: {'field1': 'initial1', 'field2': 'initial2'},
         fields: [
-          FormixField<String>(id: field1, initialValue: 'initial1'),
-          FormixField<String>(id: field2, initialValue: 'initial2'),
+          const FormixField<String>(id: field1, initialValue: 'initial1'),
+          const FormixField<String>(id: field2, initialValue: 'initial2'),
         ],
       );
 
@@ -446,7 +446,7 @@ void main() {
 
     test('getFieldNotifier creates and caches notifiers', () {
       final controller = FormixController();
-      final fieldId = FormixFieldID<String>('test');
+      const fieldId = FormixFieldID<String>('test');
 
       final notifier1 = controller.getFieldNotifier(fieldId);
       final notifier2 = controller.getFieldNotifier(fieldId);
@@ -457,7 +457,7 @@ void main() {
 
     test('fieldValidationNotifier creates and caches notifiers', () {
       final controller = FormixController();
-      final fieldId = FormixFieldID<String>('test');
+      const fieldId = FormixFieldID<String>('test');
 
       final notifier1 = controller.fieldValidationNotifier(fieldId);
       final notifier2 = controller.fieldValidationNotifier(fieldId);
@@ -468,7 +468,7 @@ void main() {
 
     test('fieldDirtyNotifier creates and caches notifiers', () {
       final controller = FormixController();
-      final fieldId = FormixFieldID<String>('test');
+      const fieldId = FormixFieldID<String>('test');
 
       final notifier1 = controller.fieldDirtyNotifier(fieldId);
       final notifier2 = controller.fieldDirtyNotifier(fieldId);
@@ -479,7 +479,7 @@ void main() {
 
     test('fieldTouchedNotifier creates and caches notifiers', () {
       final controller = FormixController();
-      final fieldId = FormixFieldID<String>('test');
+      const fieldId = FormixFieldID<String>('test');
 
       final notifier1 = controller.fieldTouchedNotifier(fieldId);
       final notifier2 = controller.fieldTouchedNotifier(fieldId);
@@ -507,14 +507,14 @@ void main() {
     });
 
     test('getChangedValues returns only dirty fields', () {
-      final field1 = FormixFieldID<String>('field1');
-      final field2 = FormixFieldID<String>('field2');
+      const field1 = FormixFieldID<String>('field1');
+      const field2 = FormixFieldID<String>('field2');
 
       final controller = FormixController(
         initialValue: {'field1': 'initial1', 'field2': 'initial2'},
         fields: [
-          FormixField<String>(id: field1, initialValue: 'initial1'),
-          FormixField<String>(id: field2, initialValue: 'initial2'),
+          const FormixField<String>(id: field1, initialValue: 'initial1'),
+          const FormixField<String>(id: field2, initialValue: 'initial2'),
         ],
       );
 
@@ -526,13 +526,13 @@ void main() {
     });
 
     test('updateFromMap updates registered fields', () {
-      final field1 = FormixFieldID<String>('field1');
-      final field2 = FormixFieldID<String>('field2');
+      const field1 = FormixFieldID<String>('field1');
+      const field2 = FormixFieldID<String>('field2');
 
       final controller = FormixController(
         fields: [
-          FormixField<String>(id: field1, initialValue: ''),
-          FormixField<String>(id: field2, initialValue: ''),
+          const FormixField<String>(id: field1, initialValue: ''),
+          const FormixField<String>(id: field2, initialValue: ''),
         ],
       );
 
@@ -548,12 +548,12 @@ void main() {
       controller.resetToValues({'field1': 'new'});
 
       expect(controller.initialValue['field1'], 'new');
-      expect(controller.getValue(FormixFieldID<String>('field1')), 'new');
+      expect(controller.getValue(const FormixFieldID<String>('field1')), 'new');
     });
 
     test('focus management registers focus nodes', () {
       final controller = FormixController();
-      final fieldId = FormixFieldID<String>('test');
+      const fieldId = FormixFieldID<String>('test');
       final focusNode = FocusNode();
 
       controller.registerFocusNode(fieldId, focusNode);
@@ -566,8 +566,8 @@ void main() {
     });
 
     test('focusFirstError works with registered nodes', () {
-      final field1 = FormixFieldID<String>('field1');
-      final field2 = FormixFieldID<String>('field2');
+      const field1 = FormixFieldID<String>('field1');
+      const field2 = FormixFieldID<String>('field2');
 
       final controller = FormixController(
         fields: [
@@ -603,8 +603,8 @@ void main() {
       final controller = FormixController();
 
       // Create some notifiers
-      controller.getFieldNotifier(FormixFieldID<String>('test'));
-      controller.fieldValidationNotifier(FormixFieldID<String>('test'));
+      controller.getFieldNotifier(const FormixFieldID<String>('test'));
+      controller.fieldValidationNotifier(const FormixFieldID<String>('test'));
 
       // Dispose should work without errors
       expect(() => controller.dispose(), returnsNormally);
@@ -614,8 +614,8 @@ void main() {
   group('FormixParameter', () {
     test('constructor creates parameter correctly', () {
       final param = FormixParameter(
-        initialValue: {'field1': 'value1'},
-        fields: [FormixFieldConfig(id: FormixFieldID<String>('field1'))],
+        initialValue: const {'field1': 'value1'},
+        fields: const [FormixFieldConfig(id: FormixFieldID<String>('field1'))],
         persistence: MockPersistence(),
         formId: 'test_form',
       );
@@ -626,25 +626,25 @@ void main() {
     });
 
     test('equality works correctly', () {
-      final param1 = FormixParameter(
+      const param1 = FormixParameter(
         initialValue: {'field1': 'value1'},
         fields: [FormixFieldConfig(id: FormixFieldID<String>('field1'))],
       );
 
-      final param2 = FormixParameter(
+      const param2 = FormixParameter(
         initialValue: {'field1': 'value1'},
         fields: [FormixFieldConfig(id: FormixFieldID<String>('field1'))],
       );
 
-      final param3 = FormixParameter(initialValue: {'field1': 'value2'});
+      const param3 = FormixParameter(initialValue: {'field1': 'value2'});
 
       expect(param1 == param2, true);
       expect(param1 == param3, false);
     });
 
     test('hashCode works correctly', () {
-      final param1 = FormixParameter(initialValue: {'field1': 'value1'});
-      final param2 = FormixParameter(initialValue: {'field1': 'value1'});
+      const param1 = FormixParameter(initialValue: {'field1': 'value1'});
+      const param2 = FormixParameter(initialValue: {'field1': 'value1'});
 
       expect(param1.hashCode, param2.hashCode);
     });
@@ -652,7 +652,7 @@ void main() {
 
   group('Providers', () {
     test('formControllerProvider creates controller correctly', () {
-      final param = FormixParameter(
+      const param = FormixParameter(
         initialValue: {'field1': 'value1'},
         fields: [FormixFieldConfig(id: FormixFieldID<String>('field1'))],
       );
@@ -661,7 +661,7 @@ void main() {
       final provider = formControllerProvider(param);
       final controller = container.read(provider.notifier);
 
-      expect(controller.getValue(FormixFieldID<String>('field1')), 'value1');
+      expect(controller.getValue(const FormixFieldID<String>('field1')), 'value1');
       container.dispose();
     });
 

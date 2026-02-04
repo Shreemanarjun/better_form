@@ -5,8 +5,8 @@ import 'package:formix/formix.dart';
 void main() {
   group('Programmatic Control Tests', () {
     testWidgets('Focusing a field programmatically', (tester) async {
-      final fieldA = FormixFieldID<String>('a');
-      final fieldB = FormixFieldID<String>('b');
+      const fieldA = FormixFieldID<String>('a');
+      const fieldB = FormixFieldID<String>('b');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -17,12 +17,12 @@ void main() {
                   builder: (context, scope) {
                     return Column(
                       children: [
-                        FormixTextFormField(
-                          key: const Key('A'),
+                        const FormixTextFormField(
+                          key: Key('A'),
                           fieldId: fieldA,
                         ),
-                        FormixTextFormField(
-                          key: const Key('B'),
+                        const FormixTextFormField(
+                          key: Key('B'),
                           fieldId: fieldB,
                         ),
                         ElevatedButton(
@@ -56,7 +56,7 @@ void main() {
     });
 
     testWidgets('Scrolling to a field programmatically', (tester) async {
-      final fieldB = FormixFieldID<String>('b');
+      const fieldB = FormixFieldID<String>('b');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -71,16 +71,16 @@ void main() {
                           onPressed: () => scope.scrollToField(fieldB),
                           child: const Text('Scroll to B'),
                         ),
-                        Expanded(
+                        const Expanded(
                           child: SingleChildScrollView(
                             child: Column(
                               children: [
-                                const SizedBox(height: 1000),
+                                SizedBox(height: 1000),
                                 FormixTextFormField(
-                                  key: const Key('B'),
+                                  key: Key('B'),
                                   fieldId: fieldB,
                                 ),
-                                const SizedBox(height: 1000),
+                                SizedBox(height: 1000),
                               ],
                             ),
                           ),
@@ -111,8 +111,8 @@ void main() {
     });
 
     testWidgets('Focusing first error', (tester) async {
-      final fieldA = FormixFieldID<String>('a');
-      final fieldB = FormixFieldID<String>('b');
+      const fieldA = FormixFieldID<String>('a');
+      const fieldB = FormixFieldID<String>('b');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -135,12 +135,12 @@ void main() {
                   builder: (context, scope) {
                     return Column(
                       children: [
-                        FormixTextFormField(
-                          key: const Key('A'),
+                        const FormixTextFormField(
+                          key: Key('A'),
                           fieldId: fieldA,
                         ),
-                        FormixTextFormField(
-                          key: const Key('B'),
+                        const FormixTextFormField(
+                          key: Key('B'),
                           fieldId: fieldB,
                         ),
                         ElevatedButton(

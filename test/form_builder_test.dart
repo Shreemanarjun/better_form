@@ -21,7 +21,7 @@ void main() {
   testWidgets('FormixBuilder provides scope with reactive watchValue', (
     tester,
   ) async {
-    final field1 = FormixFieldID<String>('field1');
+    const field1 = FormixFieldID<String>('field1');
 
     await tester.pumpWidget(
       ProviderScope(
@@ -29,7 +29,7 @@ void main() {
           home: Scaffold(
             body: Formix(
               initialValue: const {'field1': 'initial'},
-              fields: [FormixFieldConfig(id: field1)],
+              fields: const [FormixFieldConfig(id: field1)],
               child: FormixBuilder(
                 builder: (context, scope) {
                   final value = scope.watchValue(field1);
@@ -61,16 +61,16 @@ void main() {
   testWidgets('FormixWidget extension provides scope with reactive getters', (
     tester,
   ) async {
-    final field1 = FormixFieldID<String>('field1');
+    const field1 = FormixFieldID<String>('field1');
 
     await tester.pumpWidget(
-      ProviderScope(
+      const ProviderScope(
         child: MaterialApp(
           home: Scaffold(
             body: Formix(
-              initialValue: const {'field1': 'initial'},
+              initialValue: {'field1': 'initial'},
               fields: [FormixFieldConfig(id: field1)],
-              child: const CustomStatusDisplay(),
+              child: CustomStatusDisplay(),
             ),
           ),
         ),
@@ -95,7 +95,7 @@ void main() {
   });
 
   testWidgets('FormixScope.submit helper works correctly', (tester) async {
-    final field1 = FormixFieldID<String>('field1');
+    const field1 = FormixFieldID<String>('field1');
     bool submitted = false;
     Map<String, dynamic>? submittedValues;
 
@@ -155,7 +155,7 @@ void main() {
   });
 
   testWidgets('FormixScope.watchValidation works correctly', (tester) async {
-    final field1 = FormixFieldID<String>('field1');
+    const field1 = FormixFieldID<String>('field1');
 
     await tester.pumpWidget(
       ProviderScope(
@@ -196,7 +196,7 @@ void main() {
   });
 
   testWidgets('FormixScope.watchIsDirty works correctly', (tester) async {
-    final field1 = FormixFieldID<String>('field1');
+    const field1 = FormixFieldID<String>('field1');
 
     await tester.pumpWidget(
       ProviderScope(
@@ -204,7 +204,7 @@ void main() {
           home: Scaffold(
             body: Formix(
               initialValue: const {'field1': 'initial'},
-              fields: [FormixFieldConfig(id: field1)],
+              fields: const [FormixFieldConfig(id: field1)],
               child: FormixBuilder(
                 builder: (context, scope) {
                   final isDirty = scope.watchIsDirty(field1);
@@ -231,14 +231,14 @@ void main() {
   });
 
   testWidgets('FormixScope.watchIsTouched works correctly', (tester) async {
-    final field1 = FormixFieldID<String>('field1');
+    const field1 = FormixFieldID<String>('field1');
 
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
           home: Scaffold(
             body: Formix(
-              fields: [FormixFieldConfig(id: field1)],
+              fields: const [FormixFieldConfig(id: field1)],
               child: FormixBuilder(
                 builder: (context, scope) {
                   final isTouched = scope.watchIsTouched(field1);
@@ -265,7 +265,7 @@ void main() {
   });
 
   testWidgets('FormixScope.watchIsFormDirty works correctly', (tester) async {
-    final field1 = FormixFieldID<String>('field1');
+    const field1 = FormixFieldID<String>('field1');
 
     await tester.pumpWidget(
       ProviderScope(
@@ -273,7 +273,7 @@ void main() {
           home: Scaffold(
             body: Formix(
               initialValue: const {'field1': 'initial'},
-              fields: [FormixFieldConfig(id: field1)],
+              fields: const [FormixFieldConfig(id: field1)],
               child: FormixBuilder(
                 builder: (context, scope) {
                   final isFormDirty = scope.watchIsFormDirty;
@@ -331,7 +331,7 @@ void main() {
   });
 
   testWidgets('FormixScope.watchState works correctly', (tester) async {
-    final field1 = FormixFieldID<String>('field1');
+    const field1 = FormixFieldID<String>('field1');
 
     await tester.pumpWidget(
       ProviderScope(
@@ -339,7 +339,7 @@ void main() {
           home: Scaffold(
             body: Formix(
               initialValue: const {'field1': 'initial'},
-              fields: [FormixFieldConfig(id: field1)],
+              fields: const [FormixFieldConfig(id: field1)],
               child: FormixBuilder(
                 builder: (context, scope) {
                   final state = scope.watchState;
@@ -356,14 +356,14 @@ void main() {
   });
 
   testWidgets('FormixScope.markAsTouched works correctly', (tester) async {
-    final field1 = FormixFieldID<String>('field1');
+    const field1 = FormixFieldID<String>('field1');
 
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
           home: Scaffold(
             body: Formix(
-              fields: [FormixFieldConfig(id: field1)],
+              fields: const [FormixFieldConfig(id: field1)],
               child: FormixBuilder(
                 builder: (context, scope) {
                   return ElevatedButton(
@@ -394,7 +394,7 @@ void main() {
   });
 
   testWidgets('FormixScope.validate works correctly', (tester) async {
-    final field1 = FormixFieldID<String>('field1');
+    const field1 = FormixFieldID<String>('field1');
     bool? validationResult;
 
     await tester.pumpWidget(
@@ -444,7 +444,7 @@ void main() {
   });
 
   testWidgets('FormixScope.reset works correctly', (tester) async {
-    final field1 = FormixFieldID<String>('field1');
+    const field1 = FormixFieldID<String>('field1');
 
     await tester.pumpWidget(
       ProviderScope(
@@ -452,7 +452,7 @@ void main() {
           home: Scaffold(
             body: Formix(
               initialValue: const {'field1': 'initial'},
-              fields: [FormixFieldConfig(id: field1)],
+              fields: const [FormixFieldConfig(id: field1)],
               child: FormixBuilder(
                 builder: (context, scope) {
                   return Column(
@@ -492,7 +492,7 @@ void main() {
   });
 
   testWidgets('FormixScope.submit with onError callback works', (tester) async {
-    final field1 = FormixFieldID<String>('field1');
+    const field1 = FormixFieldID<String>('field1');
     bool errorCalled = false;
     Map<String, ValidationResult>? errorResults;
 
@@ -560,8 +560,8 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      ProviderScope(
-        child: MaterialApp(home: Scaffold(body: const CustomStatusDisplay())),
+      const ProviderScope(
+        child: MaterialApp(home: Scaffold(body: CustomStatusDisplay())),
       ),
     );
 

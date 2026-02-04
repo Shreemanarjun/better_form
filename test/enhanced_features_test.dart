@@ -16,7 +16,7 @@ class SpanishMessages extends DefaultFormixMessages {
 void main() {
   group('Enhanced Features', () {
     test('Input Transformer transforms value', () {
-      final id = FormixFieldID<String>('name');
+      const id = FormixFieldID<String>('name');
       final field = FormixField<String>(
         id: id,
         initialValue: '',
@@ -32,12 +32,12 @@ void main() {
     });
 
     test('Cross-Field Validation (via Schema)', () async {
-      final passwordId = FormixFieldID<String>('password');
-      final confirmId = FormixFieldID<String>('confirm');
+      const passwordId = FormixFieldID<String>('password');
+      const confirmId = FormixFieldID<String>('confirm');
 
       final schema = FormSchema(
         fields: [
-          TextFieldSchema(id: passwordId, initialValue: ''),
+          const TextFieldSchema(id: passwordId, initialValue: ''),
           TextFieldSchema(
             id: confirmId,
             initialValue: '',
@@ -75,7 +75,7 @@ void main() {
     });
 
     test('Async Validation (Manual simulation)', () async {
-      final id = FormixFieldID<String>('username');
+      const id = FormixFieldID<String>('username');
       bool asyncCalled = false;
 
       final field = FormixField<String>(
@@ -110,8 +110,8 @@ void main() {
     });
 
     test('Touched State', () {
-      final id = FormixFieldID<String>('email');
-      final field = FormixField<String>(id: id, initialValue: '');
+      const id = FormixFieldID<String>('email');
+      const field = FormixField<String>(id: id, initialValue: '');
 
       final controller = TestController();
       controller.registerField(field);
@@ -124,16 +124,16 @@ void main() {
     });
 
     test('Serialization and Bulk Update', () {
-      final id1 = FormixFieldID<String>('name');
-      final id2 = FormixFieldID<int>('age');
+      const id1 = FormixFieldID<String>('name');
+      const id2 = FormixFieldID<int>('age');
 
       final controller = TestController(
         initialValue: {'name': 'John', 'age': 30},
       );
       controller.registerField(
-        FormixField<String>(id: id1, initialValue: 'John'),
+        const FormixField<String>(id: id1, initialValue: 'John'),
       );
-      controller.registerField(FormixField<int>(id: id2, initialValue: 30));
+      controller.registerField(const FormixField<int>(id: id2, initialValue: 30));
 
       // toMap
       expect(controller.toMap(), {'name': 'John', 'age': 30});
@@ -149,17 +149,17 @@ void main() {
     });
 
     test('Flexible Reset Options (resetFields)', () {
-      final id1 = FormixFieldID<String>('name');
-      final id2 = FormixFieldID<String>('city');
+      const id1 = FormixFieldID<String>('name');
+      const id2 = FormixFieldID<String>('city');
 
       final controller = TestController(
         initialValue: {'name': 'John', 'city': 'NY'},
       );
       controller.registerField(
-        FormixField<String>(id: id1, initialValue: 'John'),
+        const FormixField<String>(id: id1, initialValue: 'John'),
       );
       controller.registerField(
-        FormixField<String>(id: id2, initialValue: 'NY'),
+        const FormixField<String>(id: id2, initialValue: 'NY'),
       );
 
       controller.setValue(id1, 'Jane');
@@ -176,7 +176,7 @@ void main() {
     });
 
     test('i18n Messages in Validation', () {
-      final id = FormixFieldID<String>('required_field');
+      const id = FormixFieldID<String>('required_field');
 
       final controller = TestController(messages: const SpanishMessages());
       controller.registerField(

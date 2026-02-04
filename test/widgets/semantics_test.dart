@@ -9,7 +9,7 @@ void main() {
       final handle = tester.ensureSemantics();
 
       await tester.pumpWidget(
-        ProviderScope(
+        const ProviderScope(
           child: MaterialApp(
             home: Scaffold(
               body: Formix(child: SizedBox(height: 100, width: 100)),
@@ -30,7 +30,7 @@ void main() {
       tester,
     ) async {
       final handle = tester.ensureSemantics();
-      final fieldId = FormixFieldID<String>('name');
+      const fieldId = FormixFieldID<String>('name');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -91,7 +91,7 @@ void main() {
                 child: FormixRawFormField<String>(
                   fieldId: fieldId,
                   builder: (context, state) {
-                    return SizedBox(
+                    return const SizedBox(
                       height: 50,
                       width: 50,
                       child: Text('Custom Field'),
@@ -125,7 +125,7 @@ void main() {
       // testing it usually requires a mock for the BinaryMessenger if we want to be thorough.
       // However, we can at least verify that the logic doesn't crash and triggers correctly.
 
-      final fieldId = FormixFieldID<String>('error_field');
+      const fieldId = FormixFieldID<String>('error_field');
       late FormixController controller;
 
       await tester.pumpWidget(
@@ -143,7 +143,7 @@ void main() {
                 child: FormixBuilder(
                   builder: (context, scope) {
                     controller = scope.controller;
-                    return Text('Form');
+                    return const Text('Form');
                   },
                 ),
               ),

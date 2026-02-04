@@ -41,13 +41,13 @@ void main() {
 
     test('Cross-field dependency chain performance', () {
       // Create a chain of 500 fields where each depends on the previous one
-      final chainLength = 100000;
+      const chainLength = 100000;
       int validationCount = 0;
 
       final fields = <FormixFieldConfig<String>>[];
       fields.add(
-        FormixFieldConfig<String>(
-          id: const FormixFieldID<String>('field_0'),
+        const FormixFieldConfig<String>(
+          id: FormixFieldID<String>('field_0'),
           initialValue: '0',
         ),
       );

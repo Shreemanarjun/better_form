@@ -8,7 +8,7 @@ void main() {
     testWidgets('Coordinated with isPending state to ensure submission safety', (
       tester,
     ) async {
-      final fieldId = FormixFieldID<String>('async_data');
+      const fieldId = FormixFieldID<String>('async_data');
       final completer = Completer<String>();
       bool submitted = false;
 
@@ -90,7 +90,7 @@ void main() {
     testWidgets('Automatically re-triggers fetch on form reset via onRetry', (
       tester,
     ) async {
-      final fieldId = FormixFieldID<String>('reset_test');
+      const fieldId = FormixFieldID<String>('reset_test');
       int fetchCount = 0;
 
       Future<String> fetchData() async {
@@ -140,7 +140,7 @@ void main() {
     testWidgets(
       'Race condition protection ensures only the latest future results are used',
       (tester) async {
-        final fieldId = FormixFieldID<String>('race_test');
+        const fieldId = FormixFieldID<String>('race_test');
         final completer1 = Completer<String>();
         final completer2 = Completer<String>();
 
@@ -190,7 +190,7 @@ void main() {
     testWidgets('Retry logic via manual refresh() works correctly', (
       tester,
     ) async {
-      final fieldId = FormixFieldID<String>('manual_refresh');
+      const fieldId = FormixFieldID<String>('manual_refresh');
       int attempts = 0;
 
       // Use a controlled completer for the initial error to avoid uncaught exception during boot

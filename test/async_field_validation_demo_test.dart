@@ -4,7 +4,7 @@ import 'package:formix/formix.dart';
 
 void main() {
   testWidgets('FormixAsyncField works with async validation', (tester) async {
-    final fieldId = FormixFieldID<String>('username');
+    const fieldId = FormixFieldID<String>('username');
 
     // Simulates an API call to load the initial suggested username
     final initialFuture = Future.delayed(

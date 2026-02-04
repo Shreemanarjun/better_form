@@ -7,7 +7,7 @@ import 'package:formix/formix.dart';
 void main() {
   group('External Listening Tests', () {
     late GlobalKey<FormixState> formKey;
-    final nameField = FormixFieldID<String>('name');
+    const nameField = FormixFieldID<String>('name');
 
     setUp(() {
       formKey = GlobalKey<FormixState>();
@@ -22,7 +22,7 @@ void main() {
                 body: Formix(
                   key: formKey,
                   initialValue: const {'name': ''},
-                  fields: [
+                  fields: const [
                     FormixFieldConfig<String>(id: nameField, initialValue: ''),
                   ],
                   child: const SizedBox(),
@@ -66,7 +66,7 @@ void main() {
                   child: Formix(
                     key: formKey,
                     initialValue: const {'name': ''},
-                    fields: [
+                    fields: const [
                       FormixFieldConfig<String>(
                         id: nameField,
                         initialValue: '',
@@ -99,7 +99,7 @@ void main() {
                 body: Formix(
                   key: formKey,
                   initialValue: const {'name': ''},
-                  fields: [
+                  fields: const [
                     FormixFieldConfig<String>(id: nameField, initialValue: ''),
                   ],
                   child: const SizedBox(),
@@ -111,7 +111,7 @@ void main() {
         await tester.pump();
 
         final controller = formKey.currentState!.controller;
-        final listenerCount = 50;
+        const listenerCount = 50;
         var callbackCount = 0;
         final subscriptions = <StreamSubscription>[];
 
@@ -154,7 +154,7 @@ void main() {
                 body: Formix(
                   key: formKey,
                   initialValue: const {'name': ''},
-                  fields: [],
+                  fields: const [],
                   child: const SizedBox(),
                 ),
               ),

@@ -5,7 +5,7 @@ import 'package:formix/formix.dart';
 void main() {
   group('Edge Cases', () {
     test('Zombie Fields: Hidden fields block submission', () async {
-      final fieldA = FormixFieldID<String>('a');
+      const fieldA = FormixFieldID<String>('a');
 
       // A is required
       final fields = [
@@ -47,7 +47,7 @@ void main() {
     test(
       'Submit Race Condition: submit() runs while async validation is pending',
       () async {
-        final fieldA = FormixFieldID<String>('a');
+        const fieldA = FormixFieldID<String>('a');
         final completer = Completer<String?>();
 
         final fields = [
@@ -98,7 +98,7 @@ void main() {
         );
 
         // Should still be waiting
-        await Future.delayed(Duration(milliseconds: 10)); // Yield
+        await Future.delayed(const Duration(milliseconds: 10)); // Yield
         expect(submitted, isFalse, reason: 'Submit should wait for async');
 
         // Now complete the validation with an error

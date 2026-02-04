@@ -5,7 +5,7 @@ import 'package:formix/formix.dart';
 
 void main() {
   group('Formatting and Masking Tests', () {
-    final cardNumberField = FormixFieldID<String>('cardNumber');
+    const cardNumberField = FormixFieldID<String>('cardNumber');
 
     testWidgets('Input formatters are applied', (tester) async {
       late FormixController controller;
@@ -29,7 +29,7 @@ void main() {
                 child: FormixBuilder(
                   builder: (context, scope) {
                     controller = Formix.controllerOf(context)!;
-                    return Column(
+                    return const Column(
                       children: [FormixTextFormField(fieldId: cardNumberField)],
                     );
                   },
@@ -60,7 +60,7 @@ void main() {
     testWidgets('Input formatters from widget merge with config', (
       tester,
     ) async {
-      final phoneField = FormixFieldID<String>('phone');
+      const phoneField = FormixFieldID<String>('phone');
       late FormixController controller;
 
       await tester.pumpWidget(

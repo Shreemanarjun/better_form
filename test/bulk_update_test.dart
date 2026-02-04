@@ -6,13 +6,13 @@ void main() {
     test(
       'setValues updates multiple fields and triggers dependent validation in one round',
       () {
-        final nameField = FormixFieldID<String>('name');
-        final emailField = FormixFieldID<String>('email');
+        const nameField = FormixFieldID<String>('name');
+        const emailField = FormixFieldID<String>('email');
 
         final controller = FormixController(
           fields: [
-            FormixField<String>(id: nameField, initialValue: ''),
-            FormixField<String>(id: emailField, initialValue: ''),
+            const FormixField<String>(id: nameField, initialValue: ''),
+            const FormixField<String>(id: emailField, initialValue: ''),
           ],
         );
 
@@ -35,14 +35,14 @@ void main() {
     );
 
     test('setValues triggers dependent validations', () {
-      final priceField = FormixFieldID<double>('price');
-      final taxField = FormixFieldID<double>('tax');
-      final totalField = FormixFieldID<double>('total');
+      const priceField = FormixFieldID<double>('price');
+      const taxField = FormixFieldID<double>('tax');
+      const totalField = FormixFieldID<double>('total');
 
       final controller = FormixController(
         fields: [
-          FormixField<double>(id: priceField, initialValue: 0.0),
-          FormixField<double>(id: taxField, initialValue: 0.0),
+          const FormixField<double>(id: priceField, initialValue: 0.0),
+          const FormixField<double>(id: taxField, initialValue: 0.0),
           FormixField<double>(
             id: totalField,
             initialValue: 0.0,
@@ -63,19 +63,19 @@ void main() {
     });
 
     test('setValues with strict: false returns result with error details', () {
-      final nameField = FormixFieldID<String>('name');
-      final ageField = FormixFieldID<int>('age');
+      const nameField = FormixFieldID<String>('name');
+      const ageField = FormixFieldID<int>('age');
       final controller = FormixController(
         fields: [
-          FormixField<String>(id: nameField, initialValue: 'initial'),
-          FormixField<int>(id: ageField, initialValue: 0),
+          const FormixField<String>(id: nameField, initialValue: 'initial'),
+          const FormixField<int>(id: ageField, initialValue: 0),
         ],
       );
 
       final result = controller.setValues({
         nameField: 'John',
         ageField: 'wrong type', // Should fail
-        FormixFieldID<String>('unknown'): 'value', // Should fail (missing)
+        const FormixFieldID<String>('unknown'): 'value', // Should fail (missing)
       });
 
       expect(result.success, isFalse);
@@ -86,12 +86,12 @@ void main() {
     });
 
     test('FormixBatch provides a type-safe way to collect updates', () {
-      final nameField = FormixFieldID<String>('name');
-      final ageField = FormixFieldID<int>('age');
+      const nameField = FormixFieldID<String>('name');
+      const ageField = FormixFieldID<int>('age');
       final controller = FormixController(
         fields: [
-          FormixField<String>(id: nameField, initialValue: ''),
-          FormixField<int>(id: ageField, initialValue: 0),
+          const FormixField<String>(id: nameField, initialValue: ''),
+          const FormixField<int>(id: ageField, initialValue: 0),
         ],
       );
 
@@ -107,8 +107,8 @@ void main() {
     });
 
     test('FormixBatch.forField provides convenience with lint enforcement', () {
-      final nameFieldId = FormixFieldID<String>('name');
-      final nameField = FormixField<String>(id: nameFieldId, initialValue: '');
+      const nameFieldId = FormixFieldID<String>('name');
+      const nameField = FormixField<String>(id: nameFieldId, initialValue: '');
 
       final controller = FormixController(fields: [nameField]);
 
@@ -121,9 +121,9 @@ void main() {
     test(
       'type mismatch in setValues with strict: true still throws ArgumentError',
       () {
-        final nameField = FormixFieldID<String>('name');
+        const nameField = FormixFieldID<String>('name');
         final controller = FormixController(
-          fields: [FormixField<String>(id: nameField, initialValue: 'initial')],
+          fields: [const FormixField<String>(id: nameField, initialValue: 'initial')],
         );
 
         expect(

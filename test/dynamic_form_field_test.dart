@@ -8,7 +8,7 @@ void main() {
       // We will simulate a dynamic list of contacts.
       // Each contact has a name and a phone number.
 
-      final contactsCountField = FormixFieldID<int>('contactsCount');
+      const contactsCountField = FormixFieldID<int>('contactsCount');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -16,7 +16,7 @@ void main() {
             home: Scaffold(
               body: Formix(
                 initialValue: const {'contactsCount': 0},
-                fields: [
+                fields: const [
                   FormixFieldConfig<int>(
                     id: contactsCountField,
                     initialValue: 0,
@@ -190,9 +190,9 @@ void main() {
       // Fields from Step 1 should persist when moving to Step 2 (if keepAlive=true)
       // Validation should consider all fields.
 
-      final stepField = FormixFieldID<int>('step');
-      final nameField = FormixFieldID<String>('name');
-      final cityField = FormixFieldID<String>('city');
+      const stepField = FormixFieldID<int>('step');
+      const nameField = FormixFieldID<String>('name');
+      const cityField = FormixFieldID<String>('city');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -200,7 +200,7 @@ void main() {
             home: Scaffold(
               body: Formix(
                 initialValue: const {'step': 1},
-                fields: [
+                fields: const [
                   FormixFieldConfig<int>(id: stepField, initialValue: 1),
                 ],
                 child: FormixBuilder(
@@ -222,7 +222,7 @@ void main() {
                                     : null,
                               ),
                             ],
-                            child: FormixTextFormField(
+                            child: const FormixTextFormField(
                               fieldId: nameField,
                               decoration: InputDecoration(labelText: 'Name'),
                             ),
@@ -239,7 +239,7 @@ void main() {
                                     : null,
                               ),
                             ],
-                            child: FormixTextFormField(
+                            child: const FormixTextFormField(
                               fieldId: cityField,
                               decoration: InputDecoration(labelText: 'City'),
                             ),
