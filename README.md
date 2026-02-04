@@ -309,14 +309,166 @@ Make your forms "alive":
 100% UI control with zero state-management headache.
 
 #### `FormixRawFormField<T>` (Headless)
-Perfect for using third-party UI libraries (like Shadcn or Material).
+Perfect for using third-party UI libraries or building completely custom form inputs. Provides full access to field state through `FormixFieldStateSnapshot`.
+
+**All Available Properties:**
+
 ```dart
 FormixRawFormField<String>(
-  fieldId: nameField,
-  builder: (context, state) => MyInput(
+  // Required properties
+  fieldId: emailField,                    // Type-safe field identifier
+  builder: (context, state) {             // Builder receives FormixFieldStateSnapshot
+    // state.value - Current field value (T?)
+    // state.validation - ValidationResult with isValid, errorMessage, isValidating
+    // state.isDirty - Whether field has been modified
+    // state.isTouched - Whether field has been blurred/touched
+    // state.isSubmitting - Whether form is currently submitting
+    // state.focusNode - FocusNode for focus management
+    // state.didChange - Callback to update value: (T?) => void
+    // state.markAsTouched - Callback to manually mark as touched
+    // state.valueNotifier - ValueNotifier<T?> for granular reactivity
+    // state.enabled - Whether field is enabled
+    // state.errorBuilder - Custom error widget builder (if provided)
+    // state.shouldShowError - Helper: true if error should be displayed
+    // state.hasError - Helper: true if validation failed
+
+    return MyCustomInput(
+      value: state.value,
+      error: state.shouldShowError ? state.validation.errorMessage : null,
+      onChanged: state.didChange,
+    );
+  },
+
+  // Optional properties
+  controller: myFormController,           // Custom FormixController instance
+  validator: FormixValidators.string()    // Synchronous validator
+    .required('Email is required')
+    .email('Invalid email format')
+    .build(),
+  initialValue: 'user@example.com',       // Initial field value
+  enabled: true,                          // Enable/disable the field
+  onChanged: (value) {                    // Callback when value changes
+    print('Email changed to: $value');
+  },
+  onSaved: (value) {                      // Callback when form is saved
+    print('Saving email: $value');
+  },
+  onReset: () {                           // Callback when field is reset
+    print('Email field reset');
+  },
+  forceErrorText: 'Custom error',         // Override validation error
+  errorBuilder: (context, error) {        // Custom error widget builder
+    return Container(
+      padding: EdgeInsets.all(8),
+      color: Colors.red.shade50,
+      child: Text(error, style: TextStyle(color: Colors.red)),
+    );
+  },
+  autovalidateMode: FormixAutovalidateMode.onUserInteraction, // Validation timing
+  restorationId: 'email_field',           // For state restoration
+)
+```
+
+**Complete Real-World Example:**
+
+```dart
+class CustomEmailField extends StatelessWidget {
+  static final emailField = FormixFieldID<String>('email');
+
+  @override
+  Widget build(BuildContext context) {
+    return FormixRawFormField<String>(
+      fieldId: emailField,
+      validator: FormixValidators.string()
+        .required('Email is required')
+        .email('Please enter a valid email')
+        .build(),
+      initialValue: '',
+      builder: (context, state) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Custom input with all state integration
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: state.hasError && state.isTouched
+                    ? Colors.red
+                    : state.focusNode.hasFocus
+                      ? Colors.blue
+                      : Colors.grey,
+                  width: 2,
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: TextField(
+                focusNode: state.focusNode,
+                enabled: state.enabled,
+                onChanged: state.didChange,
+                decoration: InputDecoration(
+                  labelText: 'Email Address',
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.all(16),
+                  suffixIcon: state.isSubmitting
+                    ? SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : state.validation.isValid && state.isDirty
+                      ? Icon(Icons.check_circle, color: Colors.green)
+                      : null,
+                ),
+                // Use ValueListenableBuilder for text updates without rebuilds
+                controller: TextEditingController(text: state.value ?? ''),
+              ),
+            ),
+
+            // Show error only when appropriate
+            if (state.shouldShowError && state.validation.errorMessage != null)
+              Padding(
+                padding: EdgeInsets.only(top: 8, left: 16),
+                child: Text(
+                  state.validation.errorMessage!,
+                  style: TextStyle(color: Colors.red, fontSize: 12),
+                ),
+              ),
+
+            // Show field state for debugging
+            if (state.isDirty)
+              Padding(
+                padding: EdgeInsets.only(top: 4, left: 16),
+                child: Text(
+                  'Modified',
+                  style: TextStyle(color: Colors.orange, fontSize: 10),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+```
+
+**Using with Third-Party UI Libraries (e.g., Shadcn):**
+
+```dart
+FormixRawFormField<String>(
+  fieldId: usernameField,
+  validator: FormixValidators.string().required().minLength(3).build(),
+  builder: (context, state) => ShadInput(
     value: state.value,
-    error: state.validation.errorMessage,
+    enabled: state.enabled,
+    focusNode: state.focusNode,
     onChanged: state.didChange,
+    error: state.shouldShowError ? state.validation.errorMessage : null,
+    decoration: ShadInputDecoration(
+      label: Text('Username'),
+      suffix: state.validation.isValidating
+        ? ShadSpinner(size: 16)
+        : null,
+    ),
   ),
 )
 ```
@@ -663,6 +815,163 @@ class _MyColorPickerState extends FormixFieldWidgetState<Color> {
     );
   }
 }
+```
+
+### Headless Widgets
+Build completely custom form controls with full UI control while Formix handles all state management.
+
+#### Using FormixRawFormField for Custom Controls
+Perfect for non-text inputs like star ratings, color pickers, or custom toggles.
+
+```dart
+// Custom Star Rating Widget
+final ratingField = FormixFieldID<int>('rating');
+
+FormixRawFormField<int>(
+  fieldId: ratingField,
+  initialValue: 0,
+  validator: (v) => (v ?? 0) < 1 ? 'Please select a rating' : null,
+  builder: (context, state) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: List.generate(5, (index) {
+            final starValue = index + 1;
+            return IconButton(
+              onPressed: state.enabled
+                ? () => state.didChange(starValue)
+                : null,
+              icon: Icon(
+                starValue <= (state.value ?? 0)
+                  ? Icons.star
+                  : Icons.star_border,
+                color: Colors.amber,
+                size: 32,
+              ),
+            );
+          }),
+        ),
+        if (state.shouldShowError)
+          Text(
+            state.validation.errorMessage!,
+            style: TextStyle(color: Colors.red, fontSize: 12),
+          ),
+      ],
+    );
+  },
+)
+```
+
+#### Using FormixRawTextField for Custom Text Inputs
+Build text fields with custom styling and behavior while maintaining text controller sync.
+
+```dart
+// Custom Feedback Field with Character Counter
+final feedbackField = FormixFieldID<String>('feedback');
+
+FormixRawTextField<String>(
+  fieldId: feedbackField,
+  valueToString: (v) => v ?? '',
+  stringToValue: (s) => s.isEmpty ? null : s,
+  validator: FormixValidators.string()
+    .required()
+    .minLength(10, 'At least 10 characters required')
+    .build(),
+  builder: (context, state) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: state.hasError && state.isTouched
+                ? Colors.red
+                : state.focusNode.hasFocus
+                  ? Colors.blue
+                  : Colors.grey.shade300,
+            ),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: TextField(
+            controller: state.textController,
+            focusNode: state.focusNode,
+            maxLines: 4,
+            enabled: state.enabled,
+            decoration: InputDecoration(
+              hintText: 'Tell us what you think...',
+              border: InputBorder.none,
+            ),
+          ),
+        ),
+        SizedBox(height: 4),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            if (state.shouldShowError)
+              Text(
+                state.validation.errorMessage!,
+                style: TextStyle(color: Colors.red, fontSize: 12),
+              )
+            else
+              SizedBox.shrink(),
+            Text(
+              '${state.value?.length ?? 0}/500',
+              style: TextStyle(color: Colors.grey, fontSize: 12),
+            ),
+          ],
+        ),
+      ],
+    );
+  },
+)
+```
+
+#### Using FormixRawNotifierField for Performance
+Optimize rebuilds using ValueNotifier for granular reactivity.
+
+```dart
+// Counter with optimized rebuilds
+final counterField = FormixFieldID<int>('counter');
+
+FormixRawNotifierField<int>(
+  fieldId: counterField,
+  initialValue: 0,
+  builder: (context, state) {
+    return Column(
+      children: [
+        // This rebuilds on ANY state change
+        Text('Status: ${state.isDirty ? "Modified" : "Pristine"}'),
+
+        // This ONLY rebuilds when value changes
+        ValueListenableBuilder<int?>(
+          valueListenable: state.valueNotifier,
+          builder: (context, value, _) {
+            return Text(
+              'Count: ${value ?? 0}',
+              style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
+            );
+          },
+        ),
+
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            IconButton(
+              icon: Icon(Icons.remove),
+              onPressed: () => state.didChange((state.value ?? 0) - 1),
+            ),
+            IconButton(
+              icon: Icon(Icons.add),
+              onPressed: () => state.didChange((state.value ?? 0) + 1),
+            ),
+          ],
+        ),
+      ],
+    );
+  },
+)
 ```
 
 ---

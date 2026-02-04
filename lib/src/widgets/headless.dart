@@ -43,7 +43,31 @@ class FormixFieldStateSnapshot<T> {
   /// Function to manually mark as touched
   final VoidCallback markAsTouched;
 
-  /// Value notifier for the field value
+  /// Value notifier for the field value.
+  ///
+  /// Provides granular reactivity for optimizing rebuilds. Use this with
+  /// [ValueListenableBuilder] to listen to value changes without triggering
+  /// full widget rebuilds.
+  ///
+  /// Example:
+  /// ```dart
+  /// FormixRawFormField<String>(
+  ///   fieldId: nameField,
+  ///   builder: (context, state) {
+  ///     return ValueListenableBuilder<String?>(
+  ///       valueListenable: state.valueNotifier,
+  ///       builder: (context, value, _) {
+  ///         // Only this builder rebuilds when value changes
+  ///         return Text('Current value: $value');
+  ///       },
+  ///     );
+  ///   },
+  /// )
+  /// ```
+  ///
+  /// See also:
+  ///  * [FormixRawNotifierField], which is specifically designed to emphasize
+  ///    the use of [valueNotifier] for granular updates.
   final ValueNotifier<T?> valueNotifier;
 
   /// Whether the field is enabled
@@ -267,7 +291,47 @@ class FormixRawStringField extends FormixRawTextField<String> {
   static String? _defaultFromString(String s) => s;
 }
 
-/// A headless field widget that specifically emphasizes the ValueNotifier
+/// A headless field widget that specifically emphasizes the ValueNotifier pattern.
+///
+/// This is a specialized version of [FormixRawFormField] that highlights the use
+/// of [FormixFieldStateSnapshot.valueNotifier] for granular reactivity. It's
+/// functionally identical to [FormixRawFormField] but serves as a semantic
+/// indicator that you're building a widget optimized for ValueNotifier-based updates.
+///
+/// Use this when you want to minimize rebuilds by using [ValueListenableBuilder]
+/// to listen only to value changes, rather than rebuilding on every state change.
+///
+/// Example:
+/// ```dart
+/// FormixRawNotifierField<int>(
+///   fieldId: counterField,
+///   builder: (context, state) {
+///     return Column(
+///       children: [
+///         // This part rebuilds on ANY state change (validation, dirty, etc.)
+///         Text('Field Status: ${state.isDirty ? "Modified" : "Pristine"}'),
+///
+///         // This part ONLY rebuilds when the value changes
+///         ValueListenableBuilder<int?>(
+///           valueListenable: state.valueNotifier,
+///           builder: (context, value, _) {
+///             return Text('Count: ${value ?? 0}');
+///           },
+///         ),
+///
+///         ElevatedButton(
+///           onPressed: () => state.didChange((state.value ?? 0) + 1),
+///           child: Text('Increment'),
+///         ),
+///       ],
+///     );
+///   },
+/// )
+/// ```
+///
+/// See also:
+///  * [FormixRawFormField], the base headless field widget.
+///  * [FormixFieldStateSnapshot.valueNotifier], for details on the ValueNotifier.
 class FormixRawNotifierField<T> extends FormixRawFormField<T> {
   /// Creates a [FormixRawNotifierField].
   const FormixRawNotifierField({
