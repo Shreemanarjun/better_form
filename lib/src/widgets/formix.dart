@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../analytics/form_analytics.dart';
@@ -189,14 +190,19 @@ class FormixState extends ConsumerState<Formix> {
           provider.overrideWith((ref) => widget.controller!),
         currentControllerProvider.overrideWithValue(provider),
       ],
-      child: _FieldRegistrar(
-        controllerProvider: provider,
-        fields: widget.fields,
-        child: _FormixScope(
-          controller: controllerInstance,
+      child: Semantics(
+        container: true,
+        explicitChildNodes: true,
+        role: SemanticsRole.form,
+        child: _FieldRegistrar(
           controllerProvider: provider,
           fields: widget.fields,
-          child: widget.child,
+          child: _FormixScope(
+            controller: controllerInstance,
+            controllerProvider: provider,
+            fields: widget.fields,
+            child: widget.child,
+          ),
         ),
       ),
     );

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'base_form_field.dart';
+import '../enums.dart';
 
 /// A Formix-based dropdown form field that is lifecycle aware.
 class FormixDropdownFormField<T> extends FormixFieldWidget<T> {
@@ -69,33 +71,45 @@ class FormixDropdownFormFieldState<T> extends FormixFieldWidgetState<T> {
           suffixIcon = const Icon(Icons.edit, size: 16);
         }
 
-        final shouldShowError =
-            (isTouched || isSubmitting) && !validation.isValid;
+        final validationMode = controller.getValidationMode(widget.fieldId);
+        final showImmediate = validationMode == FormixAutovalidateMode.always;
 
-        return InputDecorator(
-          decoration: (dropdownWidget.decoration ?? const InputDecoration())
-              .copyWith(
-                errorText: shouldShowError ? validation.errorMessage : null,
-                suffixIcon: suffixIcon,
-                helperText: validation.isValidating ? 'Validating...' : null,
+        final shouldShowError =
+            (isTouched || isSubmitting || showImmediate) && !validation.isValid;
+
+        return MergeSemantics(
+          child: Semantics(
+            validationResult: validation.isValid
+                ? SemanticsValidationResult.valid
+                : SemanticsValidationResult.invalid,
+            child: InputDecorator(
+              decoration: (dropdownWidget.decoration ?? const InputDecoration())
+                  .copyWith(
+                    errorText: shouldShowError ? validation.errorMessage : null,
+                    suffixIcon: suffixIcon,
+                    helperText: validation.isValidating
+                        ? 'Validating...'
+                        : null,
+                  ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<T>(
+                  value: dropdownWidget.items.any((item) => item.value == value)
+                      ? value
+                      : null,
+                  items: dropdownWidget.items,
+                  focusNode: focusNode,
+                  hint: dropdownWidget.hint,
+                  disabledHint: dropdownWidget.disabledHint,
+                  onChanged: widget.enabled
+                      ? (newValue) {
+                          if (newValue != null) {
+                            didChange(newValue);
+                          }
+                        }
+                      : null,
+                  isExpanded: true,
+                ),
               ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<T>(
-              value: dropdownWidget.items.any((item) => item.value == value)
-                  ? value
-                  : null,
-              items: dropdownWidget.items,
-              focusNode: focusNode,
-              hint: dropdownWidget.hint,
-              disabledHint: dropdownWidget.disabledHint,
-              onChanged: widget.enabled
-                  ? (newValue) {
-                      if (newValue != null) {
-                        didChange(newValue);
-                      }
-                    }
-                  : null,
-              isExpanded: true,
             ),
           ),
         );

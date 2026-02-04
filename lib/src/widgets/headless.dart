@@ -122,7 +122,7 @@ class FormixRawFormFieldState<T> extends FormixFieldWidgetState<T> {
           errorBuilder: widget.errorBuilder,
         );
 
-        return rawWidget.builder(context, snapshot);
+        return wrapSemantics(rawWidget.builder(context, snapshot));
       },
     );
   }

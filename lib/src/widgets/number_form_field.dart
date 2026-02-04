@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'base_form_field.dart';
 import '../enums.dart';
@@ -174,60 +175,68 @@ class FormixNumberFormFieldState<T extends num>
           suffixIcon = const Icon(Icons.edit, size: 16);
         }
 
-        return TextFormField(
-          controller: textController,
-          focusNode: focusNode,
-          decoration: fieldWidget.decoration.copyWith(
-            errorText: shouldShowError ? validation.errorMessage : null,
-            suffixIcon: suffixIcon,
-            helperText: validation.isValidating ? 'Validating...' : null,
+        return MergeSemantics(
+          child: Semantics(
+            validationResult: validation.isValid
+                ? SemanticsValidationResult.valid
+                : SemanticsValidationResult.invalid,
+            child: TextFormField(
+              controller: textController,
+              focusNode: focusNode,
+              decoration: fieldWidget.decoration.copyWith(
+                errorText: shouldShowError ? validation.errorMessage : null,
+                suffixIcon: suffixIcon,
+                helperText: validation.isValidating ? 'Validating...' : null,
+              ),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+                signed: true,
+              ),
+              style: fieldWidget.style,
+              textAlign: fieldWidget.textAlign,
+              textInputAction: fieldWidget.textInputAction,
+              onFieldSubmitted: (val) {
+                fieldWidget.onFieldSubmitted?.call(stringToValue(val));
+              },
+              autofocus: fieldWidget.autofocus,
+              readOnly: fieldWidget.readOnly,
+              showCursor: fieldWidget.showCursor,
+              obscureText: fieldWidget.obscureText,
+              autocorrect: fieldWidget.autocorrect,
+              enableSuggestions: fieldWidget.enableSuggestions,
+              maxLength: fieldWidget.maxLength,
+              onChanged: (val) {
+                final parsed = stringToValue(val);
+                if (parsed != null) {
+                  didChange(parsed);
+                }
+              },
+              onEditingComplete: fieldWidget.onEditingComplete,
+              onTap: fieldWidget.onTap,
+              onTapOutside: fieldWidget.onTapOutside,
+              inputFormatters: [
+                ...?controller.getField(widget.fieldId)?.inputFormatters,
+                ...?fieldWidget.inputFormatters,
+              ],
+              scrollPadding: fieldWidget.scrollPadding,
+              enableInteractiveSelection:
+                  fieldWidget.enableInteractiveSelection,
+              selectionControls: fieldWidget.selectionControls,
+              buildCounter: fieldWidget.buildCounter,
+              scrollPhysics: fieldWidget.scrollPhysics,
+              autofillHints: fieldWidget.autofillHints,
+              scrollController: fieldWidget.scrollController,
+              cursorColor: fieldWidget.cursorColor,
+              cursorHeight: fieldWidget.cursorHeight,
+              cursorRadius: fieldWidget.cursorRadius,
+              cursorWidth: fieldWidget.cursorWidth,
+              keyboardAppearance: fieldWidget.keyboardAppearance,
+              textAlignVertical: fieldWidget.textAlignVertical,
+              textDirection: fieldWidget.textDirection,
+              maxLengthEnforcement: fieldWidget.maxLengthEnforcement,
+              enabled: fieldWidget.enabled,
+            ),
           ),
-          keyboardType: const TextInputType.numberWithOptions(
-            decimal: true,
-            signed: true,
-          ),
-          style: fieldWidget.style,
-          textAlign: fieldWidget.textAlign,
-          textInputAction: fieldWidget.textInputAction,
-          onFieldSubmitted: (val) {
-            fieldWidget.onFieldSubmitted?.call(stringToValue(val));
-          },
-          autofocus: fieldWidget.autofocus,
-          readOnly: fieldWidget.readOnly,
-          showCursor: fieldWidget.showCursor,
-          obscureText: fieldWidget.obscureText,
-          autocorrect: fieldWidget.autocorrect,
-          enableSuggestions: fieldWidget.enableSuggestions,
-          maxLength: fieldWidget.maxLength,
-          onChanged: (val) {
-            final parsed = stringToValue(val);
-            if (parsed != null) {
-              didChange(parsed);
-            }
-          },
-          onEditingComplete: fieldWidget.onEditingComplete,
-          onTap: fieldWidget.onTap,
-          onTapOutside: fieldWidget.onTapOutside,
-          inputFormatters: [
-            ...?controller.getField(widget.fieldId)?.inputFormatters,
-            ...?fieldWidget.inputFormatters,
-          ],
-          scrollPadding: fieldWidget.scrollPadding,
-          enableInteractiveSelection: fieldWidget.enableInteractiveSelection,
-          selectionControls: fieldWidget.selectionControls,
-          buildCounter: fieldWidget.buildCounter,
-          scrollPhysics: fieldWidget.scrollPhysics,
-          autofillHints: fieldWidget.autofillHints,
-          scrollController: fieldWidget.scrollController,
-          cursorColor: fieldWidget.cursorColor,
-          cursorHeight: fieldWidget.cursorHeight,
-          cursorRadius: fieldWidget.cursorRadius,
-          cursorWidth: fieldWidget.cursorWidth,
-          keyboardAppearance: fieldWidget.keyboardAppearance,
-          textAlignVertical: fieldWidget.textAlignVertical,
-          textDirection: fieldWidget.textDirection,
-          maxLengthEnforcement: fieldWidget.maxLengthEnforcement,
-          enabled: fieldWidget.enabled,
         );
       },
     );

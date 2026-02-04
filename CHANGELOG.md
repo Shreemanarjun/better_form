@@ -1,6 +1,23 @@
 ## 0.0.5
 
-### 🚀 Core Improvements & Fixes
+### ✨ Accessibility & Semantics (shadcn-inspired)
+- **Form Semantics**: The `Formix` widget now automatically reports as a `SemanticsRole.form`, improving structural navigation for screen readers.
+- **Validation Semantics**: All fields (including headless ones) now communicate their validation status (`invalid`/`valid`) directly to the OS via `SemanticsValidationResult`.
+- **Intelligent Announcements**: Added `FormixController.announceErrors()` which automatically reads out the first validation error to assistive technologies when a submission fails.
+
+### 🚀 Standard Field Properties
+- **Unified API**: All Formix fields (`Text`, `Number`, `Checkbox`, `Dropdown`) now support standard `FormField` properties:
+  - `onSaved` & `onReset` hooks.
+  - `enabled` state management.
+  - `forceErrorText` for manual error overrides.
+  - `errorBuilder` for custom error UI.
+  - `autovalidateMode` for per-field validation control.
+  - `restorationId` for state restoration.
+- **Explicit Controller**: The `Formix` widget now supports an optional explicit `controller` parameter, allowing for manual instantiation while keeping the reactive provider benefits.
+
+### 🛠️ Core Improvements & Fixes
+- **Headless API**: `FormixFieldStateSnapshot` now exposes `enabled` and `errorBuilder`, making it easier to build high-quality custom components.
+- **Validation Fix**: Fixed `RiverpodFormController.registerField` to strictly honor `autovalidateMode` during initial registration, preventing unwanted errors in `disabled` forms.
 - **Type-Safe Value Retrieval**:
   - Reverted `getValue<T>` to return `T?` for better safety and backwards compatibility.
   - Added "smart fallback" to `getValue`: now recovers values from `initialValueMap` or field definitions if a field is not yet registered.
@@ -8,6 +25,7 @@
 - **New Field Transformers**:
   - `FormixFieldTransformer`: Synchronous 1-to-1 transformation between fields.
   - `FormixFieldAsyncTransformer`: Asynchronous transformation with built-in debounce and robust lifecycle management.
+- **Hot Reload Support**: Fixed field definitions not updating during hot reload. `Formix` and `FormixSection` now reliably detect configuration changes and update the controller.
 - **Riverpod Refactors**: Key widgets (`FormixFieldDerivation`, `FormixGroup`, `FormixListener`) upgraded to `ConsumerStatefulWidget` for better state access.
 - **Hot Reload Support**: Fixed field definitions not updating during hot reload. `Formix` and `FormixSection` now reliably detect configuration changes and update the controller.
 - **FormixSection Overhaul**: Refactored to `ConsumerStatefulWidget` for consistent lifecycle management.

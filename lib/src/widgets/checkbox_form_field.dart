@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'base_form_field.dart';
 import '../enums.dart';
 
@@ -84,48 +85,58 @@ class FormixCheckboxFormFieldState extends FormixFieldWidgetState<bool> {
         final shouldShowError =
             (isTouched || isSubmitting || showImmediate) && !validation.isValid;
 
-        return CheckboxListTile(
-          value: value ?? false,
-          title: checkboxWidget.title,
-          enabled: checkboxWidget.enabled,
-          focusNode: focusNode,
-          activeColor: checkboxWidget.activeColor,
-          checkColor: checkboxWidget.checkColor,
-          tileColor: checkboxWidget.tileColor,
-          secondary: checkboxWidget.secondary,
-          isThreeLine: checkboxWidget.isThreeLine,
-          dense: checkboxWidget.dense,
-          selected: checkboxWidget.selected,
-          controlAffinity: checkboxWidget.controlAffinity,
-          autofocus: checkboxWidget.autofocus,
-          contentPadding: checkboxWidget.contentPadding,
-          tristate: checkboxWidget.tristate,
-          shape: checkboxWidget.shape,
-          checkboxShape: checkboxWidget.checkboxShape,
-          side: checkboxWidget.side,
-          visualDensity: checkboxWidget.visualDensity,
-          subtitle: validation.isValidating
-              ? (checkboxWidget.validatingWidget ??
-                    const Text(
-                      'Validating...',
-                      style: TextStyle(color: Colors.blue, fontSize: 12),
-                    ))
-              : (shouldShowError
-                    ? Text(
-                        validation.errorMessage ?? '',
-                        style: const TextStyle(color: Colors.red, fontSize: 12),
-                      )
-                    : (isDirty
-                          ? const Text(
-                              'Modified',
-                              style: TextStyle(fontSize: 12),
-                            )
-                          : null)),
-          onChanged: checkboxWidget.enabled
-              ? (newValue) {
-                  didChange(newValue ?? false);
-                }
-              : null,
+        return MergeSemantics(
+          child: Semantics(
+            validationResult: validation.isValid
+                ? SemanticsValidationResult.valid
+                : SemanticsValidationResult.invalid,
+            child: CheckboxListTile(
+              value: value ?? false,
+              title: checkboxWidget.title,
+              enabled: checkboxWidget.enabled,
+              focusNode: focusNode,
+              activeColor: checkboxWidget.activeColor,
+              checkColor: checkboxWidget.checkColor,
+              tileColor: checkboxWidget.tileColor,
+              secondary: checkboxWidget.secondary,
+              isThreeLine: checkboxWidget.isThreeLine,
+              dense: checkboxWidget.dense,
+              selected: checkboxWidget.selected,
+              controlAffinity: checkboxWidget.controlAffinity,
+              autofocus: checkboxWidget.autofocus,
+              contentPadding: checkboxWidget.contentPadding,
+              tristate: checkboxWidget.tristate,
+              shape: checkboxWidget.shape,
+              checkboxShape: checkboxWidget.checkboxShape,
+              side: checkboxWidget.side,
+              visualDensity: checkboxWidget.visualDensity,
+              subtitle: validation.isValidating
+                  ? (checkboxWidget.validatingWidget ??
+                        const Text(
+                          'Validating...',
+                          style: TextStyle(color: Colors.blue, fontSize: 12),
+                        ))
+                  : (shouldShowError
+                        ? Text(
+                            validation.errorMessage ?? '',
+                            style: const TextStyle(
+                              color: Colors.red,
+                              fontSize: 12,
+                            ),
+                          )
+                        : (isDirty
+                              ? const Text(
+                                  'Modified',
+                                  style: TextStyle(fontSize: 12),
+                                )
+                              : null)),
+              onChanged: checkboxWidget.enabled
+                  ? (newValue) {
+                      didChange(newValue ?? false);
+                    }
+                  : null,
+            ),
+          ),
         );
       },
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../controllers/riverpod_controller.dart';
@@ -113,6 +114,16 @@ abstract class FormixFieldWidgetState<T>
 
   /// Whether the form is currently submitting.
   bool get isSubmitting => controller.isSubmitting;
+
+  /// Wraps the child with accessibility semantics.
+  Widget wrapSemantics(Widget child) {
+    return Semantics(
+      validationResult: validation.isValid
+          ? SemanticsValidationResult.valid
+          : SemanticsValidationResult.invalid,
+      child: child,
+    );
+  }
 
   /// The current validation result for this field.
   ValidationResult get validation {

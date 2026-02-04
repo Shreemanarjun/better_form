@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter/semantics.dart';
 import 'riverpod_controller.dart';
 import 'field_id.dart';
 import 'validation.dart';
@@ -159,6 +160,7 @@ class FormixController extends RiverpodFormController {
         if (autoFocusOnInvalid) {
           focusFirstError();
         }
+        announceErrors();
         onError?.call(errors);
       },
       debounce: debounce,
@@ -322,6 +324,34 @@ class FormixController extends RiverpodFormController {
       if (!entry.value.isValid) {
         _focusNodes[entry.key]?.requestFocus();
         return;
+      }
+    }
+  }
+
+  /// Announces the first validation error to assistive technologies.
+  ///
+  /// This is important for accessibility (a11y) so that screen reader users
+  /// are notified when a form submission fails due to validation errors.
+  void announceErrors() {
+    final firstErrorKey = state.validations.entries
+        .where((e) => !e.value.isValid)
+        .firstOrNull
+        ?.key;
+
+    if (firstErrorKey != null) {
+      final error = state.validations[firstErrorKey]?.errorMessage;
+      final context = _contexts[firstErrorKey];
+
+      if (error != null && context != null && context.mounted) {
+        final view = View.of(context);
+        final directionality = Directionality.of(context);
+
+        SemanticsService.sendAnnouncement(
+          view,
+          error,
+          directionality,
+          assertiveness: Assertiveness.assertive,
+        );
       }
     }
   }
