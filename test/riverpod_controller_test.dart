@@ -101,6 +101,14 @@ void main() {
       expect(state.getValue<int>(FormixFieldID<int>('field1')), null);
     });
 
+    test('requireValue throws when value is null', () {
+      final state = FormixData();
+      expect(
+        () => state.requireValue(FormixFieldID<String>('field1')),
+        throwsA(isA<StateError>()),
+      );
+    });
+
     test('getValidation returns validation result for field', () {
       final validation = ValidationResult(
         isValid: false,
@@ -233,6 +241,29 @@ void main() {
       final controller = FormixController(initialValue: {'field1': 'test'});
 
       expect(controller.getValue(FormixFieldID<String>('field1')), 'test');
+    });
+
+    test(
+      'getValue returns initial value for unregistered fields (smart fallback)',
+      () {
+        final controller = FormixController(
+          initialValue: {'field1': 'initial'},
+        );
+        expect(controller.getValue(FormixFieldID<String>('field1')), 'initial');
+      },
+    );
+
+    test('getValue returns null for unknown fields', () {
+      final controller = FormixController();
+      expect(controller.getValue(FormixFieldID<String>('unknown')), null);
+    });
+
+    test('requireValue throws on null value', () {
+      final controller = FormixController();
+      expect(
+        () => controller.requireValue(FormixFieldID<String>('unknown')),
+        throwsA(isA<StateError>()),
+      );
     });
 
     test('setValue updates value and triggers validation', () {

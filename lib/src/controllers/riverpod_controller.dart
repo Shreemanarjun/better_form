@@ -412,9 +412,40 @@ class RiverpodFormController extends StateNotifier<FormixData> {
 
   /// Retrieves the current value of a field in a type-safe way.
   ///
-  /// Returns null if the field is not registered or the value is null.
+  /// This method is "smart": if the field is not yet registered but was
+  /// provided in the [initialValue] map during controller creation, it
+  /// will return that initial value.
+  ///
+  /// Returns the value of type [T]. If [T] is non-nullable and the value
+  /// is missing or null, this will throw a [TypeError] or [StateError].
   T? getValue<T>(FormixFieldID<T> fieldId) {
-    return state.getValue(fieldId);
+    // 1. Check current form state (most up-to-date)
+    if (state.values.containsKey(fieldId.key)) {
+      return state.getValue(fieldId);
+    }
+
+    // 2. Fallback for non-registered fields: check initial value map
+    final initial = initialValueMap[fieldId.key];
+    if (initial is T) return initial;
+
+    // 3. Check registered field definitions (last resort for initial values)
+    final field = _fieldDefinitions[fieldId.key];
+    if (field != null && field.initialValue is T) {
+      return field.initialValue as T;
+    }
+
+    return null;
+  }
+
+  /// Retrieves the current value of a field and ensures it is not null.
+  ///
+  /// Throws a [StateError] if the field value is null.
+  T requireValue<T>(FormixFieldID<T> fieldId) {
+    final value = getValue(fieldId);
+    if (value == null) {
+      throw StateError('Field "${fieldId.key}" is required but found null.');
+    }
+    return value;
   }
 
   /// Retrieves the [FormixField] definition for a given [fieldId].
@@ -1783,7 +1814,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
       final currentTargetValue = getValue(targetField);
 
       if (sourceValue != currentTargetValue) {
-        setValue(targetField, sourceValue as T);
+        setValue(targetField, sourceValue);
       }
     });
 
@@ -1798,7 +1829,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
         final currentSourceValue = sourceController.getValue(sourceField);
 
         if (targetValue != currentSourceValue) {
-          sourceController.setValue(sourceField, targetValue as T);
+          sourceController.setValue(sourceField, targetValue);
         }
       });
       _bindings[reverseSubKey] = reverseSub;

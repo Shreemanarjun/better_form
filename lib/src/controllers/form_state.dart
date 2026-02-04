@@ -129,9 +129,22 @@ class FormixData {
   bool get isPending => pendingCount > 0;
 
   /// Retrieves the current value for a specific field with type safety.
+  ///
+  /// Returns null if the field value is null or missing.
   T? getValue<T>(FormixFieldID<T> fieldId) {
     final value = values[fieldId.key];
     return value is T ? value : null;
+  }
+
+  /// Retrieves the current value and ensures it is not null.
+  ///
+  /// Throws a [StateError] if the field value is null.
+  T requireValue<T>(FormixFieldID<T> fieldId) {
+    final value = getValue(fieldId);
+    if (value == null) {
+      throw StateError('Field "${fieldId.key}" is required but found null.');
+    }
+    return value;
   }
 
   /// Retrieves the current validation result for a specific field.
