@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/services.dart';
 import 'field_id.dart';
 import 'field.dart';
@@ -121,10 +122,13 @@ class FormixFieldConfig<T> {
           id == other.id &&
           initialValue == other.initialValue &&
           validator == other.validator &&
+          crossFieldValidator == other.crossFieldValidator &&
+          const ListEquality().equals(dependsOn, other.dependsOn) &&
           label == other.label &&
           hint == other.hint &&
           asyncValidator == other.asyncValidator &&
           debounceDuration == other.debounceDuration &&
+          validationMode == other.validationMode &&
           inputFormatters == other.inputFormatters &&
           textInputAction == other.textInputAction &&
           onSubmitted == other.onSubmitted;
@@ -134,10 +138,13 @@ class FormixFieldConfig<T> {
       id.hashCode ^
       initialValue.hashCode ^
       validator.hashCode ^
+      crossFieldValidator.hashCode ^
+      const ListEquality().hash(dependsOn) ^
       label.hashCode ^
       hint.hashCode ^
       asyncValidator.hashCode ^
       debounceDuration.hashCode ^
+      validationMode.hashCode ^
       inputFormatters.hashCode ^
       textInputAction.hashCode ^
       onSubmitted.hashCode;

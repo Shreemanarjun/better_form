@@ -196,20 +196,22 @@ void main() {
       final fieldId = FormixFieldID<String>('test');
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Formix(
-              autovalidateMode: FormixAutovalidateMode.disabled,
-              fields: [
-                FormixFieldConfig<String>(
-                  id: fieldId,
-                  initialValue: '',
-                  validator: (v) => v!.isEmpty ? 'Error' : null,
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: Formix(
+                autovalidateMode: FormixAutovalidateMode.disabled,
+                fields: [
+                  FormixFieldConfig<String>(
+                    id: fieldId,
+                    initialValue: '',
+                    validator: (v) => v!.isEmpty ? 'Error' : null,
+                  ),
+                ],
+                child: FormixBuilder(
+                  builder: (context, scope) =>
+                      Text(scope.watchError(fieldId) ?? 'Valid'),
                 ),
-              ],
-              child: FormixBuilder(
-                builder: (context, scope) =>
-                    Text(scope.watchError(fieldId) ?? 'Valid'),
               ),
             ),
           ),
@@ -220,9 +222,10 @@ void main() {
       expect(find.text('Valid'), findsOneWidget);
 
       final controller = Formix.controllerOf(
-        tester.element(find.byType(Formix)),
+        tester.element(find.text('Valid')),
       );
-      controller?.validate();
+      expect(controller, isNotNull);
+      controller!.validate();
       await tester.pump();
 
       // Now should show 'Error'

@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 import 'field.dart';
 import 'field_id.dart';
 import 'validation.dart';
@@ -218,8 +219,13 @@ class RiverpodFormController extends StateNotifier<FormixData> {
 
   /// Get the validation mode for a specific field.
   FormixAutovalidateMode getValidationMode(FormixFieldID fieldId) {
-    return _fieldDefinitions[fieldId.key]?.validationMode ??
-        FormixAutovalidateMode.disabled;
+    final fieldMode =
+        _fieldDefinitions[fieldId.key]?.validationMode ??
+        FormixAutovalidateMode.auto;
+    if (fieldMode == FormixAutovalidateMode.auto) {
+      return autovalidateMode;
+    }
+    return fieldMode;
   }
 
   /// The persistence handler for this form
@@ -515,12 +521,14 @@ class RiverpodFormController extends StateNotifier<FormixData> {
 
     int newDirtyCount = state.dirtyCount;
     int newErrorCount = state.errorCount;
+    int newPendingCount = state.pendingCount;
 
     final keysToProcess = {
       ...validUpdates.keys,
       if (newTouchedStates != null) ...newTouchedStates.keys,
     };
 
+    final visitedDependentsInBatch = <String>{};
     for (final key in keysToProcess) {
       final hasNewValue = validUpdates.containsKey(key);
       dynamic value = hasNewValue ? validUpdates[key] : state.values[key];
@@ -576,58 +584,108 @@ class RiverpodFormController extends StateNotifier<FormixData> {
       }
 
       final transitiveDependents = _collectTransitiveDependents(key);
-      for (final depKey in transitiveDependents) {
-        final depDef = _fieldDefinitions[depKey];
-        if (depDef != null) {
-          final rawDepMode = depDef.validationMode;
-          final depMode = rawDepMode == FormixAutovalidateMode.auto
-              ? autovalidateMode
-              : rawDepMode;
-          final isDepTouched =
-              (newTouchedStates != null
-                  ? newTouchedStates[depKey]
-                  : state.touchedStates[depKey]) ??
-              false;
-          final depVal = newValues != null
-              ? newValues[depKey]
-              : state.values[depKey];
-          final isDepDirty = initialValueMap[depKey] == null
-              ? depVal != null
-              : depVal != initialValueMap[depKey];
-          final wasDepValidated = state.validations.containsKey(depKey);
+      if (transitiveDependents.isNotEmpty) {
+        for (final depKey in transitiveDependents) {
+          if (!visitedDependentsInBatch.add(depKey)) continue;
 
-          if (depMode == FormixAutovalidateMode.always ||
-              (depMode == FormixAutovalidateMode.onUserInteraction &&
-                  (isDepDirty || isDepTouched || wasDepValidated)) ||
-              (depMode == FormixAutovalidateMode.onBlur &&
-                  (isDepTouched || wasDepValidated))) {
-            fieldsToValidate.add(depKey);
+          final depDef = _fieldDefinitions[depKey];
+          if (depDef != null) {
+            final rawDepMode = depDef.validationMode;
+            final depMode = rawDepMode == FormixAutovalidateMode.auto
+                ? autovalidateMode
+                : rawDepMode;
+            final isDepTouched =
+                (newTouchedStates != null
+                    ? newTouchedStates[depKey]
+                    : state.touchedStates[depKey]) ??
+                false;
+            final depVal = newValues != null
+                ? newValues[depKey]
+                : state.values[depKey];
+            final isDepDirty = initialValueMap[depKey] == null
+                ? depVal != null
+                : depVal != initialValueMap[depKey];
+            final wasDepValidated = state.validations.containsKey(depKey);
+
+            if (depMode == FormixAutovalidateMode.always ||
+                (depMode == FormixAutovalidateMode.onUserInteraction &&
+                    (isDepDirty || isDepTouched || wasDepValidated)) ||
+                (depMode == FormixAutovalidateMode.onBlur &&
+                    (isDepTouched || wasDepValidated))) {
+              fieldsToValidate.add(depKey);
+            }
           }
         }
       }
     }
 
+    final asyncToTrigger = <String, dynamic>{};
+
     if (fieldsToValidate.isNotEmpty) {
+      FormixData? validationContext;
+
       for (final key in fieldsToValidate) {
         final val = newValues != null ? newValues[key] : state.values[key];
-        final currentValidationsMap = newValidations ?? state.validations;
-        final oldRes = currentValidationsMap[key] ?? ValidationResult.valid;
+        final effectiveValidations = newValidations ?? state.validations;
+        final oldRes = effectiveValidations[key] ?? ValidationResult.valid;
 
         final res = _performSyncValidation(
           key,
           val,
-          newValues ?? state.values,
-          currentValidations: currentValidationsMap,
+          validationContext?.values ?? (newValues ?? state.values),
+          currentValidations: effectiveValidations,
+          validationState: validationContext,
         );
 
-        if (oldRes != res || !currentValidationsMap.containsKey(key)) {
-          newValidations ??= {...state.validations};
+        // Sync result change detection
+        final wasValidatedInPreviousState = state.validations.containsKey(key);
+        if (oldRes != res || !wasValidatedInPreviousState) {
+          if (newValidations == null) {
+            newValidations = Map<String, ValidationResult>.from(
+              state.validations,
+            );
+            // Re-create context once the map is cloned so it uses the new mutable reference
+            validationContext = FormixData(
+              values: newValues ?? state.values,
+              validations: newValidations,
+              dirtyStates: newDirtyStates ?? state.dirtyStates,
+              touchedStates: newTouchedStates ?? state.touchedStates,
+            );
+          }
           newValidations[key] = res;
 
           if (oldRes.isValid && !res.isValid) {
             newErrorCount++;
           } else if (!oldRes.isValid && res.isValid) {
             newErrorCount--;
+          }
+        }
+
+        // Async validation logic (batched into this update)
+        if (res.isValid) {
+          final fieldDef = _fieldDefinitions[key];
+          if (fieldDef?.wrappedAsyncValidator != null) {
+            if (newValidations == null) {
+              newValidations = Map<String, ValidationResult>.from(
+                state.validations,
+              );
+              validationContext = FormixData(
+                values: newValues ?? state.values,
+                validations: newValidations,
+                dirtyStates: newDirtyStates ?? state.dirtyStates,
+                touchedStates: newTouchedStates ?? state.touchedStates,
+              );
+            }
+
+            if (!oldRes.isValidating) {
+              newValidations[key] = ValidationResult.validating;
+              newPendingCount++;
+              if (!oldRes.isValid) newErrorCount--;
+            } else {
+              // Ensure it stays validating if it already was
+              newValidations[key] = ValidationResult.validating;
+            }
+            asyncToTrigger[key] = val;
           }
         }
       }
@@ -644,18 +702,13 @@ class RiverpodFormController extends StateNotifier<FormixData> {
         validations: newValidations,
         dirtyCount: newDirtyCount,
         errorCount: newErrorCount,
+        pendingCount: newPendingCount,
         changedFields: {...changedFieldsInThisUpdate, ...fieldsToValidate},
       );
 
-      if (fieldsToValidate.isNotEmpty) {
-        final currentVals = newValues ?? state.values;
-        final currentValsMap = newValidations ?? state.validations;
-        for (final key in fieldsToValidate) {
-          final validation = currentValsMap[key];
-          if (validation != null && validation.isValid) {
-            _triggerAsyncValidation(key, currentVals[key]);
-          }
-        }
+      // Trigger actual timers after state update to avoid race conditions
+      if (asyncToTrigger.isNotEmpty) {
+        asyncToTrigger.forEach(_startAsyncValidationTimer);
       }
 
       if (persistence != null && formId != null && newValues != null) {
@@ -676,69 +729,78 @@ class RiverpodFormController extends StateNotifier<FormixData> {
     dynamic value,
     Map<String, dynamic> currentValues, {
     Map<String, ValidationResult>? currentValidations,
+    FormixData? validationState,
   }) {
-    final sw = Stopwatch()..start();
+    final sw = kDebugMode ? (Stopwatch()..start()) : null;
     final fieldDef = _fieldDefinitions[key];
     if (fieldDef == null) return ValidationResult.valid;
 
-    // We'll calculate the end result first then record the time
-    ValidationResult calculate() {
-      final validator = fieldDef.wrappedValidator;
-      if (validator != null) {
-        try {
-          String? error = validator(value);
-          if (error != null) {
-            error = messages.format(error, {
+    ValidationResult? finalResult;
+
+    // 1. Per-field Validator
+    final validator = fieldDef.wrappedValidator;
+    if (validator != null) {
+      try {
+        final String? error = validator(value);
+        if (error != null) {
+          finalResult = ValidationResult(
+            isValid: false,
+            errorMessage: messages.format(error, {
               'label': fieldDef.label ?? key,
               'value': value,
-            });
-            return ValidationResult(isValid: false, errorMessage: error);
-          }
-        } catch (e) {
-          return ValidationResult(
-            isValid: false,
-            errorMessage: 'Validation error: ${e.toString()}',
+            }),
           );
         }
+      } catch (e) {
+        finalResult = ValidationResult(
+          isValid: false,
+          errorMessage: 'Validation error: ${e.toString()}',
+        );
       }
+    }
 
-      // 2. Cross-field Validator
+    // 2. Cross-field Validator
+    if (finalResult == null) {
       final crossValidator = fieldDef.wrappedCrossFieldValidator;
       if (crossValidator != null) {
         try {
-          // We create a temporary FormixData for the cross validator to see the NEW values
-          final tempState = FormixData(
-            values: currentValues,
-            validations: currentValidations ?? state.validations,
-            dirtyStates: state.dirtyStates,
-            touchedStates: state.touchedStates,
-          );
-          String? error = crossValidator(value, tempState);
+          // Reuse provided state or create a temporary one (O(1) wrapper)
+          final tempState =
+              validationState ??
+              FormixData(
+                values: currentValues,
+                validations: currentValidations ?? state.validations,
+                dirtyStates: state.dirtyStates,
+                touchedStates: state.touchedStates,
+              );
+          final String? error = crossValidator(value, tempState);
           if (error != null) {
-            error = messages.format(error, {
-              'label': fieldDef.label ?? key,
-              'value': value,
-            });
-            return ValidationResult(isValid: false, errorMessage: error);
+            finalResult = ValidationResult(
+              isValid: false,
+              errorMessage: messages.format(error, {
+                'label': fieldDef.label ?? key,
+                'value': value,
+              }),
+            );
           }
         } catch (e) {
-          return ValidationResult(
+          finalResult = ValidationResult(
             isValid: false,
             errorMessage: 'Cross-validation error: ${e.toString()}',
           );
         }
       }
-
-      return ValidationResult.valid;
     }
 
-    final result = calculate();
-    sw.stop();
-    _validationDurations[key] = sw.elapsed;
-    return result;
+    finalResult ??= ValidationResult.valid;
+    if (sw != null) {
+      sw.stop();
+      _validationDurations[key] = sw.elapsed;
+    }
+    return finalResult;
   }
 
-  void _triggerAsyncValidation(String key, dynamic value) {
+  void _startAsyncValidationTimer(String key, dynamic value) {
     final fieldDef = _fieldDefinitions[key];
     if (fieldDef == null) return;
 
@@ -747,36 +809,17 @@ class RiverpodFormController extends StateNotifier<FormixData> {
 
     _debouncers[key]?.cancel();
 
-    final currentValidations = {...state.validations};
-    final oldRes = currentValidations[key] ?? ValidationResult.valid;
-    currentValidations[key] = ValidationResult.validating;
-
-    int newErrorCount = state.errorCount;
-    if (!oldRes.isValid) {
-      newErrorCount--; // validating is considered isValid: true
-    }
-
-    int newPendingCount = state.pendingCount;
-    if (!oldRes.isValidating) {
-      newPendingCount++;
-    }
-
-    state = state.copyWith(
-      validations: currentValidations,
-      errorCount: newErrorCount,
-      pendingCount: newPendingCount,
-      changedFields: {key},
-    );
-
     _debouncers[key] = Timer(
       fieldDef.debounceDuration ?? const Duration(milliseconds: 300),
       () async {
         if (!mounted) return;
-        final sw = Stopwatch()..start();
+        final sw = kDebugMode ? (Stopwatch()..start()) : null;
         try {
           final error = await asyncValidator(value);
-          sw.stop();
-          _validationDurations[key] = sw.elapsed;
+          if (sw != null) {
+            sw.stop();
+            _validationDurations[key] = sw.elapsed;
+          }
 
           if (!mounted) return;
 
@@ -809,8 +852,10 @@ class RiverpodFormController extends StateNotifier<FormixData> {
             changedFields: {key},
           );
         } catch (e) {
-          sw.stop();
-          _validationDurations[key] = sw.elapsed;
+          if (sw != null) {
+            sw.stop();
+            _validationDurations[key] = sw.elapsed;
+          }
 
           if (!mounted) return;
           final latestValidations = Map<String, ValidationResult>.from(
@@ -844,32 +889,25 @@ class RiverpodFormController extends StateNotifier<FormixData> {
     );
   }
 
-  List<String> _getDependentsOf(String key) {
-    if (_dependentsMap.containsKey(key)) {
-      return List<String>.from(_dependentsMap[key]!);
-    }
-    return const [];
-  }
-
   /// Recursively collects all fields that depend on the source field.
   /// Implement BFS queue to handle deep chains and cycle detection.
   Set<String> _collectTransitiveDependents(String sourceKey) {
-    if (_transitiveDependentsCache.containsKey(sourceKey)) {
-      return _transitiveDependentsCache[sourceKey]!;
-    }
+    final cached = _transitiveDependentsCache[sourceKey];
+    if (cached != null) return cached;
+
     final result = <String>{};
-    final queue = <String>{sourceKey};
-    final visited = <String>{sourceKey};
+    final queue = [sourceKey];
+    final visited = {sourceKey};
+    int head = 0;
 
-    while (queue.isNotEmpty) {
-      final currentKey = queue.first;
-      queue.remove(currentKey);
+    while (head < queue.length) {
+      final currentKey = queue[head++];
+      final directDependents = _dependentsMap[currentKey];
+      if (directDependents == null) continue;
 
-      final directDependents = _getDependentsOf(currentKey);
       for (final depKey in directDependents) {
-        if (!visited.contains(depKey)) {
-          visited.add(depKey);
-          result.add(depKey); // Add to result (dependents only, not source)
+        if (visited.add(depKey)) {
+          result.add(depKey);
           queue.add(depKey);
         }
       }
@@ -879,19 +917,32 @@ class RiverpodFormController extends StateNotifier<FormixData> {
   }
 
   int _calculateErrorCount(Map<String, ValidationResult> validations) {
-    return validations.values.where((v) => !v.isValid).length;
+    int count = 0;
+    for (final v in validations.values) {
+      if (!v.isValid) count++;
+    }
+    return count;
   }
 
   int _calculateDirtyCount(Map<String, bool> dirtyStates) {
-    return dirtyStates.values.where((d) => d).length;
+    int count = 0;
+    for (final d in dirtyStates.values) {
+      if (d) count++;
+    }
+    return count;
   }
 
   int _calculatePendingCount(
     Map<String, bool> pendingStates,
     Map<String, ValidationResult> validations,
   ) {
-    int count = pendingStates.values.where((p) => p).length;
-    count += validations.values.where((v) => v.isValidating).length;
+    int count = 0;
+    for (final p in pendingStates.values) {
+      if (p) count++;
+    }
+    for (final v in validations.values) {
+      if (v.isValidating) count++;
+    }
     return count;
   }
 
@@ -1309,27 +1360,60 @@ class RiverpodFormController extends StateNotifier<FormixData> {
   /// Validate entire form
   /// Validate form (or specific fields)
   bool validate({List<FormixFieldID>? fields}) {
-    final newValidations = {...state.validations};
+    final newValidations = Map<String, ValidationResult>.from(
+      state.validations,
+    );
     final values = state.values;
     final keysToValidate = fields?.map((f) => f.key) ?? _fieldDefinitions.keys;
+
+    int newErrorCount = state.errorCount;
+    int newPendingCount = state.pendingCount;
+    final asyncToTrigger = <String, dynamic>{};
 
     for (final key in keysToValidate) {
       if (!_fieldDefinitions.containsKey(key)) continue;
       final value = values[key];
-      newValidations[key] = _performSyncValidation(key, value, values);
+      final oldRes = newValidations[key] ?? ValidationResult.valid;
+      final res = _performSyncValidation(
+        key,
+        value,
+        values,
+        currentValidations: newValidations,
+      );
+
+      newValidations[key] = res;
+      if (oldRes != res) {
+        if (oldRes.isValid && !res.isValid) {
+          newErrorCount++;
+        } else if (!oldRes.isValid && res.isValid) {
+          newErrorCount--;
+        }
+      }
+
+      if (res.isValid) {
+        final fieldDef = _fieldDefinitions[key];
+        if (fieldDef?.wrappedAsyncValidator != null) {
+          if (!oldRes.isValidating) {
+            newValidations[key] = ValidationResult.validating;
+            newPendingCount++;
+            if (!oldRes.isValid) newErrorCount--;
+          } else {
+            newValidations[key] = ValidationResult.validating;
+          }
+          asyncToTrigger[key] = value;
+        }
+      }
     }
 
     state = state.copyWith(
       validations: newValidations,
-      errorCount: _calculateErrorCount(newValidations),
-      pendingCount: _calculatePendingCount(state.pendingStates, newValidations),
+      errorCount: newErrorCount,
+      pendingCount: newPendingCount,
     );
 
-    // Trigger async validations for valid fields
-    for (final key in keysToValidate) {
-      if (_fieldDefinitions.containsKey(key) && newValidations[key]!.isValid) {
-        _triggerAsyncValidation(key, values[key]);
-      }
+    // Trigger timers after state update
+    if (asyncToTrigger.isNotEmpty) {
+      asyncToTrigger.forEach(_startAsyncValidationTimer);
     }
 
     if (fields != null) {
@@ -1427,29 +1511,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
 
     if (state.touchedStates[fieldId.key] == true) return;
 
-    final key = fieldId.key;
-    final newTouchedStates = {...state.touchedStates};
-    newTouchedStates[key] = true;
-
-    final fieldDef = _fieldDefinitions[key];
-    if (fieldDef?.validationMode == FormixAutovalidateMode.onBlur) {
-      final newValids = {...state.validations};
-      final value = state.values[key];
-      newValids[key] = _performSyncValidation(key, value, state.values);
-
-      state = state.copyWith(
-        touchedStates: newTouchedStates,
-        validations: newValids,
-        errorCount: _calculateErrorCount(newValids),
-        pendingCount: _calculatePendingCount(state.pendingStates, newValids),
-      );
-
-      if (newValids[key]!.isValid) {
-        _triggerAsyncValidation(key, value);
-      }
-    } else {
-      state = state.copyWith(touchedStates: newTouchedStates);
-    }
+    _batchUpdate({}, touchedStates: {fieldId.key: true});
   }
 
   /// Submits the form with optional throttling and debouncing.

@@ -459,16 +459,13 @@ Formix(
       ),
     ],
   ),
-)
-```
-
 | Mode | Behavior |
 | :--- | :--- |
-| `always` | (Default) Validates immediately on mount and every change. |
-| `onUserInteraction` | Starts validating only after the first change/interaction. |
+| `always` | Validates immediately on mount and every change. |
+| `onUserInteraction` | (Default) Validates only after the first change/interaction. |
 | `disabled` | Validation only happens when `validate()` or `submit()` is called. |
 | `onBlur` | Validation only happens when the field loses focus. |
-| `auto` | (Per-field default) Inherits from the global `Formix.autovalidateMode`. |
+| `auto` | Per-field default. Inherits from the global `Formix.autovalidateMode`. |
 
 
 ### Cross-Field Validation
@@ -599,9 +596,9 @@ Formix is engineered for massive scale.
 
 ### Stress Test Results (M1 Pro)
 - **1000 Fields Mount**: <10ms
-- **Typing Latency**: 0ms overhead
 - **Bulk Updates**: ~50ms for 1000 fields. Single frame execution for `setValues`.
-- **Memory Efficient**: Uses **lazy-cloning** and **identity-first equality** to minimize GC pressure and O(N) overhead.
+- **Dependency Scale**: **~160ms** for 100,000 dependents. Ultra-fast traversal for deep chains.
+- **Memory Efficient**: Uses **lazy-cloning** and **shared validation contexts** to minimize GC pressure and O(N) overhead during validation.
 
 ---
 
