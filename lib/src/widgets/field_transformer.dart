@@ -21,6 +21,7 @@ import 'formix.dart';
 /// )
 /// ```
 class FormixFieldTransformer<T, S> extends ConsumerStatefulWidget {
+  /// Creates a [FormixFieldTransformer].
   const FormixFieldTransformer({
     super.key,
     required this.sourceField,

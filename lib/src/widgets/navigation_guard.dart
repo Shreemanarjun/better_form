@@ -25,6 +25,7 @@ class FormixNavigationGuard extends ConsumerStatefulWidget {
   /// Should return `true` if the user confirms discarding changes.
   final Future<bool> Function(BuildContext context)? showDirtyDialog;
 
+  /// Creates a [FormixNavigationGuard].
   const FormixNavigationGuard({
     super.key,
     required this.child,

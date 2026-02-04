@@ -2,6 +2,7 @@ import '../i18n.dart';
 
 /// German implementation of [FormixMessages].
 class GermanFormixMessages extends FormixMessages {
+  /// Creates a [GermanFormixMessages].
   const GermanFormixMessages();
 
   @override

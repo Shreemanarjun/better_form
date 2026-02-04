@@ -5,9 +5,13 @@ import 'form_analytics.dart';
 ///
 /// Useful for debugging during development.
 class LoggingFormAnalytics implements FormixAnalytics {
+  /// Creates a [LoggingFormAnalytics] instance.
   const LoggingFormAnalytics({this.prefix = 'Formix', this.enabled = true});
 
+  /// Prefix to use for console logs.
   final String prefix;
+
+  /// Whether logging is enabled.
   final bool enabled;
 
   void _log(String message) {

@@ -24,6 +24,7 @@ class ValidationResult {
   /// Constant for a successful validation result.
   static const ValidationResult valid = ValidationResult(isValid: true);
 
+  /// Constant for a result that is currently being validated.
   static const ValidationResult validating = ValidationResult(
     isValid: true,
     isValidating: true,

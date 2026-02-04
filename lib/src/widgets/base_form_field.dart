@@ -13,6 +13,7 @@ import '../enums.dart';
 ///
 /// Most built-in fields like [FormixTextFormField] extend this.
 abstract class FormixFieldWidget<T> extends ConsumerStatefulWidget {
+  /// Creates a [FormixFieldWidget].
   const FormixFieldWidget({
     super.key,
     required this.fieldId,
@@ -358,6 +359,7 @@ mixin FormixFieldTextMixin<T> on FormixFieldWidgetState<T> {
   TextEditingController? _textController;
   bool _isSyncing = false;
 
+  /// The text controller used by this mixin.
   TextEditingController get textController => _textController!;
 
   @override
@@ -420,7 +422,9 @@ mixin FormixFieldTextMixin<T> on FormixFieldWidgetState<T> {
 }
 
 /// Simplified text form field base class
+/// Simplified text form field base class.
 abstract class FormixTextFormFieldWidget extends FormixFieldWidget<String> {
+  /// Creates a [FormixTextFormFieldWidget].
   const FormixTextFormFieldWidget({
     super.key,
     required super.fieldId,
@@ -434,15 +438,23 @@ abstract class FormixTextFormFieldWidget extends FormixFieldWidget<String> {
     super.enabled,
   });
 
+  /// The decoration to show around the text field.
   final InputDecoration decoration;
+
+  /// The type of keyboard to use for editing the text.
   final TextInputType? keyboardType;
+
+  /// The maximum number of lines for the text field.
   final int? maxLines;
+
+  /// Whether to hide the text being edited.
   final bool obscureText;
 
   @override
   FormixTextFormFieldWidgetState createState();
 }
 
+/// Base state for [FormixTextFormFieldWidget].
 abstract class FormixTextFormFieldWidgetState extends FormixFieldWidgetState<String> with FormixFieldTextMixin<String> {
   @override
   String valueToString(String? value) => value ?? '';
@@ -501,8 +513,9 @@ abstract class FormixTextFormFieldWidgetState extends FormixFieldWidgetState<Str
   }
 }
 
-/// Simplified number form field base class
+/// Simplified number form field base class.
 abstract class FormixNumberFormFieldWidget extends FormixFieldWidget<int> {
+  /// Creates a [FormixNumberFormFieldWidget].
   const FormixNumberFormFieldWidget({
     super.key,
     required super.fieldId,
@@ -513,12 +526,14 @@ abstract class FormixNumberFormFieldWidget extends FormixFieldWidget<int> {
     super.enabled,
   });
 
+  /// The decoration to show around the text field.
   final InputDecoration decoration;
 
   @override
   FormixNumberFormFieldWidgetState createState();
 }
 
+/// Base state for [FormixNumberFormFieldWidget].
 abstract class FormixNumberFormFieldWidgetState extends FormixFieldWidgetState<int> with FormixFieldTextMixin<int> {
   @override
   String valueToString(int? value) => value?.toString() ?? '';

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 /// A widget that shows performance metrics for field rebuilding
 class FormixFieldPerformanceMonitor<T> extends StatefulWidget {
+  /// Creates a [FormixFieldPerformanceMonitor].
   const FormixFieldPerformanceMonitor({
     super.key,
     required this.fieldId,
@@ -13,13 +14,18 @@ class FormixFieldPerformanceMonitor<T> extends StatefulWidget {
     this.controller,
   });
 
+  /// The ID of the field to monitor.
   final FormixFieldID<T> fieldId;
+
+  /// Builder function that returns the widget tree and rebuild count.
   final Widget Function(
     BuildContext context,
     FieldChangeInfo<T> info,
     int rebuildCount,
   )
   builder;
+
+  /// Optional controller.
   final FormixController? controller;
 
   @override

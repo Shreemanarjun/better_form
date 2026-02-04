@@ -29,6 +29,7 @@ import 'formix.dart'; // For Formix.of
 /// )
 /// ```
 class FormixSection extends ConsumerStatefulWidget {
+  /// Creates a [FormixSection].
   const FormixSection({
     super.key,
     required this.fields,

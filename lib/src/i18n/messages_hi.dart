@@ -2,6 +2,7 @@ import '../i18n.dart';
 
 /// Hindi implementation of [FormixMessages].
 class HindiFormixMessages extends FormixMessages {
+  /// Creates a [HindiFormixMessages].
   const HindiFormixMessages();
 
   @override

@@ -6,6 +6,7 @@ import 'form_builder.dart';
 /// It watches the form's dirty, valid, and submitting states and updates
 /// automatically.
 class FormixFormStatus extends StatelessWidget {
+  /// Creates a [FormixFormStatus].
   const FormixFormStatus({super.key});
 
   @override

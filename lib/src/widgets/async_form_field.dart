@@ -31,6 +31,7 @@ import '../../formix.dart';
 /// )
 /// ```
 class FormixAsyncField<T> extends FormixFieldWidget<T> {
+  /// Creates a [FormixAsyncField].
   const FormixAsyncField({
     super.key,
     required super.fieldId,
@@ -98,9 +99,11 @@ class FormixAsyncField<T> extends FormixFieldWidget<T> {
   FormixAsyncFieldState<T> createState() => FormixAsyncFieldState<T>();
 }
 
+/// State for [FormixAsyncField].
 class FormixAsyncFieldState<T> extends FormixFieldWidgetState<T> {
   AsyncValue<T> _asyncState = const AsyncValue.loading();
 
+  /// The current state of the asynchronous operation.
   AsyncValue<T> get asyncState => _asyncState;
 
   int _activeFutureVersion = 0;

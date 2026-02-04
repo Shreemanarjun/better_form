@@ -11,6 +11,7 @@ export 'i18n/messages_zh.dart';
 /// Interface for all validation messages used in the formix library.
 /// Developers can implement this class to provide translations.
 abstract class FormixMessages {
+  /// Creates a [FormixMessages].
   const FormixMessages();
 
   /// Default error message for required fields
@@ -59,6 +60,7 @@ abstract class FormixMessages {
 
 /// Default implementation of [FormixMessages] in English.
 class DefaultFormixMessages extends FormixMessages {
+  /// Creates a [DefaultFormixMessages].
   const DefaultFormixMessages();
 
   @override

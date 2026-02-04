@@ -19,6 +19,7 @@ import '../../formix.dart';
 /// )
 /// ```
 class FormixListener extends ConsumerStatefulWidget {
+  /// Creates a [FormixListener].
   const FormixListener({
     super.key,
     required this.formKey,

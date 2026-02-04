@@ -2,6 +2,7 @@ import '../i18n.dart';
 
 /// Simplified Chinese implementation of [FormixMessages].
 class ChineseFormixMessages extends FormixMessages {
+  /// Creates a [ChineseFormixMessages].
   const ChineseFormixMessages();
 
   @override

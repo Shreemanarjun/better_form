@@ -29,6 +29,7 @@ import 'formix.dart';
 /// )
 /// ```
 class FormixDependentAsyncField<T, D> extends ConsumerWidget {
+  /// Creates a [FormixDependentAsyncField].
   const FormixDependentAsyncField({
     super.key,
     required this.fieldId,

@@ -4,6 +4,7 @@ import 'base_form_field.dart';
 
 /// Snapshot of the current state of a form field
 class FormixFieldStateSnapshot<T> {
+  /// Creates a [FormixFieldStateSnapshot].
   const FormixFieldStateSnapshot({
     required this.value,
     required this.validation,
@@ -63,6 +64,7 @@ class FormixFieldStateSnapshot<T> {
 
 /// A headless form field widget that delegates UI building to a builder
 class FormixRawFormField<T> extends FormixFieldWidget<T> {
+  /// Creates a [FormixRawFormField].
   const FormixRawFormField({
     super.key,
     required super.fieldId,
@@ -80,12 +82,14 @@ class FormixRawFormField<T> extends FormixFieldWidget<T> {
     super.restorationId,
   });
 
+  /// Builder function to create the widget tree.
   final Widget Function(BuildContext context, FormixFieldStateSnapshot<T> state) builder;
 
   @override
   FormixRawFormFieldState<T> createState() => FormixRawFormFieldState<T>();
 }
 
+/// State for [FormixRawFormField].
 class FormixRawFormFieldState<T> extends FormixFieldWidgetState<T> {
   @override
   void onFieldChanged(T? value) {
@@ -129,6 +133,7 @@ class FormixRawFormFieldState<T> extends FormixFieldWidgetState<T> {
 
 /// Snapshot for text fields, including text controller
 class FormixTextFieldStateSnapshot<T> extends FormixFieldStateSnapshot<T> {
+  /// Creates a [FormixTextFieldStateSnapshot].
   const FormixTextFieldStateSnapshot({
     required super.value,
     required super.validation,
@@ -150,6 +155,7 @@ class FormixTextFieldStateSnapshot<T> extends FormixFieldStateSnapshot<T> {
 
 /// A headless text field widget
 class FormixRawTextField<T> extends FormixFieldWidget<T> {
+  /// Creates a [FormixRawTextField].
   const FormixRawTextField({
     super.key,
     required super.fieldId,
@@ -169,19 +175,24 @@ class FormixRawTextField<T> extends FormixFieldWidget<T> {
     super.restorationId,
   });
 
+  /// Builder function to create the widget tree.
   final Widget Function(
     BuildContext context,
     FormixTextFieldStateSnapshot<T> state,
   )
   builder;
 
+  /// Function to convert value to string for text field.
   final String Function(T? value) valueToString;
+
+  /// Function to convert string back to value.
   final T? Function(String text) stringToValue;
 
   @override
   FormixRawTextFieldState<T> createState() => FormixRawTextFieldState<T>();
 }
 
+/// State for [FormixRawTextField].
 class FormixRawTextFieldState<T> extends FormixFieldWidgetState<T> with FormixFieldTextMixin<T> {
   @override
   String valueToString(T? value) => (widget as FormixRawTextField<T>).valueToString(value);
@@ -231,6 +242,7 @@ class FormixRawTextFieldState<T> extends FormixFieldWidgetState<T> with FormixFi
 
 /// A headless text field widget specialized for String values
 class FormixRawStringField extends FormixRawTextField<String> {
+  /// Creates a [FormixRawStringField].
   const FormixRawStringField({
     super.key,
     required super.fieldId,
@@ -257,6 +269,7 @@ class FormixRawStringField extends FormixRawTextField<String> {
 
 /// A headless field widget that specifically emphasizes the ValueNotifier
 class FormixRawNotifierField<T> extends FormixRawFormField<T> {
+  /// Creates a [FormixRawNotifierField].
   const FormixRawNotifierField({
     super.key,
     required super.fieldId,

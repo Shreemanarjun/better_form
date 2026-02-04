@@ -11,6 +11,7 @@ import 'controllers/validation.dart';
 
 /// Base class for form field schemas with type safety
 abstract class FormFieldSchema<T> {
+  /// Creates a [FormFieldSchema].
   const FormFieldSchema({
     required this.id,
     required this.initialValue,
@@ -155,6 +156,7 @@ abstract class FormFieldSchema<T> {
 
 /// Schema for text fields
 class TextFieldSchema extends FormFieldSchema<String> {
+  /// Creates a [TextFieldSchema].
   const TextFieldSchema({
     required super.id,
     required super.initialValue,
@@ -175,9 +177,16 @@ class TextFieldSchema extends FormFieldSchema<String> {
     this.keyboardType,
   });
 
+  /// Minimum length of the text.
   final int? minLength;
+
+  /// Maximum length of the text.
   final int? maxLength;
+
+  /// Regular expression pattern for validation.
   final String? pattern;
+
+  /// Type of keyboard to display.
   final TextInputType? keyboardType;
 
   @override
@@ -208,6 +217,7 @@ class TextFieldSchema extends FormFieldSchema<String> {
 
 /// Schema for number fields
 class NumberFieldSchema extends FormFieldSchema<num> {
+  /// Creates a [NumberFieldSchema].
   const NumberFieldSchema({
     required super.id,
     required super.initialValue,
@@ -227,8 +237,13 @@ class NumberFieldSchema extends FormFieldSchema<num> {
     this.decimalPlaces = 0,
   });
 
+  /// Minimum value.
   final num? min;
+
+  /// Maximum value.
   final num? max;
+
+  /// Number of decimal places allowed.
   final int decimalPlaces;
 
   @override
@@ -255,6 +270,7 @@ class NumberFieldSchema extends FormFieldSchema<num> {
 
 /// Schema for boolean fields
 class BooleanFieldSchema extends FormFieldSchema<bool> {
+  /// Creates a [BooleanFieldSchema].
   const BooleanFieldSchema({
     required super.id,
     required super.initialValue,
@@ -274,6 +290,7 @@ class BooleanFieldSchema extends FormFieldSchema<bool> {
 
 /// Schema for date fields
 class DateFieldSchema extends FormFieldSchema<DateTime> {
+  /// Creates a [DateFieldSchema].
   const DateFieldSchema({
     required super.id,
     required super.initialValue,
@@ -292,7 +309,10 @@ class DateFieldSchema extends FormFieldSchema<DateTime> {
     this.maxDate,
   });
 
+  /// Minimum allowed date.
   final DateTime? minDate;
+
+  /// Maximum allowed date.
   final DateTime? maxDate;
 
   @override
@@ -319,6 +339,7 @@ class DateFieldSchema extends FormFieldSchema<DateTime> {
 
 /// Schema for selection fields (dropdown, radio, etc.)
 class SelectionFieldSchema<T> extends FormFieldSchema<T> {
+  /// Creates a [SelectionFieldSchema].
   const SelectionFieldSchema({
     required super.id,
     required super.initialValue,
@@ -336,6 +357,7 @@ class SelectionFieldSchema<T> extends FormFieldSchema<T> {
     required this.options,
   });
 
+  /// List of available options for selection.
   final List<T> options;
 
   @override
@@ -358,6 +380,7 @@ class SelectionFieldSchema<T> extends FormFieldSchema<T> {
 
 /// Conditional field schema that shows/hides based on other field values
 class ConditionalFieldSchema<T> extends FormFieldSchema<T> {
+  /// Creates a [ConditionalFieldSchema].
   const ConditionalFieldSchema({
     required super.id,
     required super.initialValue,
@@ -375,6 +398,7 @@ class ConditionalFieldSchema<T> extends FormFieldSchema<T> {
     required this.visibilityCondition,
   });
 
+  /// Condition to determine if the field should be visible.
   final bool Function(Map<String, dynamic> formState) visibilityCondition;
 
   @override
@@ -385,6 +409,7 @@ class ConditionalFieldSchema<T> extends FormFieldSchema<T> {
 
 /// Form schema that defines the structure of an entire form
 class FormSchema {
+  /// Creates a [FormSchema].
   const FormSchema({
     required this.fields,
     this.name,
@@ -496,14 +521,20 @@ class FormSchema {
 
 /// Result of form validation
 class FormValidationResult {
+  /// Creates a [FormValidationResult].
   const FormValidationResult({
     required this.isValid,
     this.fieldErrors = const {},
     this.customErrors = const [],
   });
 
+  /// Whether the validation was successful.
   final bool isValid;
+
+  /// Map of errors per field ID.
   final Map<FormixFieldID<dynamic>, List<String>> fieldErrors;
+
+  /// List of custom form-level errors.
   final List<String> customErrors;
 
   /// Get all error messages
@@ -531,10 +562,12 @@ class FormSubmissionResult {
     this.validationResult,
   });
 
+  /// Creates a successful [FormSubmissionResult].
   factory FormSubmissionResult.success({dynamic data}) {
     return FormSubmissionResult._(success: true, data: data);
   }
 
+  /// Creates a failed [FormSubmissionResult].
   factory FormSubmissionResult.failure({
     required String error,
     FormValidationResult? validationResult,
@@ -546,14 +579,22 @@ class FormSubmissionResult {
     );
   }
 
+  /// Whether the submission was successful.
   final bool success;
+
+  /// Optional returned data from submission.
   final dynamic data;
+
+  /// Optional error message.
   final String? error;
+
+  /// Optional validation result if failed due to validation.
   final FormValidationResult? validationResult;
 }
 
 /// Enhanced controller that works with form schemas
 class SchemaBasedFormController extends FormixController {
+  /// Creates a [SchemaBasedFormController].
   SchemaBasedFormController({
     required this.schema,
     Map<String, dynamic> initialValue = const {},
@@ -564,9 +605,11 @@ class SchemaBasedFormController extends FormixController {
     }
   }
 
+  /// The schema that defines this form.
   final FormSchema schema;
 
   /// Get visible fields based on current form state
+  /// Returns only the fields that are currently visible.
   List<FormFieldSchema<dynamic>> get visibleFields {
     return schema.getVisibleFields(values);
   }

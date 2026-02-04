@@ -6,6 +6,7 @@ import '../enums.dart';
 
 /// A Formix-based number form field that is lifecycle aware.
 class FormixNumberFormField<T extends num> extends FormixFieldWidget<T> {
+  /// Creates a [FormixNumberFormField].
   const FormixNumberFormField({
     super.key,
     required super.fieldId,
@@ -57,45 +58,113 @@ class FormixNumberFormField<T extends num> extends FormixFieldWidget<T> {
     this.maxLengthEnforcement,
   });
 
+  /// The decoration to show around the text field.
   final InputDecoration decoration;
+
+  /// Optional widget to display while validating.
   final Widget? loadingIcon;
+
+  /// Minimum value allowed.
   final T? min;
+
+  /// Maximum value allowed.
   final T? max;
+
+  /// The style to use for the text being edited.
   final TextStyle? style;
+
+  /// Alignment of the text.
   final TextAlign textAlign;
+
+  /// The type of action button to use for the keyboard.
   final TextInputAction? textInputAction;
+
+  /// Callback when the user finishes editing.
   final void Function(T?)? onFieldSubmitted;
+
+  /// Whether to autofocus this field.
   final bool autofocus;
+
+  /// Whether the text field is read-only.
   final bool readOnly;
+
+  /// Whether to show the cursor.
   final bool? showCursor;
+
+  /// Whether to hide the text being edited.
   final bool obscureText;
+
+  /// Whether to enable autocorrect.
   final bool autocorrect;
+
+  /// Whether to show suggestions.
   final bool enableSuggestions;
+
+  /// The maximum number of characters allowed.
   final int? maxLength;
+
+  /// Callback when editing is complete.
   final VoidCallback? onEditingComplete;
+
+  /// Callback when the field is tapped.
   final GestureTapCallback? onTap;
+
+  /// Callback when the user taps outside.
   final TapRegionCallback? onTapOutside;
+
+  /// Optional input formatters.
   final List<TextInputFormatter>? inputFormatters;
+
+  /// Padding around the text field when scrolling into view.
   final EdgeInsets scrollPadding;
+
+  /// Whether to enable interactive selection.
   final bool enableInteractiveSelection;
+
+  /// Custom selection controls.
   final TextSelectionControls? selectionControls;
+
+  /// Custom builder for the counter.
   final InputCounterWidgetBuilder? buildCounter;
+
+  /// Physics for the scrollable.
   final ScrollPhysics? scrollPhysics;
+
+  /// Autofill hints for the text field.
   final Iterable<String>? autofillHints;
+
+  /// Optional scroll controller.
   final ScrollController? scrollController;
+
+  /// The color of the cursor.
   final Color? cursorColor;
+
+  /// The height of the cursor.
   final double? cursorHeight;
+
+  /// The radius of the cursor corners.
   final Radius? cursorRadius;
+
+  /// The width of the cursor.
   final double cursorWidth;
+
+  /// The appearance of the keyboard.
   final Brightness? keyboardAppearance;
+
+  /// Vertical alignment of the text.
   final TextAlignVertical? textAlignVertical;
+
+  /// Directionality of the text.
   final TextDirection? textDirection;
+
+  /// Strategy for enforcing the maximum length.
   final MaxLengthEnforcement? maxLengthEnforcement;
 
   @override
   FormixNumberFormFieldState<T> createState() => FormixNumberFormFieldState<T>();
 }
 
+/// State for [FormixNumberFormField].
 class FormixNumberFormFieldState<T extends num> extends FormixFieldWidgetState<T> with FormixFieldTextMixin<T> {
   @override
   String valueToString(T? value) {

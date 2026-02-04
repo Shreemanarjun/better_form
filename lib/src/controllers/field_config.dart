@@ -8,6 +8,7 @@ import '../validators/validators.dart';
 
 /// Configuration for a form field
 class FormixFieldConfig<T> {
+  /// Creates a configuration for a form field.
   const FormixFieldConfig({
     required this.id,
     this.initialValue,
@@ -91,6 +92,7 @@ class FormixFieldConfig<T> {
   /// Callback when field is submitted
   final void Function(String)? onSubmitted;
 
+  /// Converts this configuration into a [FormixField].
   FormixField<T> toField() {
     // Capture values to avoid type inference issues
     final localValidator = validator;

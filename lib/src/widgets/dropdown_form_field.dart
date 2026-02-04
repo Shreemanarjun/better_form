@@ -5,6 +5,7 @@ import '../enums.dart';
 
 /// A Formix-based dropdown form field that is lifecycle aware.
 class FormixDropdownFormField<T> extends FormixFieldWidget<T> {
+  /// Creates a [FormixDropdownFormField].
   const FormixDropdownFormField({
     super.key,
     required super.fieldId,
@@ -26,16 +27,26 @@ class FormixDropdownFormField<T> extends FormixFieldWidget<T> {
     super.restorationId,
   });
 
+  /// The list of items the user can select.
   final List<DropdownMenuItem<T>> items;
+
+  /// The decoration to show around the dropdown.
   final InputDecoration? decoration;
+
+  /// Optional widget to display while validating.
   final Widget? loadingIcon;
+
+  /// A placeholder to show when no item is selected.
   final Widget? hint;
+
+  /// A placeholder to show when the dropdown is disabled.
   final Widget? disabledHint;
 
   @override
   FormixDropdownFormFieldState<T> createState() => FormixDropdownFormFieldState<T>();
 }
 
+/// State for [FormixDropdownFormField].
 class FormixDropdownFormFieldState<T> extends FormixFieldWidgetState<T> {
   @override
   Widget build(BuildContext context) {

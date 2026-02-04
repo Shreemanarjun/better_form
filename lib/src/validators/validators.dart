@@ -17,12 +17,15 @@ class FormixValidators {
 
 /// Base class for validator chains including async support.
 abstract class ValidatorChain<T, Self extends ValidatorChain<T, Self>> {
+  /// Synchronous validators in the chain.
   @protected
   final List<String? Function(T?)> syncValidators;
 
+  /// Asynchronous validators in the chain.
   @protected
   final List<Future<String?> Function(T?)> asyncValidators = [];
 
+  /// Creates a [ValidatorChain].
   ValidatorChain(this.syncValidators);
 
   Self _add(String? Function(T?) validator) {
@@ -77,9 +80,12 @@ abstract class ValidatorChain<T, Self extends ValidatorChain<T, Self>> {
   }
 }
 
+/// Validator chain specifically for [String] types.
 class StringValidator extends ValidatorChain<String, StringValidator> {
+  /// Creates a [StringValidator].
   StringValidator(super.syncValidators);
 
+  /// Validates that the string is a valid email address.
   StringValidator email([String? message]) {
     return _add((val) {
       if (val == null || val.isEmpty) return null;
@@ -91,6 +97,7 @@ class StringValidator extends ValidatorChain<String, StringValidator> {
     });
   }
 
+  /// Validates that the string has at least [length] characters.
   StringValidator minLength(int length, [String? message]) {
     return _add((val) {
       if (val == null || val.isEmpty) return null;
@@ -105,6 +112,7 @@ class StringValidator extends ValidatorChain<String, StringValidator> {
     });
   }
 
+  /// Validates that the string has at most [length] characters.
   StringValidator maxLength(int length, [String? message]) {
     return _add((val) {
       if (val == null || val.isEmpty) return null;
@@ -119,6 +127,7 @@ class StringValidator extends ValidatorChain<String, StringValidator> {
     });
   }
 
+  /// Validates that the string matches the given [regex].
   StringValidator pattern(RegExp regex, [String? message]) {
     return _add((val) {
       if (val == null || val.isEmpty) return null;
@@ -130,9 +139,12 @@ class StringValidator extends ValidatorChain<String, StringValidator> {
   }
 }
 
+/// Validator chain specifically for numeric types.
 class NumberValidator<T extends num> extends ValidatorChain<T, NumberValidator<T>> {
+  /// Creates a [NumberValidator].
   NumberValidator(super.syncValidators);
 
+  /// Validates that the numeric value is at least [min].
   NumberValidator<T> min(T min, [String? message]) {
     return _add((val) {
       if (val == null) return null;
@@ -143,6 +155,7 @@ class NumberValidator<T extends num> extends ValidatorChain<T, NumberValidator<T
     });
   }
 
+  /// Validates that the numeric value is at most [max].
   NumberValidator<T> max(T max, [String? message]) {
     return _add((val) {
       if (val == null) return null;
@@ -153,12 +166,15 @@ class NumberValidator<T extends num> extends ValidatorChain<T, NumberValidator<T
     });
   }
 
+  /// Validates that the numeric value is positive.
   NumberValidator<T> positive([String? message]) => min(
     0 as T,
     message ?? FormixValidationKeys.withParam(FormixValidationKeys.min, 0),
   );
 }
 
+/// Validator chain for any generic type.
 class GenericValidator<T> extends ValidatorChain<T, GenericValidator<T>> {
+  /// Creates a [GenericValidator].
   GenericValidator(super.syncValidators);
 }

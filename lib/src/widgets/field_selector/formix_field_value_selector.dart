@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 /// A simplified version that only listens to value changes
 class FormixFieldValueSelector<T> extends StatelessWidget {
+  /// Creates a [FormixFieldValueSelector].
   const FormixFieldValueSelector({
     super.key,
     required this.fieldId,
@@ -13,9 +14,16 @@ class FormixFieldValueSelector<T> extends StatelessWidget {
     this.child,
   });
 
+  /// The ID of the field to listen to.
   final FormixFieldID<T> fieldId;
+
+  /// Builder function that returns the widget tree based on the field value.
   final Widget Function(BuildContext context, T? value, Widget? child) builder;
+
+  /// Optional controller. If not provided, it will be looked up in the context.
   final FormixController? controller;
+
+  /// Optional child widget that is passed to the builder.
   final Widget? child;
 
   @override

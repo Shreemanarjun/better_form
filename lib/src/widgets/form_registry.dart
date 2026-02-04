@@ -27,6 +27,7 @@ import '../controllers/formix_controller.dart';
 /// )
 /// ```
 class FormixFieldRegistry extends ConsumerStatefulWidget {
+  /// Creates a [FormixFieldRegistry].
   const FormixFieldRegistry({
     super.key,
     required this.fields,

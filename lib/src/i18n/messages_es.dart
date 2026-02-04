@@ -2,6 +2,7 @@ import '../i18n.dart';
 
 /// Spanish implementation of [FormixMessages].
 class SpanishFormixMessages extends FormixMessages {
+  /// Creates a [SpanishFormixMessages].
   const SpanishFormixMessages();
 
   @override

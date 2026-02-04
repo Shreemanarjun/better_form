@@ -37,6 +37,8 @@ export 'formix_controller.dart';
 class RiverpodFormController extends StateNotifier<FormixData> {
   /// Internationalization messages for validation errors
   final FormixMessages messages;
+
+  /// Map of initial values for all registered fields.
   @protected
   final Map<String, dynamic> initialValueMap = {};
   final Map<String, Timer> _debouncers = {};
@@ -46,8 +48,11 @@ class RiverpodFormController extends StateNotifier<FormixData> {
   final Map<String, FormixField<dynamic>> _fieldDefinitions = {};
   final Map<String, List<String>> _dependentsMap = {};
   final Map<String, Set<String>> _transitiveDependentsCache = {};
+
+  /// Global validation mode for the form.
   final FormixAutovalidateMode autovalidateMode;
 
+  /// Returns the number of registered fields (for testing).
   @visibleForTesting
   int get registeredFieldsCount => _fieldDefinitions.length;
 
@@ -57,6 +62,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
   bool _isRestoringHistory = false;
   static const int _maxHistoryLength = 50; // Exposed for testing implicitly via max size checks
 
+  /// Returns the number of history states (for testing).
   @visibleForTesting
   int get historyCount => _history.length;
 
@@ -69,6 +75,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
   /// Get validation durations for DevTools
   Map<String, Duration> get validationDurations => Map.unmodifiable(_validationDurations);
 
+  /// Returns the number of active bindings (for testing).
   @visibleForTesting
   int get activeBindingsCount => _bindings.length;
 
@@ -1782,7 +1789,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
     _bindings[subKey]?.cancel();
 
     // Subscribe to source
-    final subscription = sourceController.stream.listen((sourceState) {
+    _bindings[subKey] = sourceController.stream.listen((sourceState) {
       final sourceValue = sourceState.getValue(sourceField);
       final currentTargetValue = getValue(targetField);
 
@@ -1791,13 +1798,11 @@ class RiverpodFormController extends StateNotifier<FormixData> {
       }
     });
 
-    _bindings[subKey] = subscription;
-
     // Add two-way binding if requested (be careful of infinite loops!)
     // We avoid loops by checking value equality before setting.
     if (twoWay) {
       final reverseSubKey = '${subKey}_reverse';
-      final reverseSub = stream.listen((targetState) {
+      _bindings[reverseSubKey] = stream.listen((targetState) {
         final targetValue = targetState.getValue(targetField);
         final currentSourceValue = sourceController.getValue(sourceField);
 
@@ -1805,7 +1810,6 @@ class RiverpodFormController extends StateNotifier<FormixData> {
           sourceController.setValue(sourceField, targetValue);
         }
       });
-      _bindings[reverseSubKey] = reverseSub;
     }
 
     return () {
@@ -1827,6 +1831,7 @@ final formixMessagesProvider = Provider.autoDispose<FormixMessages>((ref) {
 /// Parameter for form controller provider family
 @immutable
 class FormixParameter {
+  /// Creates a [FormixParameter] for form initialization.
   const FormixParameter({
     this.initialValue = const {},
     this.fields = const [],
@@ -1838,13 +1843,28 @@ class FormixParameter {
     this.autovalidateMode = FormixAutovalidateMode.always,
   });
 
+  /// Initial values for the form fields.
   final Map<String, dynamic> initialValue;
+
+  /// List of field configurations.
   final List<FormixFieldConfig> fields;
+
+  /// Optional persistence provider.
   final FormixPersistence? persistence;
+
+  /// Optional unique identifier for the form.
   final String? formId;
+
+  /// Optional analytics provider.
   final FormixAnalytics? analytics;
+
+  /// Whether to keep the provider alive even when not watched.
   final bool keepAlive;
+
+  /// Optional namespace for persistence.
   final String? namespace;
+
+  /// Global validation mode for the form.
   final FormixAutovalidateMode autovalidateMode;
 
   @override
@@ -1925,6 +1945,7 @@ final fieldErrorProvider = Provider.autoDispose.family<String?, FormixFieldID<dy
   name: 'fieldErrorProvider',
 );
 
+/// Provider for watching if a field name group is valid.
 final groupValidProvider = Provider.autoDispose.family<bool, String>(
   (ref, prefix) {
     final controllerProvider = ref.watch(currentControllerProvider);

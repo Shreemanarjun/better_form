@@ -1,16 +1,14 @@
 include: package:flutter_lints/flutter.yaml
-analyzer:
-  enable-experiment:
-    - dot-shorthands
-  plugins:
-    - custom_lint
+
+
 linter:
   rules:
-    public_member_api_docs: false
+    public_member_api_docs: true
     prefer_const_declarations: true
     prefer_const_constructors_in_immutables: true
     prefer_const_constructors: true
     prefer_const_literals_to_create_immutables: true
+    cancel_subscriptions: true
 formatter:
   trailing_commas: preserve
   page_width: 180

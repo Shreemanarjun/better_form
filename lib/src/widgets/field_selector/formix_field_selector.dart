@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 /// A highly optimized, declarative widget that rebuilds only when a specific field changes
 /// Provides granular performance and detailed change information
 class FormixFieldSelector<T> extends StatefulWidget {
+  /// Creates a [FormixFieldSelector].
   const FormixFieldSelector({
     super.key,
     required this.fieldId,
@@ -15,17 +16,30 @@ class FormixFieldSelector<T> extends StatefulWidget {
     this.child,
   });
 
+  /// The ID of the field to listen to.
   final FormixFieldID<T> fieldId;
+
+  /// Builder function that returns the widget tree based on field changes.
   final Widget Function(
     BuildContext context,
     FieldChangeInfo<T> info,
     Widget? child,
   )
   builder;
+
+  /// Optional controller. If not provided, it will be looked up in the context.
   final FormixController? controller;
+
+  /// Whether to rebuild when the field value changes.
   final bool listenToValue;
+
+  /// Whether to rebuild when the validation result changes.
   final bool listenToValidation;
+
+  /// Whether to rebuild when the dirty state changes.
   final bool listenToDirty;
+
+  /// Optional child widget that is passed to the builder to optimize rebuilds.
   final Widget? child;
 
   @override

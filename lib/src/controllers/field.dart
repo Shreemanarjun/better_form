@@ -5,6 +5,7 @@ import 'form_state.dart';
 
 /// Form field definition with validation and type information
 class FormixField<T> {
+  /// Creates a [FormixField] definition.
   const FormixField({
     required this.id,
     required this.initialValue,

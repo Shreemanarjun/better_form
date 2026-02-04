@@ -21,6 +21,7 @@ class FormixScope {
   /// The [FormixController] instance for the current form.
   final FormixController controller;
 
+  /// Creates a [FormixScope].
   FormixScope({
     required this.context,
     required this.ref,
@@ -199,8 +200,10 @@ class FormixScope {
 /// )
 /// ```
 class FormixBuilder extends ConsumerWidget {
+  /// Creates a [FormixBuilder].
   const FormixBuilder({super.key, required this.builder});
 
+  /// The builder function that receives the [FormixScope].
   final Widget Function(BuildContext context, FormixScope scope) builder;
 
   @override
@@ -245,6 +248,7 @@ class FormixBuilder extends ConsumerWidget {
 /// }
 /// ```
 abstract class FormixWidget extends ConsumerWidget {
+  /// Creates a [FormixWidget].
   const FormixWidget({super.key});
 
   @override

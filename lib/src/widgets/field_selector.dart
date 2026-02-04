@@ -3,6 +3,7 @@ import '../controllers/validation.dart';
 
 /// Information about what changed in a field
 class FieldChangeInfo<T> {
+  /// Creates a [FieldChangeInfo].
   const FieldChangeInfo({
     required this.fieldId,
     required this.value,
@@ -14,13 +15,28 @@ class FieldChangeInfo<T> {
     required this.previousIsDirty,
   });
 
+  /// The ID of the field that changed.
   final FormixFieldID<T> fieldId;
+
+  /// The current value of the field.
   final T? value;
+
+  /// The current validation result.
   final ValidationResult validation;
+
+  /// Whether the field is currently dirty.
   final bool isDirty;
+
+  /// Whether the initial value has changed.
   final bool hasInitialValueChanged;
+
+  /// The previous value of the field.
   final T? previousValue;
+
+  /// The previous validation result.
   final ValidationResult? previousValidation;
+
+  /// The previous dirty state.
   final bool? previousIsDirty;
 
   /// Whether the value changed

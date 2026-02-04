@@ -2,6 +2,7 @@ import '../i18n.dart';
 
 /// French implementation of [FormixMessages].
 class FrenchFormixMessages extends FormixMessages {
+  /// Creates a [FrenchFormixMessages].
   const FrenchFormixMessages();
 
   @override

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 /// A widget that provides granular listening control with custom conditions
 class FormixFieldConditionalSelector<T> extends StatelessWidget {
+  /// Creates a [FormixFieldConditionalSelector].
   const FormixFieldConditionalSelector({
     super.key,
     required this.fieldId,
@@ -15,15 +16,24 @@ class FormixFieldConditionalSelector<T> extends StatelessWidget {
     this.child,
   });
 
+  /// The ID of the field to listen to.
   final FormixFieldID<T> fieldId;
+
+  /// Builder function that returns the widget tree.
   final Widget Function(
     BuildContext context,
     FieldChangeInfo<T> info,
     Widget? child,
   )
   builder;
+
+  /// Custom condition function that determines if the widget should rebuild.
   final bool Function(FieldChangeInfo<T> info) shouldRebuild;
+
+  /// Optional controller. If not provided, it will be looked up in the context.
   final FormixController? controller;
+
+  /// Optional child widget that is passed to the builder.
   final Widget? child;
 
   @override

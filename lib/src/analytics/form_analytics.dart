@@ -1,5 +1,6 @@
 /// Interface for receiving analytics events from Formix.
 abstract class FormixAnalytics {
+  /// Base constructor for [FormixAnalytics].
   const FormixAnalytics();
 
   /// Called when a form session starts (controller initialized).

@@ -5,6 +5,7 @@ import '../enums.dart';
 
 /// A Formix-based checkbox form field that is lifecycle aware.
 class FormixCheckboxFormField extends FormixFieldWidget<bool> {
+  /// Creates a [FormixCheckboxFormField].
   const FormixCheckboxFormField({
     super.key,
     required super.fieldId,
@@ -39,28 +40,62 @@ class FormixCheckboxFormField extends FormixFieldWidget<bool> {
     this.visualDensity,
   });
 
+  /// The primary content of the list tile.
   final Widget? title;
+
+  /// Optional widget to display while validating.
   final Widget? validatingWidget;
+
+  /// The color to use when this checkbox is checked.
   final Color? activeColor;
+
+  /// The color to use for the check icon itself.
   final Color? checkColor;
+
+  /// The color of the tile.
   final Color? tileColor;
+
+  /// A widget to display on the opposite side of the checkbox.
   final Widget? secondary;
+
+  /// Whether the subtitle should be three lines high.
   final bool isThreeLine;
+
+  /// Whether this list tile is part of a dense layout.
   final bool? dense;
+
+  /// Whether to render the tile as selected.
   final bool selected;
+
+  /// Where to place the control relative to the text.
   final ListTileControlAffinity controlAffinity;
+
+  /// Whether this widget should attempt to focus itself.
   final bool autofocus;
+
+  /// The padding around the tile's content.
   final EdgeInsetsGeometry? contentPadding;
+
+  /// Whether the checkbox can be into a third "indeterminate" state.
   final bool tristate;
+
+  /// The shape of the tile's ink well.
   final ShapeBorder? shape;
+
+  /// The shape of the checkbox's background.
   final OutlinedBorder? checkboxShape;
+
+  /// The color and width of the checkbox's border.
   final BorderSide? side;
+
+  /// The density of the tile's layout.
   final VisualDensity? visualDensity;
 
   @override
   FormixCheckboxFormFieldState createState() => FormixCheckboxFormFieldState();
 }
 
+/// State for [FormixCheckboxFormField].
 class FormixCheckboxFormFieldState extends FormixFieldWidgetState<bool> {
   @override
   Widget build(BuildContext context) {
