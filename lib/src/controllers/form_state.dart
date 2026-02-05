@@ -124,6 +124,17 @@ class FormixData {
   /// returns `true` if any registered field is currently pending (e.g. async operation).
   bool get isPending => pendingCount > 0;
 
+  /// Returns a map of all field keys to their current error messages.
+  ///
+  /// Fields that are valid or do not have an error message are excluded.
+  Map<String, String> get errors => {
+    for (final entry in validations.entries)
+      if (!entry.value.isValid && entry.value.errorMessage != null) entry.key: entry.value.errorMessage!,
+  };
+
+  /// Returns a list of all current validation error messages.
+  List<String> get errorMessages => errors.values.toList();
+
   /// Retrieves the current value for a specific field with type safety.
   ///
   /// Returns null if the field value is null or missing.

@@ -427,6 +427,12 @@ class RiverpodFormController extends StateNotifier<FormixData> {
   /// This is true while the `onValid` callback provided to [submit] is executing.
   bool get isSubmitting => state.isSubmitting;
 
+  /// Map of all current field keys to their error messages.
+  Map<String, String> get errors => state.errors;
+
+  /// List of all current validation error messages.
+  List<String> get errorMessages => state.errorMessages;
+
   /// Check if a field is registered
   /// Returns true if a field with [fieldId] is currently registered.
   bool isFieldRegistered<T>(FormixFieldID<T> fieldId) {

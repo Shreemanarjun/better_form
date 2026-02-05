@@ -133,6 +133,14 @@ class FormixController extends RiverpodFormController {
   /// Map of all current field keys to their values.
   Map<String, dynamic> get values => state.values;
 
+  /// Map of all current field keys to their error messages.
+  @override
+  Map<String, String> get errors => state.errors;
+
+  /// List of all current validation error messages.
+  @override
+  List<String> get errorMessages => state.errorMessages;
+
   /// Resets the form to its initial state.
   @override
   void reset({ResetStrategy strategy = ResetStrategy.initialValues}) {
