@@ -264,4 +264,9 @@ class FormixData {
       validations.length,
     );
   }
+
+  @override
+  String toString() {
+    return 'FormixData(values: $values, errorCount: $errorCount, dirtyCount: $dirtyCount, pendingCount: $pendingCount, isSubmitting: $isSubmitting)';
+  }
 }

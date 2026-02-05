@@ -17,6 +17,27 @@ void main() {
         markAsTouched: () {},
         valueNotifier: ValueNotifier(null),
         enabled: true,
+        autovalidateMode: FormixAutovalidateMode.auto,
+      );
+
+      expect(snapshot.shouldShowError, true);
+      focusNode.dispose();
+    });
+
+    test('shouldShowError returns true when invalid and autovalidateMode is always', () {
+      final focusNode = FocusNode();
+      final snapshot = FormixFieldStateSnapshot<String>(
+        value: 'test',
+        validation: const ValidationResult(isValid: false, errorMessage: 'Error'),
+        isDirty: false,
+        isTouched: false,
+        isSubmitting: false,
+        focusNode: focusNode,
+        didChange: (_) {},
+        markAsTouched: () {},
+        valueNotifier: ValueNotifier(null),
+        enabled: true,
+        autovalidateMode: FormixAutovalidateMode.always,
       );
 
       expect(snapshot.shouldShowError, true);
@@ -36,6 +57,7 @@ void main() {
         markAsTouched: () {},
         valueNotifier: ValueNotifier(null),
         enabled: true,
+        autovalidateMode: FormixAutovalidateMode.auto,
       );
 
       expect(snapshot.shouldShowError, true);
@@ -55,6 +77,7 @@ void main() {
         markAsTouched: () {},
         valueNotifier: ValueNotifier(null),
         enabled: true,
+        autovalidateMode: FormixAutovalidateMode.auto,
       );
 
       expect(snapshot.shouldShowError, false);
@@ -76,6 +99,7 @@ void main() {
           markAsTouched: () {},
           valueNotifier: ValueNotifier(null),
           enabled: true,
+          autovalidateMode: FormixAutovalidateMode.auto,
         );
 
         expect(snapshot.shouldShowError, true);
@@ -96,6 +120,7 @@ void main() {
         markAsTouched: () {},
         valueNotifier: ValueNotifier(null),
         enabled: true,
+        autovalidateMode: FormixAutovalidateMode.auto,
       );
 
       expect(snapshot.shouldShowError, false);
@@ -115,6 +140,7 @@ void main() {
         markAsTouched: () {},
         valueNotifier: ValueNotifier(null),
         enabled: true,
+        autovalidateMode: FormixAutovalidateMode.auto,
       );
 
       expect(snapshot.hasError, true);
@@ -134,6 +160,7 @@ void main() {
         markAsTouched: () {},
         valueNotifier: ValueNotifier(null),
         enabled: true,
+        autovalidateMode: FormixAutovalidateMode.auto,
       );
 
       expect(snapshot.hasError, false);
@@ -770,6 +797,52 @@ void main() {
       controller.setValue(id, 'some value');
       await tester.pump();
       expect(find.text('STATE: VALID'), findsOneWidget);
+    });
+
+    testWidgets('Headless widgets correctly show errors with autovalidateMode.always', (tester) async {
+      const id = FormixFieldID<String>('autovalidate_test');
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: Formix(
+                fields: [
+                  FormixFieldConfig(
+                    id: id,
+                    initialValue: '',
+                    validator: (v) => (v?.isEmpty ?? true) ? 'Required' : null,
+                  ),
+                ],
+                child: FormixRawTextField<String>(
+                  fieldId: id,
+                  autovalidateMode: FormixAutovalidateMode.always,
+                  valueToString: (v) => v ?? '',
+                  stringToValue: (s) => s,
+                  builder: (context, snapshot) {
+                    return Text(
+                      snapshot.shouldShowError ? 'ERROR: ${snapshot.validation.errorMessage}' : 'NO ERROR',
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pump();
+
+      // Should show error immediately because of autovalidateMode.always
+      expect(find.text('ERROR: Required'), findsOneWidget);
+
+      // Should hide error when valid
+      final element = tester.element(find.text('ERROR: Required'));
+      final controller = Formix.controllerOf(element)!;
+      controller.setValue(id, 'valid');
+      await tester.pump();
+
+      expect(find.text('NO ERROR'), findsOneWidget);
     });
   });
 }

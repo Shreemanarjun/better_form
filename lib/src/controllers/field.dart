@@ -96,4 +96,9 @@ class FormixField<T> {
     if (t == null) return null;
     return (dynamic value) => t(value);
   }
+
+  @override
+  String toString() {
+    return 'FormixField<$T>(id: $id, label: $label, initialValue: $initialValue)';
+  }
 }

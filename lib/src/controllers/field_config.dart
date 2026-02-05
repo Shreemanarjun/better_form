@@ -150,4 +150,9 @@ class FormixFieldConfig<T> {
       inputFormatters.hashCode ^
       textInputAction.hashCode ^
       onSubmitted.hashCode;
+
+  @override
+  String toString() {
+    return 'FormixFieldConfig<$T>(id: $id, initialValue: $initialValue, label: $label)';
+  }
 }

@@ -37,4 +37,11 @@ class ValidationResult {
 
   @override
   int get hashCode => isValid.hashCode ^ errorMessage.hashCode ^ isValidating.hashCode;
+
+  @override
+  String toString() {
+    if (isValidating) return 'ValidationResult.validating';
+    if (isValid) return 'ValidationResult.valid';
+    return 'ValidationResult.error(message: $errorMessage)';
+  }
 }

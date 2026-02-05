@@ -449,4 +449,9 @@ class FormixController extends RiverpodFormController {
   void removeDirtyListener(void Function(bool) listener) {
     _dirtyListeners.remove(listener);
   }
+
+  @override
+  String toString() {
+    return 'FormixController(fields: ${state.values.keys.toList()}, isValid: ${state.isValid}, isDirty: ${state.isDirty})';
+  }
 }

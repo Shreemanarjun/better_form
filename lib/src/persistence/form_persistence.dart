@@ -48,4 +48,7 @@ class InMemoryFormPersistence implements FormixPersistence {
   Future<void> clearSavedState(String formId) async {
     _storage.remove(formId);
   }
+
+  @override
+  String toString() => 'InMemoryFormPersistence(forms: ${_storage.keys.toList()})';
 }

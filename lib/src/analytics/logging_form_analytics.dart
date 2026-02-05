@@ -56,4 +56,7 @@ class LoggingFormAnalytics implements FormixAnalytics {
       'Form Abandoned after ${timeSpent.inSeconds}s (FormId: ${formId ?? 'unknown'})',
     );
   }
+
+  @override
+  String toString() => 'LoggingFormAnalytics(prefix: $prefix, enabled: $enabled)';
 }

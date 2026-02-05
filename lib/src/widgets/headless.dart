@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import '../controllers/validation.dart';
+import '../enums.dart';
 import 'base_form_field.dart';
 
 /// Snapshot of the current state of a form field
@@ -16,6 +17,7 @@ class FormixFieldStateSnapshot<T> {
     required this.markAsTouched,
     required this.valueNotifier,
     required this.enabled,
+    required this.autovalidateMode,
     this.errorBuilder,
   });
 
@@ -73,13 +75,16 @@ class FormixFieldStateSnapshot<T> {
   /// Whether the field is enabled
   final bool enabled;
 
+  /// The autovalidate mode for this field.
+  final FormixAutovalidateMode autovalidateMode;
+
   /// Custom error builder
   final Widget Function(BuildContext context, String error)? errorBuilder;
 
   /// Helper to check if error should be shown (touched or submitting)
   bool get shouldShowError {
-    // This is a bit simplified, but essentially we want to show if it's invalid AND (touched OR submitting)
-    return !validation.isValid && (isTouched || isSubmitting);
+    final showImmediate = autovalidateMode == FormixAutovalidateMode.always;
+    return !validation.isValid && (isTouched || isSubmitting || showImmediate);
   }
 
   /// Helper to check if field is invalid
@@ -146,6 +151,7 @@ class FormixRawFormFieldState<T> extends FormixFieldWidgetState<T> {
           markAsTouched: markAsTouched,
           valueNotifier: controller.getFieldNotifier(widget.fieldId),
           enabled: widget.enabled,
+          autovalidateMode: controller.getValidationMode(widget.fieldId),
           errorBuilder: widget.errorBuilder,
         );
 
@@ -169,6 +175,7 @@ class FormixTextFieldStateSnapshot<T> extends FormixFieldStateSnapshot<T> {
     required super.markAsTouched,
     required super.valueNotifier,
     required super.enabled,
+    required super.autovalidateMode,
     super.errorBuilder,
     required this.textController,
   });
@@ -254,6 +261,7 @@ class FormixRawTextFieldState<T> extends FormixFieldWidgetState<T> with FormixFi
           markAsTouched: markAsTouched,
           valueNotifier: controller.getFieldNotifier(widget.fieldId),
           enabled: widget.enabled,
+          autovalidateMode: controller.getValidationMode(widget.fieldId),
           errorBuilder: widget.errorBuilder,
           textController: textController,
         );
