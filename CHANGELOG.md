@@ -1,3 +1,16 @@
+## 0.0.7
+
+### 🛠️ Core Improvements
+- **Enhanced Validation Access**:
+  - `FormixData` and controllers now expose `errors` (Map of field IDs to error messages) and `errorMessages` (List of all error messages).
+  - This simplifies global error handling and custom error summary displays.
+  - Added `@override` annotations to `FormixController` for improved type safety and lint compliance.
+- **Improved Validation Logic**:
+  - Implemented comprehensive `autovalidateMode` support for individual fields, allowing fine-grained control over when validation occurs.
+  - Refined error display logic to ensure messages appear exactly when expected based on field interaction and validation mode.
+- **Enhanced Testing**:
+  - Added new golden tests for validation states to ensure visual consistency of error states across UI components.
+
 ## 0.0.6
 
 ### 📚 Documentation Improvements
