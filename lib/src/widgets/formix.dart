@@ -216,7 +216,14 @@ class FormixState extends ConsumerState<Formix> {
 
     return ProviderScope(
       overrides: [
-        if (widget.controller != null) provider.overrideWith((ref) => widget.controller!),
+        if (widget.controller != null)
+          provider.overrideWith((ref) {
+            if (widget.keepAlive) {
+              ref.keepAlive();
+              widget.controller!.preventDisposal = true;
+            }
+            return widget.controller!;
+          }),
         currentControllerProvider.overrideWithValue(provider),
       ],
       child: Semantics(

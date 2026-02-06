@@ -178,6 +178,7 @@ class FormixController extends RiverpodFormController {
   /// Disposes all created notifiers and listeners.
   @override
   void dispose() {
+    if (preventDisposal) return;
     for (final notifier in _valueNotifiers.values) {
       notifier.dispose();
     }

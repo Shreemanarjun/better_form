@@ -214,7 +214,7 @@ class FormixScope {
 ///   },
 /// )
 /// ```
-class FormixBuilder extends ConsumerWidget {
+class FormixBuilder extends ConsumerStatefulWidget {
   /// Creates a [FormixBuilder].
   const FormixBuilder({super.key, required this.builder});
 
@@ -222,7 +222,20 @@ class FormixBuilder extends ConsumerWidget {
   final Widget Function(BuildContext context, FormixScope scope) builder;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<FormixBuilder> createState() => _FormixBuilderState();
+}
+
+class _FormixBuilderState extends ConsumerState<FormixBuilder> {
+  @override
+  void dispose() {
+    // Clean up any resources if necessary.
+    // Riverpod providers will auto-dispose when this widget is removed
+    // if there are no other listeners.
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final provider = Formix.of(context);
     if (provider == null) {
       throw FlutterError('FormixBuilder must be placed inside a Formix widget');
@@ -237,7 +250,7 @@ class FormixBuilder extends ConsumerWidget {
       controller: controller,
     );
 
-    return builder(context, scope);
+    return widget.builder(context, scope);
   }
 }
 

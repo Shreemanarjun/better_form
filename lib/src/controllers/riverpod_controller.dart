@@ -440,8 +440,15 @@ class RiverpodFormController extends StateNotifier<FormixData> {
     return _fieldDefinitions.containsKey(fieldId.key);
   }
 
+  /// If true, this controller will not be disposed when [dispose] is called.
+  /// This is useful when the controller is managed externally and passed to Formix
+  /// with keepAlive: true.
+  bool preventDisposal = false;
+
   @override
   void dispose() {
+    if (preventDisposal) return;
+
     if (_registeredDevToolsId != null) {
       FormixDevToolsService.unregisterController(_registeredDevToolsId);
     }
