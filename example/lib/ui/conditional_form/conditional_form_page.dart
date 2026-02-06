@@ -7,7 +7,10 @@ class ConditionalFormExample extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return const ConditionalFormExampleContent();
+    return Scaffold(
+      appBar: AppBar(title: const Text('Conditional Form Example')),
+      body: const ConditionalFormExampleContent(),
+    );
   }
 }
 
@@ -21,6 +24,19 @@ class ConditionalFormExampleContent extends ConsumerStatefulWidget {
 
 class _ConditionalFormExampleContentState
     extends ConsumerState<ConditionalFormExampleContent> {
+  static const accountTypeField = FormixFieldID<String>('accountType');
+  static const companyNameField = FormixFieldID<String>('companyName');
+  static const taxIdField = FormixFieldID<String>('taxId');
+  static const firstNameField = FormixFieldID<String>('firstName');
+  static const lastNameField = FormixFieldID<String>('lastName');
+  static const hasNewsletterField = FormixFieldID<bool>('hasNewsletter');
+  static const newsletterFrequencyField = FormixFieldID<String>(
+    'newsletterFrequency',
+  );
+  static const contactMethodField = FormixFieldID<String>('contactMethod');
+  static const phoneNumberField = FormixFieldID<String>('phoneNumber');
+  static const preferredTimeField = FormixFieldID<String>('preferredTime');
+
   @override
   Widget build(BuildContext context) {
     return Formix(
@@ -29,47 +45,16 @@ class _ConditionalFormExampleContentState
         'accountType': 'personal',
         'companyName': '',
         'taxId': '',
-        'firstName': '',
+        'firstName': '', // Ensure initial values for always-visible fields
         'lastName': '',
-        'hasNewsletter': false,
-        'newsletterFrequency': 'weekly',
-        'contactMethod': 'email',
-        'phoneNumber': '',
-        'preferredTime': 'morning',
       },
       fields: [
         FormixFieldConfig<String>(
-          id: FormixFieldID<String>('accountType'),
+          id: accountTypeField,
           initialValue: 'personal',
         ),
         FormixFieldConfig<String>(
-          id: FormixFieldID<String>('companyName'),
-          initialValue: '',
-          validator: (value) {
-            final accountType = Formix.controllerOf(
-              context,
-            )?.getValue(FormixFieldID<String>('accountType'));
-            if (accountType == 'business' && (value?.isEmpty ?? true)) {
-              return 'Company name is required for business accounts';
-            }
-            return null;
-          },
-        ),
-        FormixFieldConfig<String>(
-          id: FormixFieldID<String>('taxId'),
-          initialValue: '',
-          validator: (value) {
-            final accountType = Formix.controllerOf(
-              context,
-            )?.getValue(FormixFieldID<String>('accountType'));
-            if (accountType == 'business' && (value?.isEmpty ?? true)) {
-              return 'Tax ID is required for business accounts';
-            }
-            return null;
-          },
-        ),
-        FormixFieldConfig<String>(
-          id: FormixFieldID<String>('firstName'),
+          id: firstNameField,
           initialValue: '',
           validator: (value) {
             if (value == null || value.isEmpty) return 'First name is required';
@@ -77,42 +62,17 @@ class _ConditionalFormExampleContentState
           },
         ),
         FormixFieldConfig<String>(
-          id: FormixFieldID<String>('lastName'),
+          id: lastNameField,
           initialValue: '',
           validator: (value) {
             if (value == null || value.isEmpty) return 'Last name is required';
             return null;
           },
         ),
-        FormixFieldConfig<bool>(
-          id: FormixFieldID<bool>('hasNewsletter'),
-          initialValue: false,
-        ),
+        FormixFieldConfig<bool>(id: hasNewsletterField, initialValue: false),
         FormixFieldConfig<String>(
-          id: FormixFieldID<String>('newsletterFrequency'),
-          initialValue: 'weekly',
-        ),
-        FormixFieldConfig<String>(
-          id: FormixFieldID<String>('contactMethod'),
+          id: contactMethodField,
           initialValue: 'email',
-        ),
-        FormixFieldConfig<String>(
-          id: FormixFieldID<String>('phoneNumber'),
-          initialValue: '',
-          validator: (value) {
-            final contactMethod = Formix.controllerOf(
-              context,
-            )?.getValue(FormixFieldID<String>('contactMethod'));
-            if ((contactMethod == 'phone' || contactMethod == 'sms') &&
-                (value?.isEmpty ?? true)) {
-              return 'Phone number is required for ${contactMethod == 'phone' ? 'phone' : 'SMS'} contact';
-            }
-            return null;
-          },
-        ),
-        FormixFieldConfig<String>(
-          id: FormixFieldID<String>('preferredTime'),
-          initialValue: 'morning',
         ),
       ],
       child: SingleChildScrollView(
@@ -135,7 +95,7 @@ class _ConditionalFormExampleContentState
             const Text('Account Type'),
             const SizedBox(height: 8),
             FormixDropdownFormField<String>(
-              fieldId: FormixFieldID<String>('accountType'),
+              fieldId: accountTypeField,
               items: const [
                 DropdownMenuItem(
                   value: 'personal',
@@ -152,41 +112,67 @@ class _ConditionalFormExampleContentState
             ),
             const SizedBox(height: 16),
 
-            // Conditional Business Fields
+            // Conditional Business Fields using FormixSection
             Consumer(
               builder: (context, ref, child) {
                 final accountType = ref.watch(
-                  fieldValueProvider(FormixFieldID<String>('accountType')),
+                  fieldValueProvider(accountTypeField),
                 );
                 if (accountType == 'business') {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Business Information',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w500,
-                        ),
+                  return FormixSection(
+                    key: const ValueKey('business_section'),
+                    keepAlive: false, // Drop state when switched to personal
+                    fields: [
+                      FormixFieldConfig<String>(
+                        id: companyNameField,
+                        initialValue: '',
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Company name is required';
+                          }
+                          return null;
+                        },
                       ),
-                      const SizedBox(height: 8),
-                      FormixTextFormField(
-                        fieldId: FormixFieldID<String>('companyName'),
-                        decoration: const InputDecoration(
-                          labelText: 'Company Name',
-                          prefixIcon: Icon(Icons.business_center),
-                        ),
+                      FormixFieldConfig<String>(
+                        id: taxIdField,
+                        initialValue: '',
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Tax ID is required';
+                          }
+                          return null;
+                        },
                       ),
-                      const SizedBox(height: 16),
-                      FormixTextFormField(
-                        fieldId: FormixFieldID<String>('taxId'),
-                        decoration: const InputDecoration(
-                          labelText: 'Tax ID',
-                          prefixIcon: Icon(Icons.account_balance),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
                     ],
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Business Information',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const FormixTextFormField(
+                          fieldId: companyNameField,
+                          decoration: InputDecoration(
+                            labelText: 'Company Name',
+                            prefixIcon: Icon(Icons.business_center),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        const FormixTextFormField(
+                          fieldId: taxIdField,
+                          decoration: InputDecoration(
+                            labelText: 'Tax ID',
+                            prefixIcon: Icon(Icons.account_balance),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                    ),
                   );
                 }
                 return const SizedBox.shrink();
@@ -199,17 +185,17 @@ class _ConditionalFormExampleContentState
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 8),
-            FormixTextFormField(
-              fieldId: FormixFieldID<String>('firstName'),
-              decoration: const InputDecoration(
+            const FormixTextFormField(
+              fieldId: firstNameField,
+              decoration: InputDecoration(
                 labelText: 'First Name',
                 prefixIcon: Icon(Icons.person),
               ),
             ),
             const SizedBox(height: 16),
-            FormixTextFormField(
-              fieldId: FormixFieldID<String>('lastName'),
-              decoration: const InputDecoration(
+            const FormixTextFormField(
+              fieldId: lastNameField,
+              decoration: InputDecoration(
                 labelText: 'Last Name',
                 prefixIcon: Icon(Icons.person_outline),
               ),
@@ -217,9 +203,9 @@ class _ConditionalFormExampleContentState
             const SizedBox(height: 16),
 
             // Newsletter Subscription
-            FormixCheckboxFormField(
-              fieldId: FormixFieldID<bool>('hasNewsletter'),
-              title: const Text('Subscribe to newsletter'),
+            const FormixCheckboxFormField(
+              fieldId: hasNewsletterField,
+              title: Text('Subscribe to newsletter'),
             ),
             const SizedBox(height: 16),
 
@@ -227,36 +213,46 @@ class _ConditionalFormExampleContentState
             Consumer(
               builder: (context, ref, child) {
                 final hasNewsletter = ref.watch(
-                  fieldValueProvider(FormixFieldID<bool>('hasNewsletter')),
+                  fieldValueProvider(hasNewsletterField),
                 );
                 if (hasNewsletter == true) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('Newsletter Frequency'),
-                      const SizedBox(height: 8),
-                      FormixDropdownFormField<String>(
-                        fieldId: FormixFieldID<String>('newsletterFrequency'),
-                        items: const [
-                          DropdownMenuItem(
-                            value: 'daily',
-                            child: Text('Daily'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'weekly',
-                            child: Text('Weekly'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'monthly',
-                            child: Text('Monthly'),
-                          ),
-                        ],
-                        decoration: const InputDecoration(
-                          prefixIcon: Icon(Icons.schedule),
-                        ),
+                  return FormixSection(
+                    key: const ValueKey('newsletter_section'),
+                    keepAlive: false,
+                    fields: [
+                      FormixFieldConfig<String>(
+                        id: newsletterFrequencyField,
+                        initialValue: 'weekly',
                       ),
-                      const SizedBox(height: 16),
                     ],
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Newsletter Frequency'),
+                        const SizedBox(height: 8),
+                        const FormixDropdownFormField<String>(
+                          fieldId: newsletterFrequencyField,
+                          items: [
+                            DropdownMenuItem(
+                              value: 'daily',
+                              child: Text('Daily'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'weekly',
+                              child: Text('Weekly'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'monthly',
+                              child: Text('Monthly'),
+                            ),
+                          ],
+                          decoration: InputDecoration(
+                            prefixIcon: Icon(Icons.schedule),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                    ),
                   );
                 }
                 return const SizedBox.shrink();
@@ -266,16 +262,15 @@ class _ConditionalFormExampleContentState
             // Contact Method
             const Text('Preferred Contact Method'),
             const SizedBox(height: 8),
-            FormixDropdownFormField<String>(
-              fieldId: FormixFieldID<String>('contactMethod'),
-              items: const [
+            const FormixDropdownFormField<String>(
+              key: ValueKey('contactMethodField'),
+              fieldId: contactMethodField,
+              items: [
                 DropdownMenuItem(value: 'email', child: Text('Email')),
                 DropdownMenuItem(value: 'phone', child: Text('Phone')),
                 DropdownMenuItem(value: 'sms', child: Text('SMS')),
               ],
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.contact_mail),
-              ),
+              decoration: InputDecoration(prefixIcon: Icon(Icons.contact_mail)),
             ),
             const SizedBox(height: 16),
 
@@ -283,49 +278,77 @@ class _ConditionalFormExampleContentState
             Consumer(
               builder: (context, ref, child) {
                 final contactMethod = ref.watch(
-                  fieldValueProvider(FormixFieldID<String>('contactMethod')),
+                  fieldValueProvider(contactMethodField),
                 );
                 if (contactMethod == 'phone' || contactMethod == 'sms') {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      FormixTextFormField(
-                        fieldId: FormixFieldID<String>('phoneNumber'),
-                        decoration: const InputDecoration(
-                          labelText: 'Phone Number',
-                          prefixIcon: Icon(Icons.phone),
-                        ),
-                        keyboardType: TextInputType.phone,
-                      ),
-                      const SizedBox(height: 16),
+                  // Dynamic fields dependent on contact method
+                  final phoneFields = [
+                    FormixFieldConfig<String>(
+                      id: phoneNumberField,
+                      initialValue: '',
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Phone number is required';
+                        }
+                        return null;
+                      },
+                    ),
+                  ];
 
-                      // Conditional Preferred Time (only for phone calls)
-                      if (contactMethod == 'phone') ...[
-                        const Text('Preferred Call Time'),
-                        const SizedBox(height: 8),
-                        FormixDropdownFormField<String>(
-                          fieldId: FormixFieldID<String>('preferredTime'),
-                          items: const [
-                            DropdownMenuItem(
-                              value: 'morning',
-                              child: Text('Morning (9 AM - 12 PM)'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'afternoon',
-                              child: Text('Afternoon (12 PM - 5 PM)'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'evening',
-                              child: Text('Evening (5 PM - 9 PM)'),
-                            ),
-                          ],
-                          decoration: const InputDecoration(
-                            prefixIcon: Icon(Icons.access_time),
+                  if (contactMethod == 'phone') {
+                    phoneFields.add(
+                      FormixFieldConfig<String>(
+                        id: preferredTimeField,
+                        initialValue: 'morning',
+                      ),
+                    );
+                  }
+
+                  return FormixSection(
+                    key: ValueKey('contact_${contactMethod}_section'),
+                    keepAlive: false,
+                    fields: phoneFields,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const FormixTextFormField(
+                          fieldId: phoneNumberField,
+                          decoration: InputDecoration(
+                            labelText: 'Phone Number',
+                            prefixIcon: Icon(Icons.phone),
                           ),
+                          keyboardType: TextInputType.phone,
                         ),
                         const SizedBox(height: 16),
+
+                        // Conditional Preferred Time (only for phone calls)
+                        if (contactMethod == 'phone') ...[
+                          const Text('Preferred Call Time'),
+                          const SizedBox(height: 8),
+                          const FormixDropdownFormField<String>(
+                            fieldId: preferredTimeField,
+                            items: [
+                              DropdownMenuItem(
+                                value: 'morning',
+                                child: Text('Morning (9 AM - 12 PM)'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'afternoon',
+                                child: Text('Afternoon (12 PM - 5 PM)'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'evening',
+                                child: Text('Evening (5 PM - 9 PM)'),
+                              ),
+                            ],
+                            decoration: InputDecoration(
+                              prefixIcon: Icon(Icons.access_time),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
                       ],
-                    ],
+                    ),
                   );
                 }
                 return const SizedBox.shrink();
@@ -338,46 +361,54 @@ class _ConditionalFormExampleContentState
 
             Consumer(
               builder: (context, ref, child) {
-                final controllerProvider = Formix.of(context)!;
-                ref.read(controllerProvider.notifier);
-                final formState = ref.watch(controllerProvider);
+                final provider = Formix.of(context)!;
+                final controller = ref.read(provider.notifier);
+                // Watch state to trigger rebuilds
+                ref.watch(provider);
 
                 return ElevatedButton(
                   onPressed: () {
-                    final values = formState.values;
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Form Values'),
-                        content: SingleChildScrollView(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: values.entries.map((entry) {
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 4,
-                                ),
-                                child: Text('${entry.key}: ${entry.value}'),
-                              );
-                            }).toList(),
-                          ),
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            child: const Text('OK'),
-                          ),
-                        ],
-                      ),
-                    );
+                    // Try to validate first
+                    if (controller.validate()) {
+                      _showValues(context, controller.values);
+                    } else {
+                      // Validation failed, errors should show
+                      debugPrint('Validation failed: ${controller.errors}');
+                    }
                   },
-                  child: const Text('Show Form Values'),
+                  child: const Text('Submit'),
                 );
               },
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showValues(BuildContext context, Map<String, dynamic> values) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Form Values'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: values.entries.map((entry) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Text('${entry.key}: ${entry.value}'),
+              );
+            }).toList(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
       ),
     );
   }

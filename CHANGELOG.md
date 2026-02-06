@@ -21,6 +21,9 @@
   - Added `initialData` parameter to `Formix` widget and `FormixController` for restoring form state on initialization.
   - Optimized `FormixParameter` identity to exclude `initialData`, preventing unnecessary provider recreation.
   - Full test coverage with unit tests and golden snapshot tests demonstrating restoration in real-world scenarios.
+- **Improved Documentation**:
+  - Added "Conditional Fields" guide to README explaining usage of `FormixSection` with `keepAlive: false` for dynamic forms.
+  - Added comprehensive `ConditionalFormExample` in example app showing real-world dynamic field patterns.
 
 ### 🛠️ Core Improvements & Bug Fixes
 - **Robust Count Tracking**:

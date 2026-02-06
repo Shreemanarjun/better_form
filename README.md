@@ -23,6 +23,7 @@ Powered by Riverpod, Formix delivers lightning-fast performance, zero boilerplat
 - [🎮 Usage Guide](#-usage-guide)
     - [Basic Login Form](#basic-login-form)
     - [Using Dropdowns & Checkboxes](#using-dropdowns--checkboxes)
+    - [Conditional Fields](#conditional-fields)
 - [🎮 Core Concepts](#-core-concepts)
 - [🧱 Widget Reference](#-widget-reference)
     - [Standard Fields](#standard-fields)
@@ -155,6 +156,37 @@ FormixCheckboxFormField(
   title: Text('I agree to terms'),
   validator: (val) => val == true ? null : 'Required',
 ),
+```
+
+### Conditional Fields
+Formix makes it easy to show or hide fields based on other values. Use **`FormixSection`** with `keepAlive: false` to ensure that data is automatically cleared from the form state when fields are hidden.
+
+```dart
+FormixBuilder(
+  builder: (context, scope) {
+    // 1. Watch the controlling field
+    final type = scope.watchValue<String>(accountTypeField);
+
+    // 2. Conditionally render
+    if (type == 'business') {
+      return FormixSection(
+        // 3. Drop state when removed from the tree
+        keepAlive: false,
+        child: Column(
+          children: [
+            FormixTextFormField(
+              fieldId: companyNameField,
+              decoration: InputDecoration(labelText: 'Company Name'),
+              validator: (v) => v!.isEmpty ? 'Required' : null,
+            ),
+            FormixTextFormField(fieldId: taxIdField),
+          ],
+        ),
+      );
+    }
+    return SizedBox.shrink();
+  },
+)
 ```
 
 ### Async Data & Dependent Dropdowns
