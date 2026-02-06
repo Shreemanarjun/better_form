@@ -246,9 +246,9 @@ class _RestorationTestFormState extends State<RestorationTestForm> with Restorat
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
               ),
               const SizedBox(height: 24),
-              FormixTextFormField(
+              const FormixTextFormField(
                 fieldId: nameField,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Name',
                   hintText: 'Enter your name',
                   border: OutlineInputBorder(),

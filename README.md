@@ -728,17 +728,80 @@ class MyFormPersistence extends FormixPersistence {
 ```
 
 #### Native State Restoration
-`FormixData` and `ValidationResult` provide `toMap()` and `fromMap()` for clean integration with `RestorationMixin`.
+Formix provides first-class support for Flutter's native state restoration system, allowing your forms to survive app restarts and process death.
 
+**Key Features:**
+- `RestorableFormixData` class for seamless `RestorationMixin` integration
+- Complete state serialization including values, validations, and metadata
+- Automatic restoration of dirty, touched, and pending states
+- Type-safe serialization with `toMap()` and `fromMap()`
+
+**Basic Example:**
 ```dart
-class _MyState extends State<MyForm> with RestorationMixin {
+class _MyFormState extends State<MyForm> with RestorationMixin {
   final RestorableFormixData _formData = RestorableFormixData();
+
+  @override
+  String? get restorationId => 'my_form';
 
   @override
   void restoreState(RestorationBucket? oldBucket, bool initialRestore) {
     registerForRestoration(_formData, 'form_state');
   }
+
+  @override
+  void dispose() {
+    _formData.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Formix(
+      formId: 'my_form',
+      initialData: _formData.value, // Restore form state
+      onChangedData: (data) {
+        setState(() {
+          _formData.value = data; // Save state changes
+        });
+      },
+      child: Column(
+        children: [
+          FormixTextFormField(fieldId: nameField),
+          FormixTextFormField(fieldId: emailField),
+        ],
+      ),
+    );
+  }
 }
+```
+
+**What Gets Restored:**
+- ✅ All field values (with type preservation)
+- ✅ Validation states and error messages
+- ✅ Dirty, touched, and pending states
+- ✅ Form metadata (isSubmitting, resetCount, currentStep)
+- ✅ Calculated counts (errorCount, dirtyCount, pendingCount)
+
+**Manual Serialization:**
+If you need custom persistence logic, you can use the serialization methods directly:
+
+```dart
+// Serialize form state
+final formData = controller.state;
+final map = formData.toMap();
+await storage.save('form_backup', jsonEncode(map));
+
+// Restore form state
+final json = await storage.load('form_backup');
+final map = jsonDecode(json);
+final restoredData = FormixData.fromMap(map);
+
+// Use restored data
+Formix(
+  initialData: restoredData,
+  // ...
+)
 ```
 
 ### Undo/Redo

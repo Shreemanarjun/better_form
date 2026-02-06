@@ -9,8 +9,18 @@
   - Added `SliverFormixArray` for high-performance dynamic lists inside `CustomScrollView`.
 - **Adaptive Support**:
   - Introduced `FormixAdaptiveTextFormField` for automatic switching between Material and Cupertino styling based on the platform.
-- **State Restoration Optimizations**:
-  - Added `toMap()` and `fromMap()` to `FormixData` and `ValidationResult` for easier persistence and integration with `RestorationMixin`.
+- **Native State Restoration**:
+  - Introduced `RestorableFormixData` class that extends `RestorableValue<FormixData>` for seamless integration with Flutter's `RestorationMixin`.
+  - Added comprehensive `toMap()` and `fromMap()` methods to `FormixData` for complete state serialization including:
+    - All field values (preserving types)
+    - Validation states and error messages
+    - Dirty, touched, and pending states
+    - Form metadata (isSubmitting, resetCount, currentStep)
+    - Calculated counts (errorCount, dirtyCount, pendingCount)
+  - Added `toMap()` and `fromMap()` to `ValidationResult` for proper validation state persistence.
+  - Added `initialData` parameter to `Formix` widget and `FormixController` for restoring form state on initialization.
+  - Optimized `FormixParameter` identity to exclude `initialData`, preventing unnecessary provider recreation.
+  - Full test coverage with unit tests and golden snapshot tests demonstrating restoration in real-world scenarios.
 
 ### 🛠️ Core Improvements & Bug Fixes
 - **Robust Count Tracking**:
