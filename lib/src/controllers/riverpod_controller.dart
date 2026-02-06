@@ -1898,6 +1898,11 @@ class FormixParameter {
 
   @override
   int get hashCode => formId.hashCode ^ namespace.hashCode ^ autovalidateMode.hashCode ^ (formId == null ? const MapEquality().hash(initialValue) : 0);
+
+  @override
+  String toString() {
+    return 'FormixParameter(formId: $formId, namespace: $namespace, keepAlive: $keepAlive, autovalidateMode: $autovalidateMode, initialValue: $initialValue)';
+  }
 }
 
 /// Provider for form controller with auto-disposal
