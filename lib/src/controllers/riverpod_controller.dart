@@ -260,8 +260,9 @@ class RiverpodFormController extends StateNotifier<FormixData> {
     this.analytics,
     String? namespace,
     this.autovalidateMode = FormixAutovalidateMode.always,
+    FormixData? initialData,
   }) : _registeredDevToolsId = formId ?? namespace,
-       super(_createInitialState(initialValue, fields, autovalidateMode)) {
+       super(initialData ?? _createInitialState(initialValue, fields, autovalidateMode)) {
     _startTime = DateTime.now();
     analytics?.onFormStarted(formId);
     initialValueMap.addAll(initialValue);
@@ -1919,6 +1920,7 @@ class FormixParameter {
     this.keepAlive = false,
     this.namespace,
     this.autovalidateMode = FormixAutovalidateMode.always,
+    this.initialData,
   });
 
   /// Initial values for the form fields.
@@ -1944,6 +1946,9 @@ class FormixParameter {
 
   /// Global validation mode for the form.
   final FormixAutovalidateMode autovalidateMode;
+
+  /// Optional initial state for the form.
+  final FormixData? initialData;
 
   @override
   bool operator ==(Object other) =>
@@ -1975,6 +1980,7 @@ final formControllerProvider = StateNotifierProvider.autoDispose.family<FormixCo
     analytics: param.analytics,
     namespace: param.namespace,
     autovalidateMode: param.autovalidateMode,
+    initialData: param.initialData,
   );
 }, name: 'formControllerProvider');
 

@@ -48,10 +48,12 @@ class Formix extends ConsumerStatefulWidget {
     this.persistence,
     this.formId,
     this.onChanged,
+    this.onChangedData,
     this.analytics,
     this.keepAlive = false,
     this.autovalidateMode = FormixAutovalidateMode.always,
     this.theme,
+    this.initialData,
     required this.child,
   });
 
@@ -76,6 +78,9 @@ class Formix extends ConsumerStatefulWidget {
   /// Callback triggered whenever any value in the form changes.
   final void Function(Map<String, dynamic> values)? onChanged;
 
+  /// Callback triggered whenever the entire form data changes.
+  final void Function(FormixData data)? onChangedData;
+
   /// If true, prevents the form provider from being auto-disposed when the
   /// widget is unmounted. Useful for multi-step forms where you want to
   /// preserve data across navigation.
@@ -86,6 +91,9 @@ class Formix extends ConsumerStatefulWidget {
 
   /// Optional visual theme for the form fields.
   final FormixThemeData? theme;
+
+  /// Optional initial state for the form.
+  final FormixData? initialData;
 
   /// The widget subtree.
   final Widget child;
@@ -130,6 +138,7 @@ class FormixState extends ConsumerState<Formix> {
         analytics: widget.analytics,
         keepAlive: widget.keepAlive,
         autovalidateMode: widget.autovalidateMode,
+        initialData: widget.initialData,
       ),
     );
 
@@ -182,6 +191,14 @@ class FormixState extends ConsumerState<Formix> {
       ref.listen(provider.select((s) => s.values), (previous, next) {
         if (previous != next) {
           widget.onChanged!(next);
+        }
+      });
+    }
+
+    if (widget.onChangedData != null) {
+      ref.listen(provider, (previous, next) {
+        if (previous != next) {
+          widget.onChangedData!(next);
         }
       });
     }
