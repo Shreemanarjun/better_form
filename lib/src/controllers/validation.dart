@@ -38,6 +38,20 @@ class ValidationResult {
   @override
   int get hashCode => isValid.hashCode ^ errorMessage.hashCode ^ isValidating.hashCode;
 
+  /// Converts this result to a map for serialization (e.g. restoration).
+  Map<String, dynamic> toMap() => {
+    'isValid': isValid,
+    if (errorMessage != null) 'errorMessage': errorMessage,
+    'isValidating': isValidating,
+  };
+
+  /// Creates a validation result from a map.
+  factory ValidationResult.fromMap(Map<String, dynamic> map) => ValidationResult(
+    isValid: map['isValid'] as bool,
+    errorMessage: map['errorMessage'] as String?,
+    isValidating: map['isValidating'] as bool? ?? false,
+  );
+
   @override
   String toString() {
     if (isValidating) return 'ValidationResult.validating';

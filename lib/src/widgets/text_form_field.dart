@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'base_form_field.dart';
 import '../enums.dart';
+import 'form_theme.dart';
 
 /// A Formix-based text form field that is lifecycle aware.
 class FormixTextFormField extends FormixFieldWidget<String> {
@@ -221,10 +222,13 @@ class FormixTextFormFieldState extends FormixFieldWidgetState<String> with Formi
 
         final shouldShowError = (isTouched || isSubmitting || showImmediate) && !validation.isValid;
 
+        final formTheme = FormixTheme.of(context);
+
         Widget? suffixIcon;
         if (validation.isValidating) {
           suffixIcon =
               fieldWidget.loadingIcon ??
+              (formTheme.enabled ? formTheme.loadingIcon : null) ??
               const SizedBox(
                 width: 16,
                 height: 16,
@@ -234,7 +238,7 @@ class FormixTextFormFieldState extends FormixFieldWidgetState<String> with Formi
                 ),
               );
         } else if (isDirty) {
-          suffixIcon = const Icon(Icons.edit, size: 16);
+          suffixIcon = (formTheme.enabled ? formTheme.editIcon : null) ?? const Icon(Icons.edit, size: 16);
         }
 
         final formatters = [
@@ -242,14 +246,22 @@ class FormixTextFormFieldState extends FormixFieldWidgetState<String> with Formi
           ...?fieldWidget.inputFormatters,
         ];
 
+        final baseDecoration = formTheme.enabled
+            ? fieldWidget.decoration.applyDefaults(
+                formTheme.decorationTheme ?? Theme.of(context).inputDecorationTheme,
+              )
+            : fieldWidget.decoration;
+
+        final effectiveDecoration = baseDecoration.copyWith(
+          errorText: shouldShowError ? validation.errorMessage : null,
+          suffixIcon: suffixIcon,
+          helperText: validation.isValidating ? 'Validating...' : null,
+        );
+
         return TextFormField(
           controller: textController,
           focusNode: focusNode,
-          decoration: fieldWidget.decoration.copyWith(
-            errorText: shouldShowError ? validation.errorMessage : null,
-            suffixIcon: suffixIcon,
-            helperText: validation.isValidating ? 'Validating...' : null,
-          ),
+          decoration: effectiveDecoration,
           mouseCursor: fieldWidget.mouseCursor ?? (fieldWidget.readOnly ? SystemMouseCursors.basic : null),
           keyboardType: fieldWidget.keyboardType,
           maxLength: fieldWidget.maxLength,

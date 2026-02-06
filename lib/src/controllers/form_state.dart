@@ -43,6 +43,9 @@ class FormixData {
   /// If null, consumers should assume all fields might have changed.
   final Set<String>? changedFields;
 
+  /// The current step in a multi-step form (optional).
+  final int currentStep;
+
   /// Creates a new form state.
   const FormixData({
     this.values = const {},
@@ -56,6 +59,7 @@ class FormixData {
     this.dirtyCount = 0,
     this.pendingCount = 0,
     this.changedFields,
+    this.currentStep = 0,
   });
 
   /// Creates a form state and automatically calculates error, dirty and pending counts.
@@ -69,6 +73,7 @@ class FormixData {
     bool isSubmitting = false,
     int resetCount = 0,
     Set<String>? changedFields,
+    int currentStep = 0,
   }) {
     return FormixData(
       values: values,
@@ -82,6 +87,7 @@ class FormixData {
       dirtyCount: dirtyStates.values.where((d) => d).length,
       pendingCount: pendingStates.values.where((p) => p).length + validations.values.where((v) => v.isValidating).length,
       changedFields: changedFields,
+      currentStep: currentStep,
     );
   }
 
@@ -99,6 +105,7 @@ class FormixData {
     int? pendingCount,
     Set<String>? changedFields,
     bool clearChangedFields = false,
+    int? currentStep,
   }) {
     return FormixData(
       values: values ?? this.values,
@@ -112,6 +119,7 @@ class FormixData {
       dirtyCount: dirtyCount ?? this.dirtyCount,
       pendingCount: pendingCount ?? this.pendingCount,
       changedFields: clearChangedFields ? null : (changedFields ?? this.changedFields),
+      currentStep: currentStep ?? this.currentStep,
     );
   }
 
@@ -273,6 +281,37 @@ class FormixData {
       // However, we can use a simpler hash.
       values.length,
       validations.length,
+    );
+  }
+
+  /// Converts this state to a map for serialization (restoration).
+  Map<String, dynamic> toMap() => {
+    'values': values,
+    'validations': validations.map((k, v) => MapEntry(k, v.toMap())),
+    'dirtyStates': dirtyStates,
+    'touchedStates': touchedStates,
+    'pendingStates': pendingStates,
+    'isSubmitting': isSubmitting,
+    'resetCount': resetCount,
+    'currentStep': currentStep,
+  };
+
+  /// Creates a form state from a map.
+  factory FormixData.fromMap(Map<String, dynamic> map) {
+    final validationsRaw = map['validations'] as Map<String, dynamic>? ?? {};
+    final validations = validationsRaw.map(
+      (k, v) => MapEntry(k, ValidationResult.fromMap(v as Map<String, dynamic>)),
+    );
+
+    return FormixData.withCalculatedCounts(
+      values: Map<String, dynamic>.from(map['values'] as Map? ?? {}),
+      validations: validations,
+      dirtyStates: Map<String, bool>.from(map['dirtyStates'] as Map? ?? {}),
+      touchedStates: Map<String, bool>.from(map['touchedStates'] as Map? ?? {}),
+      pendingStates: Map<String, bool>.from(map['pendingStates'] as Map? ?? {}),
+      isSubmitting: map['isSubmitting'] as bool? ?? false,
+      resetCount: map['resetCount'] as int? ?? 0,
+      currentStep: map['currentStep'] as int? ?? 0,
     );
   }
 

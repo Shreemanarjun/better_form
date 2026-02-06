@@ -8,6 +8,7 @@ import '../controllers/field.dart';
 import '../controllers/riverpod_controller.dart';
 import '../persistence/form_persistence.dart';
 import '../enums.dart';
+import 'form_theme.dart';
 
 /// A form container widget that manages a [FormixController] and provides it
 /// to descendant widgets via the widget tree and Riverpod.
@@ -50,6 +51,7 @@ class Formix extends ConsumerStatefulWidget {
     this.analytics,
     this.keepAlive = false,
     this.autovalidateMode = FormixAutovalidateMode.always,
+    this.theme,
     required this.child,
   });
 
@@ -81,6 +83,9 @@ class Formix extends ConsumerStatefulWidget {
 
   /// The autovalidate mode for the form.
   final FormixAutovalidateMode autovalidateMode;
+
+  /// Optional visual theme for the form fields.
+  final FormixThemeData? theme;
 
   /// The widget subtree.
   final Widget child;
@@ -181,6 +186,17 @@ class FormixState extends ConsumerState<Formix> {
       });
     }
 
+    final content = _FieldRegistrar(
+      controllerProvider: provider,
+      fields: widget.fields,
+      child: _FormixScope(
+        controller: controllerInstance,
+        controllerProvider: provider,
+        fields: widget.fields,
+        child: widget.child,
+      ),
+    );
+
     return ProviderScope(
       overrides: [
         if (widget.controller != null) provider.overrideWith((ref) => widget.controller!),
@@ -190,16 +206,7 @@ class FormixState extends ConsumerState<Formix> {
         container: true,
         explicitChildNodes: true,
         role: SemanticsRole.form,
-        child: _FieldRegistrar(
-          controllerProvider: provider,
-          fields: widget.fields,
-          child: _FormixScope(
-            controller: controllerInstance,
-            controllerProvider: provider,
-            fields: widget.fields,
-            child: widget.child,
-          ),
-        ),
+        child: widget.theme != null ? FormixTheme(data: widget.theme!, child: content) : content,
       ),
     );
   }

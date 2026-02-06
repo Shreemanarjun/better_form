@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'base_form_field.dart';
 import '../enums.dart';
+import 'form_theme.dart';
 
 /// A Formix-based dropdown form field that is lifecycle aware.
 class FormixDropdownFormField<T> extends FormixFieldWidget<T> {
@@ -77,10 +78,13 @@ class FormixDropdownFormFieldState<T> extends FormixFieldWidgetState<T> {
         final isDirty = this.isDirty;
         final isSubmitting = controller.isSubmitting;
 
+        final formTheme = FormixTheme.of(context);
+
         Widget? suffixIcon;
         if (validation.isValidating) {
           suffixIcon =
               dropdownWidget.loadingIcon ??
+              (formTheme.enabled ? formTheme.loadingIcon : null) ??
               const SizedBox(
                 width: 16,
                 height: 16,
@@ -90,7 +94,7 @@ class FormixDropdownFormFieldState<T> extends FormixFieldWidgetState<T> {
                 ),
               );
         } else if (isDirty) {
-          suffixIcon = const Icon(Icons.edit, size: 16);
+          suffixIcon = (formTheme.enabled ? formTheme.editIcon : null) ?? const Icon(Icons.edit, size: 16);
         }
 
         final validationMode = controller.getValidationMode(widget.fieldId);
@@ -98,15 +102,23 @@ class FormixDropdownFormFieldState<T> extends FormixFieldWidgetState<T> {
 
         final shouldShowError = (isTouched || isSubmitting || showImmediate) && !validation.isValid;
 
+        final baseDecoration = formTheme.enabled
+            ? (dropdownWidget.decoration ?? const InputDecoration()).applyDefaults(
+                formTheme.decorationTheme ?? Theme.of(context).inputDecorationTheme,
+              )
+            : (dropdownWidget.decoration ?? const InputDecoration());
+
+        final effectiveDecoration = baseDecoration.copyWith(
+          errorText: shouldShowError ? validation.errorMessage : null,
+          suffixIcon: suffixIcon,
+          helperText: validation.isValidating ? 'Validating...' : null,
+        );
+
         return MergeSemantics(
           child: Semantics(
             validationResult: validation.isValid ? SemanticsValidationResult.valid : SemanticsValidationResult.invalid,
             child: InputDecorator(
-              decoration: (dropdownWidget.decoration ?? const InputDecoration()).copyWith(
-                errorText: shouldShowError ? validation.errorMessage : null,
-                suffixIcon: suffixIcon,
-                helperText: validation.isValidating ? 'Validating...' : null,
-              ),
+              decoration: effectiveDecoration,
               child: MouseRegion(
                 cursor: dropdownWidget.mouseCursor ?? MouseCursor.defer,
                 child: DropdownButtonHideUnderline(

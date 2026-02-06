@@ -264,9 +264,40 @@ FormixListener(
 Formix includes high-performance widgets out of the box:
 
 - **`FormixTextFormField`**: Full-featured text input with auto-validation and focus management.
+- **`FormixAdaptiveTextFormField`**: Automatically switches between Material and Cupertino styling based on the platform.
 - **`FormixNumberFormField<T extends num>`**: Type-safe numeric input (`int` or `double`).
 - **`FormixCheckboxFormField`**: Boolean selection.
 - **`FormixDropdownFormField<T>`**: Type-safe generic dropdown for selections.
+
+### 🎨 Theming
+Formix provides a centralized theming system to maintain visual consistency across your forms.
+
+```dart
+Formix(
+  theme: FormixThemeData(
+    decorationTheme: InputDecorationTheme(
+      border: OutlineInputBorder(),
+      filled: true,
+      fillColor: Colors.grey[100],
+    ),
+    loadingIcon: MyCustomSpinner(),
+    editIcon: Icon(Icons.edit_note),
+  ),
+  child: Column(
+    children: [
+      FormixTextFormField(fieldId: nameId), // Inherits the theme
+      FormixNumberFormField(fieldId: ageId), // Also inherits automatically
+    ],
+  ),
+)
+```
+
+| Property | Description |
+| :--- | :--- |
+| `decorationTheme` | Sets the default `InputDecorationTheme` for all fields. |
+| `loadingIcon` | Global replacement for the async validation spinner. |
+| `editIcon` | Global icon shown when a field is in a "dirty" state. |
+| `enabled` | Toggle form-wide theming on or off (defaults to `true`). |
 
 ### Form Organization
 Manage complex hierarchies and performance:
@@ -275,6 +306,7 @@ Manage complex hierarchies and performance:
 | :--- | :--- | :--- |
 | **`FormixGroup`** | Namespaces fields (e.g. `user.address`). | `FormixGroup(prefix: 'address', child: ...)` |
 | **`FormixArray<T>`** | Manage dynamic lists of inputs. | `FormixArray(id: FormixArrayID('items'), ...)` |
+| **`SliverFormixArray<T>`** | Dynamic lists for `CustomScrollView`. | `SliverFormixArray(id: FormixArrayID('items'), ...)` |
 | **`FormixSection`** | Persists data when swiping away (wizard/tabs). | `FormixSection(keepAlive: true, ...)` |
 | **`FormixFieldRegistry`** | Lazy-loads fields only when mounted. | `FormixFieldRegistry(fields: [...], ...)` |
 
@@ -676,9 +708,10 @@ FormixNavigationGuard(
 )
 ```
 
-### Persistence
-Auto-save form state to local storage (e.g., SharedPreferences).
+### Persistence & State Restoration
+Auto-save form state to local storage or support Flutter's native `RestorationMixin`.
 
+#### Standard Persistence
 ```dart
 class MyFormPersistence extends FormixPersistence {
   @override
@@ -692,13 +725,20 @@ class MyFormPersistence extends FormixPersistence {
     return str != null ? jsonDecode(str) : null;
   }
 }
+```
 
-// Usage
-Formix(
-  formId: 'user_profile',
-  persistence: MyFormPersistence(),
-  ...
-)
+#### Native State Restoration
+`FormixData` and `ValidationResult` provide `toMap()` and `fromMap()` for clean integration with `RestorationMixin`.
+
+```dart
+class _MyState extends State<MyForm> with RestorationMixin {
+  final RestorableFormixData _formData = RestorableFormixData();
+
+  @override
+  void restoreState(RestorationBucket? oldBucket, bool initialRestore) {
+    registerForRestoration(_formData, 'form_state');
+  }
+}
 ```
 
 ### Undo/Redo

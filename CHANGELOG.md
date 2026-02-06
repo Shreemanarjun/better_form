@@ -1,3 +1,27 @@
+## 0.0.8
+
+### ✨ New Features
+- **Form-Level Theming**:
+  - Introduced `FormixTheme` and `FormixThemeData` for centralized styling.
+  - Support for global `InputDecorationTheme`, `loadingIcon`, and `editIcon`.
+  - Conditional theme application via the `enabled` flag.
+- **Sliver Support**:
+  - Added `SliverFormixArray` for high-performance dynamic lists inside `CustomScrollView`.
+- **Adaptive Support**:
+  - Introduced `FormixAdaptiveTextFormField` for automatic switching between Material and Cupertino styling based on the platform.
+- **State Restoration Optimizations**:
+  - Added `toMap()` and `fromMap()` to `FormixData` and `ValidationResult` for easier persistence and integration with `RestorationMixin`.
+
+### 🛠️ Core Improvements & Bug Fixes
+- **Robust Count Tracking**:
+  - Refactored internal validation logic in `_batchUpdate` and `validate` methods to ensure atomic updates of `errorCount` and `pendingCount`.
+  - Fixed "Double Counting" bug where `errorCount` was decremented twice during transitions from "invalid" to "async validating".
+  - Fixed "Leaked Pending Count" where transitions from "validating" to "invalid" (synchronously) failed to decrement `pendingCount`.
+- **Improved validate() Behavior**:
+  - The `validate()` method now automatically marks all validated fields as **touched**. This aligns with standard Flutter behavior, ensuring error messages become visible in the UI immediately upon manual validation.
+- **State Consistency**:
+  - Enhanced `validate()` to correctly populate `changedFields`, ensuring reactive listeners and UI components are accurately notified of form-wide validation updates.
+
 ## 0.0.7
 
 ### 🛠️ Core Improvements

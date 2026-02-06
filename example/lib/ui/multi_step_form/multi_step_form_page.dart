@@ -15,7 +15,7 @@ class MultiStepFormPage extends StatefulWidget {
 }
 
 class _MultiStepFormPageState extends State<MultiStepFormPage> {
-  int _currentStep = 0;
+  // We no longer need local _currentStep state as it's managed by FormixController
 
   // GlobalKeys no longer needed as we use FormixFieldRegistry
   // final _step1Key = GlobalKey<FormixState>(); ...
@@ -130,35 +130,51 @@ class _MultiStepFormPageState extends State<MultiStepFormPage> {
   // No longer needed
   // Map<String, dynamic> _getStepData(int step) ...
 
-  // Check if current step fields are valid
-  bool _canProceedToNextStep(FormixScope scope) {
-    // In a multi-step form with lazy registry, 'scope.validate()' validates
-    // ALL currently registered fields. Since only the current step is mounted,
-    // this correctly validates only the current step!
-    return scope.validate();
-  }
-
   void _onStepContinue(FormixScope scope) {
-    if (_canProceedToNextStep(scope)) {
-      if (_currentStep < 3) {
-        setState(() => _currentStep++);
-      } else {
-        _submitForm(scope); // Pass scope to submit
+    final currentStep = scope.watchCurrentStep;
+    final List<FormixFieldConfig> currentFields;
+
+    switch (currentStep) {
+      case 0:
+        currentFields = _step1Fields;
+        break;
+      case 1:
+        currentFields = _step2Fields;
+        break;
+      case 2:
+        currentFields = _step3Fields;
+        break;
+      default:
+        currentFields = _step4Fields;
+    }
+
+    if (currentStep < 3) {
+      final success = scope.nextStep(
+        fields: currentFields.map((f) => f.id).toList(),
+      );
+      if (!success) {
+        _showErrorSnackBar();
       }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please fix validation errors before continuing'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (scope.validate()) {
+        _submitForm(scope);
+      } else {
+        _showErrorSnackBar();
+      }
     }
   }
 
-  void _onStepCancel() {
-    if (_currentStep > 0) {
-      setState(() => _currentStep--);
-    }
+  void _showErrorSnackBar() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Please fix validation errors before continuing'),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
+  void _onStepCancel(FormixScope scope) {
+    scope.previousStep();
   }
 
   void _submitForm(FormixScope scope) {
@@ -194,9 +210,7 @@ class _MultiStepFormPageState extends State<MultiStepFormPage> {
             onPressed: () {
               Navigator.pop(context);
               scope.reset(); // Reset the form
-              setState(() {
-                _currentStep = 0;
-              });
+              scope.goToStep(0);
             },
             child: const Text('Close'),
           ),
@@ -217,9 +231,10 @@ class _MultiStepFormPageState extends State<MultiStepFormPage> {
           formId: 'multi_step_wizard', // ID required for analytics tracking
           analytics: const LoggingFormixAnalytics(),
           initialValue: const {'newsletter': false, 'notifications': true},
-          child: Builder(
-            // Builder to access Formix context
-            builder: (context) {
+          child: FormixBuilder(
+            builder: (context, scope) {
+              final currentStep = scope.watchCurrentStep;
+
               return Column(
                 children: [
                   // Step indicator
@@ -233,13 +248,13 @@ class _MultiStepFormPageState extends State<MultiStepFormPage> {
                           children: [
                             CircleAvatar(
                               radius: 16,
-                              backgroundColor: _currentStep >= index
+                              backgroundColor: currentStep >= index
                                   ? Colors.blue
                                   : Colors.grey.shade300,
                               child: Text(
                                 '${index + 1}',
                                 style: TextStyle(
-                                  color: _currentStep >= index
+                                  color: currentStep >= index
                                       ? Colors.white
                                       : Colors.grey.shade600,
                                   fontWeight: FontWeight.bold,
@@ -250,7 +265,7 @@ class _MultiStepFormPageState extends State<MultiStepFormPage> {
                               Container(
                                 width: 40,
                                 height: 2,
-                                color: _currentStep > index
+                                color: currentStep > index
                                     ? Colors.blue
                                     : Colors.grey.shade300,
                               ),
@@ -268,7 +283,7 @@ class _MultiStepFormPageState extends State<MultiStepFormPage> {
                         'Address',
                         'Employment',
                         'Preferences',
-                      ][_currentStep],
+                      ][currentStep],
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                   ),
@@ -276,9 +291,7 @@ class _MultiStepFormPageState extends State<MultiStepFormPage> {
                   Expanded(
                     child: Builder(
                       builder: (context) {
-                        // We use a different key to force rebuild/cleanup when switching steps
-                        // allowing FormixFieldRegistry to do its work.
-                        switch (_currentStep) {
+                        switch (currentStep) {
                           case 0:
                             return SingleChildScrollView(
                               key: const ValueKey(0),
@@ -311,26 +324,19 @@ class _MultiStepFormPageState extends State<MultiStepFormPage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        if (_currentStep > 0)
+                        if (currentStep > 0)
                           TextButton(
                             key: const Key('back_button'),
-                            onPressed: _onStepCancel,
+                            onPressed: () => _onStepCancel(scope),
                             child: const Text('Back'),
                           )
                         else
                           const SizedBox.shrink(),
 
-                        // We can now access the single form controller here
-                        FormixBuilder(
-                          builder: (context, scope) {
-                            return ElevatedButton(
-                              key: const Key('continue_button'),
-                              onPressed: () => _onStepContinue(scope),
-                              child: Text(
-                                _currentStep == 3 ? 'Submit' : 'Continue',
-                              ),
-                            );
-                          },
+                        ElevatedButton(
+                          key: const Key('continue_button'),
+                          onPressed: () => _onStepContinue(scope),
+                          child: Text(currentStep == 3 ? 'Submit' : 'Continue'),
                         ),
                       ],
                     ),

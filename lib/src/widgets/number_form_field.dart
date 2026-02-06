@@ -3,6 +3,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'base_form_field.dart';
 import '../enums.dart';
+import 'form_theme.dart';
 
 /// A Formix-based number form field that is lifecycle aware.
 class FormixNumberFormField<T extends num> extends FormixFieldWidget<T> {
@@ -224,10 +225,13 @@ class FormixNumberFormFieldState<T extends num> extends FormixFieldWidgetState<T
 
         final shouldShowError = (isTouched || isSubmitting || showImmediate) && !validation.isValid;
 
+        final formTheme = FormixTheme.of(context);
+
         Widget? suffixIcon;
         if (validation.isValidating) {
           suffixIcon =
               fieldWidget.loadingIcon ??
+              (formTheme.enabled ? formTheme.loadingIcon : null) ??
               const SizedBox(
                 width: 16,
                 height: 16,
@@ -237,8 +241,20 @@ class FormixNumberFormFieldState<T extends num> extends FormixFieldWidgetState<T
                 ),
               );
         } else if (isDirty) {
-          suffixIcon = const Icon(Icons.edit, size: 16);
+          suffixIcon = (formTheme.enabled ? formTheme.editIcon : null) ?? const Icon(Icons.edit, size: 16);
         }
+
+        final baseDecoration = formTheme.enabled
+            ? fieldWidget.decoration.applyDefaults(
+                formTheme.decorationTheme ?? Theme.of(context).inputDecorationTheme,
+              )
+            : fieldWidget.decoration;
+
+        final effectiveDecoration = baseDecoration.copyWith(
+          errorText: shouldShowError ? validation.errorMessage : null,
+          suffixIcon: suffixIcon,
+          helperText: validation.isValidating ? 'Validating...' : null,
+        );
 
         return MergeSemantics(
           child: Semantics(
@@ -246,11 +262,7 @@ class FormixNumberFormFieldState<T extends num> extends FormixFieldWidgetState<T
             child: TextFormField(
               controller: textController,
               focusNode: focusNode,
-              decoration: fieldWidget.decoration.copyWith(
-                errorText: shouldShowError ? validation.errorMessage : null,
-                suffixIcon: suffixIcon,
-                helperText: validation.isValidating ? 'Validating...' : null,
-              ),
+              decoration: effectiveDecoration,
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
                 signed: true,

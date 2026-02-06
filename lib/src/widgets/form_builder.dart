@@ -70,6 +70,9 @@ class FormixScope {
   /// Watch if the form is currently submitting or performing async validation.
   bool get watchIsSubmitting => ref.watch(formSubmittingProvider);
 
+  /// Watch the current step in a multi-step form.
+  int get watchCurrentStep => ref.watch(formCurrentStepProvider);
+
   /// Get the current form state (watches the entire state object).
   ///
   /// WARNING: Using this will cause the widget to rebuild whenever ANY field
@@ -129,6 +132,18 @@ class FormixScope {
 
   /// Reset the form to its initial values and clear all error states.
   void reset() => controller.reset();
+
+  /// Sets the current step in a multi-step form.
+  void goToStep(int step) => controller.goToStep(step);
+
+  /// Increments the current step if the provided [fields] (or all current fields) are valid.
+  bool nextStep({List<FormixFieldID>? fields, int? targetStep}) => controller.nextStep(fields: fields, targetStep: targetStep);
+
+  /// Decrements the current step.
+  void previousStep({int? targetStep}) => controller.previousStep(targetStep: targetStep);
+
+  /// Validates a specific step by checking the validity of a list of fields.
+  bool validateStep(List<FormixFieldID> fields) => controller.validateStep(fields);
 
   /// Get current values (non-reactive). useful for submissions.
   Map<String, dynamic> get values => controller.currentState.values;

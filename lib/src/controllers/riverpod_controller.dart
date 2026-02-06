@@ -679,7 +679,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
         final effectiveValidations = newValidations ?? state.validations;
         final oldRes = effectiveValidations[key] ?? ValidationResult.valid;
 
-        final res = _performSyncValidation(
+        final syncRes = _performSyncValidation(
           key,
           val,
           validationContext?.values ?? (newValues ?? state.values),
@@ -687,9 +687,15 @@ class RiverpodFormController extends StateNotifier<FormixData> {
           validationState: validationContext,
         );
 
-        // Sync result change detection
+        final fieldDef = _fieldDefinitions[key];
+        ValidationResult finalRes = syncRes;
+        if (syncRes.isValid && fieldDef?.wrappedAsyncValidator != null) {
+          finalRes = ValidationResult.validating;
+          asyncToTrigger[key] = val;
+        }
+
         final wasValidatedInPreviousState = state.validations.containsKey(key);
-        if (oldRes != res || !wasValidatedInPreviousState) {
+        if (oldRes != finalRes || !wasValidatedInPreviousState) {
           if (newValidations == null) {
             newValidations = Map<String, ValidationResult>.from(
               state.validations,
@@ -702,40 +708,20 @@ class RiverpodFormController extends StateNotifier<FormixData> {
               touchedStates: newTouchedStates ?? state.touchedStates,
             );
           }
-          newValidations[key] = res;
+          newValidations[key] = finalRes;
 
-          if (oldRes.isValid && !res.isValid) {
+          // Update error count
+          if (oldRes.isValid && !finalRes.isValid) {
             newErrorCount++;
-          } else if (!oldRes.isValid && res.isValid) {
+          } else if (!oldRes.isValid && finalRes.isValid) {
             newErrorCount--;
           }
-        }
 
-        // Async validation logic (batched into this update)
-        if (res.isValid) {
-          final fieldDef = _fieldDefinitions[key];
-          if (fieldDef?.wrappedAsyncValidator != null) {
-            if (newValidations == null) {
-              newValidations = Map<String, ValidationResult>.from(
-                state.validations,
-              );
-              validationContext = FormixData(
-                values: newValues ?? state.values,
-                validations: newValidations,
-                dirtyStates: newDirtyStates ?? state.dirtyStates,
-                touchedStates: newTouchedStates ?? state.touchedStates,
-              );
-            }
-
-            if (!oldRes.isValidating) {
-              newValidations[key] = ValidationResult.validating;
-              newPendingCount++;
-              if (!oldRes.isValid) newErrorCount--;
-            } else {
-              // Ensure it stays validating if it already was
-              newValidations[key] = ValidationResult.validating;
-            }
-            asyncToTrigger[key] = val;
+          // Update pending count
+          if (!oldRes.isValidating && finalRes.isValidating) {
+            newPendingCount++;
+          } else if (oldRes.isValidating && !finalRes.isValidating) {
+            newPendingCount--;
           }
         }
       }
@@ -1438,8 +1424,9 @@ class RiverpodFormController extends StateNotifier<FormixData> {
     final newValidations = Map<String, ValidationResult>.from(
       state.validations,
     );
+    final newTouchedStates = Map<String, bool>.from(state.touchedStates);
     final values = state.values;
-    final keysToValidate = fields?.map((f) => f.key) ?? _fieldDefinitions.keys;
+    final keysToValidate = (fields?.map((f) => f.key) ?? _fieldDefinitions.keys).toList();
 
     int newErrorCount = state.errorCount;
     int newPendingCount = state.pendingCount;
@@ -1447,43 +1434,48 @@ class RiverpodFormController extends StateNotifier<FormixData> {
 
     for (final key in keysToValidate) {
       if (!_fieldDefinitions.containsKey(key)) continue;
+      newTouchedStates[key] = true;
       final value = values[key];
       final oldRes = newValidations[key] ?? ValidationResult.valid;
-      final res = _performSyncValidation(
+      final syncRes = _performSyncValidation(
         key,
         value,
         values,
         currentValidations: newValidations,
       );
 
-      newValidations[key] = res;
-      if (oldRes != res) {
-        if (oldRes.isValid && !res.isValid) {
-          newErrorCount++;
-        } else if (!oldRes.isValid && res.isValid) {
-          newErrorCount--;
-        }
+      final fieldDef = _fieldDefinitions[key];
+      ValidationResult finalRes = syncRes;
+      if (syncRes.isValid && fieldDef?.wrappedAsyncValidator != null) {
+        finalRes = ValidationResult.validating;
+        asyncToTrigger[key] = value;
       }
 
-      if (res.isValid) {
-        final fieldDef = _fieldDefinitions[key];
-        if (fieldDef?.wrappedAsyncValidator != null) {
-          if (!oldRes.isValidating) {
-            newValidations[key] = ValidationResult.validating;
-            newPendingCount++;
-            if (!oldRes.isValid) newErrorCount--;
-          } else {
-            newValidations[key] = ValidationResult.validating;
-          }
-          asyncToTrigger[key] = value;
+      if (oldRes != finalRes) {
+        newValidations[key] = finalRes;
+
+        // Update error count
+        if (oldRes.isValid && !finalRes.isValid) {
+          newErrorCount++;
+        } else if (!oldRes.isValid && finalRes.isValid) {
+          newErrorCount--;
+        }
+
+        // Update pending count
+        if (!oldRes.isValidating && finalRes.isValidating) {
+          newPendingCount++;
+        } else if (oldRes.isValidating && !finalRes.isValidating) {
+          newPendingCount--;
         }
       }
     }
 
     state = state.copyWith(
       validations: newValidations,
+      touchedStates: newTouchedStates,
       errorCount: newErrorCount,
       pendingCount: newPendingCount,
+      changedFields: keysToValidate.toSet(),
     );
 
     // Trigger timers after state update
@@ -1495,6 +1487,35 @@ class RiverpodFormController extends StateNotifier<FormixData> {
       return fields.every((f) => state.validations[f.key]?.isValid ?? true);
     }
     return state.isValid;
+  }
+
+  /// Sets the current step in a multi-step form.
+  void goToStep(int step) {
+    state = state.copyWith(currentStep: step);
+  }
+
+  /// Increments the current step if the provided [fields] (or all current fields) are valid.
+  ///
+  /// Returns `true` if the transition was successful.
+  bool nextStep({List<FormixFieldID>? fields, int? targetStep}) {
+    final isValid = validate(fields: fields);
+    if (isValid) {
+      state = state.copyWith(currentStep: targetStep ?? (state.currentStep + 1));
+      return true;
+    }
+    return false;
+  }
+
+  /// Decrements the current step.
+  void previousStep({int? targetStep}) {
+    state = state.copyWith(currentStep: targetStep ?? (state.currentStep - 1));
+  }
+
+  /// Validates a specific step by checking the validity of a list of fields.
+  ///
+  /// This is an alias for [validate] with specific fields.
+  bool validateStep(List<FormixFieldID> fields) {
+    return validate(fields: fields);
   }
 
   /// Sets a manual error for a specific field.
@@ -2126,6 +2147,18 @@ final fieldPendingProvider = Provider.autoDispose.family<bool, FormixFieldID<dyn
   },
   dependencies: [currentControllerProvider],
   name: 'fieldPendingProvider',
+);
+
+/// Provider for form current step with selector for performance
+final formCurrentStepProvider = Provider.autoDispose<int>(
+  (ref) {
+    final controllerProvider = ref.watch(currentControllerProvider);
+    return ref.watch(
+      controllerProvider.select((formState) => formState.currentStep),
+    );
+  },
+  dependencies: [currentControllerProvider],
+  name: 'formCurrentStepProvider',
 );
 
 /// Provider for the entire form data state.

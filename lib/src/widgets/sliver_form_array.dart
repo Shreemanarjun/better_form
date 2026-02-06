@@ -5,7 +5,10 @@ import 'form_builder.dart';
 import '../controllers/field_id.dart';
 import 'form_group.dart';
 
-/// A sliver version of [FormixArray] for better performance in [CustomScrollView].
+/// A sliver widget for managing dynamic lists of items in a form.
+///
+/// Use [SliverFormixArray] when you need to render a list of fields inside
+/// a [CustomScrollView].
 class SliverFormixArray<T> extends ConsumerWidget {
   /// Creates a sliver form array widget.
   const SliverFormixArray({
@@ -19,6 +22,9 @@ class SliverFormixArray<T> extends ConsumerWidget {
   final FormixArrayID<T> id;
 
   /// Builder function for individual items.
+  ///
+  /// Receives the [index] and a unique [itemId] that can be used for
+  /// [FormixTextFormField] or other field widgets.
   final Widget Function(
     BuildContext context,
     int index,
@@ -28,6 +34,9 @@ class SliverFormixArray<T> extends ConsumerWidget {
   itemBuilder;
 
   /// Optional builder when the array is empty.
+  ///
+  /// The returned widget will be automatically wrapped in a [SliverToBoxAdapter]
+  /// if it is not already a sliver.
   final Widget Function(BuildContext context, FormixScope scope)? emptyBuilder;
 
   @override
@@ -44,11 +53,15 @@ class SliverFormixArray<T> extends ConsumerWidget {
       controller: controller,
     );
 
+    // Resolve the array ID based on surrounding form groups
     final resolvedId = FormixGroup.resolve(context, id) as FormixArrayID<T>;
+
+    // Watch the array value reactively
     final items = scope.watchArray(resolvedId);
 
     if (items.isEmpty && emptyBuilder != null) {
-      return SliverToBoxAdapter(child: emptyBuilder!(context, scope));
+      final child = emptyBuilder!(context, scope);
+      return SliverToBoxAdapter(child: child);
     }
 
     return SliverList(

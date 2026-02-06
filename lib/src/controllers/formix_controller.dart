@@ -308,16 +308,27 @@ class FormixController extends RiverpodFormController {
     Curve curve = Curves.easeInOut,
     double alignment = 0.5,
     ScrollPositionAlignmentPolicy alignmentPolicy = ScrollPositionAlignmentPolicy.explicit,
+    ScrollController? scrollController,
   }) {
     final context = _contexts[id.key];
     if (context != null && context.mounted) {
-      Scrollable.ensureVisible(
-        context,
-        duration: duration,
-        curve: curve,
-        alignment: alignment,
-        alignmentPolicy: alignmentPolicy,
-      );
+      if (scrollController != null && scrollController.hasClients) {
+        scrollController.position.ensureVisible(
+          context.findRenderObject()!,
+          duration: duration,
+          curve: curve,
+          alignment: alignment,
+          alignmentPolicy: alignmentPolicy,
+        );
+      } else {
+        Scrollable.ensureVisible(
+          context,
+          duration: duration,
+          curve: curve,
+          alignment: alignment,
+          alignmentPolicy: alignmentPolicy,
+        );
+      }
     }
   }
 
@@ -326,20 +337,21 @@ class FormixController extends RiverpodFormController {
   void focusFirstError({
     Duration scrollDuration = const Duration(milliseconds: 300),
     Curve scrollCurve = Curves.easeInOut,
+    double alignment = 0.2, // Show field near top for better visibility
+    ScrollPositionAlignmentPolicy alignmentPolicy = ScrollPositionAlignmentPolicy.explicit,
+    ScrollController? scrollController,
   }) {
     for (final entry in state.validations.entries) {
       if (!entry.value.isValid) {
         // Scroll to the field first
-        final context = _contexts[entry.key];
-        if (context != null && context.mounted) {
-          Scrollable.ensureVisible(
-            context,
-            duration: scrollDuration,
-            curve: scrollCurve,
-            alignment: 0.2, // Show field near top for better visibility
-            alignmentPolicy: ScrollPositionAlignmentPolicy.explicit,
-          );
-        }
+        scrollToField(
+          FormixFieldID<dynamic>(entry.key),
+          duration: scrollDuration,
+          curve: scrollCurve,
+          alignment: alignment,
+          alignmentPolicy: alignmentPolicy,
+          scrollController: scrollController,
+        );
 
         // Then focus it
         _focusNodes[entry.key]?.requestFocus();

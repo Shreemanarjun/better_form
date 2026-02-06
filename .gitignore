@@ -61,3 +61,6 @@ app.*.map.json
 **/android/app/debug
 **/android/app/profile
 **/android/app/release
+example/test/goldens/*
+**/test/goldens/
+*.png
