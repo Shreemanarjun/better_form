@@ -19,3 +19,7 @@ example/devtools_options.yaml
 
 # Exclude compiled JS maps from extension
 extension/devtools/build/*.map
+
+# Exclude golden test files from the package to reduce size
+test/goldens/
+example/test/goldens/
