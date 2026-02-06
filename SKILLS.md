@@ -1,4 +1,6 @@
-# Formix AI Skill Description
+---
+description: Formix AI Skill Description
+---
 
 This document describes the **Formix** library for Flutter. Use this context to generate high-quality, type-safe, and performant form code.
 
@@ -11,25 +13,50 @@ Formix is powered by **Riverpod**. It uses a **declarative** and **type-safe** a
 ## 🔑 Key Patterns
 
 ### 1. Defining Fields
-**ALWAYS** define field IDs as static constants or top-level variables to ensure type safety.
+**Best Practice:** Define field IDs as independent `FormixFieldID`s, preferably as static constants in your widget class to separate declaration from configuration.
+
 ```dart
-static final emailField = FormixFieldID<String>('email');
-static final ageField = FormixFieldID<int>('age');
-static final termsField = FormixFieldID<bool>('terms');
+class MyForm extends StatelessWidget {
+  static const emailField = FormixFieldID<String>('email');
+  static const ageField = FormixFieldID<int>('age');
+  // ...
+}
+```
+
+**Dynamic IDs:** If a field ID depends on runtime data (e.g. inside a loop or based on props), initialize it in `initState` to avoid re-creation on every build.
+```dart
+late final FormixFieldID<List<T>> listFieldId;
+
+@override
+void initState() {
+  super.initState();
+  listFieldId = FormixFieldID<List<T>>('${widget.baseId}_list');
+}
 ```
 
 ### 2. Basic Setup
+**Best Practice:** Define field configuration (validators, initial values) as a static list in your widget class. This allows the configuration to be reused and accessed by parent widgets (e.g. for creating the `Formix` root).
+
 ```dart
-Formix(
-  // Optional: Global validation mode (default: onUserInteraction)
-  autovalidateMode: FormixAutovalidateMode.onUserInteraction,
-  initialValue: const {'email': 'test@example.com'}, // Optional global defaults
-  child: Column(
-    children: [
-      // ... fields
-    ],
-  ),
-)
+class MyForm extends StatelessWidget {
+  static const emailField = FormixFieldID<String>('email');
+
+  static List<FormixFieldConfig> get fields => [
+    FormixFieldConfig<String>(
+      id: emailField,
+      validator: (val) => val?.isEmpty ?? true ? 'Required' : null,
+    ),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    // If wrapping yourself:
+    return Formix(
+      fields: fields,
+      child: ...
+    );
+  }
+}
 ```
 
 ### 3. Validation (Fluent API)
@@ -52,7 +79,10 @@ FormixBuilder(
 
     return ElevatedButton(
       onPressed: scope.watchIsValid
-        ? () => scope.submit(onValid: (values) => print(values))
+        ? () => scope.submit(
+            // Pass controller for type-safe value retrieval
+            onValid: (_) => _onSubmit(scope.controller),
+          )
         : null,
       child: scope.watchIsSubmitting
         ? CircularProgressIndicator()
@@ -61,6 +91,48 @@ FormixBuilder(
   },
 )
 ```
+
+### 3. Submitting Forms
+
+#### Pattern A: Internal Button (Standard)
+If the button is inside the `Formix` child tree, use `FormixBuilder`.
+
+```dart
+FormixBuilder(
+  builder: (context, scope) => ElevatedButton(
+    onPressed: scope.watchIsValid ? () => scope.submit(...) : null,
+    child: ...
+  ),
+)
+```
+
+#### Pattern B: External Button (e.g. Bottom Bar)
+If the submit button (e.g. in a BottomNavigationBar) is separated from the form fields:
+1. **Lift `Formix` Up**: Wrap the common parent (like Scaffold) with `Formix`.
+2. **Access Fields**: Use the static `fields` getter from your form widget.
+3. **Use Builder**: Wrap the external button in `FormixBuilder`.
+
+```dart
+// Parent Widget (e.g. Page)
+@override
+Widget build(BuildContext context) {
+  return Formix(
+    // Reuse configuration from the child widget
+    fields: MyFormWidget.fields,
+    child: Scaffold(
+      body: MyFormWidget(), // Just the UI layout
+      bottomNavigationBar: FormixBuilder( // Access controller here
+         builder: (context, scope) => SubmitButton(onPressed: scope.submit...),
+      ),
+    ),
+  );
+}
+```
+
+**⛔️ ANTI-PATTERN: GlobalKey**
+Do **NOT** use `GlobalKey<FormixState>` to access form state. Use `FormixBuilder` or `FormixListener` instead. Using GlobalKey bypasses the reactive loop and leads to brittle code.
+
+
 
 ## 🧱 Widget Catalog
 
