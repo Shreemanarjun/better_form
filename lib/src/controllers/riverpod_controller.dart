@@ -188,7 +188,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
 
     for (final field in fields) {
       final key = field.id.key;
-      if (!values.containsKey(key)) {
+      if (field.initialValue != null || !values.containsKey(key)) {
         values[key] = field.initialValue;
       }
       dirtyStates[key] = false;
@@ -1026,13 +1026,12 @@ class RiverpodFormController extends StateNotifier<FormixData> {
     if (fields.isEmpty) return;
     _transitiveDependentsCache.clear();
 
-    final newValues = {...state.values};
-    final newValidations = {...state.validations};
-    final newDirtyStates = {...state.dirtyStates};
-    final newTouchedStates = {...state.touchedStates};
+    final isNewFieldMap = <String, bool>{};
 
     for (final field in fields) {
       final key = field.id.key;
+      final isNewField = !_fieldDefinitions.containsKey(key);
+      isNewFieldMap[key] = isNewField;
 
       // Update dependency graph: Cleanup old dependencies
       if (_fieldDefinitions.containsKey(key)) {
@@ -1066,23 +1065,49 @@ class RiverpodFormController extends StateNotifier<FormixData> {
         _dependentsMap.putIfAbsent(dep.key, () => []).add(key);
       }
 
-      if (!initialValueMap.containsKey(key)) {
-        initialValueMap[key] = field.initialValue;
+      if (isNewField || field.initialValue != null) {
+        if (field.initialValue != null || !initialValueMap.containsKey(key)) {
+          initialValueMap[key] = field.initialValue;
+        }
       }
+    }
 
-      if (!newValues.containsKey(key)) {
-        newValues[key] = field.initialValue;
-      }
-      if (!newDirtyStates.containsKey(key)) {
-        newDirtyStates[key] = false;
-      }
-      if (!newTouchedStates.containsKey(key)) {
-        newTouchedStates[key] = false;
-      }
-      final rawMode = field.validationMode;
-      final effectiveMode = rawMode == FormixAutovalidateMode.auto ? autovalidateMode : rawMode;
+    void updateState() {
+      if (!mounted) return;
 
-      if (!newValidations.containsKey(key)) {
+      final newValues = {...state.values};
+      final newValidations = {...state.validations};
+      final newDirtyStates = {...state.dirtyStates};
+      final newTouchedStates = {...state.touchedStates};
+
+      for (final field in fields) {
+        final key = field.id.key;
+        final isNewField = isNewFieldMap[key] ?? false;
+
+        // If it's a new field (or re-registering) and has an initial value,
+        // we might want to apply it.
+        // But we must respect if the user has already modified the value (dirty).
+        // If the value exists and is DIRTY, we preserve it.
+        // If the value exists and is CLEAN (or doesn't exist), we overwrite it with the new initial value.
+        // This handles both "Override Global Initial Value" (Clean Global -> Local)
+        // AND "Preserve Lazy State" (Dirty User Value -> Kept).
+        if (isNewField && field.initialValue != null) {
+          final isDirty = newDirtyStates[key] ?? false;
+          if (!newValues.containsKey(key) || !isDirty) {
+            newValues[key] = field.initialValue;
+          }
+        }
+
+        if (!newDirtyStates.containsKey(key)) {
+          newDirtyStates[key] = false;
+        }
+        if (!newTouchedStates.containsKey(key)) {
+          newTouchedStates[key] = false;
+        }
+
+        final rawMode = field.validationMode;
+        final effectiveMode = rawMode == FormixAutovalidateMode.auto ? autovalidateMode : rawMode;
+
         if (effectiveMode == FormixAutovalidateMode.always) {
           newValidations[key] = _performSyncValidation(
             key,
@@ -1092,10 +1117,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
           );
         }
       }
-    }
 
-    void updateState() {
-      if (!mounted) return;
       state = state.copyWith(
         values: newValues,
         validations: newValidations,
@@ -1126,101 +1148,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
 
   /// Register a field
   void registerField<T>(FormixField<T> field) {
-    final key = field.id.key;
-    _transitiveDependentsCache.clear();
-
-    // Update dependency graph: Cleanup old dependencies
-    if (_fieldDefinitions.containsKey(key)) {
-      final oldField = _fieldDefinitions[key]!;
-      for (final dep in oldField.dependsOn) {
-        _dependentsMap[dep.key]?.remove(key);
-      }
-    }
-
-    _validationDurations[key] = Duration.zero;
-
-    _fieldDefinitions[key] = FormixField<dynamic>(
-      id: FormixFieldID<dynamic>(field.id.key),
-      initialValue: field.initialValue,
-      validator: field.wrappedValidator,
-      label: field.label,
-      hint: field.hint,
-      transformer: field.wrappedTransformer != null ? (dynamic val) => field.wrappedTransformer!(val) : null,
-      asyncValidator: field.wrappedAsyncValidator,
-      debounceDuration: field.debounceDuration,
-      validationMode: field.validationMode,
-      crossFieldValidator: field.wrappedCrossFieldValidator,
-      dependsOn: field.dependsOn,
-      inputFormatters: field.inputFormatters,
-      textInputAction: field.textInputAction,
-      onSubmitted: field.onSubmitted,
-    );
-
-    // Update dependency graph: Add new dependencies
-    for (final dep in field.dependsOn) {
-      _dependentsMap.putIfAbsent(dep.key, () => []).add(key);
-    }
-
-    if (!initialValueMap.containsKey(key)) {
-      initialValueMap[key] = field.initialValue;
-    }
-
-    void updateState() {
-      if (!mounted) return;
-
-      final currentValues = {...state.values};
-      final currentValidations = {...state.validations};
-      final currentDirtyStates = {...state.dirtyStates};
-      final currentTouchedStates = {...state.touchedStates};
-
-      if (!currentValues.containsKey(key)) {
-        currentValues[key] = field.initialValue;
-      }
-      if (!currentDirtyStates.containsKey(key)) {
-        currentDirtyStates[key] = false;
-      }
-      if (!currentTouchedStates.containsKey(key)) {
-        currentTouchedStates[key] = false;
-      }
-
-      final rawMode = field.validationMode;
-      final effectiveMode = rawMode == FormixAutovalidateMode.auto ? autovalidateMode : rawMode;
-
-      if (effectiveMode == FormixAutovalidateMode.always) {
-        currentValidations[key] = _performSyncValidation(
-          key,
-          currentValues[key],
-          currentValues,
-          currentValidations: currentValidations,
-        );
-      }
-
-      state = state.copyWith(
-        values: currentValues,
-        validations: currentValidations,
-        dirtyStates: currentDirtyStates,
-        touchedStates: currentTouchedStates,
-        errorCount: _calculateErrorCount(currentValidations),
-        dirtyCount: _calculateDirtyCount(currentDirtyStates),
-        pendingCount: _calculatePendingCount(
-          state.pendingStates,
-          currentValidations,
-        ),
-        changedFields: {key},
-      );
-    }
-
-    bool isPersistent = false;
-    try {
-      final scheduler = WidgetsBinding.instance;
-      isPersistent = scheduler.schedulerPhase == SchedulerPhase.persistentCallbacks;
-    } catch (_) {}
-
-    if (isPersistent && _history.isNotEmpty) {
-      Future.microtask(updateState);
-    } else {
-      updateState();
-    }
+    registerFields([field]);
   }
 
   /// Unregister multiple fields at once

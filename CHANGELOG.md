@@ -1,3 +1,10 @@
+## 0.0.9
+
+### 🛠️ Core Improvements & Fixes
+- **Initial Value Override**: Fixed logic to correctly prioritize field-level `initialValue` over global form default values. This ensures that explicitly configured fields (e.g., in `FormixTextFormField`) always retain their specific initial values.
+- **Lazy Step State Preservation**: Fixed a critical issue where re-registering a field (such as waking a lazy step in a wizard) would overwrite user-entered data with the initial value. Now, `Formix` intelligently preserves "dirty" (user-modified) values while still applying initial values to "clean" fields.
+- **Race Condition Fix**: Resolved a race condition in `registerFields` where rapid field registrations could lead to lost validation state updates. The state calculation is now encapsulated within the update closure for reliable sequential execution.
+
 ## 0.0.8
 
 ### ✨ New Features

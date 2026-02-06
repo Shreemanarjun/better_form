@@ -384,12 +384,10 @@ void main() {
                 fields: [
                   FormixFieldConfig<String>(
                     id: nameField,
-                    initialValue: '',
                     validator: (value) => (value?.isEmpty ?? true) ? 'Required' : null,
                   ),
                   FormixFieldConfig<String>(
                     id: emailField,
-                    initialValue: '',
                     validator: (value) => (value?.contains('@') ?? false) ? null : 'Invalid',
                   ),
                 ],

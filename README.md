@@ -296,148 +296,45 @@ FormixListener(
 Formix includes high-performance widgets out of the box:
 
 - **`FormixTextFormField`**: Full-featured text input with auto-validation and focus management.
-- **`FormixAdaptiveTextFormField`**: Automatically switches between Material and Cupertino styling based on the platform.
-- **`FormixNumberFormField<T extends num>`**: Type-safe numeric input (`int` or `double`).
-- **`FormixCheckboxFormField`**: Boolean selection.
-- **`FormixDropdownFormField<T>`**: Type-safe generic dropdown for selections.
+- **`FormixNumberFormField<T>`**: Type-safe numeric input (`int` or `double`).
+- **`FormixCheckboxFormField`**: Boolean selection with label.
+- **`FormixDropdownFormField<T>`**: Generic dropdown for selections.
+- **`FormixCupertinoTextFormField`**: iOS-style text input.
+- **`FormixAdaptiveTextFormField`**: Auto-switches between Material/Cupertino based on platform.
 
-### 🎨 Theming
-Formix provides a centralized theming system to maintain visual consistency across your forms.
+### Layout & Logic
+- **`FormixSection`**: Group fields. Use `keepAlive: false` to clear data when hidden (e.g. specialized steps).
+- **`FormixGroup`**: Namespaces fields (e.g. `user.address` -> `{user: {address: ...}}`).
+- **`FormixArray<T>`**: Manage dynamic lists (add/remove items).
+- **`SliverFormixArray<T>`**: Dynamic lists optimized for `CustomScrollView`.
+- **`FormixFieldRegistry`**: Lazily registers fields (vital for PageViews/Tabs).
 
-```dart
-Formix(
-  theme: FormixThemeData(
-    decorationTheme: InputDecorationTheme(
-      border: OutlineInputBorder(),
-      filled: true,
-      fillColor: Colors.grey[100],
-    ),
-    loadingIcon: MyCustomSpinner(),
-    editIcon: Icon(Icons.edit_note),
-  ),
-  child: Column(
-    children: [
-      FormixTextFormField(fieldId: nameId), // Inherits the theme
-      FormixNumberFormField(fieldId: ageId), // Also inherits automatically
-    ],
-  ),
-)
-```
+### Reactive & Transformers
+- **`FormixBuilder`**: Access `FormixScope` for reactive UI (isSubmitting, isValid).
+- **`FormixListener`**: Execute side effects (navigation, snackbars) on state change.
+- **`FormixFormStatus`**: Debug dashboard showing dirty/error counts.
+- **`FormixFieldSelector<T>`**: High-performance widget that rebuilding ONLY when specific field properties change (value, valid, dirty).
+- **`FormixFieldValueSelector<T>`**: Simplified selector that listens *only* to value changes.
+- **`FormixFieldConditionalSelector<T>`**: Rebuilds only if a custom condition is met.
+- **`FormixFieldPerformanceMonitor<T>`**: Debug tool to count rebuilds of a field.
+- **`FormixDependentField<T>`**: Rebuilds only when dependency changes.
+- **`FormixDependentAsyncField`**: Fetches async options dependent on another field (Country -> City).
+- **`FormixFieldDerivation`**: Computes value from dependencies (Qty * Price).
+- **`FormixFieldTransformer`**: Sync 1-to-1 transform (String -> Int).
+- **`FormixFieldAsyncTransformer`**: Async 1-to-1 transform (User ID -> User Profile).
 
-| Property | Description |
-| :--- | :--- |
-| `decorationTheme` | Sets the default `InputDecorationTheme` for all fields. |
-| `loadingIcon` | Global replacement for the async validation spinner. |
-| `editIcon` | Global icon shown when a field is in a "dirty" state. |
-| `enabled` | Toggle form-wide theming on or off (defaults to `true`). |
+### Headless & Custom (Raw)
+Build completely custom UI while keeping Formix state management.
+- **`FormixRawFormField<T>`**: The base headless widget.
+- **`FormixRawTextField`**: Specialized for text inputs (manages `TextEditingController`).
+- **`FormixRawStringField`**: Convenience for String-only text inputs.
+- **`FormixRawNotifierField`**: Semantic alias for optimization using `valueNotifier`.
+- **`FormixFieldWidget`**: Base class for creating reusable custom fields.
 
-### Form Organization
-Manage complex hierarchies and performance:
-
-| Widget | Purpose | Usage |
-| :--- | :--- | :--- |
-| **`FormixGroup`** | Namespaces fields (e.g. `user.address`). | `FormixGroup(prefix: 'address', child: ...)` |
-| **`FormixArray<T>`** | Manage dynamic lists of inputs. | `FormixArray(id: FormixArrayID('items'), ...)` |
-| **`SliverFormixArray<T>`** | Dynamic lists for `CustomScrollView`. | `SliverFormixArray(id: FormixArrayID('items'), ...)` |
-| **`FormixSection`** | Persists data when swiping away (wizard/tabs). | `FormixSection(keepAlive: true, ...)` |
-| **`FormixFieldRegistry`** | Lazy-loads fields only when mounted. | `FormixFieldRegistry(fields: [...], ...)` |
-
-### Reactive UI & Logic
-Make your forms "alive":
-
-- **`FormixBuilder`**: Access `FormixScope` for reactive UI components (buttons, progress bars).
-- **`FormixDependentAsyncField<T, D>`**: Manages asynchronous data fetching based on a dependency. Reduce boilerplate for parent-child relationships.
-- **`FormixDependentField<T>`**: Only rebuilds when a *specific* field changes.
-    ```dart
-    FormixDependentField<bool>(
-      fieldId: hasPetField,
-      builder: (context, hasPet) => hasPet ? PetForm() : SizedBox(),
-    )
-    ```
-- **`FormixFieldSelector`**: Fine-grained selection of field state changes (value vs validation).
-- **`FormixFieldDerivation`**: Computes values automatically from multiple dependencies (e.g., `Total = Price * Qty`).
-- **`FormixFieldTransformer`**: Type-safe 1-to-1 transformation between two fields (e.g., `String` -> `int`).
-    ```dart
-    FormixFieldTransformer<String, int>(
-      sourceField: textId,
-      targetField: lengthId,
-      transform: (text) => text?.length ?? 0,
-    )
-    ```
-- **`FormixFieldAsyncTransformer`**: Async 1-to-1 transformation with built-in debounce (e.g., fetching a user profile from an ID).
-    ```dart
-    FormixFieldAsyncTransformer<String, String>(
-      sourceField: userIdField,
-      targetField: userNameField,
-      debounce: Duration(milliseconds: 500),
-      transform: (id) async => await fetchUser(id),
-    )
-    ```
-- **`FormixFormStatus`**: Pre-built dashboard showing validity, dirty state, and submission info.
-
-### Headless & Custom Widgets
-100% UI control with zero state-management headache.
-
-#### `FormixRawFormField<T>` (Headless)
-Perfect for using third-party UI libraries or building completely custom form inputs. Provides full access to field state through `FormixFieldStateSnapshot`.
-
-**All Available Properties:**
-
-```dart
-FormixRawFormField<String>(
-  // Required properties
-  fieldId: emailField,                    // Type-safe field identifier
-  builder: (context, state) {             // Builder receives FormixFieldStateSnapshot
-    // state.value - Current field value (T?)
-    // state.validation - ValidationResult with isValid, errorMessage, isValidating
-    // state.isDirty - Whether field has been modified
-    // state.isTouched - Whether field has been blurred/touched
-    // state.isSubmitting - Whether form is currently submitting
-    // state.focusNode - FocusNode for focus management
-    // state.didChange - Callback to update value: (T?) => void
-    // state.markAsTouched - Callback to manually mark as touched
-    // state.valueNotifier - ValueNotifier<T?> for granular reactivity
-    // state.enabled - Whether field is enabled
-    // state.errorBuilder - Custom error widget builder (if provided)
-    // state.shouldShowError - Helper: true if error should be displayed
-    // state.hasError - Helper: true if validation failed
-
-    return MyCustomInput(
-      value: state.value,
-      error: state.shouldShowError ? state.validation.errorMessage : null,
-      onChanged: state.didChange,
-    );
-  },
-
-  // Optional properties
-  controller: myFormController,           // Custom FormixController instance
-  validator: FormixValidators.string()    // Synchronous validator
-    .required('Email is required')
-    .email('Invalid email format')
-    .build(),
-  initialValue: 'user@example.com',       // Initial field value
-  enabled: true,                          // Enable/disable the field
-  onChanged: (value) {                    // Callback when value changes
-    print('Email changed to: $value');
-  },
-  onSaved: (value) {                      // Callback when form is saved
-    print('Saving email: $value');
-  },
-  onReset: () {                           // Callback when field is reset
-    print('Email field reset');
-  },
-  forceErrorText: 'Custom error',         // Override validation error
-  errorBuilder: (context, error) {        // Custom error widget builder
-    return Container(
-      padding: EdgeInsets.all(8),
-      color: Colors.red.shade50,
-      child: Text(error, style: TextStyle(color: Colors.red)),
-    );
-  },
-  autovalidateMode: FormixAutovalidateMode.onUserInteraction, // Validation timing
-  restorationId: 'email_field',           // For state restoration
-)
-```
+### Utilities
+- **`FormixThemeData`**: Global styling configuration.
+- **`FormixNavigationGuard`**: Prevents accidental pops with unsaved changes.
+- **`RestorableFormixData`**: Integration with Flutter `RestorationMixin`.
 
 **Complete Real-World Example:**
 
@@ -1117,6 +1014,71 @@ FormixRawNotifierField<int>(
 
 ---
 
+## 🛠️ Advanced Features
+
+### 🌐 Internationalization (I18n)
+Formix has first-class support for localization.
+
+1. **Setup**: Add `FormixLocalizations.delegate` to your `MaterialApp`.
+    ```dart
+    localizationsDelegates: [
+      FormixLocalizations.delegate,
+      GlobalMaterialLocalizations.delegate,
+      // ...
+    ],
+    supportedLocales: [Locale('en'), Locale('es'), Locale('fr'), Locale('de'), Locale('hi'), Locale('zh')],
+    ```
+
+2. **Usage**: Access localized messages in custom validators.
+    ```dart
+    validator: (value, context) =>
+        value == null ? FormixLocalizations.of(context).required('Email') : null,
+    ```
+
+### 💾 Persistence
+Automatically save form data to disk/memory and restore it on app restart.
+
+- **Built-in Interfaces**: Implement `FormixPersistence` to connect to **SharedPreferences**, **Hive**, or a database.
+- **Auto-Restore**: Formix automatically repopulates fields when the form initializes with a matching `formId`.
+
+```dart
+Formix(
+  formId: 'onboarding_step_1', // Unique ID required
+  persistence: MyPrefsPersistence(), // Your implementation
+  child: ...
+)
+```
+
+### 📊 Analytics
+Gain insights into how users interact with your forms.
+
+Implement `FormixAnalytics` to track events like:
+- Field focus/blur (Time per field)
+- Validation errors (User friction points)
+- Abandonment (Drop-off rates)
+
+```dart
+class MyAnalytics extends FormixAnalytics {
+  @override
+  void onSubmitFailure(String? formId, Map<String, dynamic> errors) {
+    MyTracker.logEvent('form_error', {'errors': errors});
+  }
+}
+```
+
+### 🧰 DevTools
+**"It's like X-Ray vision for your forms."**
+
+Formix integrates deep into Flutter DevTools.
+- **Visual Tree**: See your form's exact structure.
+- **Live State**: Watch values, errors, and dirty flags update in real-time.
+- **Time Travel**: Undo/Redo form state changes to debug complex logic flows.
+- **Modify State**: Inject values directly from DevTools to test edge cases.
+
+*Automatically enabled in Debug mode.*
+
+---
+
 ## ⚡ Performance
 
 Formix is engineered for massive scale.
@@ -1131,13 +1093,6 @@ Formix is engineered for massive scale.
 - **Bulk Updates**: ~50ms for 1000 fields. Single frame execution for `setValues`.
 - **Dependency Scale**: **~160ms** for 100,000 dependents. Ultra-fast traversal for deep chains.
 - **Memory Efficient**: Uses **lazy-cloning** and **shared validation contexts** to minimize GC pressure and O(N) overhead during validation.
-
----
-
-## 📊 Analytics & Debugging
-
-- **Logging**: Enable `LoggingFormAnalytics` to see every value change and validation event in the console.
-- **DevTools**: The Formix DevTools extension has been completely redesigned for v0.0.5! Inspect the form state tree, visualize dependency graphs, monitor validation performance, and edit field values in real-time with a premium tabbed interface. Available now on the DevTools sidebar.
 
 ---
 
