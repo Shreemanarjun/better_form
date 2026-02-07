@@ -215,6 +215,7 @@ abstract class FormixFieldWidgetState<T> extends ConsumerState<FormixFieldWidget
     if (existingField == null ||
         widget.validator != null ||
         widget.asyncValidator != null ||
+        (widget.initialValue != null && widget.initialValue != existingField.initialValue) ||
         (widget.autovalidateMode != null && widget.autovalidateMode != existingField.validationMode)) {
       T? initialValue = widget.initialValue;
       initialValue ??= existingField?.initialValue ?? controller.initialValue[widget.fieldId.key] as T?;

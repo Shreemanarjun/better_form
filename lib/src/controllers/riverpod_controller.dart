@@ -1033,12 +1033,8 @@ class RiverpodFormController extends StateNotifier<FormixData> {
     if (fields.isEmpty) return;
     _transitiveDependentsCache.clear();
 
-    final isNewFieldMap = <String, bool>{};
-
     for (final field in fields) {
       final key = field.id.key;
-      final isNewField = !_fieldDefinitions.containsKey(key);
-      isNewFieldMap[key] = isNewField;
 
       // Update dependency graph: Cleanup old dependencies
       if (_fieldDefinitions.containsKey(key)) {
@@ -1050,6 +1046,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
 
       _validationDurations[key] = Duration.zero;
 
+      final isNew = !_fieldDefinitions.containsKey(key);
       _fieldDefinitions[key] = FormixField<dynamic>(
         id: FormixFieldID<dynamic>(field.id.key),
         initialValue: field.initialValue,
@@ -1072,7 +1069,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
         _dependentsMap.putIfAbsent(dep.key, () => []).add(key);
       }
 
-      if (isNewField || field.initialValue != null) {
+      if (isNew || field.initialValue != null) {
         if (field.initialValue != null || !initialValueMap.containsKey(key)) {
           initialValueMap[key] = field.initialValue;
         }
@@ -1089,7 +1086,6 @@ class RiverpodFormController extends StateNotifier<FormixData> {
 
       for (final field in fields) {
         final key = field.id.key;
-        final isNewField = isNewFieldMap[key] ?? false;
 
         // If it's a new field (or re-registering) and has an initial value,
         // we might want to apply it.
@@ -1098,9 +1094,10 @@ class RiverpodFormController extends StateNotifier<FormixData> {
         // If the value exists and is CLEAN (or doesn't exist), we overwrite it with the new initial value.
         // This handles both "Override Global Initial Value" (Clean Global -> Local)
         // AND "Preserve Lazy State" (Dirty User Value -> Kept).
-        if (isNewField && field.initialValue != null) {
+        if (field.initialValue != null) {
           final isDirty = newDirtyStates[key] ?? false;
-          if (!newValues.containsKey(key) || !isDirty) {
+          final currentValue = newValues[key];
+          if (!newValues.containsKey(key) || (!isDirty && currentValue == null)) {
             newValues[key] = field.initialValue;
           }
         }
