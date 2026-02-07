@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meta/meta.dart';
 
 import '../../formix.dart';
@@ -207,12 +208,19 @@ abstract class FormixFieldWidgetState<T> extends ConsumerState<FormixFieldWidget
 
   void _setupControllerSubscription() {
     _controllerSub?.close();
+    _innerProviderSub?.close();
+
+    if (widget.controller != null) {
+      _setupController(widget.controller);
+      return;
+    }
+
     try {
       _controllerSub = ref.listenManual(currentControllerProvider, (
         previous,
         next,
       ) {
-        // Close previous inner subscription
+        // Redundant closing here if we do it at start of method, but safe for stability.
         _innerProviderSub?.close();
 
         // Listen to the inner provider to keep the controller alive (especially for implicit usage)
@@ -563,6 +571,22 @@ abstract class FormixTextFormFieldWidgetState extends FormixFieldWidgetState<Str
   Widget build(BuildContext context) {
     final fieldWidget = widget as FormixTextFormFieldWidget;
 
+    // Use Riverpod watches for optimized rebuilds when using implicit controller
+    if (widget.controller == null) {
+      // Use Consumer to avoid nested selector issues
+      return Consumer(
+        builder: (context, ref, _) {
+          final validation = ref.watch(fieldValidationProvider(fieldWidget.fieldId));
+          final isTouched = ref.watch(fieldTouchedProvider(fieldWidget.fieldId));
+          final isDirty = ref.watch(fieldDirtyProvider(fieldWidget.fieldId));
+          final isSubmitting = ref.watch(formSubmittingProvider);
+
+          return _buildTextField(fieldWidget, validation, isTouched, isDirty, isSubmitting);
+        },
+      );
+    }
+
+    // Fallback for explicit controller usage
     return AnimatedBuilder(
       animation: Listenable.merge([
         controller.fieldValidationNotifier(fieldWidget.fieldId),
@@ -570,42 +594,51 @@ abstract class FormixTextFormFieldWidgetState extends FormixFieldWidgetState<Str
         controller.fieldDirtyNotifier(fieldWidget.fieldId),
         controller.isSubmittingNotifier,
       ]),
-      builder: (context, _) {
-        final validation = this.validation;
-        final isTouched = this.isTouched;
-        final isDirty = this.isDirty;
-        final isSubmitting = controller.isSubmitting;
+      builder: (context, _) => _buildTextField(
+        fieldWidget,
+        validation,
+        isTouched,
+        isDirty,
+        controller.isSubmitting,
+      ),
+    );
+  }
 
-        final shouldShowError = (isTouched || isSubmitting) && !validation.isValid;
+  Widget _buildTextField(
+    FormixTextFormFieldWidget fieldWidget,
+    ValidationResult validation,
+    bool isTouched,
+    bool isDirty,
+    bool isSubmitting,
+  ) {
+    final shouldShowError = (isTouched || isSubmitting) && !validation.isValid;
 
-        Widget? suffixIcon;
-        if (validation.isValidating) {
-          suffixIcon = const SizedBox(
-            width: 16,
-            height: 16,
-            child: Padding(
-              padding: EdgeInsets.all(4),
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-          );
-        } else if (isDirty) {
-          suffixIcon = const Icon(Icons.edit, size: 16);
-        }
+    Widget? suffixIcon;
+    if (validation.isValidating) {
+      suffixIcon = const SizedBox(
+        width: 16,
+        height: 16,
+        child: Padding(
+          padding: EdgeInsets.all(4),
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      );
+    } else if (isDirty) {
+      suffixIcon = const Icon(Icons.edit, size: 16);
+    }
 
-        return TextFormField(
-          controller: textController,
-          focusNode: focusNode,
-          decoration: fieldWidget.decoration.copyWith(
-            errorText: shouldShowError ? validation.errorMessage : null,
-            suffixIcon: suffixIcon,
-            helperText: validation.isValidating ? 'Validating...' : null,
-          ),
-          keyboardType: fieldWidget.keyboardType,
-          maxLines: fieldWidget.maxLines,
-          obscureText: fieldWidget.obscureText,
-          enabled: widget.enabled,
-        );
-      },
+    return TextFormField(
+      controller: textController,
+      focusNode: focusNode,
+      decoration: fieldWidget.decoration.copyWith(
+        errorText: shouldShowError ? validation.errorMessage : null,
+        suffixIcon: suffixIcon,
+        helperText: validation.isValidating ? 'Validating...' : null,
+      ),
+      keyboardType: fieldWidget.keyboardType,
+      maxLines: fieldWidget.maxLines,
+      obscureText: fieldWidget.obscureText,
+      enabled: widget.enabled,
     );
   }
 }
@@ -640,42 +673,73 @@ abstract class FormixNumberFormFieldWidgetState extends FormixFieldWidgetState<i
 
   @override
   Widget build(BuildContext context) {
-    final widget = this.widget as FormixNumberFormFieldWidget;
+    final fieldWidget = widget as FormixNumberFormFieldWidget;
 
+    if (widget.controller == null) {
+      // Use Consumer to avoid nested selector issues
+      return Consumer(
+        builder: (context, ref, _) {
+          final validation = ref.watch(fieldValidationProvider(fieldWidget.fieldId));
+          final isDirty = ref.watch(fieldDirtyProvider(fieldWidget.fieldId));
+          final isTouched = ref.watch(fieldTouchedProvider(fieldWidget.fieldId));
+          final isSubmitting = ref.watch(formSubmittingProvider);
+
+          return _buildNumberField(fieldWidget, validation, isDirty, isTouched, isSubmitting);
+        },
+      );
+    }
+
+    // Fallback for explicit controller
     return ValueListenableBuilder<ValidationResult>(
-      valueListenable: controller.fieldValidationNotifier(widget.fieldId),
+      valueListenable: controller.fieldValidationNotifier(fieldWidget.fieldId),
       builder: (context, validation, child) {
         return ValueListenableBuilder<bool>(
-          valueListenable: controller.fieldDirtyNotifier(widget.fieldId),
+          valueListenable: controller.fieldDirtyNotifier(fieldWidget.fieldId),
           builder: (context, isDirty, child) {
-            final shouldShowError = validation.isValidating || (controller.isFieldTouched(widget.fieldId) || controller.isSubmitting);
-
-            return TextFormField(
-              controller: textController,
-              focusNode: focusNode,
-              decoration: widget.decoration.copyWith(
-                errorText: shouldShowError && !validation.isValidating ? validation.errorMessage : null,
-                helperText: validation.isValidating ? 'Validating...' : null,
-                suffixIcon: validation.isValidating
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: Padding(
-                          padding: EdgeInsets.all(4),
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      )
-                    : isDirty
-                    ? const Icon(Icons.edit, size: 16)
-                    : null,
-              ),
-              keyboardType: TextInputType.number,
-              enabled: widget.enabled,
-              onChanged: (value) => didChange(int.tryParse(value) ?? 0),
+            return _buildNumberField(
+              fieldWidget,
+              validation,
+              isDirty,
+              controller.isFieldTouched(fieldWidget.fieldId),
+              controller.isSubmitting,
             );
           },
         );
       },
+    );
+  }
+
+  Widget _buildNumberField(
+    FormixNumberFormFieldWidget fieldWidget,
+    ValidationResult validation,
+    bool isDirty,
+    bool isTouched,
+    bool isSubmitting,
+  ) {
+    final shouldShowError = (isTouched || isSubmitting) && !validation.isValid;
+
+    return TextFormField(
+      controller: textController,
+      focusNode: focusNode,
+      decoration: fieldWidget.decoration.copyWith(
+        errorText: shouldShowError && !validation.isValidating ? validation.errorMessage : null,
+        helperText: validation.isValidating ? 'Validating...' : null,
+        suffixIcon: validation.isValidating
+            ? const SizedBox(
+                width: 16,
+                height: 16,
+                child: Padding(
+                  padding: EdgeInsets.all(4),
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              )
+            : isDirty
+            ? const Icon(Icons.edit, size: 16)
+            : null,
+      ),
+      keyboardType: TextInputType.number,
+      enabled: widget.enabled,
+      onChanged: (value) => didChange(int.tryParse(value) ?? 0),
     );
   }
 }

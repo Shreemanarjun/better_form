@@ -41,14 +41,7 @@ class FormixFieldTransformer<T, S> extends ConsumerStatefulWidget {
 
 class _FormixFieldTransformerState<T, S> extends ConsumerState<FormixFieldTransformer<T, S>> {
   FormixController? _controller;
-  late VoidCallback _listener;
   Object? _initializationError;
-
-  @override
-  void initState() {
-    super.initState();
-    _listener = _onSourceChanged;
-  }
 
   @override
   void didChangeDependencies() {
@@ -77,16 +70,9 @@ class _FormixFieldTransformerState<T, S> extends ConsumerState<FormixFieldTransf
     try {
       final newController = ref.read(provider.notifier);
       if (newController != _controller) {
-        if (_controller != null) {
-          _controller!.removeFieldListener(widget.sourceField, _listener);
-        }
-
         _controller = newController;
-        if (_controller != null) {
-          _controller!.addFieldListener(widget.sourceField, _listener);
-          // Initial transform
-          scheduleMicrotask(_transformValue);
-        }
+        // Initial transform
+        scheduleMicrotask(_transformValue);
       }
       _initializationError = null;
     } catch (e) {
@@ -98,43 +84,11 @@ class _FormixFieldTransformerState<T, S> extends ConsumerState<FormixFieldTransf
     }
   }
 
-  @override
-  void didUpdateWidget(FormixFieldTransformer<T, S> oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    if (oldWidget.sourceField != widget.sourceField) {
-      if (_controller != null) {
-        _controller!.removeFieldListener(oldWidget.sourceField, _listener);
-        _controller!.addFieldListener(widget.sourceField, _listener);
-      }
-      _transformValue();
-    } else if (oldWidget.targetField != widget.targetField) {
-      _transformValue();
-    }
-  }
-
-  @override
-  void dispose() {
-    if (_controller != null) {
-      _controller!.removeFieldListener(widget.sourceField, _listener);
-      _controller = null;
-    }
-    super.dispose();
-  }
-
-  void _onSourceChanged() {
-    if (mounted) {
-      _transformValue();
-    }
-  }
-
   void _transformValue() {
     if (!mounted || _controller == null) return;
 
     try {
       // Get source value
-      // Note: getValue returns dynamic, so we cast to T?.
-      // If T matches the field type, this is safe.
       final dynamic rawValue = _controller!.getValue(widget.sourceField);
       final T? sourceValue = rawValue as T?;
 
@@ -162,6 +116,17 @@ class _FormixFieldTransformerState<T, S> extends ConsumerState<FormixFieldTransf
   }
 
   @override
+  void didUpdateWidget(FormixFieldTransformer<T, S> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // Check if source or target field changed
+    if (oldWidget.sourceField != widget.sourceField || oldWidget.targetField != widget.targetField) {
+      // Re-transform with new fields
+      scheduleMicrotask(_transformValue);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     if (_initializationError != null) {
       return FormixConfigurationErrorWidget(
@@ -171,6 +136,10 @@ class _FormixFieldTransformerState<T, S> extends ConsumerState<FormixFieldTransf
             : 'Error: $_initializationError',
       );
     }
+
+    // Listen to source field reactively using granular selector
+    ref.listen(fieldValueProvider(widget.sourceField), (_, __) => _transformValue());
+
     return const SizedBox.shrink();
   }
 }

@@ -59,14 +59,7 @@ class FormixFieldDerivation extends ConsumerStatefulWidget {
 
 class _FormixFieldDerivationState extends ConsumerState<FormixFieldDerivation> {
   FormixController? _controller;
-  late VoidCallback _listener;
   Object? _initializationError;
-
-  @override
-  void initState() {
-    super.initState();
-    _listener = _onDependenciesChanged;
-  }
 
   @override
   void didChangeDependencies() {
@@ -95,30 +88,9 @@ class _FormixFieldDerivationState extends ConsumerState<FormixFieldDerivation> {
     try {
       final newController = ref.read(provider.notifier);
       if (newController != _controller) {
-        // Remove listeners from old controller
-        if (_controller != null) {
-          for (final fieldId in widget.dependencies) {
-            _controller!.removeFieldListener(fieldId, _listener);
-          }
-        }
-
-        // Add listeners to new controller
         _controller = newController;
-        if (_controller != null) {
-          // Ensure all dependency fields are registered
-          for (final fieldId in widget.dependencies) {
-            _ensureFieldRegistered(fieldId);
-          }
-          // Ensure target field is registered
-          _ensureFieldRegistered(widget.targetField);
-
-          for (final fieldId in widget.dependencies) {
-            _controller!.addFieldListener(fieldId, _listener);
-          }
-
-          // Initial calculation - defer to avoid calling setState during build
-          scheduleMicrotask(_recalculate);
-        }
+        // Initial calculation - defer to avoid calling setState during build
+        scheduleMicrotask(_recalculate);
       }
       _initializationError = null;
     } catch (e) {
@@ -130,55 +102,8 @@ class _FormixFieldDerivationState extends ConsumerState<FormixFieldDerivation> {
     }
   }
 
-  @override
-  void didUpdateWidget(FormixFieldDerivation oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    // If dependencies changed, update listeners
-    if (!listEquals(oldWidget.dependencies, widget.dependencies)) {
-      if (_controller != null) {
-        // Remove old listeners
-        for (final fieldId in oldWidget.dependencies) {
-          if (!widget.dependencies.contains(fieldId)) {
-            _controller!.removeFieldListener(fieldId, _listener);
-          }
-        }
-
-        // Add new listeners
-        for (final fieldId in widget.dependencies) {
-          if (!oldWidget.dependencies.contains(fieldId)) {
-            _controller!.addFieldListener(fieldId, _listener);
-          }
-        }
-      }
-
-      // Recalculate with new dependencies
-      _recalculate();
-    }
-  }
-
-  @override
-  void dispose() {
-    if (_controller != null) {
-      for (final fieldId in widget.dependencies) {
-        _controller!.removeFieldListener(fieldId, _listener);
-      }
-    }
-    super.dispose();
-  }
-
-  void _ensureFieldRegistered(FormixFieldID<dynamic> fieldId) {
-    // For derivations, we don't require pre-registration since fields may be
-    // registered later in the widget tree. The derivation will work as long
-    // as the field exists when the derivation runs.
-  }
-
-  void _onDependenciesChanged() {
-    _recalculate();
-  }
-
   void _recalculate() {
-    if (_controller == null) return;
+    if (_controller == null || !mounted) return;
 
     try {
       // Get current values of all dependencies
@@ -195,7 +120,7 @@ class _FormixFieldDerivationState extends ConsumerState<FormixFieldDerivation> {
       if (currentValue != derivedValue) {
         // Defer the update to avoid modifying provider during widget building
         scheduleMicrotask(() {
-          if (_controller != null) {
+          if (_controller != null && mounted) {
             _controller!.setValue(widget.targetField, derivedValue);
           }
         });
@@ -210,6 +135,17 @@ class _FormixFieldDerivationState extends ConsumerState<FormixFieldDerivation> {
   }
 
   @override
+  void didUpdateWidget(FormixFieldDerivation oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // Check if dependencies or target field changed
+    if (!listEquals(oldWidget.dependencies, widget.dependencies) || oldWidget.targetField != widget.targetField) {
+      // Recalculate with new dependencies
+      scheduleMicrotask(_recalculate);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     if (_initializationError != null) {
       return FormixConfigurationErrorWidget(
@@ -219,6 +155,12 @@ class _FormixFieldDerivationState extends ConsumerState<FormixFieldDerivation> {
             : 'Error: $_initializationError',
       );
     }
+
+    // Listen to each dependency reactively using granular selectors
+    for (final fieldId in widget.dependencies) {
+      ref.listen(fieldValueProvider(fieldId), (_, __) => _recalculate());
+    }
+
     // This widget doesn't render anything visible
     return const SizedBox.shrink();
   }
@@ -241,7 +183,6 @@ class FormixFieldDerivations extends ConsumerStatefulWidget {
 
 class _FormixFieldDerivationsState extends ConsumerState<FormixFieldDerivations> {
   FormixController? _controller;
-  final Map<String, VoidCallback> _listeners = {};
   Object? _initializationError;
 
   @override
@@ -271,16 +212,9 @@ class _FormixFieldDerivationsState extends ConsumerState<FormixFieldDerivations>
     try {
       final newController = ref.read(provider.notifier);
       if (newController != _controller) {
-        // Clean up old listeners
-        _removeAllListeners();
-
-        // Set up new controller
         _controller = newController;
-        if (_controller != null) {
-          _setupListeners();
-          // Initial calculations - defer to avoid calling setState during build
-          scheduleMicrotask(_recalculateAll);
-        }
+        // Initial calculations - defer to avoid calling setState during build
+        scheduleMicrotask(_recalculateAll);
       }
       _initializationError = null;
     } catch (e) {
@@ -292,58 +226,8 @@ class _FormixFieldDerivationsState extends ConsumerState<FormixFieldDerivations>
     }
   }
 
-  @override
-  void didUpdateWidget(FormixFieldDerivations oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    if (!listEquals(oldWidget.derivations, widget.derivations)) {
-      _removeAllListeners();
-      _setupListeners();
-      _recalculateAll();
-    }
-  }
-
-  @override
-  void dispose() {
-    _removeAllListeners();
-    super.dispose();
-  }
-
-  void _setupListeners() {
-    if (_controller == null) return;
-
-    void listener(FieldDerivationConfig config) => _onDerivationChanged(config);
-
-    for (final config in widget.derivations) {
-      final listenerKey = config.targetField.key;
-      _listeners[listenerKey] = () => listener(config);
-
-      for (final fieldId in config.dependencies) {
-        _controller!.addFieldListener(fieldId, _listeners[listenerKey]!);
-      }
-    }
-  }
-
-  void _removeAllListeners() {
-    if (_controller == null) return;
-
-    for (final config in widget.derivations) {
-      final listener = _listeners[config.targetField.key];
-      if (listener != null) {
-        for (final fieldId in config.dependencies) {
-          _controller!.removeFieldListener(fieldId, listener);
-        }
-      }
-    }
-    _listeners.clear();
-  }
-
-  void _onDerivationChanged(FieldDerivationConfig config) {
-    _recalculate(config);
-  }
-
   void _recalculate(FieldDerivationConfig config) {
-    if (_controller == null) return;
+    if (_controller == null || !mounted) return;
 
     try {
       // Get current values of all dependencies
@@ -360,7 +244,7 @@ class _FormixFieldDerivationsState extends ConsumerState<FormixFieldDerivations>
       if (currentValue != derivedValue) {
         // Defer the update to avoid modifying provider during widget building
         scheduleMicrotask(() {
-          if (_controller != null) {
+          if (_controller != null && mounted) {
             _controller!.setValue(config.targetField, derivedValue);
           }
         });
@@ -379,6 +263,17 @@ class _FormixFieldDerivationsState extends ConsumerState<FormixFieldDerivations>
   }
 
   @override
+  void didUpdateWidget(FormixFieldDerivations oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // Check if derivations changed
+    if (!listEquals(oldWidget.derivations, widget.derivations)) {
+      // Recalculate with new derivations
+      scheduleMicrotask(_recalculateAll);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     if (_initializationError != null) {
       return FormixConfigurationErrorWidget(
@@ -388,6 +283,20 @@ class _FormixFieldDerivationsState extends ConsumerState<FormixFieldDerivations>
             : 'Error: $_initializationError',
       );
     }
+
+    // Set up granular listeners for all derivations
+    final uniqueDependencies = widget.derivations.expand((d) => d.dependencies).toSet();
+    for (final dep in uniqueDependencies) {
+      ref.listen(fieldValueProvider(dep), (prev, next) {
+        // Find which derivations need to be recalculated
+        for (final config in widget.derivations) {
+          if (config.dependencies.contains(dep)) {
+            _recalculate(config);
+          }
+        }
+      });
+    }
+
     return const SizedBox.shrink();
   }
 }

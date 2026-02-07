@@ -2079,6 +2079,16 @@ final formDirtyProvider = Provider.autoDispose<bool>(
   name: 'formDirtyProvider',
 );
 
+/// Provider for field validation mode with selector for performance
+final fieldValidationModeProvider = Provider.autoDispose.family<FormixAutovalidateMode, FormixFieldID<dynamic>>(
+  (ref, fieldId) {
+    final controllerProvider = ref.watch(currentControllerProvider);
+    return ref.watch(controllerProvider.notifier).getValidationMode(fieldId);
+  },
+  dependencies: [currentControllerProvider],
+  name: 'fieldValidationModeProvider',
+);
+
 /// Provider for form submitting state with selector for performance
 final formSubmittingProvider = Provider.autoDispose<bool>(
   (ref) {

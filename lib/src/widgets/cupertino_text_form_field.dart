@@ -1,8 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../enums.dart';
 import 'base_form_field.dart';
 import 'form_theme.dart';
+import '../controllers/riverpod_controller.dart';
+import '../controllers/validation.dart';
 
 /// A Formix-based text form field that uses Cupertino styling.
 class FormixCupertinoTextFormField extends FormixFieldWidget<String> {
@@ -101,6 +104,21 @@ class FormixCupertinoTextFormFieldState extends FormixFieldWidgetState<String> w
   Widget build(BuildContext context) {
     final fieldWidget = widget as FormixCupertinoTextFormField;
 
+    if (widget.controller == null) {
+      // Use Consumer to avoid nested selector issues
+      return Consumer(
+        builder: (context, ref, _) {
+          final validation = ref.watch(fieldValidationProvider(widget.fieldId));
+          final isTouched = ref.watch(fieldTouchedProvider(widget.fieldId));
+          final isDirty = ref.watch(fieldDirtyProvider(widget.fieldId));
+          final isSubmitting = ref.watch(formSubmittingProvider);
+          final validationMode = ref.watch(fieldValidationModeProvider(widget.fieldId));
+
+          return _buildCupertinoField(fieldWidget, validation, isTouched, isDirty, isSubmitting, validationMode);
+        },
+      );
+    }
+
     return AnimatedBuilder(
       animation: Listenable.merge([
         controller.fieldValidationNotifier(widget.fieldId),
@@ -108,73 +126,83 @@ class FormixCupertinoTextFormFieldState extends FormixFieldWidgetState<String> w
         controller.fieldDirtyNotifier(widget.fieldId),
         controller.isSubmittingNotifier,
       ]),
-      builder: (context, _) {
-        final validation = this.validation;
-        final isTouched = this.isTouched;
-        final isDirty = this.isDirty;
-        final isSubmitting = controller.isSubmitting;
-        final validationMode = controller.getValidationMode(widget.fieldId);
+      builder: (context, _) => _buildCupertinoField(
+        fieldWidget,
+        validation,
+        isTouched,
+        isDirty,
+        controller.isSubmitting,
+        controller.getValidationMode(widget.fieldId),
+      ),
+    );
+  }
 
-        final showImmediate = validationMode == FormixAutovalidateMode.always;
-        final shouldShowError = (isTouched || isSubmitting || showImmediate) && !validation.isValid;
+  Widget _buildCupertinoField(
+    FormixCupertinoTextFormField fieldWidget,
+    ValidationResult validation,
+    bool isTouched,
+    bool isDirty,
+    bool isSubmitting,
+    FormixAutovalidateMode validationMode,
+  ) {
+    final showImmediate = validationMode == FormixAutovalidateMode.always;
+    final shouldShowError = (isTouched || isSubmitting || showImmediate) && !validation.isValid;
 
-        final formTheme = FormixTheme.of(context);
+    final formTheme = FormixTheme.of(context);
 
-        Widget? suffix;
-        if (validation.isValidating) {
-          suffix =
-              fieldWidget.loadingIcon ??
-              (formTheme.enabled ? formTheme.loadingIcon : null) ??
-              const Padding(
-                padding: EdgeInsets.only(right: 8.0),
-                child: CupertinoActivityIndicator(radius: 8),
-              );
-        } else if (isDirty) {
-          suffix =
-              (formTheme.enabled ? formTheme.editIcon : null) ??
-              const Padding(
-                padding: EdgeInsets.only(right: 8.0),
-                child: Icon(CupertinoIcons.pencil, size: 16),
-              );
-        }
+    Widget? suffix;
+    if (validation.isValidating) {
+      suffix =
+          fieldWidget.loadingIcon ??
+          (formTheme.enabled ? formTheme.loadingIcon : null) ??
+          const Padding(
+            padding: EdgeInsets.only(right: 8.0),
+            child: CupertinoActivityIndicator(radius: 8),
+          );
+    } else if (isDirty) {
+      suffix =
+          (formTheme.enabled ? formTheme.editIcon : null) ??
+          const Padding(
+            padding: EdgeInsets.only(right: 8.0),
+            child: Icon(CupertinoIcons.pencil, size: 16),
+          );
+    }
 
-        return CupertinoFormRow(
-          prefix: fieldWidget.prefix,
-          padding: fieldWidget.padding,
-          error: shouldShowError
-              ? (widget.errorBuilder?.call(context, validation.errorMessage!) ??
-                    Text(
-                      validation.errorMessage!,
-                      style: const TextStyle(color: CupertinoColors.destructiveRed, fontSize: 13),
-                    ))
-              : null,
-          helper: validation.isValidating ? const Text('Validating...', style: TextStyle(fontSize: 13)) : null,
-          child: CupertinoTextField(
-            controller: textController,
-            focusNode: focusNode,
-            placeholder: fieldWidget.placeholder,
-            keyboardType: fieldWidget.keyboardType,
-            maxLength: fieldWidget.maxLength,
-            textInputAction: fieldWidget.textInputAction,
-            readOnly: fieldWidget.readOnly,
-            maxLines: fieldWidget.maxLines,
-            minLines: fieldWidget.minLines,
-            expands: fieldWidget.expands,
-            obscureText: fieldWidget.obscureText,
-            style: fieldWidget.style,
-            enabled: fieldWidget.enabled,
-            onChanged: (val) {
-              didChange(val);
-            },
-            suffix: suffix,
-            decoration: fieldWidget.decoration,
-            inputFormatters: [
-              ...?controller.getField(widget.fieldId)?.inputFormatters,
-              ...?fieldWidget.inputFormatters,
-            ],
-          ),
-        );
-      },
+    return CupertinoFormRow(
+      prefix: fieldWidget.prefix,
+      padding: fieldWidget.padding,
+      error: shouldShowError
+          ? (widget.errorBuilder?.call(context, validation.errorMessage!) ??
+                Text(
+                  validation.errorMessage!,
+                  style: const TextStyle(color: CupertinoColors.destructiveRed, fontSize: 13),
+                ))
+          : null,
+      helper: validation.isValidating ? const Text('Validating...', style: TextStyle(fontSize: 13)) : null,
+      child: CupertinoTextField(
+        controller: textController,
+        focusNode: focusNode,
+        placeholder: fieldWidget.placeholder,
+        keyboardType: fieldWidget.keyboardType,
+        maxLength: fieldWidget.maxLength,
+        textInputAction: fieldWidget.textInputAction,
+        readOnly: fieldWidget.readOnly,
+        maxLines: fieldWidget.maxLines,
+        minLines: fieldWidget.minLines,
+        expands: fieldWidget.expands,
+        obscureText: fieldWidget.obscureText,
+        style: fieldWidget.style,
+        enabled: fieldWidget.enabled,
+        onChanged: (val) {
+          didChange(val);
+        },
+        suffix: suffix,
+        decoration: fieldWidget.decoration,
+        inputFormatters: [
+          ...?controller.getField(widget.fieldId)?.inputFormatters,
+          ...?fieldWidget.inputFormatters,
+        ],
+      ),
     );
   }
 }

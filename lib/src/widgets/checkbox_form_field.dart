@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'base_form_field.dart';
 import '../enums.dart';
+import '../controllers/riverpod_controller.dart';
+import '../controllers/validation.dart';
 
 /// A Formix-based checkbox form field that is lifecycle aware.
 class FormixCheckboxFormField extends FormixFieldWidget<bool> {
@@ -106,6 +109,22 @@ class FormixCheckboxFormFieldState extends FormixFieldWidgetState<bool> {
   Widget build(BuildContext context) {
     final checkboxWidget = widget as FormixCheckboxFormField;
 
+    if (widget.controller == null) {
+      // Use Consumer to avoid nested selector issues
+      return Consumer(
+        builder: (context, ref, _) {
+          final val = ref.watch(fieldValueProvider(widget.fieldId)) as bool?;
+          final validation = ref.watch(fieldValidationProvider(widget.fieldId));
+          final isTouched = ref.watch(fieldTouchedProvider(widget.fieldId));
+          final isDirty = ref.watch(fieldDirtyProvider(widget.fieldId));
+          final isSubmitting = ref.watch(formSubmittingProvider);
+          final validationMode = ref.watch(fieldValidationModeProvider(widget.fieldId));
+
+          return _buildCheckbox(checkboxWidget, val, validation, isTouched, isDirty, isSubmitting, validationMode);
+        },
+      );
+    }
+
     return AnimatedBuilder(
       animation: Listenable.merge([
         controller.fieldValidationNotifier(widget.fieldId),
@@ -113,70 +132,81 @@ class FormixCheckboxFormFieldState extends FormixFieldWidgetState<bool> {
         controller.fieldDirtyNotifier(widget.fieldId),
         controller.isSubmittingNotifier,
       ]),
-      builder: (context, _) {
-        final validation = this.validation;
-        final isTouched = this.isTouched;
-        final isDirty = this.isDirty;
-        final isSubmitting = controller.isSubmitting;
-        final validationMode = controller.getValidationMode(widget.fieldId);
+      builder: (context, _) => _buildCheckbox(
+        checkboxWidget,
+        value,
+        validation,
+        isTouched,
+        isDirty,
+        controller.isSubmitting,
+        controller.getValidationMode(widget.fieldId),
+      ),
+    );
+  }
 
-        final showImmediate = validationMode == FormixAutovalidateMode.always;
+  Widget _buildCheckbox(
+    FormixCheckboxFormField checkboxWidget,
+    bool? val,
+    ValidationResult validation,
+    bool isTouched,
+    bool isDirty,
+    bool isSubmitting,
+    FormixAutovalidateMode validationMode,
+  ) {
+    final showImmediate = validationMode == FormixAutovalidateMode.always;
+    final shouldShowError = (isTouched || isSubmitting || showImmediate) && !validation.isValid;
 
-        final shouldShowError = (isTouched || isSubmitting || showImmediate) && !validation.isValid;
-
-        return MergeSemantics(
-          child: Semantics(
-            validationResult: validation.isValid ? SemanticsValidationResult.valid : SemanticsValidationResult.invalid,
-            child: CheckboxListTile(
-              value: value ?? false,
-              title: checkboxWidget.title,
-              enabled: checkboxWidget.enabled,
-              focusNode: focusNode,
-              activeColor: checkboxWidget.activeColor,
-              checkColor: checkboxWidget.checkColor,
-              tileColor: checkboxWidget.tileColor,
-              secondary: checkboxWidget.secondary,
-              isThreeLine: checkboxWidget.isThreeLine,
-              dense: checkboxWidget.dense,
-              selected: checkboxWidget.selected,
-              controlAffinity: checkboxWidget.controlAffinity,
-              autofocus: checkboxWidget.autofocus,
-              contentPadding: checkboxWidget.contentPadding,
-              tristate: checkboxWidget.tristate,
-              shape: checkboxWidget.shape,
-              checkboxShape: checkboxWidget.checkboxShape,
-              side: checkboxWidget.side,
-              visualDensity: checkboxWidget.visualDensity,
-              mouseCursor: checkboxWidget.mouseCursor,
-              subtitle: validation.isValidating
-                  ? (checkboxWidget.validatingWidget ??
-                        const Text(
-                          'Validating...',
-                          style: TextStyle(color: Colors.blue, fontSize: 12),
-                        ))
-                  : (shouldShowError
-                        ? Text(
-                            validation.errorMessage ?? '',
-                            style: const TextStyle(
-                              color: Colors.red,
-                              fontSize: 12,
-                            ),
-                          )
-                        : (isDirty
-                              ? const Text(
-                                  'Modified',
-                                  style: TextStyle(fontSize: 12),
-                                )
-                              : null)),
-              onChanged: checkboxWidget.enabled
-                  ? (newValue) {
-                      didChange(newValue ?? false);
-                    }
-                  : null,
-            ),
-          ),
-        );
-      },
+    return MergeSemantics(
+      child: Semantics(
+        validationResult: validation.isValid ? SemanticsValidationResult.valid : SemanticsValidationResult.invalid,
+        child: CheckboxListTile(
+          value: val ?? false,
+          title: checkboxWidget.title,
+          enabled: checkboxWidget.enabled,
+          focusNode: focusNode,
+          activeColor: checkboxWidget.activeColor,
+          checkColor: checkboxWidget.checkColor,
+          tileColor: checkboxWidget.tileColor,
+          secondary: checkboxWidget.secondary,
+          isThreeLine: checkboxWidget.isThreeLine,
+          dense: checkboxWidget.dense,
+          selected: checkboxWidget.selected,
+          controlAffinity: checkboxWidget.controlAffinity,
+          autofocus: checkboxWidget.autofocus,
+          contentPadding: checkboxWidget.contentPadding,
+          tristate: checkboxWidget.tristate,
+          shape: checkboxWidget.shape,
+          checkboxShape: checkboxWidget.checkboxShape,
+          side: checkboxWidget.side,
+          visualDensity: checkboxWidget.visualDensity,
+          mouseCursor: checkboxWidget.mouseCursor,
+          subtitle: validation.isValidating
+              ? (checkboxWidget.validatingWidget ??
+                    const Text(
+                      'Validating...',
+                      style: TextStyle(color: Colors.blue, fontSize: 12),
+                    ))
+              : (shouldShowError
+                    ? Text(
+                        validation.errorMessage ?? '',
+                        style: const TextStyle(
+                          color: Colors.red,
+                          fontSize: 12,
+                        ),
+                      )
+                    : (isDirty
+                          ? const Text(
+                              'Modified',
+                              style: TextStyle(fontSize: 12),
+                            )
+                          : null)),
+          onChanged: checkboxWidget.enabled
+              ? (newValue) {
+                  didChange(newValue ?? false);
+                }
+              : null,
+        ),
+      ),
     );
   }
 }

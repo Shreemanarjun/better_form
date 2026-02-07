@@ -327,7 +327,10 @@ void main() {
               ],
               child: FormixFieldDerivation(
                 dependencies: const [newSourceField],
-                derive: (values) => values[newSourceField]?.toUpperCase(),
+                derive: (values) {
+                  final value = values[newSourceField] as String?;
+                  return value?.toUpperCase();
+                },
                 targetField: targetField,
               ),
             ),
