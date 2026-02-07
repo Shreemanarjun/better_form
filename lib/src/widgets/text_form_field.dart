@@ -195,23 +195,59 @@ class FormixTextFormField extends FormixFieldWidget<String> {
 
 /// State for [FormixTextFormField].
 class FormixTextFormFieldState extends FormixFieldWidgetState<String> with FormixFieldTextMixin<String> {
+  // Cache for InputDecoration to avoid rebuilding on every frame
+  InputDecoration? _cachedBaseDecoration;
+  InputDecoration? _lastWidgetDecoration;
+  FormixThemeData? _lastFormTheme;
+  InputDecorationTheme? _lastDecorationTheme;
+
+  // Cache for suffix icon to avoid rebuilding
+  Widget? _cachedSuffixIcon;
+  bool _lastIsDirty = false;
+  bool _lastIsValidating = false;
+
   @override
   String valueToString(String? value) => value ?? '';
 
   @override
   String? stringToValue(String text) => text;
 
+  Widget? _getSuffixIcon(bool isDirty, bool isValidating, FormixThemeData formTheme, FormixTextFormField fieldWidget) {
+    if (_lastIsDirty == isDirty && _lastIsValidating == isValidating) {
+      return _cachedSuffixIcon;
+    }
+
+    _lastIsDirty = isDirty;
+    _lastIsValidating = isValidating;
+
+    if (isValidating) {
+      _cachedSuffixIcon =
+          fieldWidget.loadingIcon ??
+          (formTheme.enabled ? formTheme.loadingIcon : null) ??
+          const SizedBox(
+            width: 16,
+            height: 16,
+            child: Padding(
+              padding: EdgeInsets.all(4),
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          );
+    } else if (isDirty) {
+      _cachedSuffixIcon = (formTheme.enabled ? formTheme.editIcon : null) ?? const Icon(Icons.edit, size: 16);
+    } else {
+      _cachedSuffixIcon = null;
+    }
+
+    return _cachedSuffixIcon;
+  }
+
   @override
   Widget build(BuildContext context) {
     final fieldWidget = widget as FormixTextFormField;
 
+    // Use combined notifier for better performance (1 listenable instead of 4)
     return AnimatedBuilder(
-      animation: Listenable.merge([
-        controller.fieldValidationNotifier(widget.fieldId),
-        controller.fieldTouchedNotifier(widget.fieldId),
-        controller.fieldDirtyNotifier(widget.fieldId),
-        controller.isSubmittingNotifier,
-      ]),
+      animation: controller.getFieldStateNotifier(widget.fieldId),
       builder: (context, _) {
         final validation = this.validation;
         final isTouched = this.isTouched;
@@ -225,35 +261,30 @@ class FormixTextFormFieldState extends FormixFieldWidgetState<String> with Formi
 
         final formTheme = FormixTheme.of(context);
 
-        Widget? suffixIcon;
-        if (validation.isValidating) {
-          suffixIcon =
-              fieldWidget.loadingIcon ??
-              (formTheme.enabled ? formTheme.loadingIcon : null) ??
-              const SizedBox(
-                width: 16,
-                height: 16,
-                child: Padding(
-                  padding: EdgeInsets.all(4),
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-              );
-        } else if (isDirty) {
-          suffixIcon = (formTheme.enabled ? formTheme.editIcon : null) ?? const Icon(Icons.edit, size: 16);
+        // Cache base decoration to avoid repeated theme resolution
+        if (_cachedBaseDecoration == null ||
+            fieldWidget.decoration != _lastWidgetDecoration ||
+            formTheme != _lastFormTheme ||
+            (formTheme.enabled && formTheme.decorationTheme != _lastDecorationTheme)) {
+          _lastWidgetDecoration = fieldWidget.decoration;
+          _lastFormTheme = formTheme;
+          _lastDecorationTheme = formTheme.decorationTheme;
+
+          _cachedBaseDecoration = formTheme.enabled
+              ? fieldWidget.decoration.applyDefaults(
+                  formTheme.decorationTheme ?? Theme.of(context).inputDecorationTheme,
+                )
+              : fieldWidget.decoration;
         }
+
+        final suffixIcon = _getSuffixIcon(isDirty, validation.isValidating, formTheme, fieldWidget);
 
         final formatters = [
           ...?controller.getField(widget.fieldId)?.inputFormatters,
           ...?fieldWidget.inputFormatters,
         ];
 
-        final baseDecoration = formTheme.enabled
-            ? fieldWidget.decoration.applyDefaults(
-                formTheme.decorationTheme ?? Theme.of(context).inputDecorationTheme,
-              )
-            : fieldWidget.decoration;
-
-        final effectiveDecoration = baseDecoration.copyWith(
+        final effectiveDecoration = _cachedBaseDecoration!.copyWith(
           errorText: shouldShowError ? validation.errorMessage : null,
           suffixIcon: suffixIcon,
           helperText: validation.isValidating ? 'Validating...' : null,

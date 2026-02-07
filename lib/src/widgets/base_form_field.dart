@@ -206,43 +206,52 @@ abstract class FormixFieldWidgetState<T> extends ConsumerState<FormixFieldWidget
   }
 
   void _setupControllerSubscription() {
-    _controllerSub?.close();
-    _innerProviderSub?.close();
-
+    // Early return if explicit controller is provided (optimization)
     if (widget.controller != null) {
+      // Close any existing subscriptions first
+      _controllerSub?.close();
+      _innerProviderSub?.close();
       _setupController(widget.controller);
       return;
     }
 
+    // Close existing subscriptions
+    _controllerSub?.close();
+    _innerProviderSub?.close();
+
     try {
-      _controllerSub = ref.listenManual(currentControllerProvider, (
-        previous,
-        next,
-      ) {
-        // Redundant closing here if we do it at start of method, but safe for stability.
-        _innerProviderSub?.close();
+      _controllerSub = ref.listenManual(
+        currentControllerProvider,
+        (
+          previous,
+          next,
+        ) {
+          // Close inner subscription before creating new one
+          _innerProviderSub?.close();
 
-        // Listen to the inner provider to keep the controller alive (especially for implicit usage)
-        if (widget.controller == null) {
-          _innerProviderSub = ref.listenManual(next, (_, __) {});
-        }
+          // Listen to the inner provider to keep the controller alive
+          if (widget.controller == null) {
+            _innerProviderSub = ref.listenManual(next, (_, __) {});
+          }
 
-        try {
-          final newController = widget.controller ?? ref.read(next.notifier);
-          _setupController(newController);
-          if (mounted) {
-            setState(() {
-              _initializationError = null;
-            });
+          try {
+            final newController = widget.controller ?? ref.read(next.notifier);
+            _setupController(newController);
+            if (mounted) {
+              setState(() {
+                _initializationError = null;
+              });
+            }
+          } catch (e) {
+            if (mounted) {
+              setState(() {
+                _initializationError = e;
+              });
+            }
           }
-        } catch (e) {
-          if (mounted) {
-            setState(() {
-              _initializationError = e;
-            });
-          }
-        }
-      }, fireImmediately: true);
+        },
+        fireImmediately: true,
+      );
     } catch (e) {
       _initializationError = e;
     }

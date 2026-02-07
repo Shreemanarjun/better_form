@@ -36,6 +36,9 @@ class FormixController extends RiverpodFormController {
   final Map<String, ValueNotifier<bool>> _dirtyNotifiers = {};
   final Map<String, ValueNotifier<bool>> _touchedNotifiers = {};
 
+  // Combined notifiers for performance optimization
+  final Map<String, _FieldStateNotifier> _combinedFieldNotifiers = {};
+
   ValueNotifier<bool>? _isDirtyNotifier;
   ValueNotifier<bool>? _isValidNotifier;
   ValueNotifier<bool>? _isSubmittingNotifier;
@@ -189,6 +192,9 @@ class FormixController extends RiverpodFormController {
       notifier.dispose();
     }
     for (final notifier in _touchedNotifiers.values) {
+      notifier.dispose();
+    }
+    for (final notifier in _combinedFieldNotifiers.values) {
       notifier.dispose();
     }
     _isDirtyNotifier?.dispose();
@@ -472,8 +478,63 @@ class FormixController extends RiverpodFormController {
     _dirtyListeners.remove(listener);
   }
 
+  /// Returns a combined [Listenable] that notifies when any field state changes.
+  ///
+  /// This is more efficient than merging multiple listenables in AnimatedBuilder.
+  /// It combines validation, touched, dirty, and submitting state into a single notifier.
+  Listenable getFieldStateNotifier<T>(FormixFieldID<T> fieldId) {
+    if (_combinedFieldNotifiers.containsKey(fieldId.key)) {
+      return _combinedFieldNotifiers[fieldId.key]!;
+    }
+
+    final notifier = _FieldStateNotifier(
+      validationNotifier: fieldValidationNotifier(fieldId),
+      touchedNotifier: fieldTouchedNotifier(fieldId),
+      dirtyNotifier: fieldDirtyNotifier(fieldId),
+      submittingNotifier: isSubmittingNotifier,
+    );
+
+    _combinedFieldNotifiers[fieldId.key] = notifier;
+    return notifier;
+  }
+
   @override
   String toString() {
     return 'FormixController(fields: ${state.values.keys.toList()}, isValid: ${state.isValid}, isDirty: ${state.isDirty})';
+  }
+}
+
+/// A combined notifier that listens to multiple field state notifiers.
+///
+/// This reduces the overhead of merging multiple listenables in AnimatedBuilder.
+class _FieldStateNotifier extends ChangeNotifier {
+  _FieldStateNotifier({
+    required this.validationNotifier,
+    required this.touchedNotifier,
+    required this.dirtyNotifier,
+    required this.submittingNotifier,
+  }) {
+    validationNotifier.addListener(_notify);
+    touchedNotifier.addListener(_notify);
+    dirtyNotifier.addListener(_notify);
+    submittingNotifier.addListener(_notify);
+  }
+
+  final ValueNotifier<ValidationResult> validationNotifier;
+  final ValueNotifier<bool> touchedNotifier;
+  final ValueNotifier<bool> dirtyNotifier;
+  final ValueNotifier<bool> submittingNotifier;
+
+  void _notify() {
+    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    validationNotifier.removeListener(_notify);
+    touchedNotifier.removeListener(_notify);
+    dirtyNotifier.removeListener(_notify);
+    submittingNotifier.removeListener(_notify);
+    super.dispose();
   }
 }

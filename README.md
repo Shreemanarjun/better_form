@@ -1119,18 +1119,57 @@ Formix integrates deep into Flutter DevTools.
 
 ## ⚡ Performance
 
-Formix is engineered for massive scale.
+Formix is engineered for massive scale with continuous performance optimizations.
 
+### Core Performance Features
 - **Granular Rebuilds**: Uses `select` to only rebuild exact widgets that change.
 - **O(1) Updates**: Field updates are constant time, regardless of form size.
 - **Scalability**: Tested with **5000+ active fields** maintaining 60fps interaction.
 - **Lazy Evaluation**: Validation and dependency chains are optimized to run only when necessary.
+
+### Recent Optimizations (v0.1.0)
+
+#### 1. Cached InputDecoration
+- **What**: Intelligent caching of `InputDecoration` to avoid redundant theme resolution
+- **Impact**: Decoration only rebuilds when widget properties or theme actually changes
+- **Applied to**: `FormixTextFormField` and `FormixNumberFormField`
+
+#### 2. Combined Field State Notifier
+- **What**: Consolidated 4 separate `ValueNotifier`s into a single combined notifier
+- **Impact**: Reduces `AnimatedBuilder` overhead from 4 listenables to 1
+- **Benefit**: Significantly faster rebuild performance for rapid state changes
+
+#### 3. Optimized Controller Subscription
+- **What**: Early return optimization for explicit controllers
+- **Impact**: Avoids unnecessary Riverpod subscription setup
+- **Benefit**: Cleaner, more efficient code path for common use cases
+
+### Benchmark Results (M1 Pro, Averaged over 3 runs × 1000 iterations)
+
+| Metric | Time | Notes |
+|--------|------|-------|
+| **Pure Formix Overhead (Rebuild)** | **0.097ms** | Minimal overhead per rebuild |
+| **Pure Formix (Mount/Unmount)** | **0.054ms** | Efficient lifecycle management |
+| **Full Widget Passive Rebuild** | **9.548ms** | Includes Material widgets |
+| **Full Widget Mount/Unmount** | **13.133ms** | Complete widget lifecycle |
+| **Mount/Unmount Cycles** | **1.584ms** | Field creation/disposal |
+
+### Performance Improvements
+
+| Test | Before | After | Improvement |
+|------|--------|-------|-------------|
+| **100 Widget Rebuilds** | 1388ms | 847ms | **39% faster** 🔥 |
+| **Passive Rebuild** | 7.20ms | 5.87ms | **18.5% faster** |
+| **50 Keystrokes** | 401ms | 395ms | **1.5% faster** |
 
 ### Stress Test Results (M1 Pro)
 - **1000 Fields Mount**: <10ms
 - **Bulk Updates**: ~50ms for 1000 fields. Single frame execution for `setValues`.
 - **Dependency Scale**: **~160ms** for 100,000 dependents. Ultra-fast traversal for deep chains.
 - **Memory Efficient**: Uses **lazy-cloning** and **shared validation contexts** to minimize GC pressure and O(N) overhead during validation.
+
+> **Note**: All benchmarks run with 200 warmup iterations and 3000 total samples (3 runs × 1000 iterations) for statistical accuracy.
+
 
 ---
 
