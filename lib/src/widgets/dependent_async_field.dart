@@ -26,7 +26,7 @@ import 'ancestor_validator.dart';
 ///   },
 /// )
 /// ```
-class FormixDependentAsyncField<T, D> extends ConsumerWidget {
+class FormixDependentAsyncField<T, D> extends ConsumerStatefulWidget {
   /// Creates a [FormixDependentAsyncField].
   const FormixDependentAsyncField({
     super.key,
@@ -42,6 +42,7 @@ class FormixDependentAsyncField<T, D> extends ConsumerWidget {
     this.initialValue,
     this.initialValueStrategy,
     this.manual = false,
+    this.onData,
   });
 
   /// The ID of this field (used to store the async state/result).
@@ -81,8 +82,20 @@ class FormixDependentAsyncField<T, D> extends ConsumerWidget {
   /// Strategy for handling initial values.
   final FormixInitialValueStrategy? initialValueStrategy;
 
+  /// Optional callback executed when data is successfully loaded.
+  final void Function(BuildContext context, FormixController controller, T data)? onData;
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<FormixDependentAsyncField<T, D>> createState() => _FormixDependentAsyncFieldState<T, D>();
+}
+
+class _FormixDependentAsyncFieldState<T, D> extends ConsumerState<FormixDependentAsyncField<T, D>> {
+  D? _lastDependencyValue;
+  Future<T>? _currentFuture;
+  bool _initialized = false;
+
+  @override
+  Widget build(BuildContext context) {
     final errorWidget = FormixAncestorValidator.validate(
       context,
       widgetName: 'FormixDependentAsyncField',
@@ -96,38 +109,53 @@ class FormixDependentAsyncField<T, D> extends ConsumerWidget {
     try {
       // Watch the dependency value with type safety
       final dependencyValue = ref.watch(
-        activeProvider.select((s) => s.getValue(dependency)),
+        activeProvider.select((s) => s.getValue(widget.dependency)),
       );
 
+      // Only recreate the future if the dependency value has changed or it's the first build
+      if (!_initialized || dependencyValue != _lastDependencyValue) {
+        _lastDependencyValue = dependencyValue;
+        _currentFuture = widget.future(dependencyValue);
+        _initialized = true;
+      }
+
       // Listen for dependency changes to reset the related field
-      if (resetField != null) {
-        ref.listen(activeProvider.select((s) => s.getValue(dependency)), (
+      if (widget.resetField != null) {
+        ref.listen(activeProvider.select((s) => s.getValue(widget.dependency)), (
           previous,
           next,
         ) {
           if (previous != next) {
-            ref.read(activeProvider.notifier).setValue(resetField!, null);
+            ref.read(activeProvider.notifier).setValue(widget.resetField!, null);
           }
         });
       }
 
       return FormixAsyncField<T>(
-        fieldId: fieldId,
-        // Pass the current dependency value to the future creator
-        future: future(dependencyValue),
+        fieldId: widget.fieldId,
+        // Pass the cached future
+        future: _currentFuture,
         // Use the dependency value as the 'dependencies' list for FormixAsyncField
         // This tells FormixAsyncField to re-execute the future when this value changes
         dependencies: [dependencyValue],
         // Define retry logic (same as initial fetch)
-        onRetry: () => future(dependencyValue),
-        builder: builder,
-        loadingBuilder: loadingBuilder,
-        asyncErrorBuilder: asyncErrorBuilder,
-        keepPreviousData: keepPreviousData,
-        debounce: debounce,
-        initialValue: initialValue,
-        initialValueStrategy: initialValueStrategy,
-        manual: manual,
+        onRetry: () {
+          // Force update the current future on retry
+          final future = widget.future(dependencyValue);
+          setState(() {
+            _currentFuture = future;
+          });
+          return future;
+        },
+        builder: widget.builder,
+        loadingBuilder: widget.loadingBuilder,
+        asyncErrorBuilder: widget.asyncErrorBuilder,
+        keepPreviousData: widget.keepPreviousData,
+        debounce: widget.debounce,
+        initialValue: widget.initialValue,
+        initialValueStrategy: widget.initialValueStrategy,
+        manual: widget.manual,
+        onData: widget.onData,
       );
     } catch (e) {
       return FormixConfigurationErrorWidget(

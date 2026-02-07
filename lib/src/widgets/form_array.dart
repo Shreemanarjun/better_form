@@ -6,7 +6,7 @@ import 'ancestor_validator.dart';
 ///
 /// Use [FormixArray] when you need to render a list of fields that can be
 /// dynamically added or removed.
-class FormixArray<T> extends ConsumerWidget {
+class FormixArray<T> extends ConsumerStatefulWidget {
   /// Creates a form array widget.
   const FormixArray({
     super.key,
@@ -38,7 +38,12 @@ class FormixArray<T> extends ConsumerWidget {
   final bool scrollable;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<FormixArray<T>> createState() => _FormixArrayState<T>();
+}
+
+class _FormixArrayState<T> extends ConsumerState<FormixArray<T>> {
+  @override
+  Widget build(BuildContext context) {
     final errorWidget = FormixAncestorValidator.validate(
       context,
       widgetName: 'FormixArray',
@@ -61,24 +66,24 @@ class FormixArray<T> extends ConsumerWidget {
       );
 
       // Resolve the array ID based on surrounding form groups
-      final resolvedId = FormixGroup.resolve(context, id) as FormixArrayID<T>;
+      final resolvedId = FormixGroup.resolve(context, widget.id) as FormixArrayID<T>;
 
       // Watch the array value reactively
       final items = scope.watchArray(resolvedId);
 
-      if (items.isEmpty && emptyBuilder != null) {
-        return emptyBuilder!(context, scope);
+      if (items.isEmpty && widget.emptyBuilder != null) {
+        return widget.emptyBuilder!(context, scope);
       }
 
       Widget buildItem(int index) {
         final itemId = resolvedId.item(index);
         return FormixGroup(
-          prefix: '${id.key}[$index]',
-          child: itemBuilder(context, index, itemId, scope),
+          prefix: '${widget.id.key}[$index]',
+          child: widget.itemBuilder(context, index, itemId, scope),
         );
       }
 
-      if (scrollable) {
+      if (widget.scrollable) {
         return ListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),

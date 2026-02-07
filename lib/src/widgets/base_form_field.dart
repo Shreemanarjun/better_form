@@ -385,7 +385,7 @@ abstract class FormixFieldWidgetState<T> extends ConsumerState<FormixFieldWidget
   }
 
   void _onFieldChanged() {
-    if (_controller == null) return;
+    if (!mounted || _controller == null) return;
 
     final newValue = controller.getValue(widget.fieldId);
     final isDirtyNow = controller.isFieldDirty(widget.fieldId);
@@ -405,6 +405,7 @@ abstract class FormixFieldWidgetState<T> extends ConsumerState<FormixFieldWidget
   }
 
   void _onFocusChanged() {
+    if (!mounted) return;
     if (!_focusNode.hasFocus && _controller != null) {
       controller.markAsTouched(widget.fieldId);
     }

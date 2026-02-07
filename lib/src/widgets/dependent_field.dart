@@ -21,7 +21,7 @@ import 'ancestor_validator.dart';
 ///   },
 /// )
 /// ```
-class FormixDependentField<T> extends ConsumerWidget {
+class FormixDependentField<T> extends ConsumerStatefulWidget {
   /// Creates a dependent field widget.
   const FormixDependentField({
     super.key,
@@ -40,17 +40,22 @@ class FormixDependentField<T> extends ConsumerWidget {
   final AutoDisposeStateNotifierProvider<FormixController, FormixData>? controllerProvider;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<FormixDependentField<T>> createState() => _FormixDependentFieldState<T>();
+}
+
+class _FormixDependentFieldState<T> extends ConsumerState<FormixDependentField<T>> {
+  @override
+  Widget build(BuildContext context) {
     final errorWidget = FormixAncestorValidator.validate(
       context,
       widgetName: 'FormixDependentField',
-      explicitProvider: controllerProvider,
+      explicitProvider: widget.controllerProvider,
       requireFormix: false,
     );
 
     if (errorWidget != null) return errorWidget;
 
-    final provider = controllerProvider ?? Formix.of(context) ?? ref.watch(currentControllerProvider);
+    final provider = widget.controllerProvider ?? Formix.of(context) ?? ref.watch(currentControllerProvider);
 
     // We use ProviderScope override to ensure we are watching the correct controller
     // if we are using the global fieldValueProvider
@@ -59,8 +64,8 @@ class FormixDependentField<T> extends ConsumerWidget {
       child: Consumer(
         builder: (context, ref, _) {
           try {
-            final value = ref.watch(fieldValueProvider(fieldId));
-            return builder(context, value);
+            final value = ref.watch(fieldValueProvider(widget.fieldId));
+            return widget.builder(context, value);
           } catch (e) {
             return FormixConfigurationErrorWidget(
               message: 'Failed to initialize FormixDependentField',

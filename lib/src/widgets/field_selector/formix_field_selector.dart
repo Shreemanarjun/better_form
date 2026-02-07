@@ -125,6 +125,8 @@ class _FormixFieldSelectorState<T> extends ConsumerState<FormixFieldSelector<T>>
   }
 
   void _onFieldChanged() {
+    if (!mounted) return;
+
     // Store previous state
     _previousValue = _currentValue;
     _previousValidation = _currentValidation;

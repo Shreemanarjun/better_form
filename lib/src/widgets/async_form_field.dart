@@ -27,6 +27,12 @@ import '../../formix.dart';
 ///       items: state.value?.map((m) => DropdownMenuItem(value: m, child: Text(m))).toList() ?? [],
 ///     );
 ///   },
+///   onData: (context, controller, data) {
+///      // Example: Auto-select first item
+///      if (data.isNotEmpty) {
+///         controller.setValue(modelField, data.first);
+///      }
+///   },
 ///   loadingBuilder: (context) => Text('Loading...'),
 /// )
 /// ```
@@ -45,6 +51,7 @@ class FormixAsyncField<T> extends FormixFieldWidget<T> {
     this.manual = false,
     this.onRetry,
     this.dependencies,
+    this.onData,
     super.validator,
     super.asyncValidator,
     super.initialValue,
@@ -95,6 +102,15 @@ class FormixAsyncField<T> extends FormixFieldWidget<T> {
 
   /// Optional builder shown if an error occurs during data loading.
   final Widget Function(BuildContext context, Object error)? asyncErrorBuilder;
+
+  /// Optional callback executed when data is successfully loaded.
+  ///
+  /// This is useful for performing side effects, such as updating other fields
+  /// based on the loaded data (e.g., auto-selecting the first item).
+  ///
+  /// The callback is executed in a post-frame callback, so it is safe to
+  /// trigger state updates or calls to `FormixController`.
+  final void Function(BuildContext context, FormixController controller, T data)? onData;
 
   @override
   FormixAsyncFieldState<T> createState() => FormixAsyncFieldState<T>();
@@ -230,6 +246,25 @@ class FormixAsyncFieldState<T> extends FormixFieldWidgetState<T> {
     }
   }
 
+  void _syncValue() {
+    if (_asyncState.hasValue && !_asyncState.isLoading && !_asyncState.hasError) {
+      final val = _asyncState.value as T;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          // Trigger the user's onData callback
+          final widget = this.widget as FormixAsyncField<T>;
+          if (widget.onData != null && hasController) {
+            widget.onData!(context, controller, val);
+          }
+
+          if (!const DeepCollectionEquality().equals(value, val)) {
+            didChange(val);
+          }
+        }
+      });
+    }
+  }
+
   @override
   void onReset() {
     final widget = this.widget as FormixAsyncField<T>;
@@ -242,19 +277,6 @@ class FormixAsyncFieldState<T> extends FormixFieldWidgetState<T> {
   void dispose() {
     _debounceTimer?.cancel();
     super.dispose();
-  }
-
-  void _syncValue() {
-    if (_asyncState.hasValue && !_asyncState.isLoading && !_asyncState.hasError) {
-      final val = _asyncState.value as T;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          if (!const DeepCollectionEquality().equals(value, val)) {
-            didChange(val);
-          }
-        }
-      });
-    }
   }
 
   @override

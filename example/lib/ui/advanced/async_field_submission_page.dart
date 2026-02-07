@@ -152,6 +152,13 @@ class _AsyncFieldSubmissionContentState
               // The future is re-triggered automatically if dependencies in the closure change
               future: (country) => fetchCities(country),
               keepPreviousData: true,
+              onData: (context, controller, cities) {
+                // Auto-select first city if none selected
+                if (cities.isNotEmpty &&
+                    controller.getValue(cityField) == null) {
+                  controller.setValue(cityField, cities.first);
+                }
+              },
               loadingBuilder: (context) => const Padding(
                 padding: EdgeInsets.only(bottom: 8.0),
                 child: LinearProgressIndicator(),

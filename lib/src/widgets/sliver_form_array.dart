@@ -6,7 +6,7 @@ import 'ancestor_validator.dart';
 ///
 /// Use [SliverFormixArray] when you need to render a list of fields inside
 /// a [CustomScrollView].
-class SliverFormixArray<T> extends ConsumerWidget {
+class SliverFormixArray<T> extends ConsumerStatefulWidget {
   /// Creates a sliver form array widget.
   const SliverFormixArray({
     super.key,
@@ -37,7 +37,12 @@ class SliverFormixArray<T> extends ConsumerWidget {
   final Widget Function(BuildContext context, FormixScope scope)? emptyBuilder;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SliverFormixArray<T>> createState() => _SliverFormixArrayState<T>();
+}
+
+class _SliverFormixArrayState<T> extends ConsumerState<SliverFormixArray<T>> {
+  @override
+  Widget build(BuildContext context) {
     final errorWidget = FormixAncestorValidator.validate(
       context,
       widgetName: 'SliverFormixArray',
@@ -62,13 +67,13 @@ class SliverFormixArray<T> extends ConsumerWidget {
       );
 
       // Resolve the array ID based on surrounding form groups
-      final resolvedId = FormixGroup.resolve(context, id) as FormixArrayID<T>;
+      final resolvedId = FormixGroup.resolve(context, widget.id) as FormixArrayID<T>;
 
       // Watch the array value reactively
       final items = scope.watchArray(resolvedId);
 
-      if (items.isEmpty && emptyBuilder != null) {
-        final child = emptyBuilder!(context, scope);
+      if (items.isEmpty && widget.emptyBuilder != null) {
+        final child = widget.emptyBuilder!(context, scope);
         return SliverToBoxAdapter(child: child);
       }
 
@@ -77,8 +82,8 @@ class SliverFormixArray<T> extends ConsumerWidget {
           (context, index) {
             final itemId = resolvedId.item(index);
             return FormixGroup(
-              prefix: '${id.key}[$index]',
-              child: itemBuilder(context, index, itemId, scope),
+              prefix: '${widget.id.key}[$index]',
+              child: widget.itemBuilder(context, index, itemId, scope),
             );
           },
           childCount: items.length,

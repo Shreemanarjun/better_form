@@ -296,16 +296,24 @@ class _FormixBuilderState extends ConsumerState<FormixBuilder> {
 ///   }
 /// }
 /// ```
-abstract class FormixWidget extends ConsumerWidget {
+abstract class FormixWidget extends ConsumerStatefulWidget {
   /// Creates a [FormixWidget].
   const FormixWidget({super.key});
 
   @override
   @mustCallSuper
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<FormixWidget> createState() => _FormixWidgetState();
+
+  /// Build the widget based on the provided [FormixScope].
+  Widget buildForm(BuildContext context, FormixScope scope);
+}
+
+class _FormixWidgetState extends ConsumerState<FormixWidget> {
+  @override
+  Widget build(BuildContext context) {
     final errorWidget = FormixAncestorValidator.validate(
       context,
-      widgetName: runtimeType.toString(),
+      widgetName: widget.runtimeType.toString(),
     );
 
     if (errorWidget != null) return errorWidget;
@@ -321,17 +329,14 @@ abstract class FormixWidget extends ConsumerWidget {
         controller: controller,
       );
 
-      return buildForm(context, scope);
+      return widget.buildForm(context, scope);
     } catch (e) {
       return FormixConfigurationErrorWidget(
-        message: 'Failed to initialize $runtimeType',
+        message: 'Failed to initialize ${widget.runtimeType}',
         details: e.toString().contains('No ProviderScope found')
             ? 'Missing ProviderScope. Please wrap your application (or this form) in a ProviderScope widget.\n\nExample:\nvoid main() {\n  runApp(ProviderScope(child: MyApp()));\n}'
             : 'Error: $e',
       );
     }
   }
-
-  /// Build the widget based on the provided [FormixScope].
-  Widget buildForm(BuildContext context, FormixScope scope);
 }
