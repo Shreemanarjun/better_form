@@ -44,22 +44,13 @@ void main() {
               child: FormixAsyncField<List<String>>(
                 fieldId: stateOptionsId,
                 future: statesCompleter.future,
+                onData: (context, controller, data) {
+                  controller.setValue(selectedStateId, data.first);
+                },
                 builder: (context, stateSnapshot) {
-                  final states = stateSnapshot.value ?? [];
-
                   return FormixRawFormField<String>(
                     fieldId: selectedStateId,
                     builder: (context, selectionState) {
-                      // THE HACK: Auto-select first state if none selected
-                      if (states.isNotEmpty && selectionState.value == null) {
-                        final first = states.first;
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          if (selectionState.value == null) {
-                            selectionState.didChange(first);
-                          }
-                        });
-                      }
-
                       return Text(selectionState.value ?? 'No selection');
                     },
                   );
