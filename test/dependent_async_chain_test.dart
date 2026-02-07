@@ -186,7 +186,6 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final aCountAfter = aFetchCount;
       final bCountAfter = bFetchCount;
       final cCountAfter = cFetchCount;
 
@@ -243,8 +242,6 @@ void main() {
       // A should re-fetch because we passed a new future and no dependencies list (default behavior).
       // B and C should NOT re-fetch because A's value ('A_Value') didn't change (even if A re-fetched).
       // Equality check in controller prevents notification.
-
-      print('A: $aFetchCount (was $aCountAfter), B: $bFetchCount, C: $cFetchCount');
 
       expect(bFetchCount, bCountAfter, reason: 'B should not re-fetch if dependency value is unchanged');
       expect(cFetchCount, cCountAfter, reason: 'C should not re-fetch if dependency value is unchanged');
