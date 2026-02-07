@@ -47,7 +47,7 @@ class FormixFieldSelector<T> extends StatefulWidget {
 }
 
 class _FormixFieldSelectorState<T> extends State<FormixFieldSelector<T>> {
-  late FormixController _controller;
+  FormixController? _controller;
   late T? _currentValue;
   late ValidationResult _currentValidation;
   late bool _currentIsDirty;
@@ -60,52 +60,59 @@ class _FormixFieldSelectorState<T> extends State<FormixFieldSelector<T>> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _controller = widget.controller ?? Formix.controllerOf(context)!;
+    final controller = widget.controller ?? Formix.controllerOf(context);
 
-    // Initialize current state
-    _updateCurrentState();
-
-    // Listen to field changes
-    _controller.addFieldListener(widget.fieldId, _onFieldChanged);
+    if (controller != null) {
+      if (controller != _controller) {
+        if (mounted && _controller != null) {
+          _controller!.removeFieldListener(widget.fieldId, _onFieldChanged);
+        }
+        _controller = controller;
+        // Initialize current state
+        _updateCurrentState();
+        // Listen to field changes
+        _controller!.addFieldListener(widget.fieldId, _onFieldChanged);
+      }
+    } else {
+      _controller = null;
+    }
   }
 
   @override
   void didUpdateWidget(FormixFieldSelector<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (oldWidget.controller != widget.controller ||
-        oldWidget.fieldId != widget.fieldId ||
-        oldWidget.listenToValue != widget.listenToValue ||
-        oldWidget.listenToValidation != widget.listenToValidation ||
-        oldWidget.listenToDirty != widget.listenToDirty) {
+    if (oldWidget.controller != widget.controller || oldWidget.fieldId != widget.fieldId) {
       // Remove old listener
-      oldWidget.controller?.removeFieldListener(
-        oldWidget.fieldId,
-        _onFieldChanged,
-      );
+      if (_controller != null) {
+        _controller!.removeFieldListener(oldWidget.fieldId, _onFieldChanged);
+      }
 
       // Add new listener
-      _controller = widget.controller ?? Formix.controllerOf(context)!;
-      _controller.addFieldListener(widget.fieldId, _onFieldChanged);
-
-      // Update state
-      _updateCurrentState();
+      _controller = widget.controller ?? Formix.controllerOf(context);
+      if (_controller != null) {
+        _controller!.addFieldListener(widget.fieldId, _onFieldChanged);
+        _updateCurrentState();
+      }
     }
   }
 
   @override
   void dispose() {
-    _controller.removeFieldListener(widget.fieldId, _onFieldChanged);
+    if (_controller != null) {
+      _controller!.removeFieldListener(widget.fieldId, _onFieldChanged);
+    }
     super.dispose();
   }
 
   void _updateCurrentState() {
-    _currentValue = _controller.getValue(widget.fieldId) ?? _controller.initialValue[widget.fieldId.key] as T?;
-    _currentValidation = _controller.getValidation(widget.fieldId);
-    _currentIsDirty = _controller.isFieldDirty(widget.fieldId);
+    if (_controller == null) return;
+    _currentValue = _controller!.getValue(widget.fieldId) ?? _controller!.initialValue[widget.fieldId.key] as T?;
+    _currentValidation = _controller!.getValidation(widget.fieldId);
+    _currentIsDirty = _controller!.isFieldDirty(widget.fieldId);
 
     // Check if initial value has changed
-    final initialValue = _controller.initialValue[widget.fieldId.key];
+    final initialValue = _controller!.initialValue[widget.fieldId.key];
     _hasInitialValueChanged = initialValue != null && _currentValue != initialValue;
   }
 
@@ -140,6 +147,12 @@ class _FormixFieldSelectorState<T> extends State<FormixFieldSelector<T>> {
 
   @override
   Widget build(BuildContext context) {
+    if (_controller == null) {
+      return const FormixConfigurationErrorWidget(
+        message: 'FormixFieldSelector used outside of Formix',
+        details: 'This widget requires a Formix ancestor or an explicit controller to function correctly.',
+      );
+    }
     final info = FieldChangeInfo<T>(
       fieldId: widget.fieldId,
       value: _currentValue,

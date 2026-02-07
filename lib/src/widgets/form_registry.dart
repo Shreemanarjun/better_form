@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'formix.dart';
-import '../controllers/field_config.dart';
-import '../controllers/formix_controller.dart';
+import '../../formix.dart';
 
 /// A widget that dynamically registers and unregisters fields for a specific part of the form.
 ///
@@ -53,6 +50,7 @@ class FormixFieldRegistry extends ConsumerStatefulWidget {
 
 class _FormixFieldRegistryState extends ConsumerState<FormixFieldRegistry> {
   FormixController? _controller;
+  Object? _initializationError;
 
   @override
   void didUpdateWidget(FormixFieldRegistry oldWidget) {
@@ -88,11 +86,28 @@ class _FormixFieldRegistryState extends ConsumerState<FormixFieldRegistry> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final newController = Formix.controllerOf(context);
-
-    if (newController != _controller) {
-      _controller = newController;
-      _registerFields();
+    final provider = Formix.of(context);
+    if (provider == null) {
+      if (mounted) {
+        setState(() {
+          _initializationError = 'FormixFieldRegistry used outside of Formix';
+        });
+      }
+      return;
+    }
+    try {
+      final newController = ref.read(provider.notifier);
+      if (newController != _controller) {
+        _controller = newController;
+        _registerFields();
+      }
+      _initializationError = null;
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _initializationError = e;
+        });
+      }
     }
   }
 
@@ -125,6 +140,14 @@ class _FormixFieldRegistryState extends ConsumerState<FormixFieldRegistry> {
 
   @override
   Widget build(BuildContext context) {
+    if (_initializationError != null) {
+      return FormixConfigurationErrorWidget(
+        message: _initializationError is String ? _initializationError as String : 'Failed to initialize FormixFieldRegistry',
+        details: _initializationError.toString().contains('No ProviderScope found')
+            ? 'Missing ProviderScope. Please wrap your application (or this form) in a ProviderScope widget.'
+            : 'Error: $_initializationError',
+      );
+    }
     return widget.child;
   }
 }

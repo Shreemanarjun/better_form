@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meta/meta.dart';
 
-import '../controllers/riverpod_controller.dart';
-import '../controllers/field.dart';
-import '../controllers/field_id.dart';
-import '../controllers/validation.dart';
-import '../enums.dart';
+import '../../formix.dart';
 
 /// Base class for custom form field widgets that automatically handle controller
 /// registration and value synchronization.
@@ -81,6 +77,44 @@ abstract class FormixFieldWidget<T> extends ConsumerStatefulWidget {
 
   @override
   FormixFieldWidgetState<T> createState();
+
+  @override
+  ConsumerStatefulElement createElement() => FormixFieldWidgetElement<T>(this);
+}
+
+/// Element for [FormixFieldWidget] that intercepts building to show errors.
+class FormixFieldWidgetElement<T> extends ConsumerStatefulElement {
+  /// Creates a [FormixFieldWidgetElement].
+  FormixFieldWidgetElement(FormixFieldWidget<T> super.widget);
+
+  @override
+  Widget build() {
+    final state = this.state as FormixFieldWidgetState<T>;
+
+    if (state.initializationError != null) {
+      return FormixConfigurationErrorWidget(
+        message: 'Failed to initialize ${widget.runtimeType}',
+        details: state.initializationError.toString().contains('No ProviderScope found')
+            ? 'Missing ProviderScope. Please wrap your application (or this form) in a ProviderScope widget.\n\nExample:\nvoid main() {\n  runApp(ProviderScope(child: MyApp()));\n}'
+            : 'Error: ${state.initializationError}',
+      );
+    }
+
+    // Check if we are inside a Formix widget if no explicit controller is provided
+    if (state.widget.controller == null && Formix.of(this) == null) {
+      return FormixConfigurationErrorWidget(
+        message: '${state.widget.runtimeType} used outside of Formix',
+        details:
+            'This widget requires a Formix ancestor or an explicit controller to function correctly.\n\nWrap your form fields in a Formix widget:\n\nFormix(\n  child: Column(\n    children: [\n      ${state.widget.runtimeType}(...),\n    ],\n  ),\n)',
+      );
+    }
+
+    if (!state.hasController) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return super.build();
+  }
 }
 
 /// State class that provides simplified APIs for form field management
@@ -93,6 +127,7 @@ abstract class FormixFieldWidgetState<T> extends ConsumerState<FormixFieldWidget
   bool _createdOwnFocusNode = false;
   ProviderSubscription? _controllerSub;
   bool _wasDirty = false;
+  Object? _initializationError;
 
   /// The current value of this field from the controller.
   T? get value => _currentValue;
@@ -142,6 +177,10 @@ abstract class FormixFieldWidgetState<T> extends ConsumerState<FormixFieldWidget
   @override
   bool get mounted => _isMounted;
 
+  /// Internal access to initialization error for the element
+  @internal
+  Object? get initializationError => _initializationError;
+
   @override
   void initState() {
     super.initState();
@@ -152,13 +191,30 @@ abstract class FormixFieldWidgetState<T> extends ConsumerState<FormixFieldWidget
 
   void _setupControllerSubscription() {
     _controllerSub?.close();
-    _controllerSub = ref.listenManual(currentControllerProvider, (
-      previous,
-      next,
-    ) {
-      final newController = widget.controller ?? ref.read(next.notifier);
-      _setupController(newController);
-    }, fireImmediately: true);
+    try {
+      _controllerSub = ref.listenManual(currentControllerProvider, (
+        previous,
+        next,
+      ) {
+        try {
+          final newController = widget.controller ?? ref.read(next.notifier);
+          _setupController(newController);
+          if (mounted) {
+            setState(() {
+              _initializationError = null;
+            });
+          }
+        } catch (e) {
+          if (mounted) {
+            setState(() {
+              _initializationError = e;
+            });
+          }
+        }
+      }, fireImmediately: true);
+    } catch (e) {
+      _initializationError = e;
+    }
   }
 
   void _initFocusNode() {

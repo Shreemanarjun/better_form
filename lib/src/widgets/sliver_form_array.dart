@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'formix.dart';
-import 'form_builder.dart';
-import '../controllers/field_id.dart';
-import 'form_group.dart';
+import '../../formix.dart';
 
 /// A sliver widget for managing dynamic lists of items in a form.
 ///
@@ -43,38 +39,52 @@ class SliverFormixArray<T> extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final provider = Formix.of(context);
     if (provider == null) {
-      throw FlutterError('SliverFormixArray must be placed inside a Formix widget');
+      return const SliverToBoxAdapter(
+        child: FormixConfigurationErrorWidget(
+          message: 'SliverFormixArray used outside of Formix',
+          details: 'SliverFormixArray must be placed inside a Formix widget.',
+        ),
+      );
     }
 
-    final controller = ref.read(provider.notifier);
-    final scope = FormixScope(
-      context: context,
-      ref: ref,
-      controller: controller,
-    );
+    try {
+      final controller = ref.read(provider.notifier);
+      final scope = FormixScope(
+        context: context,
+        ref: ref,
+        controller: controller,
+      );
 
-    // Resolve the array ID based on surrounding form groups
-    final resolvedId = FormixGroup.resolve(context, id) as FormixArrayID<T>;
+      // Resolve the array ID based on surrounding form groups
+      final resolvedId = FormixGroup.resolve(context, id) as FormixArrayID<T>;
 
-    // Watch the array value reactively
-    final items = scope.watchArray(resolvedId);
+      // Watch the array value reactively
+      final items = scope.watchArray(resolvedId);
 
-    if (items.isEmpty && emptyBuilder != null) {
-      final child = emptyBuilder!(context, scope);
-      return SliverToBoxAdapter(child: child);
+      if (items.isEmpty && emptyBuilder != null) {
+        final child = emptyBuilder!(context, scope);
+        return SliverToBoxAdapter(child: child);
+      }
+
+      return SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            final itemId = resolvedId.item(index);
+            return FormixGroup(
+              prefix: '${id.key}[$index]',
+              child: itemBuilder(context, index, itemId, scope),
+            );
+          },
+          childCount: items.length,
+        ),
+      );
+    } catch (e) {
+      return SliverToBoxAdapter(
+        child: FormixConfigurationErrorWidget(
+          message: 'Failed to initialize SliverFormixArray',
+          details: e.toString().contains('No ProviderScope found') ? 'Missing ProviderScope. Please wrap your application (or this form) in a ProviderScope widget.' : 'Error: $e',
+        ),
+      );
     }
-
-    return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        (context, index) {
-          final itemId = resolvedId.item(index);
-          return FormixGroup(
-            prefix: '${id.key}[$index]',
-            child: itemBuilder(context, index, itemId, scope),
-          );
-        },
-        childCount: items.length,
-      ),
-    );
   }
 }

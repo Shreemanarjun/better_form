@@ -212,7 +212,7 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(home: FormixNavigationGuard(child: Text('Child'))),
       );
-      expect(find.text('Child'), findsOneWidget);
+      expect(find.byType(FormixConfigurationErrorWidget), findsOneWidget);
     });
 
     testWidgets('Guard with onDirtyPop', (tester) async {
@@ -386,12 +386,12 @@ void main() {
           home: FormixBuilder(builder: (context, scope) => Container()),
         ),
       );
-      expect(tester.takeException(), isInstanceOf<FlutterError>());
+      expect(find.byType(FormixConfigurationErrorWidget), findsOneWidget);
     });
 
     testWidgets('FormixWidget outside Formix', (tester) async {
       await tester.pumpWidget(const MaterialApp(home: _TestWidget()));
-      expect(tester.takeException(), isInstanceOf<FlutterError>());
+      expect(find.byType(FormixConfigurationErrorWidget), findsOneWidget);
     });
 
     testWidgets('FormixFieldConditionalSelector', (tester) async {
@@ -679,7 +679,7 @@ void main() {
           ),
         ),
       );
-      expect(tester.takeException(), isInstanceOf<FlutterError>());
+      expect(find.byType(FormixConfigurationErrorWidget), findsOneWidget);
     });
   });
 }

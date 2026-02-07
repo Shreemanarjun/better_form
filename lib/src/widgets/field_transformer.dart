@@ -1,11 +1,8 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../controllers/field_id.dart';
-import '../controllers/formix_controller.dart';
-import 'formix.dart';
+import '../../formix.dart';
 
 /// A widget that transforms the value of one field to another in a type-safe way.
 ///
@@ -45,6 +42,7 @@ class FormixFieldTransformer<T, S> extends ConsumerStatefulWidget {
 class _FormixFieldTransformerState<T, S> extends ConsumerState<FormixFieldTransformer<T, S>> {
   FormixController? _controller;
   late VoidCallback _listener;
+  Object? _initializationError;
 
   @override
   void initState() {
@@ -56,17 +54,35 @@ class _FormixFieldTransformerState<T, S> extends ConsumerState<FormixFieldTransf
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    final newController = Formix.controllerOf(context);
-    if (newController != _controller) {
-      if (_controller != null) {
-        _controller!.removeFieldListener(widget.sourceField, _listener);
+    final provider = Formix.of(context);
+    if (provider == null) {
+      if (mounted) {
+        setState(() {
+          _initializationError = 'FormixFieldTransformer used outside of Formix';
+        });
       }
+      return;
+    }
+    try {
+      final newController = ref.read(provider.notifier);
+      if (newController != _controller) {
+        if (_controller != null) {
+          _controller!.removeFieldListener(widget.sourceField, _listener);
+        }
 
-      _controller = newController;
-      if (_controller != null) {
-        _controller!.addFieldListener(widget.sourceField, _listener);
-        // Initial transform
-        scheduleMicrotask(_transformValue);
+        _controller = newController;
+        if (_controller != null) {
+          _controller!.addFieldListener(widget.sourceField, _listener);
+          // Initial transform
+          scheduleMicrotask(_transformValue);
+        }
+      }
+      _initializationError = null;
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _initializationError = e;
+        });
       }
     }
   }
@@ -136,6 +152,14 @@ class _FormixFieldTransformerState<T, S> extends ConsumerState<FormixFieldTransf
 
   @override
   Widget build(BuildContext context) {
+    if (_initializationError != null) {
+      return FormixConfigurationErrorWidget(
+        message: _initializationError is String ? _initializationError as String : 'Failed to initialize FormixFieldTransformer',
+        details: _initializationError.toString().contains('No ProviderScope found')
+            ? 'Missing ProviderScope. Please wrap your application (or this form) in a ProviderScope widget.'
+            : 'Error: $_initializationError',
+      );
+    }
     return const SizedBox.shrink();
   }
 }

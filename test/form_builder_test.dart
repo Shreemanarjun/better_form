@@ -553,7 +553,7 @@ void main() {
       ),
     );
 
-    expect(tester.takeException(), isA<FlutterError>());
+    expect(find.byType(FormixConfigurationErrorWidget), findsOneWidget);
   });
 
   testWidgets('FormixWidget throws error when not inside Formix', (
@@ -565,6 +565,6 @@ void main() {
       ),
     );
 
-    expect(tester.takeException(), isA<FlutterError>());
+    expect(find.byType(FormixConfigurationErrorWidget), findsOneWidget);
   });
 }

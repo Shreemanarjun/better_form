@@ -1,12 +1,9 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:stream_transform/stream_transform.dart';
 
-import '../controllers/field_id.dart';
-import '../controllers/riverpod_controller.dart';
-import 'formix.dart';
+import '../../formix.dart';
 
 /// A widget that asynchronously transforms the value of one field to another in a type-safe way.
 ///
@@ -64,6 +61,7 @@ class _FormixFieldAsyncTransformerState<T, S> extends ConsumerState<FormixFieldA
   StreamSubscription<T?>? _subscription;
   VoidCallback? _formListenerRemover;
   bool _wasSubmitting = false;
+  Object? _initializationError;
 
   @override
   void initState() {
@@ -86,24 +84,42 @@ class _FormixFieldAsyncTransformerState<T, S> extends ConsumerState<FormixFieldA
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    final newController = Formix.controllerOf(context);
-    if (newController != _controller) {
-      if (_controller != null) {
-        _controller!.removeFieldListener(widget.sourceField, _listener);
-        _formListenerRemover?.call();
-        _formListenerRemover = null;
+    final provider = Formix.of(context);
+    if (provider == null) {
+      if (mounted) {
+        setState(() {
+          _initializationError = 'FormixFieldAsyncTransformer used outside of Formix';
+        });
       }
+      return;
+    }
+    try {
+      final newController = ref.read(provider.notifier);
+      if (newController != _controller) {
+        if (_controller != null) {
+          _controller!.removeFieldListener(widget.sourceField, _listener);
+          _formListenerRemover?.call();
+          _formListenerRemover = null;
+        }
 
-      _controller = newController;
-      if (_controller != null) {
-        _controller!.addFieldListener(widget.sourceField, _listener);
-        if (widget.retransformOnSubmit) {
-          _formListenerRemover = _controller!.addFormListener(_onSubmitChanged);
+        _controller = newController;
+        if (_controller != null) {
+          _controller!.addFieldListener(widget.sourceField, _listener);
+          if (widget.retransformOnSubmit) {
+            _formListenerRemover = _controller!.addFormListener(_onSubmitChanged);
+          }
+          // Initial transform
+          if (mounted) {
+            _onSourceChanged();
+          }
         }
-        // Initial transform
-        if (mounted) {
-          _onSourceChanged();
-        }
+      }
+      _initializationError = null;
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _initializationError = e;
+        });
       }
     }
   }
@@ -221,6 +237,14 @@ class _FormixFieldAsyncTransformerState<T, S> extends ConsumerState<FormixFieldA
 
   @override
   Widget build(BuildContext context) {
+    if (_initializationError != null) {
+      return FormixConfigurationErrorWidget(
+        message: _initializationError is String ? _initializationError as String : 'Failed to initialize FormixFieldAsyncTransformer',
+        details: _initializationError.toString().contains('No ProviderScope found')
+            ? 'Missing ProviderScope. Please wrap your application (or this form) in a ProviderScope widget.'
+            : 'Error: $_initializationError',
+      );
+    }
     return const SizedBox.shrink();
   }
 }

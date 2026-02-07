@@ -1,11 +1,8 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../controllers/riverpod_controller.dart';
-import '../controllers/field_id.dart';
-import 'formix.dart';
+import '../../formix.dart';
 
 /// A widget that automatically derives field values based on other field changes.
 ///
@@ -63,6 +60,7 @@ class FormixFieldDerivation extends ConsumerStatefulWidget {
 class _FormixFieldDerivationState extends ConsumerState<FormixFieldDerivation> {
   FormixController? _controller;
   late VoidCallback _listener;
+  Object? _initializationError;
 
   @override
   void initState() {
@@ -74,31 +72,49 @@ class _FormixFieldDerivationState extends ConsumerState<FormixFieldDerivation> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    final newController = Formix.controllerOf(context);
-    if (newController != _controller) {
-      // Remove listeners from old controller
-      if (_controller != null) {
-        for (final fieldId in widget.dependencies) {
-          _controller!.removeFieldListener(fieldId, _listener);
+    final provider = Formix.of(context);
+    if (provider == null) {
+      if (mounted) {
+        setState(() {
+          _initializationError = 'FormixFieldDerivation used outside of Formix';
+        });
+      }
+      return;
+    }
+    try {
+      final newController = ref.read(provider.notifier);
+      if (newController != _controller) {
+        // Remove listeners from old controller
+        if (_controller != null) {
+          for (final fieldId in widget.dependencies) {
+            _controller!.removeFieldListener(fieldId, _listener);
+          }
+        }
+
+        // Add listeners to new controller
+        _controller = newController;
+        if (_controller != null) {
+          // Ensure all dependency fields are registered
+          for (final fieldId in widget.dependencies) {
+            _ensureFieldRegistered(fieldId);
+          }
+          // Ensure target field is registered
+          _ensureFieldRegistered(widget.targetField);
+
+          for (final fieldId in widget.dependencies) {
+            _controller!.addFieldListener(fieldId, _listener);
+          }
+
+          // Initial calculation - defer to avoid calling setState during build
+          scheduleMicrotask(_recalculate);
         }
       }
-
-      // Add listeners to new controller
-      _controller = newController;
-      if (_controller != null) {
-        // Ensure all dependency fields are registered
-        for (final fieldId in widget.dependencies) {
-          _ensureFieldRegistered(fieldId);
-        }
-        // Ensure target field is registered
-        _ensureFieldRegistered(widget.targetField);
-
-        for (final fieldId in widget.dependencies) {
-          _controller!.addFieldListener(fieldId, _listener);
-        }
-
-        // Initial calculation - defer to avoid calling setState during build
-        scheduleMicrotask(_recalculate);
+      _initializationError = null;
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _initializationError = e;
+        });
       }
     }
   }
@@ -184,6 +200,14 @@ class _FormixFieldDerivationState extends ConsumerState<FormixFieldDerivation> {
 
   @override
   Widget build(BuildContext context) {
+    if (_initializationError != null) {
+      return FormixConfigurationErrorWidget(
+        message: _initializationError is String ? _initializationError as String : 'Failed to initialize FormixFieldDerivation',
+        details: _initializationError.toString().contains('No ProviderScope found')
+            ? 'Missing ProviderScope. Please wrap your application (or this form) in a ProviderScope widget.'
+            : 'Error: $_initializationError',
+      );
+    }
     // This widget doesn't render anything visible
     return const SizedBox.shrink();
   }
@@ -207,22 +231,41 @@ class FormixFieldDerivations extends ConsumerStatefulWidget {
 class _FormixFieldDerivationsState extends ConsumerState<FormixFieldDerivations> {
   FormixController? _controller;
   final Map<String, VoidCallback> _listeners = {};
+  Object? _initializationError;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    final newController = Formix.controllerOf(context);
-    if (newController != _controller) {
-      // Clean up old listeners
-      _removeAllListeners();
+    final provider = Formix.of(context);
+    if (provider == null) {
+      if (mounted) {
+        setState(() {
+          _initializationError = 'FormixFieldDerivations used outside of Formix';
+        });
+      }
+      return;
+    }
+    try {
+      final newController = ref.read(provider.notifier);
+      if (newController != _controller) {
+        // Clean up old listeners
+        _removeAllListeners();
 
-      // Set up new controller
-      _controller = newController;
-      if (_controller != null) {
-        _setupListeners();
-        // Initial calculations - defer to avoid calling setState during build
-        scheduleMicrotask(_recalculateAll);
+        // Set up new controller
+        _controller = newController;
+        if (_controller != null) {
+          _setupListeners();
+          // Initial calculations - defer to avoid calling setState during build
+          scheduleMicrotask(_recalculateAll);
+        }
+      }
+      _initializationError = null;
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _initializationError = e;
+        });
       }
     }
   }
@@ -315,6 +358,14 @@ class _FormixFieldDerivationsState extends ConsumerState<FormixFieldDerivations>
 
   @override
   Widget build(BuildContext context) {
+    if (_initializationError != null) {
+      return FormixConfigurationErrorWidget(
+        message: _initializationError is String ? _initializationError as String : 'Failed to initialize FormixFieldDerivations',
+        details: _initializationError.toString().contains('No ProviderScope found')
+            ? 'Missing ProviderScope. Please wrap your application (or this form) in a ProviderScope widget.'
+            : 'Error: $_initializationError',
+      );
+    }
     return const SizedBox.shrink();
   }
 }

@@ -42,6 +42,7 @@ class FormixListener extends ConsumerStatefulWidget {
 
 class _FormixListenerState extends ConsumerState<FormixListener> {
   VoidCallback? _removeListener;
+  Object? _initializationError;
 
   @override
   void initState() {
@@ -59,25 +60,39 @@ class _FormixListenerState extends ConsumerState<FormixListener> {
   }
 
   void _subscribe() {
-    // Determine controller availability efficiently
-    // We use addPostFrameCallback because the Formix widget might be built
-    // in the same frame or slightly later if it's down the tree.
-    // Actually, usually FormixListener is outside/above or sibling.
+    try {
+      // Determine controller availability efficiently
+      final FormixState? formState = widget.formKey.currentState;
+      final controller = formState?.controller;
 
-    // If Formix is already built:
-    final controller = widget.formKey.currentState?.controller;
-
-    if (controller != null) {
-      _removeListener = controller.addFormListener(_handleStateChange);
-    } else {
-      // Retry in next frame if not ready yet
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        final ctrl = widget.formKey.currentState?.controller;
-        if (ctrl != null) {
-          _removeListener = ctrl.addFormListener(_handleStateChange);
-        }
-      });
+      if (controller != null) {
+        _removeListener = controller.addFormListener(_handleStateChange);
+        _initializationError = null;
+      } else {
+        // Retry in next frame if not ready yet
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          try {
+            final ctrl = widget.formKey.currentState?.controller;
+            if (ctrl != null) {
+              _removeListener = ctrl.addFormListener(_handleStateChange);
+              setState(() {
+                _initializationError = null;
+              });
+            } else {
+              setState(() {
+                _initializationError = 'Formix not found at provided GlobalKey';
+              });
+            }
+          } catch (e) {
+            setState(() {
+              _initializationError = e;
+            });
+          }
+        });
+      }
+    } catch (e) {
+      _initializationError = e;
     }
   }
 
@@ -99,6 +114,14 @@ class _FormixListenerState extends ConsumerState<FormixListener> {
 
   @override
   Widget build(BuildContext context) {
+    if (_initializationError != null) {
+      return FormixConfigurationErrorWidget(
+        message: _initializationError is String ? _initializationError as String : 'Failed to initialize FormixListener',
+        details: _initializationError.toString().contains('No ProviderScope found')
+            ? 'Missing ProviderScope. Please wrap your application (or this form) in a ProviderScope widget.'
+            : 'Error: $_initializationError',
+      );
+    }
     return widget.child;
   }
 }

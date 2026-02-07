@@ -1,12 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'async_form_field.dart';
-import '../controllers/field_id.dart';
-import '../enums.dart';
-import 'formix.dart';
+import '../../formix.dart';
 
 /// A simplified version of [FormixAsyncField] that automatically manages dependencies.
 ///
@@ -88,45 +84,53 @@ class FormixDependentAsyncField<T, D> extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final formProvider = Formix.of(context);
     if (formProvider == null) {
-      throw FlutterError(
-        'FormixDependentAsyncField must be used inside a Formix widget',
+      return const FormixConfigurationErrorWidget(
+        message: 'FormixDependentAsyncField used outside of Formix',
+        details: 'FormixDependentAsyncField requires a Formix ancestor to function. Wrap your form in a Formix widget.',
       );
     }
 
-    // Watch the dependency value with type safety
-    final dependencyValue = ref.watch(
-      formProvider.select((s) => s.getValue(dependency)),
-    );
+    try {
+      // Watch the dependency value with type safety
+      final dependencyValue = ref.watch(
+        formProvider.select((s) => s.getValue(dependency)),
+      );
 
-    // Listen for dependency changes to reset the related field
-    if (resetField != null) {
-      ref.listen(formProvider.select((s) => s.getValue(dependency)), (
-        previous,
-        next,
-      ) {
-        if (previous != next) {
-          ref.read(formProvider.notifier).setValue(resetField!, null);
-        }
-      });
+      // Listen for dependency changes to reset the related field
+      if (resetField != null) {
+        ref.listen(formProvider.select((s) => s.getValue(dependency)), (
+          previous,
+          next,
+        ) {
+          if (previous != next) {
+            ref.read(formProvider.notifier).setValue(resetField!, null);
+          }
+        });
+      }
+
+      return FormixAsyncField<T>(
+        fieldId: fieldId,
+        // Pass the current dependency value to the future creator
+        future: future(dependencyValue),
+        // Use the dependency value as the 'dependencies' list for FormixAsyncField
+        // This tells FormixAsyncField to re-execute the future when this value changes
+        dependencies: [dependencyValue],
+        // Define retry logic (same as initial fetch)
+        onRetry: () => future(dependencyValue),
+        builder: builder,
+        loadingBuilder: loadingBuilder,
+        asyncErrorBuilder: asyncErrorBuilder,
+        keepPreviousData: keepPreviousData,
+        debounce: debounce,
+        initialValue: initialValue,
+        initialValueStrategy: initialValueStrategy,
+        manual: manual,
+      );
+    } catch (e) {
+      return FormixConfigurationErrorWidget(
+        message: 'Failed to initialize FormixDependentAsyncField',
+        details: e.toString().contains('No ProviderScope found') ? 'Missing ProviderScope. Please wrap your application (or this form) in a ProviderScope widget.' : 'Error: $e',
+      );
     }
-
-    return FormixAsyncField<T>(
-      fieldId: fieldId,
-      // Pass the current dependency value to the future creator
-      future: future(dependencyValue),
-      // Use the dependency value as the 'dependencies' list for FormixAsyncField
-      // This tells FormixAsyncField to re-execute the future when this value changes
-      dependencies: [dependencyValue],
-      // Define retry logic (same as initial fetch)
-      onRetry: () => future(dependencyValue),
-      builder: builder,
-      loadingBuilder: loadingBuilder,
-      asyncErrorBuilder: asyncErrorBuilder,
-      keepPreviousData: keepPreviousData,
-      debounce: debounce,
-      initialValue: initialValue,
-      initialValueStrategy: initialValueStrategy,
-      manual: manual,
-    );
   }
 }

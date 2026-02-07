@@ -52,3 +52,4 @@ export 'src/analytics/logging_form_analytics.dart';
 export 'src/widgets/dependent_async_field.dart';
 export 'src/widgets/form_registry.dart';
 export 'src/widgets/form_theme.dart';
+export 'src/widgets/formix_errors.dart';

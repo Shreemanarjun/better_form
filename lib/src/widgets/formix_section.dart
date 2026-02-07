@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../controllers/riverpod_controller.dart';
-import 'formix.dart'; // For Formix.of
+import '../../formix.dart'; // For Formix.of
 
 /// A widget that registers a specific set of fields with the parent [Formix].
 ///
@@ -66,10 +64,26 @@ class _FormixSectionState extends ConsumerState<FormixSection> {
   void _initController() {
     final provider = Formix.of(context);
     if (provider == null) {
-      throw FlutterError('FormixSection must be placed inside a Formix widget');
+      if (mounted) {
+        setState(() {
+          _initializationError = 'FormixSection used outside of Formix';
+        });
+      }
+      return;
     }
-    _controller = ref.read(provider.notifier);
+    try {
+      _controller = ref.read(provider.notifier);
+      _initializationError = null;
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _initializationError = e;
+        });
+      }
+    }
   }
+
+  Object? _initializationError;
 
   void _registerFields() {
     if (_controller == null) return;
@@ -113,6 +127,14 @@ class _FormixSectionState extends ConsumerState<FormixSection> {
 
   @override
   Widget build(BuildContext context) {
+    if (_initializationError != null) {
+      return FormixConfigurationErrorWidget(
+        message: _initializationError is String ? _initializationError as String : 'Failed to initialize FormixSection',
+        details: _initializationError.toString().contains('No ProviderScope found')
+            ? 'Missing ProviderScope. Please wrap your application (or this form) in a ProviderScope widget.'
+            : 'Error: $_initializationError',
+      );
+    }
     return widget.child;
   }
 }

@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../controllers/riverpod_controller.dart';
-import '../controllers/field_id.dart';
-import '../controllers/validation.dart';
-import 'formix.dart';
+import '../../formix.dart';
 
 /// A comprehensive toolset for interacting with [Formix] state and logic.
 ///
@@ -238,19 +234,29 @@ class _FormixBuilderState extends ConsumerState<FormixBuilder> {
   Widget build(BuildContext context) {
     final provider = Formix.of(context);
     if (provider == null) {
-      throw FlutterError('FormixBuilder must be placed inside a Formix widget');
+      return const FormixConfigurationErrorWidget(
+        message: 'FormixBuilder used outside of Formix',
+        details: 'FormixBuilder must be placed inside a Formix widget to access form state.',
+      );
     }
 
-    // We watch the notifier so we get the new controller if it's recreated.
-    final controller = ref.watch(provider.notifier);
+    try {
+      // We watch the notifier so we get the new controller if it's recreated.
+      final controller = ref.watch(provider.notifier);
 
-    final scope = FormixScope(
-      context: context,
-      ref: ref,
-      controller: controller,
-    );
+      final scope = FormixScope(
+        context: context,
+        ref: ref,
+        controller: controller,
+      );
 
-    return widget.builder(context, scope);
+      return widget.builder(context, scope);
+    } catch (e) {
+      return FormixConfigurationErrorWidget(
+        message: 'Failed to initialize FormixBuilder',
+        details: e.toString().contains('No ProviderScope found') ? 'Missing ProviderScope. Please wrap your application (or this form) in a ProviderScope widget.' : 'Error: $e',
+      );
+    }
   }
 }
 
@@ -284,18 +290,28 @@ abstract class FormixWidget extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final provider = Formix.of(context);
     if (provider == null) {
-      throw FlutterError('$runtimeType must be placed inside a Formix widget');
+      return FormixConfigurationErrorWidget(
+        message: '$runtimeType used outside of Formix',
+        details: '$runtimeType must be placed inside a Formix widget.',
+      );
     }
 
-    final controller = ref.watch(provider.notifier);
+    try {
+      final controller = ref.watch(provider.notifier);
 
-    final scope = FormixScope(
-      context: context,
-      ref: ref,
-      controller: controller,
-    );
+      final scope = FormixScope(
+        context: context,
+        ref: ref,
+        controller: controller,
+      );
 
-    return buildForm(context, scope);
+      return buildForm(context, scope);
+    } catch (e) {
+      return FormixConfigurationErrorWidget(
+        message: 'Failed to initialize $runtimeType',
+        details: e.toString().contains('No ProviderScope found') ? 'Missing ProviderScope. Please wrap your application (or this form) in a ProviderScope widget.' : 'Error: $e',
+      );
+    }
   }
 
   /// Build the widget based on the provided [FormixScope].

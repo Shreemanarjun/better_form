@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'formix.dart';
+import 'formix_errors.dart';
 
 /// A widget that prevents navigation if the form is dirty.
 ///
@@ -47,7 +48,10 @@ class _FormixNavigationGuardState extends ConsumerState<FormixNavigationGuard> {
 
     final controllerProvider = Formix.of(context);
     if (controllerProvider == null) {
-      return widget.child;
+      return const FormixConfigurationErrorWidget(
+        message: 'FormixNavigationGuard used outside of Formix',
+        details: 'FormixNavigationGuard requires a Formix ancestor to function. Wrap your form in a Formix widget.',
+      );
     }
 
     final isDirty = ref.watch(
