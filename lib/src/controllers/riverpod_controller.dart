@@ -1268,7 +1268,10 @@ class RiverpodFormController extends StateNotifier<FormixData> {
   }
 
   /// Reset form to initial state or clear it
-  void reset({ResetStrategy strategy = ResetStrategy.initialValues}) {
+  void reset({
+    ResetStrategy strategy = ResetStrategy.initialValues,
+    bool clearErrors = false,
+  }) {
     final Map<String, dynamic> newValues;
     if (strategy == ResetStrategy.initialValues) {
       newValues = {...initialValueMap};
@@ -1284,11 +1287,15 @@ class RiverpodFormController extends StateNotifier<FormixData> {
 
     for (final key in _fieldDefinitions.keys) {
       newDirtyStates[key] = false;
-      newValidations[key] = _performSyncValidation(
-        key,
-        newValues[key],
-        newValues,
-      );
+      if (clearErrors) {
+        newValidations[key] = ValidationResult.valid;
+      } else {
+        newValidations[key] = _performSyncValidation(
+          key,
+          newValues[key],
+          newValues,
+        );
+      }
     }
 
     final newTouchedStates = <String, bool>{};
@@ -1317,17 +1324,18 @@ class RiverpodFormController extends StateNotifier<FormixData> {
 
   /// Resets the form and sets a new set of initial values.
   /// This clears all dirty and touched states.
-  void resetToValues(Map<String, dynamic> data) {
+  void resetToValues(Map<String, dynamic> data, {bool clearErrors = false}) {
     for (final entry in data.entries) {
       setInitialValueInternal(entry.key, entry.value);
     }
-    reset(strategy: ResetStrategy.initialValues);
+    reset(strategy: ResetStrategy.initialValues, clearErrors: clearErrors);
   }
 
   /// Reset specific fields
   void resetFields(
     List<FormixFieldID> fieldIds, {
     ResetStrategy strategy = ResetStrategy.initialValues,
+    bool clearErrors = false,
   }) {
     final newValues = {...state.values};
     final newValidations = {...state.validations};
@@ -1349,7 +1357,11 @@ class RiverpodFormController extends StateNotifier<FormixData> {
       newValues[key] = newValue;
       newDirtyStates[key] = false;
       newTouchedStates[key] = false;
-      newValidations[key] = _performSyncValidation(key, newValue, newValues);
+      if (clearErrors) {
+        newValidations[key] = ValidationResult.valid;
+      } else {
+        newValidations[key] = _performSyncValidation(key, newValue, newValues);
+      }
     }
 
     state = state.copyWith(

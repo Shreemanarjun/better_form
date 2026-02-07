@@ -147,8 +147,11 @@ class FormixController extends RiverpodFormController {
 
   /// Resets the form to its initial state.
   @override
-  void reset({ResetStrategy strategy = ResetStrategy.initialValues}) {
-    super.reset(strategy: strategy);
+  void reset({
+    ResetStrategy strategy = ResetStrategy.initialValues,
+    bool clearErrors = false,
+  }) {
+    super.reset(strategy: strategy, clearErrors: clearErrors);
   }
 
   /// Submits the form with automatic focus support on validation failure.
@@ -436,14 +439,21 @@ class FormixController extends RiverpodFormController {
     return setValues(updates);
   }
 
+  /// Resets specific fields to their initial values or clears them.
+  @override
+  void resetFields(
+    List<FormixFieldID> fieldIds, {
+    ResetStrategy strategy = ResetStrategy.initialValues,
+    bool clearErrors = false,
+  }) {
+    super.resetFields(fieldIds, strategy: strategy, clearErrors: clearErrors);
+  }
+
   /// Resets the form and sets a new set of initial values.
   /// This clears all dirty and touched states.
   @override
-  void resetToValues(Map<String, dynamic> data) {
-    for (final entry in data.entries) {
-      setInitialValueInternal(entry.key, entry.value);
-    }
-    reset(strategy: ResetStrategy.initialValues);
+  void resetToValues(Map<String, dynamic> data, {bool clearErrors = false}) {
+    super.resetToValues(data, clearErrors: clearErrors);
   }
 
   // Listener management for compatibility
