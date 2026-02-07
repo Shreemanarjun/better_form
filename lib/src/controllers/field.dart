@@ -19,6 +19,7 @@ class FormixField<T> {
     this.debounceDuration,
     this.emptyValue,
     this.validationMode = FormixAutovalidateMode.auto,
+    this.initialValueStrategy = FormixInitialValueStrategy.preferLocal,
     this.inputFormatters,
     this.textInputAction,
     this.onSubmitted,
@@ -29,6 +30,9 @@ class FormixField<T> {
 
   /// Initial value of the field
   final T? initialValue;
+
+  /// Strategy for handling initial values
+  final FormixInitialValueStrategy initialValueStrategy;
 
   /// Value to use when the field is cleared or reset
   final T? emptyValue;

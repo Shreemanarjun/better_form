@@ -48,6 +48,7 @@ class FormixAsyncField<T> extends FormixFieldWidget<T> {
     super.validator,
     super.asyncValidator,
     super.initialValue,
+    super.initialValueStrategy,
     super.controller,
   }) : assert(
          asyncValue != null || future != null || manual,

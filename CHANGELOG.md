@@ -1,3 +1,17 @@
+## 0.1.0
+
+### ✨ New Features
+- **Configurable Initial Value Strategy**:
+  - Introduced `FormixInitialValueStrategy` enum to control how fields adopt initial values after their first registration.
+  - Added `preferLocal` strategy (default): Fields intelligently adopt values from widgets if the current state is `null` and not yet modified by the user. This solves common issues with late-initialized data in dynamic forms or wizards.
+  - Added `preferGlobal` strategy: Fields strictly adhere to the initial value provided during the very first registration (at the `Formix` root), ignoring subsequent updates from nested widgets.
+  - Strategy can be configured at the `FormixFieldConfig` level or overridden on individual field widgets.
+
+### 🛠️ Core Improvements & Fixes
+- **Robust Field Re-registration**: Updated `registerFields` logic to track newly registered fields versus definition updates, ensuring state preservation while correctly applying initial values when appropriate.
+- **Unified Widget API**: Exposed `initialValueStrategy` on all standard and adaptive form fields for fine-grained control.
+- **Fixed Hidden Bug**: Resolved an edge-case where `initialValue` provided in a widget was ignored if the field had been pre-registered in the root `Formix` widget with a `null` value.
+
 ## 0.0.9
 
 ### 🛠️ Core Improvements & Fixes

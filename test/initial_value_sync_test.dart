@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:formix/formix.dart';
 
@@ -63,5 +62,35 @@ void main() {
 
     // Existing value should be preserved
     expect(find.text('Value: pre-existing@example.com'), findsOneWidget);
+  });
+
+  testWidgets('initialValue from widget should be ignored if strategy is preferGlobal and already registered', (tester) async {
+    const emailField = FormixFieldID<String>('email');
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: Scaffold(
+            body: Formix(
+              // Pre-registered with null
+              fields: const [FormixFieldConfig<String>(id: emailField)],
+              child: FormixRawFormField<String>(
+                fieldId: emailField,
+                initialValue: 'late-init@example.com',
+                initialValueStrategy: FormixInitialValueStrategy.preferGlobal,
+                builder: (context, state) {
+                  return Text('Value: ${state.value ?? 'null'}');
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.pump();
+
+    // Should still be null because strategy is preferGlobal
+    expect(find.text('Value: null'), findsOneWidget);
   });
 }

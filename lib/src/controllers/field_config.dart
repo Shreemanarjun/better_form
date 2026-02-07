@@ -20,6 +20,7 @@ class FormixFieldConfig<T> {
     this.asyncValidator,
     this.debounceDuration,
     this.validationMode = FormixAutovalidateMode.auto,
+    this.initialValueStrategy = FormixInitialValueStrategy.preferLocal,
     this.inputFormatters,
     this.textInputAction,
     this.onSubmitted,
@@ -83,6 +84,9 @@ class FormixFieldConfig<T> {
   /// Validation mode for this field
   final FormixAutovalidateMode validationMode;
 
+  /// Strategy for handling initial values
+  final FormixInitialValueStrategy initialValueStrategy;
+
   /// Input formatters for the field (UI)
   final List<TextInputFormatter>? inputFormatters;
 
@@ -110,6 +114,7 @@ class FormixFieldConfig<T> {
       asyncValidator: localAsyncValidator,
       debounceDuration: debounceDuration,
       validationMode: validationMode,
+      initialValueStrategy: initialValueStrategy,
       inputFormatters: inputFormatters,
       textInputAction: textInputAction,
       onSubmitted: onSubmitted,
@@ -131,6 +136,7 @@ class FormixFieldConfig<T> {
           asyncValidator == other.asyncValidator &&
           debounceDuration == other.debounceDuration &&
           validationMode == other.validationMode &&
+          initialValueStrategy == other.initialValueStrategy &&
           inputFormatters == other.inputFormatters &&
           textInputAction == other.textInputAction &&
           onSubmitted == other.onSubmitted;
@@ -147,6 +153,7 @@ class FormixFieldConfig<T> {
       asyncValidator.hashCode ^
       debounceDuration.hashCode ^
       validationMode.hashCode ^
+      initialValueStrategy.hashCode ^
       inputFormatters.hashCode ^
       textInputAction.hashCode ^
       onSubmitted.hashCode;

@@ -1032,9 +1032,12 @@ class RiverpodFormController extends StateNotifier<FormixData> {
   void registerFields(List<FormixField> fields) {
     if (fields.isEmpty) return;
     _transitiveDependentsCache.clear();
+    final isNewMap = <String, bool>{};
 
     for (final field in fields) {
       final key = field.id.key;
+      final isNew = !_fieldDefinitions.containsKey(key);
+      isNewMap[key] = isNew;
 
       // Update dependency graph: Cleanup old dependencies
       if (_fieldDefinitions.containsKey(key)) {
@@ -1046,7 +1049,6 @@ class RiverpodFormController extends StateNotifier<FormixData> {
 
       _validationDurations[key] = Duration.zero;
 
-      final isNew = !_fieldDefinitions.containsKey(key);
       _fieldDefinitions[key] = FormixField<dynamic>(
         id: FormixFieldID<dynamic>(field.id.key),
         initialValue: field.initialValue,
@@ -1057,6 +1059,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
         asyncValidator: field.wrappedAsyncValidator,
         debounceDuration: field.debounceDuration,
         validationMode: field.validationMode,
+        initialValueStrategy: field.initialValueStrategy,
         crossFieldValidator: field.wrappedCrossFieldValidator,
         dependsOn: field.dependsOn,
         inputFormatters: field.inputFormatters,
@@ -1094,10 +1097,21 @@ class RiverpodFormController extends StateNotifier<FormixData> {
         // If the value exists and is CLEAN (or doesn't exist), we overwrite it with the new initial value.
         // This handles both "Override Global Initial Value" (Clean Global -> Local)
         // AND "Preserve Lazy State" (Dirty User Value -> Kept).
+        final strategy = field.initialValueStrategy;
+        final isNew = isNewMap[key] ?? false;
+
         if (field.initialValue != null) {
           final isDirty = newDirtyStates[key] ?? false;
           final currentValue = newValues[key];
-          if (!newValues.containsKey(key) || (!isDirty && currentValue == null)) {
+
+          bool shouldAdopt = false;
+          if (strategy == FormixInitialValueStrategy.preferLocal) {
+            shouldAdopt = !newValues.containsKey(key) || (!isDirty && currentValue == null);
+          } else {
+            shouldAdopt = isNew;
+          }
+
+          if (shouldAdopt) {
             newValues[key] = field.initialValue;
           }
         }

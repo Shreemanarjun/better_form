@@ -42,6 +42,7 @@ class FormixAdaptiveTextFormField extends StatelessWidget {
     this.forceErrorText,
     this.errorBuilder,
     this.autovalidateMode,
+    this.initialValueStrategy,
     this.restorationId,
   });
 
@@ -129,6 +130,9 @@ class FormixAdaptiveTextFormField extends StatelessWidget {
   /// Restoration ID for state restoration.
   final String? restorationId;
 
+  /// Strategy for handling initial values.
+  final FormixInitialValueStrategy? initialValueStrategy;
+
   @override
   Widget build(BuildContext context) {
     final platform = Theme.of(context).platform;
@@ -161,6 +165,7 @@ class FormixAdaptiveTextFormField extends StatelessWidget {
         forceErrorText: forceErrorText,
         errorBuilder: errorBuilder,
         autovalidateMode: autovalidateMode,
+        initialValueStrategy: initialValueStrategy,
         restorationId: restorationId,
       );
     }
@@ -193,6 +198,7 @@ class FormixAdaptiveTextFormField extends StatelessWidget {
       forceErrorText: forceErrorText,
       errorBuilder: errorBuilder,
       autovalidateMode: autovalidateMode,
+      initialValueStrategy: initialValueStrategy,
       restorationId: restorationId,
     );
   }

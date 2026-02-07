@@ -21,6 +21,7 @@ class FormixCheckboxFormField extends FormixFieldWidget<bool> {
     super.forceErrorText,
     super.errorBuilder,
     super.autovalidateMode,
+    super.initialValueStrategy,
     super.restorationId,
     this.activeColor,
     this.checkColor,

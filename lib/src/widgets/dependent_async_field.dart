@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'async_form_field.dart';
 import '../controllers/field_id.dart';
+import '../enums.dart';
 import 'formix.dart';
 
 /// A simplified version of [FormixAsyncField] that automatically manages dependencies.
@@ -42,6 +43,7 @@ class FormixDependentAsyncField<T, D> extends ConsumerWidget {
     this.asyncErrorBuilder,
     this.debounce,
     this.initialValue,
+    this.initialValueStrategy,
     this.manual = false,
   });
 
@@ -78,6 +80,9 @@ class FormixDependentAsyncField<T, D> extends ConsumerWidget {
 
   /// If true, the field must be manually refreshed.
   final bool manual;
+
+  /// Strategy for handling initial values.
+  final FormixInitialValueStrategy? initialValueStrategy;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -120,6 +125,7 @@ class FormixDependentAsyncField<T, D> extends ConsumerWidget {
       keepPreviousData: keepPreviousData,
       debounce: debounce,
       initialValue: initialValue,
+      initialValueStrategy: initialValueStrategy,
       manual: manual,
     );
   }

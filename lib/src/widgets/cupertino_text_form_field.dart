@@ -36,6 +36,7 @@ class FormixCupertinoTextFormField extends FormixFieldWidget<String> {
     super.forceErrorText,
     super.errorBuilder,
     super.autovalidateMode,
+    super.initialValueStrategy,
     super.restorationId,
   });
 

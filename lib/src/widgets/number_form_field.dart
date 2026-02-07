@@ -37,6 +37,7 @@ class FormixNumberFormField<T extends num> extends FormixFieldWidget<T> {
     super.forceErrorText,
     super.errorBuilder,
     super.autovalidateMode,
+    super.initialValueStrategy,
     super.restorationId,
     this.onEditingComplete,
     this.onTap,

@@ -29,6 +29,7 @@ abstract class FormixFieldWidget<T> extends ConsumerStatefulWidget {
     this.errorBuilder,
     this.enabled = true,
     this.autovalidateMode,
+    this.initialValueStrategy,
     this.restorationId,
   });
 
@@ -69,8 +70,11 @@ abstract class FormixFieldWidget<T> extends ConsumerStatefulWidget {
   /// Whether the field is interactive.
   final bool enabled;
 
-  /// Autovalidate mode for this field, overrides the form's mode.
+  /// The autovalidate mode for this field, overrides the form's mode.
   final FormixAutovalidateMode? autovalidateMode;
+
+  /// Strategy for handling initial values.
+  final FormixInitialValueStrategy? initialValueStrategy;
 
   /// Restoration ID for state restoration.
   final String? restorationId;
@@ -216,6 +220,7 @@ abstract class FormixFieldWidgetState<T> extends ConsumerState<FormixFieldWidget
         widget.validator != null ||
         widget.asyncValidator != null ||
         (widget.initialValue != null && widget.initialValue != existingField.initialValue) ||
+        (widget.initialValueStrategy != null && widget.initialValueStrategy != existingField.initialValueStrategy) ||
         (widget.autovalidateMode != null && widget.autovalidateMode != existingField.validationMode)) {
       T? initialValue = widget.initialValue;
       initialValue ??= existingField?.initialValue ?? controller.initialValue[widget.fieldId.key] as T?;
@@ -227,6 +232,7 @@ abstract class FormixFieldWidgetState<T> extends ConsumerState<FormixFieldWidget
           validator: widget.validator ?? (existingField?.validator as String? Function(T?)?),
           asyncValidator: widget.asyncValidator ?? (existingField?.asyncValidator as Future<String?> Function(T?)?),
           validationMode: widget.autovalidateMode ?? existingField?.validationMode ?? FormixAutovalidateMode.auto,
+          initialValueStrategy: widget.initialValueStrategy ?? existingField?.initialValueStrategy ?? FormixInitialValueStrategy.preferLocal,
           // Preserve other properties from config if they exist
           label: existingField?.label,
           hint: existingField?.hint,

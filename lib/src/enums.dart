@@ -36,3 +36,14 @@ enum ResetStrategy {
   /// Clear all fields (set to null or empty default)
   clear,
 }
+
+/// Strategies for handling initial values when a field is registered or updated.
+enum FormixInitialValueStrategy {
+  /// Prefer the local initial value (from the widget) if the field is currently
+  /// uninitialized or null in the controller.
+  preferLocal,
+
+  /// Prefer the global initial value (from the root Formix widget or config).
+  /// The value will not be updated from widgets after initial registration.
+  preferGlobal,
+}

@@ -25,6 +25,7 @@ class FormixDropdownFormField<T> extends FormixFieldWidget<T> {
     super.errorBuilder,
     super.enabled = true,
     super.autovalidateMode,
+    super.initialValueStrategy,
     super.restorationId,
     this.textInputAction,
     this.onSubmitted,

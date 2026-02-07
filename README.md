@@ -31,6 +31,7 @@ Powered by Riverpod, Formix delivers lightning-fast performance, zero boilerplat
     - [Reactive UI & Logic](#reactive-ui--logic)
     - [Headless & Custom Widgets](#headless--custom-widgets)
 - [🚥 Validation](#-validation)
+- [🏗️ Initialization Strategies](#-initialization-strategies)
 - [🕹️ Controlling the Form](#-controlling-the-form)
 - [🧪 Advanced Features](#-advanced-features)
 - [👨‍🍳 Cookbook](#-cookbook)
@@ -598,6 +599,30 @@ FormixFieldConfig(
     if (value != state.getValue(passwordField)) return 'No match';
     return null;
   },
+)
+```
+
+## 🏗️ Initialization Strategies
+
+Formix provides flexible control over how fields handle their `initialValue`, especially when fields are registered at different times or data is loaded late.
+
+### FormixInitialValueStrategy
+
+You can configure this globally in `FormixFieldConfig` or per-widget:
+
+| Strategy | Behavior | Use Case |
+| :--- | :--- | :--- |
+| **`preferLocal`** | (Default) Adopts the widget's `initialValue` if the controller is currently `null` and the field isn't "dirty" (modified by user). | **Late loading data**. Use this when you pre-define your form but fetch data asynchronously later. |
+| **`preferGlobal`** | Strictly keeps the very first value registered in the `Formix` root or config. Ignores widget-level initial values if registered. | **Architectural Control**. Use this to ensure nested widgets cannot override the baseline state defined at the form root. |
+
+#### Usage Example
+
+```dart
+// The field will adopt 'saved-data@email.com' even if pre-registered as null
+FormixTextFormField(
+  fieldId: emailField,
+  initialValue: 'saved-data@email.com',
+  initialValueStrategy: FormixInitialValueStrategy.preferLocal, // Default
 )
 ```
 

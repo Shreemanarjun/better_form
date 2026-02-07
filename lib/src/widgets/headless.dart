@@ -108,6 +108,7 @@ class FormixRawFormField<T> extends FormixFieldWidget<T> {
     super.forceErrorText,
     super.errorBuilder,
     super.autovalidateMode,
+    super.initialValueStrategy,
     super.restorationId,
   });
 
@@ -203,6 +204,7 @@ class FormixRawTextField<T> extends FormixFieldWidget<T> {
     super.forceErrorText,
     super.errorBuilder,
     super.autovalidateMode,
+    super.initialValueStrategy,
     super.restorationId,
   });
 
@@ -289,6 +291,7 @@ class FormixRawStringField extends FormixRawTextField<String> {
     super.forceErrorText,
     super.errorBuilder,
     super.autovalidateMode,
+    super.initialValueStrategy,
     super.restorationId,
   }) : super(
          valueToString: _defaultToString,
@@ -356,6 +359,7 @@ class FormixRawNotifierField<T> extends FormixRawFormField<T> {
     super.forceErrorText,
     super.errorBuilder,
     super.autovalidateMode,
+    super.initialValueStrategy,
     super.restorationId,
   });
 }
