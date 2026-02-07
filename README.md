@@ -55,6 +55,19 @@ flutter pub add formix
 
 ## ⚡ Quick Start
 
+### 0. Requirement: ProviderScope
+Formix is powered by Riverpod for its high-performance state management. You **must** wrap your application (or at least your form) in a `ProviderScope`.
+
+```dart
+void main() {
+  runApp(
+    ProviderScope( // Required for Formix to function
+      child: MyApp(),
+    ),
+  );
+}
+```
+
 ### 1. Define Fields
 Always use `FormixFieldID<T>` for type-safe field identification.
 

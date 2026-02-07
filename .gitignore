@@ -64,3 +64,5 @@ app.*.map.json
 example/test/goldens/*
 **/test/goldens/
 
+goldens/*.png
+**/goldens/*.png

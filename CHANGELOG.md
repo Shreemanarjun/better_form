@@ -8,9 +8,15 @@
   - Strategy can be configured at the `FormixFieldConfig` level or overridden on individual field widgets.
 
 ### 🛠️ Core Improvements & Fixes
+- **Unified Ancestor Validation**:
+  - Introduced `FormixAncestorValidator` to centralize `ProviderScope` and `Formix` requirement checks across all widgets.
+  - Improved developer experience with rich, descriptive error messages and actionable code examples when configuration is missing.
 - **Robust Field Re-registration**: Updated `registerFields` logic to track newly registered fields versus definition updates, ensuring state preservation while correctly applying initial values when appropriate.
+- **FormixSection Fix**: Implemented `didUpdateWidget` in `FormixSection` to reliably catch and register configuration changes, fixing a bug where fields in dynamic wizards or reused sections occasionally failed to initialize.
 - **Unified Widget API**: Exposed `initialValueStrategy` on all standard and adaptive form fields for fine-grained control.
+- **Flexibility Enhancements**: Updated `FormixDependentField` and `FormixDependentAsyncField` to support standalone usage outside of `Formix` widgets by falling back to the global controller provider.
 - **Fixed Hidden Bug**: Resolved an edge-case where `initialValue` provided in a widget was ignored if the field had been pre-registered in the root `Formix` widget with a `null` value.
+- **Golden Test Refresh**: Updated all error state golden tests to reflect the new premium error UI.
 
 ## 0.0.9
 
