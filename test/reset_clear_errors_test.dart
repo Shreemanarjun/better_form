@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:formix/formix.dart';
 
@@ -94,6 +95,35 @@ void main() {
       controller.resetFields([field1], clearErrors: false);
 
       expect(controller.getValidation(field1).isValid, false);
+    });
+
+    test('reset(clearErrors: true) cancels pending async validation', () async {
+      final completer = Completer<String?>();
+      final controller = FormixController(
+        fields: [
+          FormixField<String>(
+            id: field1,
+            initialValue: '',
+            asyncValidator: (v) => completer.future,
+          ),
+        ],
+      );
+
+      // Start async validation
+      controller.setValue(field1, 'typing...');
+      expect(controller.getValidation(field1).isValidating, true);
+
+      // Reset with clearErrors
+      controller.reset(clearErrors: true);
+      expect(controller.getValidation(field1).isValid, true);
+      expect(controller.getValidation(field1).isValidating, false);
+
+      // Complete the future - should NOT affect state because it was cancelled
+      completer.complete('Error');
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      expect(controller.getValidation(field1).isValid, true);
+      expect(controller.getValidation(field1).isValidating, false);
     });
   });
 }

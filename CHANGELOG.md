@@ -15,6 +15,11 @@
 - **FormixSection Fix**: Implemented `didUpdateWidget` in `FormixSection` to reliably catch and register configuration changes, fixing a bug where fields in dynamic wizards or reused sections occasionally failed to initialize.
 - **Unified Widget API**: Exposed `initialValueStrategy` on all standard and adaptive form fields for fine-grained control.
 - **Flexibility Enhancements**: Updated `FormixDependentField` and `FormixDependentAsyncField` to support standalone usage outside of `Formix` widgets by falling back to the global controller provider.
+- **Robust Reset with clearErrors**:
+  - Enhanced `reset`, `resetToValues`, and `resetFields` to reliably clear all error states when `clearErrors: true` is provided.
+  - Automatically cancels all pending asynchronous validation debouncers during reset to prevent late-arriving errors.
+  - Correctly triggers re-validation for dependent fields of reset fields, ensuring consistent form-wide validity state.
+  - Resets the validation lifecycle by removing internal validation flags, preventing premature re-validation in "onUserInteraction" mode.
 - **Fixed Hidden Bug**: Resolved an edge-case where `initialValue` provided in a widget was ignored if the field had been pre-registered in the root `Formix` widget with a `null` value.
 - **Golden Test Refresh**: Updated all error state golden tests to reflect the new premium error UI.
 

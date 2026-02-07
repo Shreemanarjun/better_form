@@ -1288,7 +1288,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
     for (final key in _fieldDefinitions.keys) {
       newDirtyStates[key] = false;
       if (clearErrors) {
-        newValidations[key] = ValidationResult.valid;
+        newValidations.remove(key);
       } else {
         newValidations[key] = _performSyncValidation(
           key,
@@ -1302,6 +1302,12 @@ class RiverpodFormController extends StateNotifier<FormixData> {
     for (final key in _fieldDefinitions.keys) {
       newTouchedStates[key] = false;
     }
+
+    // Cancel all pending async validations
+    for (var timer in _debouncers.values) {
+      timer.cancel();
+    }
+    _debouncers.clear();
 
     state = state.copyWith(
       values: newValues,
@@ -1357,10 +1363,46 @@ class RiverpodFormController extends StateNotifier<FormixData> {
       newValues[key] = newValue;
       newDirtyStates[key] = false;
       newTouchedStates[key] = false;
+
+      // Cancel pending async validation for this field
+      _debouncers[key]?.cancel();
+      _debouncers.remove(key);
+
       if (clearErrors) {
-        newValidations[key] = ValidationResult.valid;
+        newValidations.remove(key);
       } else {
         newValidations[key] = _performSyncValidation(key, newValue, newValues);
+      }
+    }
+
+    // Re-validate dependents of the reset fields
+    final fieldsToRevalidate = <String>{};
+    for (final fieldId in fieldIds) {
+      fieldsToRevalidate.addAll(_collectTransitiveDependents(fieldId.key));
+    }
+
+    // Filter out fields that were already reset (and potentially cleared)
+    final resetKeys = fieldIds.map((id) => id.key).toSet();
+    fieldsToRevalidate.removeWhere((key) => resetKeys.contains(key));
+
+    for (final key in fieldsToRevalidate) {
+      final fieldDef = _fieldDefinitions[key];
+      if (fieldDef == null) continue;
+
+      final mode = getValidationMode(fieldDef.id);
+      final isTouched = newTouchedStates[key] ?? false;
+      final isDirty = newDirtyStates[key] ?? false;
+      final wasValidated = newValidations.containsKey(key);
+
+      if (mode == FormixAutovalidateMode.always ||
+          (mode == FormixAutovalidateMode.onUserInteraction && (isDirty || isTouched || wasValidated)) ||
+          (mode == FormixAutovalidateMode.onBlur && (isTouched || wasValidated))) {
+        newValidations[key] = _performSyncValidation(
+          key,
+          newValues[key],
+          newValues,
+          currentValidations: newValidations,
+        );
       }
     }
 
