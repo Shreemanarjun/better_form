@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../formix.dart';
+import 'ancestor_validator.dart';
 
 /// A simplified version of [FormixAsyncField] that automatically manages dependencies.
 ///
@@ -82,28 +83,30 @@ class FormixDependentAsyncField<T, D> extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final formProvider = Formix.of(context);
-    if (formProvider == null) {
-      return const FormixConfigurationErrorWidget(
-        message: 'FormixDependentAsyncField used outside of Formix',
-        details: 'FormixDependentAsyncField requires a Formix ancestor to function. Wrap your form in a Formix widget.',
-      );
-    }
+    final errorWidget = FormixAncestorValidator.validate(
+      context,
+      widgetName: 'FormixDependentAsyncField',
+      requireFormix: false,
+    );
+
+    if (errorWidget != null) return errorWidget;
+
+    final activeProvider = (Formix.of(context) ?? ref.watch(currentControllerProvider))!;
 
     try {
       // Watch the dependency value with type safety
       final dependencyValue = ref.watch(
-        formProvider.select((s) => s.getValue(dependency)),
+        activeProvider.select((s) => s.getValue(dependency)),
       );
 
       // Listen for dependency changes to reset the related field
       if (resetField != null) {
-        ref.listen(formProvider.select((s) => s.getValue(dependency)), (
+        ref.listen(activeProvider.select((s) => s.getValue(dependency)), (
           previous,
           next,
         ) {
           if (previous != next) {
-            ref.read(formProvider.notifier).setValue(resetField!, null);
+            ref.read(activeProvider.notifier).setValue(resetField!, null);
           }
         });
       }
@@ -129,7 +132,9 @@ class FormixDependentAsyncField<T, D> extends ConsumerWidget {
     } catch (e) {
       return FormixConfigurationErrorWidget(
         message: 'Failed to initialize FormixDependentAsyncField',
-        details: e.toString().contains('No ProviderScope found') ? 'Missing ProviderScope. Please wrap your application (or this form) in a ProviderScope widget.' : 'Error: $e',
+        details: e.toString().contains('No ProviderScope found')
+            ? 'Missing ProviderScope. Please wrap your application (or this form) in a ProviderScope widget.\n\nExample:\nvoid main() {\n  runApp(ProviderScope(child: MyApp()));\n}'
+            : 'Error: $e',
       );
     }
   }

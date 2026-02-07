@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 /// A highly optimized, declarative widget that rebuilds only when a specific field changes
 /// Provides granular performance and detailed change information
-class FormixFieldSelector<T> extends StatefulWidget {
+class FormixFieldSelector<T> extends ConsumerStatefulWidget {
   /// Creates a [FormixFieldSelector].
   const FormixFieldSelector({
     super.key,
@@ -43,10 +43,10 @@ class FormixFieldSelector<T> extends StatefulWidget {
   final Widget? child;
 
   @override
-  State<FormixFieldSelector<T>> createState() => _FormixFieldSelectorState<T>();
+  ConsumerState<FormixFieldSelector<T>> createState() => _FormixFieldSelectorState<T>();
 }
 
-class _FormixFieldSelectorState<T> extends State<FormixFieldSelector<T>> {
+class _FormixFieldSelectorState<T> extends ConsumerState<FormixFieldSelector<T>> {
   FormixController? _controller;
   late T? _currentValue;
   late ValidationResult _currentValidation;
@@ -60,21 +60,39 @@ class _FormixFieldSelectorState<T> extends State<FormixFieldSelector<T>> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final controller = widget.controller ?? Formix.controllerOf(context);
+    _updateController();
+  }
 
-    if (controller != null) {
-      if (controller != _controller) {
-        if (mounted && _controller != null) {
-          _controller!.removeFieldListener(widget.fieldId, _onFieldChanged);
-        }
-        _controller = controller;
+  void _updateController() {
+    FormixController? newController = widget.controller;
+
+    if (newController == null) {
+      var provider = Formix.of(context);
+      if (provider == null) {
+        try {
+          provider = ref.watch(currentControllerProvider);
+        } catch (_) {}
+      }
+
+      if (provider != null) {
+        // Keep provider alive
+        ref.watch(provider);
+        newController = ref.read(provider.notifier);
+      }
+    }
+
+    if (newController != _controller) {
+      if (_controller != null) {
+        _controller!.removeFieldListener(widget.fieldId, _onFieldChanged);
+      }
+      _controller = newController;
+
+      if (_controller != null) {
         // Initialize current state
         _updateCurrentState();
         // Listen to field changes
         _controller!.addFieldListener(widget.fieldId, _onFieldChanged);
       }
-    } else {
-      _controller = null;
     }
   }
 
@@ -83,17 +101,7 @@ class _FormixFieldSelectorState<T> extends State<FormixFieldSelector<T>> {
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.controller != widget.controller || oldWidget.fieldId != widget.fieldId) {
-      // Remove old listener
-      if (_controller != null) {
-        _controller!.removeFieldListener(oldWidget.fieldId, _onFieldChanged);
-      }
-
-      // Add new listener
-      _controller = widget.controller ?? Formix.controllerOf(context);
-      if (_controller != null) {
-        _controller!.addFieldListener(widget.fieldId, _onFieldChanged);
-        _updateCurrentState();
-      }
+      _updateController();
     }
   }
 
@@ -141,7 +149,7 @@ class _FormixFieldSelectorState<T> extends State<FormixFieldSelector<T>> {
     }
 
     if (shouldRebuild) {
-      setState(() {});
+      if (mounted) setState(() {});
     }
   }
 
@@ -149,8 +157,9 @@ class _FormixFieldSelectorState<T> extends State<FormixFieldSelector<T>> {
   Widget build(BuildContext context) {
     if (_controller == null) {
       return const FormixConfigurationErrorWidget(
-        message: 'FormixFieldSelector used outside of Formix',
-        details: 'This widget requires a Formix ancestor or an explicit controller to function correctly.',
+        message: 'FormixFieldSelector used without ProviderScope',
+        details:
+            'Missing ProviderScope. Please wrap your application (or this form) in a ProviderScope widget.\n\nExample:\nvoid main() {\n  runApp(ProviderScope(child: MyApp()));\n}',
       );
     }
     final info = FieldChangeInfo<T>(

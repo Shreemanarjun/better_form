@@ -11,8 +11,10 @@ void main() {
     await tester.pumpWidget(
       const MaterialApp(
         home: Scaffold(
-          body: FormixTextFormField(
-            fieldId: FormixFieldID('name'),
+          body: Formix(
+            child: FormixTextFormField(
+              fieldId: FormixFieldID('name'),
+            ),
           ),
         ),
       ),
@@ -20,8 +22,9 @@ void main() {
 
     // We expect the widget to catch the error and display FormixConfigurationErrorWidget
     await tester.pump();
+    final errorWidget = find.byType(FormixConfigurationErrorWidget);
 
-    expect(find.byType(FormixConfigurationErrorWidget), findsOneWidget);
+    expect(errorWidget, findsOneWidget);
     expect(find.textContaining('Missing ProviderScope'), findsOneWidget);
   });
 }

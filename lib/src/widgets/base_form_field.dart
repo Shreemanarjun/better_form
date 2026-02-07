@@ -3,6 +3,7 @@ import 'package:flutter/rendering.dart';
 import 'package:meta/meta.dart';
 
 import '../../formix.dart';
+import 'ancestor_validator.dart';
 
 /// Base class for custom form field widgets that automatically handle controller
 /// registration and value synchronization.
@@ -89,6 +90,27 @@ class FormixFieldWidgetElement<T> extends ConsumerStatefulElement {
 
   @override
   Widget build() {
+    // Check for ProviderScope first
+    if (getElementForInheritedWidgetOfExactType<UncontrolledProviderScope>() == null) {
+      return const FormixConfigurationErrorWidget(
+        message: 'Missing ProviderScope',
+        details:
+            'Formix requires a ProviderScope at the root of your application to manage form state using Riverpod.\n\nExample:\nvoid main() {\n  runApp(ProviderScope(child: MyApp()));\n}',
+      );
+    }
+
+    // Check for Formix ancestor or explicit controller
+    // We cast widget because Element.widget is typed as Widget
+    final fieldWidget = widget as FormixFieldWidget<T>;
+
+    final errorWidget = FormixAncestorValidator.validate(
+      this,
+      widgetName: widget.runtimeType.toString(),
+      hasExplicitController: fieldWidget.controller != null,
+    );
+
+    if (errorWidget != null) return errorWidget;
+
     final state = this.state as FormixFieldWidgetState<T>;
 
     if (state.initializationError != null) {
@@ -100,15 +122,7 @@ class FormixFieldWidgetElement<T> extends ConsumerStatefulElement {
       );
     }
 
-    // Check if we are inside a Formix widget if no explicit controller is provided
-    if (state.widget.controller == null && Formix.of(this) == null) {
-      return FormixConfigurationErrorWidget(
-        message: '${state.widget.runtimeType} used outside of Formix',
-        details:
-            'This widget requires a Formix ancestor or an explicit controller to function correctly.\n\nWrap your form fields in a Formix widget:\n\nFormix(\n  child: Column(\n    children: [\n      ${state.widget.runtimeType}(...),\n    ],\n  ),\n)',
-      );
-    }
-
+    // Check for explicit controller or fallback to default provider (implicit usage)
     if (!state.hasController) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -181,6 +195,8 @@ abstract class FormixFieldWidgetState<T> extends ConsumerState<FormixFieldWidget
   @internal
   Object? get initializationError => _initializationError;
 
+  ProviderSubscription? _innerProviderSub;
+
   @override
   void initState() {
     super.initState();
@@ -196,6 +212,14 @@ abstract class FormixFieldWidgetState<T> extends ConsumerState<FormixFieldWidget
         previous,
         next,
       ) {
+        // Close previous inner subscription
+        _innerProviderSub?.close();
+
+        // Listen to the inner provider to keep the controller alive (especially for implicit usage)
+        if (widget.controller == null) {
+          _innerProviderSub = ref.listenManual(next, (_, __) {});
+        }
+
         try {
           final newController = widget.controller ?? ref.read(next.notifier);
           _setupController(newController);
@@ -319,6 +343,15 @@ abstract class FormixFieldWidgetState<T> extends ConsumerState<FormixFieldWidget
 
     if (widget.controller != oldWidget.controller || widget.fieldId != oldWidget.fieldId) {
       _setupControllerSubscription();
+    } else {
+      // Check for configuration changes that require re-registration
+      if (widget.initialValue != oldWidget.initialValue ||
+          widget.initialValueStrategy != oldWidget.initialValueStrategy ||
+          widget.validator != oldWidget.validator ||
+          widget.asyncValidator != oldWidget.asyncValidator ||
+          widget.autovalidateMode != oldWidget.autovalidateMode) {
+        _ensureFieldRegistered();
+      }
     }
   }
 
@@ -326,6 +359,7 @@ abstract class FormixFieldWidgetState<T> extends ConsumerState<FormixFieldWidget
   void dispose() {
     _isMounted = false;
     _controllerSub?.close();
+    _innerProviderSub?.close();
     _controller?.removeFieldListener(widget.fieldId, _onFieldChanged);
     _focusNode.removeListener(_onFocusChanged);
     if (_createdOwnFocusNode) {

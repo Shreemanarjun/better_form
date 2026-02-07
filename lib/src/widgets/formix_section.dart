@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../formix.dart'; // For Formix.of
+import 'ancestor_validator.dart';
 
 /// A widget that registers a specific set of fields with the parent [Formix].
 ///
@@ -53,6 +54,7 @@ class FormixSection extends ConsumerStatefulWidget {
 
 class _FormixSectionState extends ConsumerState<FormixSection> {
   FormixController? _controller;
+  Object? _initializationError;
 
   @override
   void didChangeDependencies() {
@@ -61,16 +63,24 @@ class _FormixSectionState extends ConsumerState<FormixSection> {
     _registerFields();
   }
 
+  @override
+  void didUpdateWidget(FormixSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // If fields changed, register the new ones.
+    // controller.registerFields handles already-registered fields gracefully.
+    _registerFields();
+  }
+
   void _initController() {
     final provider = Formix.of(context);
+
     if (provider == null) {
-      if (mounted) {
-        setState(() {
-          _initializationError = 'FormixSection used outside of Formix';
-        });
-      }
       return;
     }
+
+    // Keep provider alive
+    ref.watch(provider);
+
     try {
       _controller = ref.read(provider.notifier);
       _initializationError = null;
@@ -82,8 +92,6 @@ class _FormixSectionState extends ConsumerState<FormixSection> {
       }
     }
   }
-
-  Object? _initializationError;
 
   void _registerFields() {
     if (_controller == null) return;
@@ -97,26 +105,13 @@ class _FormixSectionState extends ConsumerState<FormixSection> {
   }
 
   @override
-  void didUpdateWidget(FormixSection oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.fields != oldWidget.fields) {
-      _registerFields();
-    }
-  }
-
-  @override
   void dispose() {
     if (!widget.keepAlive && _controller != null) {
-      final ids = widget.fields.map((f) => f.id).toList();
       final controller = _controller!;
+      final ids = widget.fields.map((f) => f.id).toList();
 
-      // Use batch unregistration
-      Future.microtask(() {
-        // Check if controller is still valid/mounted?
-        // Actually FormixController might be disposed if Formix is disposed.
-        // But if FormixSection is removed from tree while Formix stays, we unregister.
-        // We use try-catch or checks?
-        // FormixController doesn't have a 'mounted' property but RiverpodController does.
+      // Defer unregistration to avoid issues if state is being updated
+      WidgetsBinding.instance.addPostFrameCallback((_) {
         if (controller.mounted) {
           controller.unregisterFields(ids);
         }
@@ -127,11 +122,18 @@ class _FormixSectionState extends ConsumerState<FormixSection> {
 
   @override
   Widget build(BuildContext context) {
+    final errorWidget = FormixAncestorValidator.validate(
+      context,
+      widgetName: 'FormixSection',
+    );
+
+    if (errorWidget != null) return errorWidget;
+
     if (_initializationError != null) {
       return FormixConfigurationErrorWidget(
-        message: _initializationError is String ? _initializationError as String : 'Failed to initialize FormixSection',
+        message: 'Failed to initialize FormixSection',
         details: _initializationError.toString().contains('No ProviderScope found')
-            ? 'Missing ProviderScope. Please wrap your application (or this form) in a ProviderScope widget.'
+            ? 'Missing ProviderScope. Please wrap your application (or this form) in a ProviderScope widget.\n\nExample:\nvoid main() {\n  runApp(ProviderScope(child: MyApp()));\n}'
             : 'Error: $_initializationError',
       );
     }

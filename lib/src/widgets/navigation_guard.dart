@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'formix.dart';
 import 'formix_errors.dart';
+import '../controllers/riverpod_controller.dart';
 
 /// A widget that prevents navigation if the form is dirty.
 ///
@@ -46,11 +47,20 @@ class _FormixNavigationGuardState extends ConsumerState<FormixNavigationGuard> {
   Widget build(BuildContext context) {
     if (!widget.enabled) return widget.child;
 
-    final controllerProvider = Formix.of(context);
+    var controllerProvider = Formix.of(context);
+    if (controllerProvider == null) {
+      try {
+        controllerProvider = ref.watch(currentControllerProvider);
+      } catch (_) {
+        // ProviderScope missing
+      }
+    }
+
     if (controllerProvider == null) {
       return const FormixConfigurationErrorWidget(
-        message: 'FormixNavigationGuard used outside of Formix',
-        details: 'FormixNavigationGuard requires a Formix ancestor to function. Wrap your form in a Formix widget.',
+        message: 'FormixNavigationGuard used without ProviderScope',
+        details:
+            'Missing ProviderScope. Please wrap your application (or this form) in a ProviderScope widget.\n\nExample:\nvoid main() {\n  runApp(ProviderScope(child: MyApp()));\n}',
       );
     }
 

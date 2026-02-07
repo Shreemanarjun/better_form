@@ -86,7 +86,15 @@ class _FormixFieldRegistryState extends ConsumerState<FormixFieldRegistry> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final provider = Formix.of(context);
+    var provider = Formix.of(context);
+    if (provider == null) {
+      try {
+        provider = ref.watch(currentControllerProvider);
+      } catch (_) {
+        // ProviderScope missing
+      }
+    }
+
     if (provider == null) {
       if (mounted) {
         setState(() {
@@ -95,6 +103,9 @@ class _FormixFieldRegistryState extends ConsumerState<FormixFieldRegistry> {
       }
       return;
     }
+
+    // Keep provider alive
+    ref.watch(provider);
     try {
       final newController = ref.read(provider.notifier);
       if (newController != _controller) {

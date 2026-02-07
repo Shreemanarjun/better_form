@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../formix.dart';
+import 'ancestor_validator.dart';
 
 /// A comprehensive toolset for interacting with [Formix] state and logic.
 ///
@@ -74,7 +75,18 @@ class FormixScope {
   /// WARNING: Using this will cause the widget to rebuild whenever ANY field
   /// in the form changes. For better performance, use field-specific watchers
   /// like [watchValue] or [watchValidation].
-  FormixData get watchState => ref.watch(Formix.of(context)!);
+  FormixData get watchState {
+    var provider = Formix.of(context);
+    if (provider == null) {
+      try {
+        provider = ref.watch(currentControllerProvider);
+      } catch (_) {}
+    }
+    if (provider != null) {
+      return ref.watch(provider);
+    }
+    throw StateError('No Formix provider found');
+  }
 
   /// Watch if a specific group of fields is valid.
   bool watchGroupIsValid(String prefix) => ref.watch(groupValidProvider(prefix));
@@ -232,13 +244,14 @@ class _FormixBuilderState extends ConsumerState<FormixBuilder> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Formix.of(context);
-    if (provider == null) {
-      return const FormixConfigurationErrorWidget(
-        message: 'FormixBuilder used outside of Formix',
-        details: 'FormixBuilder must be placed inside a Formix widget to access form state.',
-      );
-    }
+    final errorWidget = FormixAncestorValidator.validate(
+      context,
+      widgetName: 'FormixBuilder',
+    );
+
+    if (errorWidget != null) return errorWidget;
+
+    final provider = Formix.of(context)!;
 
     try {
       // We watch the notifier so we get the new controller if it's recreated.
@@ -254,7 +267,9 @@ class _FormixBuilderState extends ConsumerState<FormixBuilder> {
     } catch (e) {
       return FormixConfigurationErrorWidget(
         message: 'Failed to initialize FormixBuilder',
-        details: e.toString().contains('No ProviderScope found') ? 'Missing ProviderScope. Please wrap your application (or this form) in a ProviderScope widget.' : 'Error: $e',
+        details: e.toString().contains('No ProviderScope found')
+            ? 'Missing ProviderScope. Please wrap your application (or this form) in a ProviderScope widget.\n\nExample:\nvoid main() {\n  runApp(ProviderScope(child: MyApp()));\n}'
+            : 'Error: $e',
       );
     }
   }
@@ -288,13 +303,14 @@ abstract class FormixWidget extends ConsumerWidget {
   @override
   @mustCallSuper
   Widget build(BuildContext context, WidgetRef ref) {
-    final provider = Formix.of(context);
-    if (provider == null) {
-      return FormixConfigurationErrorWidget(
-        message: '$runtimeType used outside of Formix',
-        details: '$runtimeType must be placed inside a Formix widget.',
-      );
-    }
+    final errorWidget = FormixAncestorValidator.validate(
+      context,
+      widgetName: runtimeType.toString(),
+    );
+
+    if (errorWidget != null) return errorWidget;
+
+    final provider = Formix.of(context)!;
 
     try {
       final controller = ref.watch(provider.notifier);
@@ -309,7 +325,9 @@ abstract class FormixWidget extends ConsumerWidget {
     } catch (e) {
       return FormixConfigurationErrorWidget(
         message: 'Failed to initialize $runtimeType',
-        details: e.toString().contains('No ProviderScope found') ? 'Missing ProviderScope. Please wrap your application (or this form) in a ProviderScope widget.' : 'Error: $e',
+        details: e.toString().contains('No ProviderScope found')
+            ? 'Missing ProviderScope. Please wrap your application (or this form) in a ProviderScope widget.\n\nExample:\nvoid main() {\n  runApp(ProviderScope(child: MyApp()));\n}'
+            : 'Error: $e',
       );
     }
   }

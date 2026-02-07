@@ -298,6 +298,7 @@ void main() {
       // Validate All (should fail because City is empty)
       await tester.tap(find.text('Validate All'));
       await tester.pump();
+
       expect(find.text('Is Valid: false'), findsOneWidget);
       expect(find.text('City required'), findsOneWidget); // Visible error
 

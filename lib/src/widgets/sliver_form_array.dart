@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../formix.dart';
+import 'ancestor_validator.dart';
 
 /// A sliver widget for managing dynamic lists of items in a form.
 ///
@@ -37,15 +38,20 @@ class SliverFormixArray<T> extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final provider = Formix.of(context);
-    if (provider == null) {
-      return const SliverToBoxAdapter(
-        child: FormixConfigurationErrorWidget(
-          message: 'SliverFormixArray used outside of Formix',
-          details: 'SliverFormixArray must be placed inside a Formix widget.',
-        ),
-      );
+    final errorWidget = FormixAncestorValidator.validate(
+      context,
+      widgetName: 'SliverFormixArray',
+      requireFormix: false,
+    );
+
+    if (errorWidget != null) {
+      return SliverToBoxAdapter(child: errorWidget);
     }
+
+    final provider = (Formix.of(context) ?? ref.watch(currentControllerProvider))!;
+
+    // Keep provider alive
+    ref.watch(provider);
 
     try {
       final controller = ref.read(provider.notifier);
@@ -82,7 +88,9 @@ class SliverFormixArray<T> extends ConsumerWidget {
       return SliverToBoxAdapter(
         child: FormixConfigurationErrorWidget(
           message: 'Failed to initialize SliverFormixArray',
-          details: e.toString().contains('No ProviderScope found') ? 'Missing ProviderScope. Please wrap your application (or this form) in a ProviderScope widget.' : 'Error: $e',
+          details: e.toString().contains('No ProviderScope found')
+              ? 'Missing ProviderScope. Please wrap your application (or this form) in a ProviderScope widget.\n\nExample:\nvoid main() {\n  runApp(ProviderScope(child: MyApp()));\n}'
+              : 'Error: $e',
         ),
       );
     }

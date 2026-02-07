@@ -114,6 +114,15 @@ class _FormixListenerState extends ConsumerState<FormixListener> {
 
   @override
   Widget build(BuildContext context) {
+    // Check for ProviderScope first
+    if (context.getElementForInheritedWidgetOfExactType<UncontrolledProviderScope>() == null) {
+      return const FormixConfigurationErrorWidget(
+        message: 'Missing ProviderScope',
+        details:
+            'Formix requires a ProviderScope at the root of your application to manage form state using Riverpod.\n\nExample:\nvoid main() {\n  runApp(ProviderScope(child: MyApp()));\n}',
+      );
+    }
+
     if (_initializationError != null) {
       return FormixConfigurationErrorWidget(
         message: _initializationError is String ? _initializationError as String : 'Failed to initialize FormixListener',

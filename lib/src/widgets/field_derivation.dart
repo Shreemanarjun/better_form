@@ -72,7 +72,15 @@ class _FormixFieldDerivationState extends ConsumerState<FormixFieldDerivation> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    final provider = Formix.of(context);
+    var provider = Formix.of(context);
+    if (provider == null) {
+      try {
+        provider = ref.watch(currentControllerProvider);
+      } catch (_) {
+        // ProviderScope missing
+      }
+    }
+
     if (provider == null) {
       if (mounted) {
         setState(() {
@@ -81,6 +89,9 @@ class _FormixFieldDerivationState extends ConsumerState<FormixFieldDerivation> {
       }
       return;
     }
+
+    // Keep provider alive
+    ref.watch(provider);
     try {
       final newController = ref.read(provider.notifier);
       if (newController != _controller) {
@@ -237,7 +248,15 @@ class _FormixFieldDerivationsState extends ConsumerState<FormixFieldDerivations>
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    final provider = Formix.of(context);
+    var provider = Formix.of(context);
+    if (provider == null) {
+      try {
+        provider = ref.watch(currentControllerProvider);
+      } catch (_) {
+        // ProviderScope missing
+      }
+    }
+
     if (provider == null) {
       if (mounted) {
         setState(() {
@@ -246,6 +265,9 @@ class _FormixFieldDerivationsState extends ConsumerState<FormixFieldDerivations>
       }
       return;
     }
+
+    // Keep provider alive
+    ref.watch(provider);
     try {
       final newController = ref.read(provider.notifier);
       if (newController != _controller) {

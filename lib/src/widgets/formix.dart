@@ -9,6 +9,7 @@ import '../controllers/riverpod_controller.dart';
 import '../persistence/form_persistence.dart';
 import '../enums.dart';
 import 'form_theme.dart';
+import 'formix_errors.dart';
 
 /// A form container widget that manages a [FormixController] and provides it
 /// to descendant widgets via the widget tree and Riverpod.
@@ -100,6 +101,9 @@ class Formix extends ConsumerStatefulWidget {
 
   @override
   ConsumerState<Formix> createState() => FormixState();
+
+  @override
+  ConsumerStatefulElement createElement() => _FormixElement(this);
 
   /// Get the controller provider from the nearest [Formix] ancestor.
   static AutoDisposeStateNotifierProvider<FormixController, FormixData>? of(
@@ -314,5 +318,25 @@ class _FieldRegistrarState extends ConsumerState<_FieldRegistrar> {
   @override
   Widget build(BuildContext context) {
     return widget.child;
+  }
+}
+
+/// Element for [Formix] that intercepts building to show configuration errors.
+class _FormixElement extends ConsumerStatefulElement {
+  /// Creates a [_FormixElement].
+  _FormixElement(super.widget);
+
+  @override
+  Widget build() {
+    // Check for ProviderScope (using its internal InheritedWidget)
+    // We use getElementForInheritedWidgetOfExactType as it's O(1) and doesn't register dependency
+    if (getElementForInheritedWidgetOfExactType<UncontrolledProviderScope>() == null) {
+      return const FormixConfigurationErrorWidget(
+        message: 'Missing ProviderScope',
+        details:
+            'Formix requires a ProviderScope at the root of your application to manage form state using Riverpod.\n\nExample:\nvoid main() {\n  runApp(ProviderScope(child: MyApp()));\n}',
+      );
+    }
+    return super.build();
   }
 }

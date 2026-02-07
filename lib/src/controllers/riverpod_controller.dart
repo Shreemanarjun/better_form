@@ -1102,11 +1102,10 @@ class RiverpodFormController extends StateNotifier<FormixData> {
 
         if (field.initialValue != null) {
           final isDirty = newDirtyStates[key] ?? false;
-          final currentValue = newValues[key];
 
           bool shouldAdopt = false;
           if (strategy == FormixInitialValueStrategy.preferLocal) {
-            shouldAdopt = !newValues.containsKey(key) || (!isDirty && currentValue == null);
+            shouldAdopt = !newValues.containsKey(key) || !isDirty;
           } else {
             shouldAdopt = isNew;
           }

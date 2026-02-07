@@ -9,7 +9,7 @@ Formix is powered by **Riverpod**. It uses a **declarative** and **type-safe** a
 - **Identifiers**: Every field MUST have a unique `FormixFieldID<T>`.
 - **Root**: All fields MUST be descendants of a `Formix` widget.
 - **Reactivity**: Use `FormixBuilder` to listen to state changes (validity, values, submission status). Do NOT use `setState` for form interactions.
-- **Initialization**: Use `FormixInitialValueStrategy` to control late-initialization. `preferLocal` (default) allows widgets to push values if the current state is `null`.
+- **Initialization**: Use `FormixInitialValueStrategy` to control late-initialization. `preferLocal` (default) allows widgets to push values if the current state is `null`. Dynamic updates to `initialValue` (e.g. after async data load) are automatically applied if the field is pristine and uninitialized.
 
 ## 🔑 Key Patterns
 

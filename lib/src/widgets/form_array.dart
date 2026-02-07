@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../formix.dart';
+import 'ancestor_validator.dart';
 
 /// A widget for managing dynamic lists of items in a form.
 ///
@@ -38,13 +39,18 @@ class FormixArray<T> extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final provider = Formix.of(context);
-    if (provider == null) {
-      return const FormixConfigurationErrorWidget(
-        message: 'FormixArray used outside of Formix',
-        details: 'FormixArray must be placed inside a Formix widget.',
-      );
-    }
+    final errorWidget = FormixAncestorValidator.validate(
+      context,
+      widgetName: 'FormixArray',
+      requireFormix: false,
+    );
+
+    if (errorWidget != null) return errorWidget;
+
+    final provider = (Formix.of(context) ?? ref.watch(currentControllerProvider))!;
+
+    // Keep provider alive
+    ref.watch(provider);
 
     try {
       final controller = ref.read(provider.notifier);
@@ -89,7 +95,9 @@ class FormixArray<T> extends ConsumerWidget {
     } catch (e) {
       return FormixConfigurationErrorWidget(
         message: 'Failed to initialize FormixArray',
-        details: e.toString().contains('No ProviderScope found') ? 'Missing ProviderScope. Please wrap your application (or this form) in a ProviderScope widget.' : 'Error: $e',
+        details: e.toString().contains('No ProviderScope found')
+            ? 'Missing ProviderScope. Please wrap your application (or this form) in a ProviderScope widget.\n\nExample:\nvoid main() {\n  runApp(ProviderScope(child: MyApp()));\n}'
+            : 'Error: $e',
       );
     }
   }

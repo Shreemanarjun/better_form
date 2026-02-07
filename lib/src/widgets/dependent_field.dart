@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../formix.dart';
+import 'ancestor_validator.dart';
 
 /// A widget that rebuilds when a dependent field's value changes.
 ///
@@ -40,19 +41,21 @@ class FormixDependentField<T> extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final provider = controllerProvider ?? Formix.of(context);
+    final errorWidget = FormixAncestorValidator.validate(
+      context,
+      widgetName: 'FormixDependentField',
+      explicitProvider: controllerProvider,
+      requireFormix: false,
+    );
 
-    if (provider == null) {
-      return const FormixConfigurationErrorWidget(
-        message: 'FormixDependentField used outside of Formix',
-        details: 'FormixDependentField requires a Formix ancestor or an explicit controllerProvider to function.',
-      );
-    }
+    if (errorWidget != null) return errorWidget;
+
+    final provider = controllerProvider ?? Formix.of(context) ?? ref.watch(currentControllerProvider);
 
     // We use ProviderScope override to ensure we are watching the correct controller
     // if we are using the global fieldValueProvider
     return ProviderScope(
-      overrides: [currentControllerProvider.overrideWithValue(provider)],
+      overrides: [currentControllerProvider.overrideWithValue(provider!)],
       child: Consumer(
         builder: (context, ref, _) {
           try {

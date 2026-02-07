@@ -47,6 +47,7 @@ void main() {
               ],
               child: FormixRawFormField<String>(
                 fieldId: emailField,
+                initialValueStrategy: FormixInitialValueStrategy.preferGlobal,
                 initialValue: 'this-should-be-ignored@example.com',
                 builder: (context, snapshot) {
                   return Text('Value: ${snapshot.value}');
