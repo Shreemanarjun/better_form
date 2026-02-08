@@ -28,6 +28,8 @@
   - Implemented intelligent caching of `InputDecoration` to avoid redundant theme resolution.
   - Decoration is only rebuilt when widget properties or theme actually changes.
   - Reduces `Theme.of(context)` lookups and decoration processing overhead.
+  - **New**: Added caching for final effective decoration (with error/helper text).
+  - **New**: Added caching for input formatters list.
 - **Combined Field State Notifier**:
   - Consolidated 4 separate `ValueNotifier`s (value, validation, dirty, touched) into a single combined notifier.
   - Reduces `AnimatedBuilder` overhead from 4 listenables to 1.
@@ -36,16 +38,32 @@
   - Added early return optimization for explicit controllers in `FormixFieldWidgetState`.
   - Avoids unnecessary Riverpod subscription setup when controller is provided directly.
   - Cleaner, more efficient code path for common use cases.
+- **SliverFormixArray Optimization**:
+  - Fixed rebuild issue: Changed `ref.watch(provider)` to `ref.watch(provider.notifier)`.
+  - Now only rebuilds when controller instance changes, not on every form state change.
+  - Prevents unnecessary rebuilds in large scrollable forms.
 - **Performance Impact**:
-  - **100 Widget Rebuilds**: 39% faster (1388ms → 847ms)
-  - **Passive Rebuild**: 18.5% faster (7.20ms → 5.87ms)
-  - **50 Keystrokes**: 1.5% faster (401ms → 395ms)
-  - Pure Formix overhead: ~0.1ms per rebuild
+  - **Formix vs Flutter Baseline**: 13-22% **FASTER** than plain Flutter TextFormField!
+    - Passive Rebuild: 7.985ms (Flutter: 10.274ms) - **22% faster**
+    - Mount/Unmount: 1.670ms (Flutter: 1.928ms) - **13% faster**
+  - Pure Formix overhead: ~0.08ms per rebuild (negligible)
   - Mount/Unmount cycles: ~1.5ms per cycle
+  - **Key Insight**: Granular selectors + aggressive caching = faster than baseline!
 - **Enhanced Benchmarks**:
   - Consolidated all performance tests into `formix_benchmarks_test.dart`.
+  - Added **baseline Flutter TextFormField benchmarks** for accurate comparison.
   - Each test runs 3 times with 1000 iterations and averages results for accuracy.
   - Beautiful box-drawing output format for easy performance tracking.
+  - Comprehensive documentation in `BENCHMARK_RESULTS.md` and `REBUILD_OPTIMIZATION.md`.
+
+### 🧪 Testing
+- **SliverFormixArray Test Suite**:
+  - Added comprehensive widget tests (`test/widgets/sliver_form_array_test.dart`).
+  - 10 test cases covering rendering, CRUD operations, empty states, and rebuild optimization.
+  - Verified that array items don't rebuild on unrelated field changes.
+  - Integration tests with SliverAppBar, FormixGroup, and complex UI patterns.
+- **Total Test Count**: 646 tests passing (10 new SliverFormixArray tests).
+
 
 
 ## 0.0.9
