@@ -206,6 +206,17 @@ class FormixTextFormFieldState extends FormixFieldWidgetState<String> with Formi
   bool _lastIsDirty = false;
   bool _lastIsValidating = false;
 
+  // Cache for final decoration
+  InputDecoration? _cachedEffectiveDecoration;
+  String? _lastErrorText;
+  Widget? _lastSuffixIcon;
+  String? _lastHelperText;
+
+  // Cache for formatters
+  List<TextInputFormatter>? _cachedFormatters;
+  List<TextInputFormatter>? _lastFieldFormatters;
+  List<TextInputFormatter>? _lastWidgetFormatters;
+
   @override
   String valueToString(String? value) => value ?? '';
 
@@ -275,29 +286,50 @@ class FormixTextFormFieldState extends FormixFieldWidgetState<String> with Formi
                   formTheme.decorationTheme ?? Theme.of(context).inputDecorationTheme,
                 )
               : fieldWidget.decoration;
+
+          // Invalidate effective decoration cache when base changes
+          _cachedEffectiveDecoration = null;
         }
 
         final suffixIcon = _getSuffixIcon(isDirty, validation.isValidating, formTheme, fieldWidget);
 
-        final formatters = [
-          ...?controller.getField(widget.fieldId)?.inputFormatters,
-          ...?fieldWidget.inputFormatters,
-        ];
+        // Cache formatters list
+        final fieldFormatters = controller.getField(widget.fieldId)?.inputFormatters;
+        final widgetFormatters = fieldWidget.inputFormatters;
 
-        final effectiveDecoration = _cachedBaseDecoration!.copyWith(
-          errorText: shouldShowError ? validation.errorMessage : null,
-          suffixIcon: suffixIcon,
-          helperText: validation.isValidating ? 'Validating...' : null,
-        );
+        if (_cachedFormatters == null || fieldFormatters != _lastFieldFormatters || widgetFormatters != _lastWidgetFormatters) {
+          _lastFieldFormatters = fieldFormatters;
+          _lastWidgetFormatters = widgetFormatters;
+          _cachedFormatters = [
+            ...?fieldFormatters,
+            ...?widgetFormatters,
+          ];
+        }
+
+        // Cache effective decoration
+        final errorText = shouldShowError ? validation.errorMessage : null;
+        final helperText = validation.isValidating ? 'Validating...' : null;
+
+        if (_cachedEffectiveDecoration == null || errorText != _lastErrorText || suffixIcon != _lastSuffixIcon || helperText != _lastHelperText) {
+          _lastErrorText = errorText;
+          _lastSuffixIcon = suffixIcon;
+          _lastHelperText = helperText;
+
+          _cachedEffectiveDecoration = _cachedBaseDecoration!.copyWith(
+            errorText: errorText,
+            suffixIcon: suffixIcon,
+            helperText: helperText,
+          );
+        }
 
         return TextFormField(
           controller: textController,
           focusNode: focusNode,
-          decoration: effectiveDecoration,
+          decoration: _cachedEffectiveDecoration,
           mouseCursor: fieldWidget.mouseCursor ?? (fieldWidget.readOnly ? SystemMouseCursors.basic : null),
           keyboardType: fieldWidget.keyboardType,
           maxLength: fieldWidget.maxLength,
-          inputFormatters: formatters,
+          inputFormatters: _cachedFormatters,
           textInputAction: fieldWidget.textInputAction,
           onFieldSubmitted: (val) {
             fieldWidget.onFieldSubmitted?.call(val);
