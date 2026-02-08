@@ -40,11 +40,17 @@ class FormixFieldDerivation extends ConsumerStatefulWidget {
     required this.dependencies,
     required this.derive,
     required this.targetField,
+    this.selectors,
   });
 
   /// The fields that this derivation depends on.
   /// When any of these fields change, the derivation will be recalculated.
   final List<FormixFieldID<dynamic>> dependencies;
+
+  /// Optional selectors for specific dependencies.
+  /// If provided, the derivation only recalculates when the selected part
+  /// of the dependency value changes.
+  final Map<FormixFieldID<dynamic>, Object? Function(dynamic value)>? selectors;
 
   /// Function that computes the derived value.
   /// Receives a map of current field values and returns the computed value.
@@ -83,8 +89,8 @@ class _FormixFieldDerivationState extends ConsumerState<FormixFieldDerivation> {
       return;
     }
 
-    // Keep provider alive
-    ref.watch(provider);
+    // We don't watch the provider here to avoid unnecessary rebuilds
+    // The ref.listen in build() handles granular updates
     try {
       final newController = ref.read(provider.notifier);
       if (newController != _controller) {
@@ -156,9 +162,19 @@ class _FormixFieldDerivationState extends ConsumerState<FormixFieldDerivation> {
       );
     }
 
-    // Listen to each dependency reactively using granular selectors
+    // Listen to each dependency reactively using granular selectors if provided
     for (final fieldId in widget.dependencies) {
-      ref.listen(fieldValueProvider(fieldId), (_, __) => _recalculate());
+      final selector = widget.selectors?[fieldId];
+      final provider = fieldValueProvider(fieldId);
+
+      if (selector != null) {
+        ref.listen(
+          provider.select((value) => selector(value)),
+          (_, __) => _recalculate(),
+        );
+      } else {
+        ref.listen(provider, (_, __) => _recalculate());
+      }
     }
 
     // This widget doesn't render anything visible
@@ -207,8 +223,8 @@ class _FormixFieldDerivationsState extends ConsumerState<FormixFieldDerivations>
       return;
     }
 
-    // Keep provider alive
-    ref.watch(provider);
+    // We don't watch the provider here to avoid unnecessary rebuilds
+    // The ref.listen in build() handles granular updates
     try {
       final newController = ref.read(provider.notifier);
       if (newController != _controller) {
@@ -285,16 +301,20 @@ class _FormixFieldDerivationsState extends ConsumerState<FormixFieldDerivations>
     }
 
     // Set up granular listeners for all derivations
-    final uniqueDependencies = widget.derivations.expand((d) => d.dependencies).toSet();
-    for (final dep in uniqueDependencies) {
-      ref.listen(fieldValueProvider(dep), (prev, next) {
-        // Find which derivations need to be recalculated
-        for (final config in widget.derivations) {
-          if (config.dependencies.contains(dep)) {
-            _recalculate(config);
-          }
+    for (final config in widget.derivations) {
+      for (final dep in config.dependencies) {
+        final selector = config.selectors?[dep];
+        final provider = fieldValueProvider(dep);
+
+        if (selector != null) {
+          ref.listen(
+            provider.select((value) => selector(value)),
+            (_, __) => _recalculate(config),
+          );
+        } else {
+          ref.listen(provider, (_, __) => _recalculate(config));
         }
-      });
+      }
     }
 
     return const SizedBox.shrink();
@@ -312,10 +332,14 @@ class FieldDerivationConfig {
     required this.dependencies,
     required this.derive,
     required this.targetField,
+    this.selectors,
   });
 
   /// The fields that this derivation depends on.
   final List<FormixFieldID<dynamic>> dependencies;
+
+  /// Optional selectors for specific dependencies.
+  final Map<FormixFieldID<dynamic>, Object? Function(dynamic value)>? selectors;
 
   /// Function that computes the derived value from dependency values.
   final dynamic Function(Map<FormixFieldID<dynamic>, dynamic>) derive;

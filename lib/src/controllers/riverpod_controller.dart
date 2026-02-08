@@ -576,9 +576,24 @@ class RiverpodFormController extends StateNotifier<FormixData> {
         missingFields.add(key);
       }
 
-      final expectedInitialValue = initialValueMap[key];
-      if (expectedInitialValue != null && value != null && value.runtimeType != expectedInitialValue.runtimeType && !(value is num && expectedInitialValue is num)) {
-        final error = 'Type mismatch for field $key: expected ${expectedInitialValue.runtimeType}, got ${value.runtimeType}';
+      // Type validation
+      bool isTypeValid = true;
+      String? expectedTypeName;
+
+      if (fieldDef != null) {
+        isTypeValid = fieldDef.isTypeValid(value);
+        expectedTypeName = fieldDef.id.type.toString();
+      } else {
+        // Fallback to initial value check if field is not registered yet
+        final expectedInitialValue = initialValueMap[key];
+        if (expectedInitialValue != null && value != null) {
+          isTypeValid = value.runtimeType == expectedInitialValue.runtimeType || (value is num && expectedInitialValue is num);
+          expectedTypeName = expectedInitialValue.runtimeType.toString();
+        }
+      }
+
+      if (!isTypeValid) {
+        final error = 'Type mismatch for field $key: expected $expectedTypeName, got ${value?.runtimeType}';
         if (strict) throw ArgumentError(error);
         typeMismatches[key] = error;
         continue;
@@ -1049,23 +1064,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
 
       _validationDurations[key] = Duration.zero;
 
-      _fieldDefinitions[key] = FormixField<dynamic>(
-        id: FormixFieldID<dynamic>(field.id.key),
-        initialValue: field.initialValue,
-        validator: field.wrappedValidator,
-        label: field.label,
-        hint: field.hint,
-        transformer: field.wrappedTransformer != null ? (dynamic val) => field.wrappedTransformer!(val) : null,
-        asyncValidator: field.wrappedAsyncValidator,
-        debounceDuration: field.debounceDuration,
-        validationMode: field.validationMode,
-        initialValueStrategy: field.initialValueStrategy,
-        crossFieldValidator: field.wrappedCrossFieldValidator,
-        dependsOn: field.dependsOn,
-        inputFormatters: field.inputFormatters,
-        textInputAction: field.textInputAction,
-        onSubmitted: field.onSubmitted,
-      );
+      _fieldDefinitions[key] = field;
 
       // Update dependency graph: Add new dependencies
       for (final dep in field.dependsOn) {

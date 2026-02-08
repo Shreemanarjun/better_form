@@ -229,5 +229,62 @@ void main() {
       await tester.pump();
       expect(controller.getValue(targetField), 5);
     });
+
+    testWidgets('select property limits transformations to specific object changes', (tester) async {
+      const objectSourceField = FormixFieldID<Map<String, dynamic>>('obj_source');
+      int transformCount = 0;
+
+      final widget = FormixFieldTransformer<Map<String, dynamic>, String>(
+        sourceField: objectSourceField,
+        targetField: sourceField, // reusing sourceField ID as target for string outcome
+        select: (user) => user?['name'],
+        transform: (user) {
+          transformCount++;
+          return (user?['name'] as String? ?? '').toUpperCase();
+        },
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Formix(
+              initialValue: const {
+                'obj_source': {'name': 'John', 'age': 25},
+                'source': 'JOHN',
+              },
+              fields: [
+                const FormixFieldConfig(id: objectSourceField),
+                FormixFieldConfig(id: sourceField),
+              ],
+              child: widget,
+            ),
+          ),
+        ),
+      );
+
+      final provider = Formix.of(tester.element(find.byType(FormixFieldTransformer<Map<String, dynamic>, String>)))!;
+      final container = ProviderScope.containerOf(tester.element(find.byType(FormixFieldTransformer<Map<String, dynamic>, String>)));
+      final controller = container.read(provider.notifier);
+
+      // Initial transform on mount
+      expect(transformCount, 1);
+      expect(controller.getValue(sourceField), 'JOHN');
+
+      // Change age (unselected property)
+      controller.setValue(objectSourceField, {'name': 'John', 'age': 26});
+      await tester.pump();
+
+      // Should NOT have triggered another transform
+      expect(transformCount, 1);
+      expect(controller.getValue(sourceField), 'JOHN');
+
+      // Change name (selected property)
+      controller.setValue(objectSourceField, {'name': 'Jane', 'age': 26});
+      await tester.pump();
+
+      // SHOULD have triggered another transform
+      expect(transformCount, 2);
+      expect(controller.getValue(sourceField), 'JANE');
+    });
   });
 }

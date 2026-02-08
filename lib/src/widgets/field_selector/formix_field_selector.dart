@@ -13,6 +13,7 @@ class FormixFieldSelector<T> extends ConsumerStatefulWidget {
     this.listenToValue = true,
     this.listenToValidation = true,
     this.listenToDirty = true,
+    this.select,
     this.child,
   });
 
@@ -38,6 +39,11 @@ class FormixFieldSelector<T> extends ConsumerStatefulWidget {
 
   /// Whether to rebuild when the dirty state changes.
   final bool listenToDirty;
+
+  /// Optional selector to pick a specific part of the field value.
+  /// This is used to avoid unnecessary rebuilds when other parts of
+  /// a complex object change. Only affects rebuilds when [listenToValue] is true.
+  final Object? Function(T? value)? select;
 
   /// Optional child widget that is passed to the builder to optimize rebuilds.
   final Widget? child;
@@ -75,8 +81,6 @@ class _FormixFieldSelectorState<T> extends ConsumerState<FormixFieldSelector<T>>
       }
 
       if (provider != null) {
-        // Keep provider alive
-        ref.watch(provider);
         newController = ref.read(provider.notifier);
       }
     }
@@ -102,6 +106,11 @@ class _FormixFieldSelectorState<T> extends ConsumerState<FormixFieldSelector<T>>
 
     if (oldWidget.controller != widget.controller || oldWidget.fieldId != widget.fieldId) {
       _updateController();
+    } else if (oldWidget.select != widget.select) {
+      // If the selector changed, we might need a rebuild if the newly selected value
+      // is different from the previously selected value.
+      // Easiest is to just re-initialize the state.
+      _updateCurrentState();
     }
   }
 
@@ -138,8 +147,14 @@ class _FormixFieldSelectorState<T> extends ConsumerState<FormixFieldSelector<T>>
     // Check if we should rebuild based on listen flags
     bool shouldRebuild = false;
 
-    if (widget.listenToValue && _currentValue != _previousValue) {
-      shouldRebuild = true;
+    if (widget.listenToValue) {
+      if (widget.select != null) {
+        if (widget.select!(_currentValue) != widget.select!(_previousValue)) {
+          shouldRebuild = true;
+        }
+      } else if (_currentValue != _previousValue) {
+        shouldRebuild = true;
+      }
     }
 
     if (widget.listenToValidation && _currentValidation != _previousValidation) {

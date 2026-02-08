@@ -149,6 +149,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 50));
 
       controller.setValue(sourceField, 'abc');
+      await tester.pump();
 
       // Wait for debounce and processing
       await tester.pump(const Duration(milliseconds: 500));
@@ -250,6 +251,64 @@ void main() {
         // Wait for async operation to theoretically complete
         await Future.delayed(const Duration(milliseconds: 300));
       });
+    });
+
+    testWidgets('select property limits transformations in FormixFieldAsyncTransformer', (tester) async {
+      const objectSourceField = FormixFieldID<Map<String, dynamic>>('obj_source');
+      int transformCount = 0;
+
+      final widget = FormixFieldAsyncTransformer<Map<String, dynamic>, String>(
+        sourceField: objectSourceField,
+        targetField: targetField,
+        select: (user) => user?['name'],
+        transform: (user) async {
+          transformCount++;
+          return (user?['name'] as String? ?? '').toUpperCase();
+        },
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Formix(
+              initialValue: const {
+                'obj_source': {'name': 'John', 'age': 25},
+                'target': 'JOHN',
+              },
+              fields: [
+                const FormixFieldConfig(id: objectSourceField),
+                FormixFieldConfig(id: targetField),
+              ],
+              child: widget,
+            ),
+          ),
+        ),
+      );
+
+      final provider = Formix.of(tester.element(find.byType(FormixFieldAsyncTransformer<Map<String, dynamic>, String>)))!;
+      final container = ProviderScope.containerOf(tester.element(find.byType(FormixFieldAsyncTransformer<Map<String, dynamic>, String>)));
+      final controller = container.read(provider.notifier);
+
+      // Initial transform on mount
+      await tester.pumpAndSettle();
+      expect(transformCount, 1);
+      expect(controller.getValue(targetField), 'JOHN');
+
+      // Change age (unselected property)
+      controller.setValue(objectSourceField, {'name': 'John', 'age': 26});
+      await tester.pumpAndSettle();
+
+      // Should NOT have triggered another transform
+      expect(transformCount, 1);
+      expect(controller.getValue(targetField), 'JOHN');
+
+      // Change name (selected property)
+      controller.setValue(objectSourceField, {'name': 'Jane', 'age': 26});
+      await tester.pumpAndSettle();
+
+      // SHOULD have triggered another transform
+      expect(transformCount, 2);
+      expect(controller.getValue(targetField), 'JANE');
     });
   });
 }

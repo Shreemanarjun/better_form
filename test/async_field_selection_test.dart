@@ -123,7 +123,7 @@ void main() {
 
   testWidgets('FormixDependentAsyncField correctly handles dependency changes and onData', (tester) async {
     const stateFieldId = FormixFieldID<MockState>('state_field');
-    const cityFieldId = FormixFieldID<MockCity>('city_field');
+    const cityFieldId = FormixFieldID<MockCity?>('city_field');
     const cityOptionsId = FormixFieldID<List<MockCity>>('city_options');
 
     final mockStates = [
@@ -177,7 +177,7 @@ void main() {
                     builder: (context, cityOptionsSnapshot) {
                       final cities = cityOptionsSnapshot.value ?? [];
                       // If empty/loading handled, this should be safe
-                      return FormixRawFormField<MockCity>(
+                      return FormixRawFormField<MockCity?>(
                         fieldId: cityFieldId,
                         builder: (context, cityStatus) {
                           if (cities.isEmpty && cityStatus.value == null) {

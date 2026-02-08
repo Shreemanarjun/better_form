@@ -41,6 +41,7 @@ class FormixDependentAsyncField<T, D> extends ConsumerStatefulWidget {
     this.debounce,
     this.initialValue,
     this.initialValueStrategy,
+    this.select,
     this.manual = false,
     this.onData,
   });
@@ -82,6 +83,10 @@ class FormixDependentAsyncField<T, D> extends ConsumerStatefulWidget {
   /// Strategy for handling initial values.
   final FormixInitialValueStrategy? initialValueStrategy;
 
+  /// Optional selector to pick a specific part of the dependency value.
+  /// This ensures the future only re-runs when the selected part changes.
+  final Object? Function(D? value)? select;
+
   /// Optional callback executed when data is successfully loaded.
   final void Function(BuildContext context, FormixController controller, T data)? onData;
 
@@ -107,10 +112,17 @@ class _FormixDependentAsyncFieldState<T, D> extends ConsumerState<FormixDependen
     final activeProvider = (Formix.of(context) ?? ref.watch(currentControllerProvider))!;
 
     try {
-      // Watch the dependency value with type safety
-      final dependencyValue = ref.watch(
-        activeProvider.select((s) => s.getValue(widget.dependency)),
-      );
+      // Use fieldValueProvider for granular dependency tracking
+      final provider = fieldValueProvider(widget.dependency);
+      final D? dependencyValue;
+
+      if (widget.select != null) {
+        // Watch only the selected part
+        ref.watch(provider.select((v) => widget.select!(v as D?)));
+        dependencyValue = ref.read(provider) as D?;
+      } else {
+        dependencyValue = ref.watch(provider) as D?;
+      }
 
       // Only recreate the future if the dependency value has changed or it's the first build
       if (!_initialized || dependencyValue != _lastDependencyValue) {
@@ -121,14 +133,39 @@ class _FormixDependentAsyncFieldState<T, D> extends ConsumerState<FormixDependen
 
       // Listen for dependency changes to reset the related field
       if (widget.resetField != null) {
-        ref.listen(activeProvider.select((s) => s.getValue(widget.dependency)), (
-          previous,
-          next,
-        ) {
-          if (previous != next) {
-            ref.read(activeProvider.notifier).setValue(widget.resetField!, null);
-          }
-        });
+        if (widget.select != null) {
+          ref.listen(provider.select((v) => widget.select!(v as D?)), (
+            previous,
+            next,
+          ) {
+            if (previous != next) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) {
+                  ref.read(activeProvider.notifier).resetFields(
+                    [widget.resetField!],
+                    strategy: ResetStrategy.clear,
+                  );
+                }
+              });
+            }
+          });
+        } else {
+          ref.listen(provider, (
+            previous,
+            next,
+          ) {
+            if (previous != next) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) {
+                  ref.read(activeProvider.notifier).resetFields(
+                    [widget.resetField!],
+                    strategy: ResetStrategy.clear,
+                  );
+                }
+              });
+            }
+          });
+        }
       }
 
       return FormixAsyncField<T>(

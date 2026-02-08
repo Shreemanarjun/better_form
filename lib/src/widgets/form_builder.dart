@@ -224,10 +224,14 @@ class FormixScope {
 /// ```
 class FormixBuilder extends ConsumerStatefulWidget {
   /// Creates a [FormixBuilder].
-  const FormixBuilder({super.key, required this.builder});
+  const FormixBuilder({super.key, required this.builder, this.select});
 
   /// The builder function that receives the [FormixScope].
   final Widget Function(BuildContext context, FormixScope scope) builder;
+
+  /// Optional selector to pick a specific part of the form state.
+  /// If provided, this widget will only rebuild when the selected part changes.
+  final Object? Function(FormixData state)? select;
 
   @override
   ConsumerState<FormixBuilder> createState() => _FormixBuilderState();
@@ -254,6 +258,14 @@ class _FormixBuilderState extends ConsumerState<FormixBuilder> {
     final provider = Formix.of(context)!;
 
     try {
+      // Rebuild only when selected state changes if select is provided
+      if (widget.select != null) {
+        ref.watch(provider.select(widget.select!));
+      } else {
+        // Fallback: watch the whole provider (standard behavior)
+        ref.watch(provider);
+      }
+
       // We watch the notifier so we get the new controller if it's recreated.
       final controller = ref.watch(provider.notifier);
 
@@ -298,7 +310,11 @@ class _FormixBuilderState extends ConsumerState<FormixBuilder> {
 /// ```
 abstract class FormixWidget extends ConsumerStatefulWidget {
   /// Creates a [FormixWidget].
-  const FormixWidget({super.key});
+  const FormixWidget({super.key, this.select});
+
+  /// Optional selector to pick a specific part of the form state.
+  /// If provided, this widget will only rebuild when the selected part changes.
+  final Object? Function(FormixData state)? select;
 
   @override
   @mustCallSuper
@@ -321,6 +337,14 @@ class _FormixWidgetState extends ConsumerState<FormixWidget> {
     final provider = Formix.of(context)!;
 
     try {
+      // Rebuild only when selected state changes if select is provided
+      if (widget.select != null) {
+        ref.watch(provider.select(widget.select!));
+      } else {
+        // Fallback: watch the whole provider (standard behavior)
+        ref.watch(provider);
+      }
+
       final controller = ref.watch(provider.notifier);
 
       final scope = FormixScope(

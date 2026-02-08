@@ -12,6 +12,11 @@ class FormixFormStatus extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FormixBuilder(
+      select: (state) => Object.hash(
+        state.isDirty,
+        state.isValid,
+        state.isSubmitting,
+      ),
       builder: (context, scope) {
         final isDirty = scope.watchIsFormDirty;
         final isValid = scope.watchIsValid;

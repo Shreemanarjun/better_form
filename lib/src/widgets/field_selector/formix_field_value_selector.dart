@@ -11,6 +11,7 @@ class FormixFieldValueSelector<T> extends StatelessWidget {
     required this.fieldId,
     required this.builder,
     this.controller,
+    this.select,
     this.child,
   });
 
@@ -26,6 +27,9 @@ class FormixFieldValueSelector<T> extends StatelessWidget {
   /// Optional child widget that is passed to the builder.
   final Widget? child;
 
+  /// Optional selector to pick a specific part of the field value.
+  final Object? Function(T? value)? select;
+
   @override
   Widget build(BuildContext context) {
     return FormixFieldSelector<T>(
@@ -34,6 +38,7 @@ class FormixFieldValueSelector<T> extends StatelessWidget {
       listenToValue: true,
       listenToValidation: false,
       listenToDirty: false,
+      select: select,
       builder: (context, info, child) => builder(context, info.value, child),
       child: child,
     );

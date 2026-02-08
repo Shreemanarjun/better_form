@@ -16,6 +16,9 @@ class FormixFieldID<T> {
   /// The unique string key for this field.
   final String key;
 
+  /// The runtime type [T] associated with this identifier.
+  Type get type => T;
+
   /// Returns a new identifier with the given [prefix] prepended to the key.
   /// Useful for namespacing fields within groups.
   FormixFieldID<T> withPrefix(String prefix) => FormixFieldID<T>('$prefix.$key');

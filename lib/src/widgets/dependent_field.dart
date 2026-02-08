@@ -27,6 +27,7 @@ class FormixDependentField<T> extends ConsumerStatefulWidget {
     super.key,
     required this.fieldId,
     required this.builder,
+    this.select,
     this.controllerProvider,
   });
 
@@ -35,6 +36,11 @@ class FormixDependentField<T> extends ConsumerStatefulWidget {
 
   /// Builder function that receives the current [value] of the dependent field.
   final Widget Function(BuildContext context, T? value) builder;
+
+  /// Optional selector to pick a specific part of the field value.
+  /// This is used to avoid unnecessary rebuilds when other parts of
+  /// a complex object change.
+  final Object? Function(T? value)? select;
 
   /// Optional explicit controller provider. If null, it looks up the nearest [Formix].
   final AutoDisposeStateNotifierProvider<FormixController, FormixData>? controllerProvider;
@@ -64,7 +70,17 @@ class _FormixDependentFieldState<T> extends ConsumerState<FormixDependentField<T
       child: Consumer(
         builder: (context, ref, _) {
           try {
-            final value = ref.watch(fieldValueProvider(widget.fieldId));
+            final provider = fieldValueProvider(widget.fieldId);
+            final T? value;
+
+            if (widget.select != null) {
+              // Watch only the selected part but still provide the whole value to the builder
+              ref.watch(provider.select((v) => widget.select!(v as T?)));
+              value = ref.read(provider) as T?;
+            } else {
+              value = ref.watch(provider) as T?;
+            }
+
             return widget.builder(context, value);
           } catch (e) {
             return FormixConfigurationErrorWidget(

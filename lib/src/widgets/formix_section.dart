@@ -78,8 +78,9 @@ class _FormixSectionState extends ConsumerState<FormixSection> {
       return;
     }
 
-    // Keep provider alive
-    ref.watch(provider);
+    // Keep provider alive efficiently without watching state changes.
+    // This only triggers a rebuild if the controller instance itself changes.
+    ref.watch(provider.notifier);
 
     try {
       _controller = ref.read(provider.notifier);

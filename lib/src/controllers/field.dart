@@ -101,6 +101,17 @@ class FormixField<T> {
     return (dynamic value) => t(value);
   }
 
+  /// Checks if the given value matches the field's type [T].
+  /// This is more robust than runtimeType comparison as it handles
+  /// inheritance and generic type compatibility correctly.
+  bool isTypeValid(dynamic value) {
+    if (value == null) return isNullableType;
+    return value is T;
+  }
+
+  /// Returns true if [T] is a nullable type.
+  bool get isNullableType => null is T;
+
   @override
   String toString() {
     return 'FormixField<$T>(id: $id, label: $label, initialValue: $initialValue)';

@@ -54,8 +54,9 @@ class _FormixArrayState<T> extends ConsumerState<FormixArray<T>> {
 
     final provider = (Formix.of(context) ?? ref.watch(currentControllerProvider))!;
 
-    // Keep provider alive
-    ref.watch(provider);
+    // Keep provider alive efficiently without watching state changes.
+    // This only triggers a rebuild if the controller instance itself changes.
+    ref.watch(provider.notifier);
 
     try {
       final controller = ref.read(provider.notifier);

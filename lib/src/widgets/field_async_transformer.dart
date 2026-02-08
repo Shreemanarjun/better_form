@@ -31,6 +31,7 @@ class FormixFieldAsyncTransformer<T, S> extends ConsumerStatefulWidget {
     required this.sourceField,
     required this.targetField,
     required this.transform,
+    this.select,
     this.debounce,
     this.retransformOnSubmit = false,
   });
@@ -44,6 +45,9 @@ class FormixFieldAsyncTransformer<T, S> extends ConsumerStatefulWidget {
   /// The asynchronous transformation function.
   final Future<S> Function(T? value) transform;
 
+  /// Optional selector to pick a specific part of the source value.
+  final Object? Function(T? value)? select;
+
   /// Optional debounce duration.
   final Duration? debounce;
 
@@ -56,7 +60,6 @@ class FormixFieldAsyncTransformer<T, S> extends ConsumerStatefulWidget {
 
 class _FormixFieldAsyncTransformerState<T, S> extends ConsumerState<FormixFieldAsyncTransformer<T, S>> {
   FormixController? _controller;
-  late VoidCallback _listener;
   final _inputController = StreamController<T?>.broadcast(sync: true);
   StreamSubscription<T?>? _subscription;
   VoidCallback? _formListenerRemover;
@@ -66,7 +69,6 @@ class _FormixFieldAsyncTransformerState<T, S> extends ConsumerState<FormixFieldA
   @override
   void initState() {
     super.initState();
-    _listener = _onSourceChanged;
     _setupStream();
   }
 
@@ -102,20 +104,18 @@ class _FormixFieldAsyncTransformerState<T, S> extends ConsumerState<FormixFieldA
       return;
     }
 
-    // Keep provider alive
-    ref.watch(provider);
+    // We don't watch the provider here to avoid unnecessary rebuilds
+    // The ref.listen in build() handles granular updates
     try {
       final newController = ref.read(provider.notifier);
       if (newController != _controller) {
         if (_controller != null) {
-          _controller!.removeFieldListener(widget.sourceField, _listener);
           _formListenerRemover?.call();
           _formListenerRemover = null;
         }
 
         _controller = newController;
         if (_controller != null) {
-          _controller!.addFieldListener(widget.sourceField, _listener);
           if (widget.retransformOnSubmit) {
             _formListenerRemover = _controller!.addFormListener(_onSubmitChanged);
           }
@@ -153,13 +153,7 @@ class _FormixFieldAsyncTransformerState<T, S> extends ConsumerState<FormixFieldA
       }
     }
 
-    if (oldWidget.sourceField != widget.sourceField) {
-      if (_controller != null) {
-        _controller!.removeFieldListener(oldWidget.sourceField, _listener);
-        _controller!.addFieldListener(widget.sourceField, _listener);
-      }
-      _onSourceChanged();
-    } else if (oldWidget.targetField != widget.targetField) {
+    if (oldWidget.sourceField != widget.sourceField || oldWidget.targetField != widget.targetField) {
       _onSourceChanged();
     }
   }
@@ -168,9 +162,8 @@ class _FormixFieldAsyncTransformerState<T, S> extends ConsumerState<FormixFieldA
   void dispose() {
     _subscription?.cancel();
     _inputController.close();
-    _formListenerRemover?.call();
     if (_controller != null) {
-      _controller!.removeFieldListener(widget.sourceField, _listener);
+      _formListenerRemover?.call();
       // Ensure pending state is cleared when widget is disposed
       // Use microtask to avoid triggering rebuilds during parent disposal
       final controller = _controller!;
@@ -256,6 +249,17 @@ class _FormixFieldAsyncTransformerState<T, S> extends ConsumerState<FormixFieldA
             : 'Error: $_initializationError',
       );
     }
+    // Listen to source field reactively using granular selector
+    final provider = fieldValueProvider(widget.sourceField);
+    if (widget.select != null) {
+      ref.listen(
+        provider.select((value) => widget.select!(value as T?)),
+        (_, __) => _onSourceChanged(),
+      );
+    } else {
+      ref.listen(provider, (_, __) => _onSourceChanged());
+    }
+
     return const SizedBox.shrink();
   }
 }

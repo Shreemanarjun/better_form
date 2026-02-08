@@ -21,6 +21,10 @@ class _CustomWidgetsPageState extends State<CustomWidgetsPage> {
   static const _cityId = FormixFieldID<String>('city_field');
   static const _countryId = FormixFieldID<String>('country_field');
   static const _dependentCityId = FormixFieldID<String>('dependent_city_field');
+  static const _userObjectId = FormixFieldID<Map<String, dynamic>>(
+    'user_object',
+  );
+  static const _userNameDerivedId = FormixFieldID<String>('user_name_derived');
 
   final _formKey = GlobalKey<FormixState>();
 
@@ -442,6 +446,97 @@ class _CustomWidgetsPageState extends State<CustomWidgetsPage> {
                           validator: (val) => val == null ? 'Required' : null,
                         );
                       },
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                '14. Optimized FormixFieldTransformer (with select)',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const Text(
+                'Only transforms the name when the "name" property changes, ignoring "age" updates:',
+              ),
+              FormixSection(
+                fields: [
+                  FormixFieldConfig<Map<String, dynamic>>(
+                    id: _userObjectId,
+                    initialValue: const {'name': 'John', 'age': 25},
+                  ),
+                  FormixFieldConfig<String>(
+                    id: _userNameDerivedId,
+                    initialValue: 'JOHN',
+                  ),
+                ],
+                child: Column(
+                  children: [
+                    FormixFieldValueSelector<Map<String, dynamic>>(
+                      fieldId: _userObjectId,
+                      builder: (context, user, _) {
+                        return Column(
+                          children: [
+                            Text(
+                              'User: $user',
+                              style: const TextStyle(fontFamily: 'monospace'),
+                            ),
+                            const SizedBox(height: 8),
+                            Wrap(
+                              spacing: 8,
+                              children: [
+                                ElevatedButton.icon(
+                                  icon: const Icon(Icons.add),
+                                  onPressed: () {
+                                    final controller = Formix.controllerOf(
+                                      context,
+                                    );
+                                    if (user != null) {
+                                      controller?.setValue(_userObjectId, {
+                                        ...user,
+                                        'age': (user['age'] as int) + 1,
+                                      });
+                                    }
+                                  },
+                                  label: const Text('Increase Age'),
+                                ),
+                                ElevatedButton.icon(
+                                  icon: const Icon(Icons.edit),
+                                  onPressed: () {
+                                    final controller = Formix.controllerOf(
+                                      context,
+                                    );
+                                    if (user != null) {
+                                      controller?.setValue(_userObjectId, {
+                                        ...user,
+                                        'name': '${user['name']}!',
+                                      });
+                                    }
+                                  },
+                                  label: const Text('Modify Name'),
+                                ),
+                              ],
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    // Only triggers transform when name changes
+                    FormixFieldTransformer<Map<String, dynamic>, String>(
+                      sourceField: _userObjectId,
+                      targetField: _userNameDerivedId,
+                      select: (user) => user?['name'],
+                      transform: (user) =>
+                          (user?['name'] as String? ?? '').toUpperCase(),
+                    ),
+                    const FormixTextFormField(
+                      fieldId: _userNameDerivedId,
+                      decoration: InputDecoration(
+                        labelText: 'Uppercase Name (Derived from Object)',
+                        helperText:
+                            'This field only updates when the "Name" property of the object changes.',
+                      ),
+                      readOnly: true,
                     ),
                   ],
                 ),

@@ -1,20 +1,33 @@
 import 'package:flutter/material.dart';
 import '../../formix.dart';
+import 'ancestor_validator.dart';
 
-/// A widget that listens to form state changes externally via [GlobalKey].
+/// A widget that listens to form state changes and performs side effects.
 ///
-/// This is the easiest way to listen to form changes outside the form widget tree
-/// while ensuring proper cleanup (auto-disposal) of listeners.
+/// [FormixListener] can be used either internally (within a [Formix] tree)
+/// or externally (via a [GlobalKey]). It is highly optimized and allows
+/// for granular listening via the [select] property.
 ///
-/// Example:
+/// Example (Side effects on form validity):
+/// ```dart
+/// FormixListener(
+///   select: (state) => state.isValid,
+///   listener: (context, state) {
+///     if (state.isValid) {
+///       ScaffoldMessenger.of(context).showSnackBar(
+///         const SnackBar(content: Text('Form is now valid!'))
+///       );
+///     }
+///   },
+///   child: MyFormContent(),
+/// )
+/// ```
+///
+/// Example (External listening via key):
 /// ```dart
 /// FormixListener(
 ///   formKey: myFormKey,
-///   listener: (context, state) {
-///     if (state.isValid) {
-///       print('Form is valid!');
-///     }
-///   },
+///   listener: (context, state) => print('Form updated'),
 ///   child: Container(),
 /// )
 /// ```
@@ -22,15 +35,21 @@ class FormixListener extends ConsumerStatefulWidget {
   /// Creates a [FormixListener].
   const FormixListener({
     super.key,
-    required this.formKey,
+    this.formKey,
+    this.select,
     required this.listener,
     required this.child,
   });
 
   /// The GlobalKey of the [Formix] widget to listen to.
-  final GlobalKey<FormixState> formKey;
+  /// If null, the listener will look for the nearest [Formix] ancestor.
+  final GlobalKey<FormixState>? formKey;
 
-  /// Callback called whenever the form state changes.
+  /// Optional selector to pick a specific part of the form state.
+  /// The [listener] will only be called when the selected value changes.
+  final Object? Function(FormixData state)? select;
+
+  /// Callback called whenever the form state (or the selected part) changes.
   final void Function(BuildContext context, FormixData state) listener;
 
   /// The child widget.
@@ -43,11 +62,16 @@ class FormixListener extends ConsumerStatefulWidget {
 class _FormixListenerState extends ConsumerState<FormixListener> {
   VoidCallback? _removeListener;
   Object? _initializationError;
+  FormixData? _previousState;
+  Object? _previousSelectedValue;
 
   @override
   void initState() {
     super.initState();
-    _subscribe();
+    // Defer to allow context to be fully ready
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _subscribe();
+    });
   }
 
   @override
@@ -61,44 +85,66 @@ class _FormixListenerState extends ConsumerState<FormixListener> {
 
   void _subscribe() {
     try {
-      // Determine controller availability efficiently
-      final FormixState? formState = widget.formKey.currentState;
-      final controller = formState?.controller;
+      final controller = _resolveController();
 
       if (controller != null) {
-        _removeListener = controller.addFormListener(_handleStateChange);
-        _initializationError = null;
-      } else {
-        // Retry in next frame if not ready yet
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted) return;
-          try {
-            final ctrl = widget.formKey.currentState?.controller;
-            if (ctrl != null) {
-              _removeListener = ctrl.addFormListener(_handleStateChange);
-              setState(() {
-                _initializationError = null;
-              });
-            } else {
-              setState(() {
-                _initializationError = 'Formix not found at provided GlobalKey';
-              });
-            }
-          } catch (e) {
-            setState(() {
-              _initializationError = e;
-            });
-          }
+        _previousState = controller.currentState;
+        _previousSelectedValue = widget.select?.call(_previousState!);
+
+        _removeListener = controller.addFormListener(_onStateChanged);
+
+        if (mounted && _initializationError != null) {
+          setState(() {
+            _initializationError = null;
+          });
+        }
+      } else if (widget.formKey != null) {
+        // External key provided but not yet available
+        setState(() {
+          _initializationError = 'Formix not found at provided GlobalKey';
         });
       }
     } catch (e) {
-      _initializationError = e;
+      if (mounted) {
+        setState(() {
+          _initializationError = e;
+        });
+      }
     }
   }
 
-  void _handleStateChange(FormixData state) {
+  FormixController? _resolveController() {
+    if (widget.formKey != null) {
+      return widget.formKey!.currentState?.controller;
+    }
+    final provider = Formix.of(context);
+    if (provider != null) {
+      // Keep provider alive efficiently without watching state changes.
+      // This only triggers a rebuild if the controller instance itself changes.
+      ref.watch(provider.notifier);
+      return ref.read(provider.notifier);
+    }
+    return null;
+  }
+
+  void _onStateChanged(FormixData state) {
     if (!mounted) return;
-    widget.listener(context, state);
+
+    bool shouldNotify = false;
+    if (widget.select != null) {
+      final selected = widget.select!(state);
+      if (selected != _previousSelectedValue) {
+        shouldNotify = true;
+        _previousSelectedValue = selected;
+      }
+    } else {
+      shouldNotify = true;
+    }
+
+    if (shouldNotify) {
+      widget.listener(context, state);
+    }
+    _previousState = state;
   }
 
   void _unsubscribe() {
@@ -114,20 +160,20 @@ class _FormixListenerState extends ConsumerState<FormixListener> {
 
   @override
   Widget build(BuildContext context) {
-    // Check for ProviderScope first
-    if (context.getElementForInheritedWidgetOfExactType<UncontrolledProviderScope>() == null) {
-      return const FormixConfigurationErrorWidget(
-        message: 'Missing ProviderScope',
-        details:
-            'Formix requires a ProviderScope at the root of your application to manage form state using Riverpod.\n\nExample:\nvoid main() {\n  runApp(ProviderScope(child: MyApp()));\n}',
+    // Validate ancestor once ready
+    if (widget.formKey == null) {
+      final errorWidget = FormixAncestorValidator.validate(
+        context,
+        widgetName: 'FormixListener',
       );
+      if (errorWidget != null) return errorWidget;
     }
 
     if (_initializationError != null) {
       return FormixConfigurationErrorWidget(
         message: _initializationError is String ? _initializationError as String : 'Failed to initialize FormixListener',
         details: _initializationError.toString().contains('No ProviderScope found')
-            ? 'Missing ProviderScope. Please wrap your application (or this form) in a ProviderScope widget.'
+            ? 'Missing ProviderScope. Please wrap your application in a ProviderScope widget.'
             : 'Error: $_initializationError',
       );
     }

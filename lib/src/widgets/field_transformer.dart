@@ -24,6 +24,7 @@ class FormixFieldTransformer<T, S> extends ConsumerStatefulWidget {
     required this.sourceField,
     required this.targetField,
     required this.transform,
+    this.select,
   });
 
   /// The field to listen to.
@@ -34,6 +35,11 @@ class FormixFieldTransformer<T, S> extends ConsumerStatefulWidget {
 
   /// The transformation function.
   final S Function(T? value) transform;
+
+  /// Optional selector to pick a specific part of the source value.
+  /// This is used to avoid unnecessary transformations when other parts of
+  /// a complex object change.
+  final Object? Function(T? value)? select;
 
   @override
   ConsumerState<FormixFieldTransformer<T, S>> createState() => _FormixFieldTransformerState<T, S>();
@@ -65,8 +71,8 @@ class _FormixFieldTransformerState<T, S> extends ConsumerState<FormixFieldTransf
       return;
     }
 
-    // Keep provider alive
-    ref.watch(provider);
+    // We don't watch the provider here to avoid unnecessary rebuilds
+    // The ref.listen in build() handles granular updates
     try {
       final newController = ref.read(provider.notifier);
       if (newController != _controller) {
@@ -138,7 +144,15 @@ class _FormixFieldTransformerState<T, S> extends ConsumerState<FormixFieldTransf
     }
 
     // Listen to source field reactively using granular selector
-    ref.listen(fieldValueProvider(widget.sourceField), (_, __) => _transformValue());
+    final provider = fieldValueProvider(widget.sourceField);
+    if (widget.select != null) {
+      ref.listen(
+        provider.select((value) => widget.select!(value as T?)),
+        (_, __) => _transformValue(),
+      );
+    } else {
+      ref.listen(provider, (_, __) => _transformValue());
+    }
 
     return const SizedBox.shrink();
   }

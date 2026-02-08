@@ -221,10 +221,10 @@ void main() {
 
       // 3. Change Dependency -> Loading -> Unmount Child
       await tester.enterText(find.byKey(const Key('country')), 'Canada');
-      await tester.pump(); // Trigger listener (resetField -> null)
+      await tester.pump(); // Trigger listener (resetField -> clear)
 
-      // Verify value reset immediately
-      expect(controller.getValue(cityField), isNull);
+      // Verify value cleared immediately (for String it's '')
+      expect(controller.getValue(cityField), '');
 
       // Verify loading state (since keepPreviousData: false)
       await tester.pump();
@@ -245,7 +245,7 @@ void main() {
 
       // Verify child re-connected correctly
       expect(controller.isFieldRegistered(cityField), isTrue);
-      expect(controller.getValue(cityField), isNull); // Still null from reset
+      expect(controller.getValue(cityField), ''); // Still empty from reset
     },
   );
 
@@ -315,15 +315,15 @@ void main() {
     await tester.enterText(find.byKey(const Key('country')), 'Canada');
     await tester.pump(); // Reset happens
 
-    // Value should be null
-    expect(controller.getValue(cityField), isNull);
+    // Value should be empty string
+    expect(controller.getValue(cityField), '');
 
     completers.last.complete(['Toronto']);
     await tester.pumpAndSettle();
 
     // Check if error is gone.
-    // When value changes (setValue to null), validation runs.
-    // If validation passes for null (not required), error is gone.
+    // When value changes (setValue to ''), validation runs.
+    // If validation passes for '' (not required), error is gone.
     // "Custom Error" should be cleared because validation re-ran.
     expect(controller.getValidation(cityField).errorMessage, isNull);
   });
