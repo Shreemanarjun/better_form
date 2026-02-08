@@ -321,20 +321,49 @@ abstract class FormixFieldWidgetState<T> extends ConsumerState<FormixFieldWidget
       T? initialValue = widget.initialValue;
       initialValue ??= existingField?.initialValue ?? controller.initialValue[widget.fieldId.key] as T?;
 
+      // Use wrapped validators to handle type conversion safely
+      String? Function(T?)? preservedValidator;
+      Future<String?> Function(T?)? preservedAsyncValidator;
+      String? Function(T?, FormixData)? preservedCrossFieldValidator;
+      T Function(dynamic)? preservedTransformer;
+
+      if (existingField != null) {
+        // Use wrapped versions which handle dynamic -> T conversion
+        final wrappedV = existingField.wrappedValidator;
+        if (wrappedV != null) {
+          preservedValidator = (T? value) => wrappedV(value);
+        }
+
+        final wrappedAsync = existingField.wrappedAsyncValidator;
+        if (wrappedAsync != null) {
+          preservedAsyncValidator = (T? value) => wrappedAsync(value);
+        }
+
+        final wrappedCross = existingField.wrappedCrossFieldValidator;
+        if (wrappedCross != null) {
+          preservedCrossFieldValidator = (T? value, FormixData data) => wrappedCross(value, data);
+        }
+
+        final wrappedTrans = existingField.wrappedTransformer;
+        if (wrappedTrans != null && wrappedTrans is T Function(dynamic)) {
+          preservedTransformer = wrappedTrans;
+        }
+      }
+
       controller.registerField(
         FormixField<T>(
           id: widget.fieldId,
           initialValue: initialValue,
-          validator: widget.validator ?? (existingField?.validator as String? Function(T?)?),
-          asyncValidator: widget.asyncValidator ?? (existingField?.asyncValidator as Future<String?> Function(T?)?),
+          validator: widget.validator ?? preservedValidator,
+          asyncValidator: widget.asyncValidator ?? preservedAsyncValidator,
           validationMode: widget.autovalidateMode ?? existingField?.validationMode ?? FormixAutovalidateMode.auto,
           initialValueStrategy: widget.initialValueStrategy ?? existingField?.initialValueStrategy ?? FormixInitialValueStrategy.preferLocal,
           // Preserve other properties from config if they exist
           label: existingField?.label,
           hint: existingField?.hint,
           dependsOn: existingField?.dependsOn ?? const [],
-          crossFieldValidator: existingField?.crossFieldValidator as String? Function(T?, FormixData)?,
-          transformer: existingField?.transformer as T Function(dynamic)?,
+          crossFieldValidator: widget.validator != null ? null : preservedCrossFieldValidator,
+          transformer: preservedTransformer,
           inputFormatters: existingField?.inputFormatters,
           textInputAction: existingField?.textInputAction,
           onSubmitted: existingField?.onSubmitted,

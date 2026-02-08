@@ -8,6 +8,12 @@
   - Strategy can be configured at the `FormixFieldConfig` level or overridden on individual field widgets.
 
 ### 🛠️ Core Improvements & Fixes
+- **Type Safety Fix for Field Registration**:
+  - Fixed critical type casting error in `FormixFieldWidgetState._ensureFieldRegistered` that occurred when preserving validators from existing fields.
+  - Now uses `wrappedValidator`, `wrappedAsyncValidator`, `wrappedCrossFieldValidator`, and `wrappedTransformer` methods to safely handle type conversions between `dynamic` and typed validators.
+  - Resolves runtime errors like `type '(DateTime?) => String?' is not a subtype of type '((dynamic) => String?)?'` when using typed fields with custom validators.
+  - Added comprehensive test suite (`type_safety_field_registration_test.dart`) covering DateTime, TimeOfDay, complex objects, and validator override scenarios.
+
 - **Unified Ancestor Validation**:
   - Introduced `FormixAncestorValidator` to centralize `ProviderScope` and `Formix` requirement checks across all widgets.
   - Improved developer experience with rich, descriptive error messages and actionable code examples when configuration is missing.
