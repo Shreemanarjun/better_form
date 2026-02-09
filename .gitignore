@@ -46,8 +46,7 @@ test_reports/
 /devtools_extension/
 # Keep the compiled extension artifacts for publishing
 !extension/devtools/
-# But ignore the redundant build/ folder inside it
-extension/devtools/build/
+!extension/devtools/build/
 # Ignore runtime duplicate for DevTools compatibility
 /devtools_extensions/
 
