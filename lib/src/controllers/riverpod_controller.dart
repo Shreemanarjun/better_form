@@ -36,7 +36,7 @@ export 'formix_controller.dart';
 /// or via a [GlobalKey<FormixState>].
 class RiverpodFormController extends StateNotifier<FormixData> {
   /// Internationalization messages for validation errors
-  final FormixMessages messages;
+  FormixMessages messages;
 
   /// Map of initial values for all registered fields.
   @protected
@@ -223,6 +223,15 @@ class RiverpodFormController extends StateNotifier<FormixData> {
       touchedStates: touchedStates,
       changedFields: values.keys.toSet(),
     );
+  }
+
+  /// Updates the messages used for validation errors.
+  ///
+  /// This will trigger re-validation of all fields to update error messages.
+  void updateMessages(FormixMessages newMessages) {
+    if (messages == newMessages) return;
+    messages = newMessages;
+    validate(); // Re-validate to update error strings
   }
 
   /// Get the validation mode for a specific field.
@@ -1949,18 +1958,33 @@ class FormixParameter {
   final FormixData? initialData;
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is FormixParameter &&
-          formId == other.formId &&
-          namespace == other.namespace &&
-          autovalidateMode == other.autovalidateMode &&
-          (formId != null
-              ? true // Prioritize explicit formId for cross-page stability
-              : const MapEquality().equals(initialValue, other.initialValue));
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! FormixParameter) return false;
+
+    // Use deep equality for maps and initial data
+    const deepEquals = DeepCollectionEquality();
+
+    return formId == other.formId &&
+        namespace == other.namespace &&
+        autovalidateMode == other.autovalidateMode &&
+        keepAlive == other.keepAlive &&
+        deepEquals.equals(initialData, other.initialData) &&
+        (formId != null ? true : deepEquals.equals(initialValue, other.initialValue));
+  }
 
   @override
-  int get hashCode => formId.hashCode ^ namespace.hashCode ^ autovalidateMode.hashCode ^ (formId == null ? const MapEquality().hash(initialValue) : 0);
+  int get hashCode {
+    const deepEquals = DeepCollectionEquality();
+    return Object.hash(
+      formId,
+      namespace,
+      autovalidateMode,
+      keepAlive,
+      formId == null ? deepEquals.hash(initialValue) : 0,
+      deepEquals.hash(initialData),
+    );
+  }
 
   @override
   String toString() {
@@ -1973,11 +1997,13 @@ final formControllerProvider = StateNotifierProvider.autoDispose.family<FormixCo
   if (param.keepAlive) {
     ref.keepAlive();
   }
-  final messages = ref.watch(formixMessagesProvider);
-  return FormixController(
+
+  // Use listen instead of watch to avoid recreating the controller when messages change.
+  // This prevents resetting the entire form state just because the language changed.
+  final controller = FormixController(
     initialValue: param.initialValue,
     fields: param.fields.map((f) => f.toField()).toList(),
-    messages: messages,
+    messages: ref.read(formixMessagesProvider),
     persistence: param.persistence,
     formId: param.formId,
     analytics: param.analytics,
@@ -1985,6 +2011,12 @@ final formControllerProvider = StateNotifierProvider.autoDispose.family<FormixCo
     autovalidateMode: param.autovalidateMode,
     initialData: param.initialData,
   );
+
+  ref.listen<FormixMessages>(formixMessagesProvider, (previous, next) {
+    controller.updateMessages(next);
+  });
+
+  return controller;
 }, name: 'formControllerProvider');
 
 /// Provider for the current controller provider (can be overridden)

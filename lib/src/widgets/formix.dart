@@ -123,6 +123,8 @@ class Formix extends ConsumerStatefulWidget {
 /// State for [Formix], allowing external control via [GlobalKey].
 class FormixState extends ConsumerState<Formix> {
   late final String _internalFormId;
+  FormixParameter? _cachedParameter;
+  AutoDisposeStateNotifierProvider<FormixController, FormixData>? _cachedProvider;
 
   @override
   void initState() {
@@ -131,22 +133,28 @@ class FormixState extends ConsumerState<Formix> {
     _internalFormId = widget.formId ?? '${typeName}_${identityHashCode(this)}';
   }
 
-  AutoDisposeStateNotifierProvider<FormixController, FormixData> get _provider {
-    final provider = formControllerProvider(
-      FormixParameter(
-        initialValue: widget.initialValue,
-        fields: widget.fields,
-        persistence: widget.persistence,
-        formId: widget.formId,
-        namespace: _internalFormId,
-        analytics: widget.analytics,
-        keepAlive: widget.keepAlive,
-        autovalidateMode: widget.autovalidateMode,
-        initialData: widget.initialData,
-      ),
+  FormixParameter _createParameter() {
+    return FormixParameter(
+      initialValue: widget.initialValue,
+      fields: widget.fields,
+      persistence: widget.persistence,
+      formId: widget.formId,
+      namespace: _internalFormId,
+      analytics: widget.analytics,
+      keepAlive: widget.keepAlive,
+      autovalidateMode: widget.autovalidateMode,
+      initialData: widget.initialData,
     );
+  }
 
-    return provider;
+  AutoDisposeStateNotifierProvider<FormixController, FormixData> get _provider {
+    final param = _createParameter();
+    if (_cachedParameter == param && _cachedProvider != null) {
+      return _cachedProvider!;
+    }
+    _cachedParameter = param;
+    _cachedProvider = formControllerProvider(param);
+    return _cachedProvider!;
   }
 
   /// Access the controller to perform actions like [submit] or [reset].
@@ -306,7 +314,7 @@ class _FieldRegistrarState extends ConsumerState<_FieldRegistrar> {
   @override
   void didUpdateWidget(_FieldRegistrar oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.fields != oldWidget.fields) {
+    if (!const ListEquality().equals(widget.fields, oldWidget.fields)) {
       // Configuration changed (e.g. hot reload or dynamic fields).
       // Re-register ALL fields to ensure definitions are updated.
       // registerFields handles standardizing updates without data loss.

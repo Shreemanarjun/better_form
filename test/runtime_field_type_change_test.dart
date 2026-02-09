@@ -36,9 +36,9 @@ void main() {
                                   ),
                                 ],
                           child: useStringField
-                              ? FormixTextFormField(
-                                  fieldId: const FormixFieldID<String>('dynamicField'),
-                                  decoration: const InputDecoration(labelText: 'String Field'),
+                              ? const FormixTextFormField(
+                                  fieldId: FormixFieldID<String>('dynamicField'),
+                                  decoration: InputDecoration(labelText: 'String Field'),
                                 )
                               : FormixRawFormField<DateTime?>(
                                   fieldId: const FormixFieldID<DateTime?>('dynamicField'),
@@ -123,9 +123,9 @@ void main() {
                                   ),
                                 ],
                           child: useStringField
-                              ? FormixTextFormField(
-                                  fieldId: const FormixFieldID<String>('stringField'),
-                                  decoration: const InputDecoration(labelText: 'String Field'),
+                              ? const FormixTextFormField(
+                                  fieldId: FormixFieldID<String>('stringField'),
+                                  decoration: InputDecoration(labelText: 'String Field'),
                                 )
                               : FormixRawFormField<DateTime?>(
                                   fieldId: const FormixFieldID<DateTime?>('dateField'),

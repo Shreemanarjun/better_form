@@ -1,3 +1,38 @@
+## 0.1.1
+
+### ✨ New Features
+- **Async Field Enhancements**:
+  - Implemented `onData` callback for `FormixAsyncField` and `FormixDependentAsyncField` to enable safe post-load side effects and initial value selection.
+  - Simplified async field initial selection by favoring the `onData` callback over manual logic in builders.
+- **Robust Form Reset**:
+  - Added `clearErrors` parameter to `reset`, `resetToValues`, and `resetFields` methods to prevent immediate validation errors after a reset.
+  - Enhanced reset logic to automatically cancel pending async validations and remove errors from the internal validation map.
+  - Reset operations now correctly trigger re-validation for dependent fields of reset fields.
+- **Granular Reactivity**:
+  - Added selector support to `FormixDependentField` and `FormixFieldDerivation` for optimized updates.
+  - Exposed `onData` for better integration in parent-child field relationships.
+- **Type-Safe Field Preservation**:
+  - Safely preserve and reuse existing field validators and transformers during re-registration (e.g., during hot reload or wizard step navigation) by introducing wrapped versions for automatic type conversion.
+
+### ⚡ Performance Optimizations
+- **Aggressive Caching**:
+  - Implemented `InputDecoration` and `TextInputFormatter` list caching in `FormixTextFormField` and `FormixNumberFormField` to avoid redundant theme resolution.
+  - Added explicit `FormixParameter` and provider caching in `FormixState` to avoid redundant family lookups and hash calculations during rebuilds.
+  - Added `PERFORMANCE.md` documenting the library's internal optimization strategies.
+- **Stable Provider Lifecycle**:
+  - Switched from `ref.watch` to `ref.listen` for localized messages in `formControllerProvider`. This prevents form state resets during language/locale changes.
+  - Updated `FormixParameter` to use `DeepCollectionEquality` for all collection fields, ensuring provider stability when parameters are recreated with identical data.
+- **Optimized Rebuilds**:
+  - Refined `_FieldRegistrar` to skip redundant registrations using `ListEquality`.
+  - Optimized `SliverFormixArray` to watch the provider's notifier, preventing unnecessary list rebuilds on unrelated field changes.
+- **Other Improvements**:
+  - Added `updateMessages()` to `RiverpodFormController` for reactive message updates without controller recreation.
+
+### 🧪 Testing
+- Added comprehensive widget tests for `SliverFormixArray` and `FormixAsyncField`'s `onData` behavior.
+- Added stability test suite for verifying controller preservation across parent rebuilds and message updates.
+- Total test count: 650 tests passing.
+
 ## 0.1.0
 
 ### ✨ New Features
