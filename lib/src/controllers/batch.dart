@@ -42,14 +42,14 @@ class FormixBatchResult {
 
 /// A type-safe builder for batch updates.
 class FormixBatch {
-  final Map<String, dynamic> _updates = {};
+  final Map<dynamic, dynamic> _updates = {};
 
   /// Adds an update for a specific field.
   ///
   /// **Note**: If T is not explicitly provided, Dart may infer it as Object
   /// allowing mismatched types. Use [setValue] for better lint enforcement.
   void set<T>(FormixFieldID<T> fieldId, T value) {
-    _updates[fieldId.key] = value;
+    _updates[fieldId] = value;
   }
 
   /// Adds an update for a specific field with guaranteed lint enforcement.
@@ -59,15 +59,15 @@ class FormixBatch {
   /// batch.setValue(nameFieldId).to('John'); // Correct
   /// batch.setValue(nameFieldId).to(123);    // Lint Error!
   /// ```
-  FormixBatchUpdate<T> setValue<T>(FormixFieldID<T> fieldId) => FormixBatchUpdate._(this, fieldId.key);
+  FormixBatchUpdate<T> setValue<T>(FormixFieldID<T> fieldId) => FormixBatchUpdate._(this, fieldId);
 
   /// Adds an update for a specific field using the field definition.
   void setField<T>(FormixField<T> field, T value) {
-    _updates[field.id.key] = value;
+    _updates[field.id] = value;
   }
 
   /// Adds an update for a specific field using the field definition with lint enforcement.
-  FormixBatchUpdate<T> forField<T>(FormixField<T> field) => FormixBatchUpdate._(this, field.id.key);
+  FormixBatchUpdate<T> forField<T>(FormixField<T> field) => FormixBatchUpdate._(this, field.id);
 
   /// Adds all updates from a raw map.
   void addAll(Map<String, dynamic> rawUpdates) {
@@ -75,7 +75,7 @@ class FormixBatch {
   }
 
   /// Returns the collected updates.
-  Map<String, dynamic> get updates => Map.unmodifiable(_updates);
+  Map<dynamic, dynamic> get updates => Map.unmodifiable(_updates);
 
   /// Whether there are any updates in this batch.
   bool get isEmpty => _updates.isEmpty;
@@ -87,7 +87,7 @@ class FormixBatch {
 /// Helper for type-safe batch updates.
 class FormixBatchUpdate<T> {
   final FormixBatch _batch;
-  final String _key;
+  final dynamic _key;
 
   FormixBatchUpdate._(this._batch, this._key);
 

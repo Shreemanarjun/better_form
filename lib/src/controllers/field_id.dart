@@ -35,6 +35,12 @@ class FormixFieldID<T> {
     return lastDot == -1 ? key : key.substring(lastDot + 1);
   }
 
+  /// Checks if the given [value] matches the type [T].
+  bool isTypeValid(dynamic value) => value is T;
+
+  /// Returns true if [T] is a nullable type.
+  bool get isNullableType => null is T;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is FormixFieldID && key == other.key;
 

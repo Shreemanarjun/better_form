@@ -1,6 +1,10 @@
 ## 0.1.1
 
 ### ✨ New Features
+- **Enhanced Type Safety for Sealed Classes**:
+  - Improved `FormixFieldID<T>` and `FormixBatch` to correctly handle inheritance. Values that are subclasses of `T` (such as sealed class implementations) are now properly allowed in `setValue`, `setValues`, and `applyBatch`.
+  - Added `isTypeValid` and `isNullableType` to `FormixFieldID` for robust runtime type checking.
+  - Added `sameTypes<S, V>()` utility for exact type comparison when mutual sub-typing is required.
 - **Async Field Enhancements**:
   - Implemented `onData` callback for `FormixAsyncField` and `FormixDependentAsyncField` to enable safe post-load side effects and initial value selection.
   - Simplified async field initial selection by favoring the `onData` callback over manual logic in builders.
@@ -13,6 +17,12 @@
   - Exposed `onData` for better integration in parent-child field relationships.
 - **Type-Safe Field Preservation**:
   - Safely preserve and reuse existing field validators and transformers during re-registration (e.g., during hot reload or wizard step navigation) by introducing wrapped versions for automatic type conversion.
+
+### 🛠️ Core Improvements
+- **Consistent Batch Updates**:
+  - `RiverpodFormController` now leverages `FormixFieldID` type information during batch updates even when fields are not yet registered.
+  - Enhanced type validation logic to ensure consistency between provided `FormixFieldID`s and existing initial values in the form state.
+  - Improved error messages for type mismatches, now providing better context when values are incompatible with previously inferred types.
 
 ### ⚡ Performance Optimizations
 - **Aggressive Caching**:
@@ -29,9 +39,10 @@
   - Added `updateMessages()` to `RiverpodFormController` for reactive message updates without controller recreation.
 
 ### 🧪 Testing
+- **Sealed Class Type Safety**: Added `test/sealed_class_test.dart` to verify correct handling of sealed classes and subclasses in batch updates and field state.
 - Added comprehensive widget tests for `SliverFormixArray` and `FormixAsyncField`'s `onData` behavior.
 - Added stability test suite for verifying controller preservation across parent rebuilds and message updates.
-- Total test count: 650 tests passing.
+- Total test count: 654 tests passing.
 
 ## 0.1.0
 

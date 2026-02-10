@@ -533,7 +533,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
   /// Throws an [ArgumentError] if the value type doesn't match the field's
   /// expected type (based on initial value).
   void setValue<T>(FormixFieldID<T> fieldId, T value) {
-    _batchUpdate({fieldId.key: value}, strict: true);
+    _batchUpdate({fieldId: value}, strict: true);
   }
 
   /// Updates multiple field values at once in a single state update.
@@ -548,11 +548,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
     Map<FormixFieldID, dynamic> updates, {
     bool strict = false,
   }) {
-    final flatUpdates = <String, dynamic>{};
-    for (final entry in updates.entries) {
-      flatUpdates[entry.key.key] = entry.value;
-    }
-    return _batchUpdate(flatUpdates, strict: strict);
+    return _batchUpdate(updates, strict: strict);
   }
 
   /// Updates multiple field values using a type-safe [FormixBatch].
@@ -561,7 +557,7 @@ class RiverpodFormController extends StateNotifier<FormixData> {
   }
 
   FormixBatchResult _batchUpdate(
-    Map<String, dynamic> updates, {
+    Map<dynamic, dynamic> updates, {
     bool strict = false,
     Map<String, bool>? touchedStates,
   }) {
@@ -577,8 +573,10 @@ class RiverpodFormController extends StateNotifier<FormixData> {
     final validUpdates = <String, dynamic>{};
 
     for (final entry in updates.entries) {
-      final key = entry.key;
+      final dynamic rawKey = entry.key;
+      final String key = rawKey is FormixFieldID ? rawKey.key : rawKey as String;
       final value = entry.value;
+      final FormixFieldID? fieldIdFromUpdate = rawKey is FormixFieldID ? rawKey : null;
 
       final fieldDef = _fieldDefinitions[key];
       if (fieldDef == null) {
@@ -593,9 +591,21 @@ class RiverpodFormController extends StateNotifier<FormixData> {
         isTypeValid = fieldDef.isTypeValid(value);
         expectedTypeName = fieldDef.id.type.toString();
       } else {
-        // Fallback to initial value check if field is not registered yet
         final expectedInitialValue = initialValueMap[key];
-        if (expectedInitialValue != null && value != null) {
+        if (fieldIdFromUpdate != null) {
+          // 1. Check if value matches ID
+          isTypeValid = fieldIdFromUpdate.isTypeValid(value);
+          expectedTypeName = fieldIdFromUpdate.type.toString();
+
+          // 2. Consistent with already inferred type from initial value map?
+          if (isTypeValid && expectedInitialValue != null) {
+            isTypeValid = fieldIdFromUpdate.isTypeValid(expectedInitialValue);
+            if (!isTypeValid) {
+              expectedTypeName = 'compatible with initial value (${expectedInitialValue.runtimeType})';
+            }
+          }
+        } else if (expectedInitialValue != null && value != null) {
+          // Fallback to runtimeType equality if NO FormixFieldID is provided (raw string keys)
           isTypeValid = value.runtimeType == expectedInitialValue.runtimeType || (value is num && expectedInitialValue is num);
           expectedTypeName = expectedInitialValue.runtimeType.toString();
         }
