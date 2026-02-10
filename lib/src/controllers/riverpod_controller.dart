@@ -599,14 +599,36 @@ class RiverpodFormController extends StateNotifier<FormixData> {
 
           // 2. Consistent with already inferred type from initial value map?
           if (isTypeValid && expectedInitialValue != null) {
-            isTypeValid = fieldIdFromUpdate.isTypeValid(expectedInitialValue);
-            if (!isTypeValid) {
-              expectedTypeName = 'compatible with initial value (${expectedInitialValue.runtimeType})';
+            final initialMatches = fieldIdFromUpdate.isTypeValid(expectedInitialValue);
+            if (!initialMatches) {
+              // Mismatch between initial value and the typed ID.
+              // We're lenient in one specific case: "Upgrading" from a raw String (e.g. from JSON)
+              // to a custom Object (like ProfilePhoto) when a typed ID is provided.
+              final isNewValuePrimitive = value is num || value is bool || value is String || value is DateTime;
+              final isOldValueString = expectedInitialValue is String;
+
+              if (isOldValueString && !isNewValuePrimitive) {
+                // Allow this transition as it's likely a raw-to-typed conversion
+              } else {
+                isTypeValid = false;
+                expectedTypeName = 'compatible with initial value (${expectedInitialValue.runtimeType} -> ${fieldIdFromUpdate.type})';
+              }
             }
           }
         } else if (expectedInitialValue != null && value != null) {
           // Fallback to runtimeType equality if NO FormixFieldID is provided (raw string keys)
           isTypeValid = value.runtimeType == expectedInitialValue.runtimeType || (value is num && expectedInitialValue is num);
+
+          if (!isTypeValid) {
+            // Inheritance support for raw string keys:
+            // If both are custom objects (non-primitives), allow the transition.
+            final isNewPrimitive = value is num || value is bool || value is String || value is DateTime;
+            final isOldPrimitive = expectedInitialValue is num || expectedInitialValue is bool || expectedInitialValue is String || expectedInitialValue is DateTime;
+
+            if (!isNewPrimitive && !isOldPrimitive) {
+              isTypeValid = true;
+            }
+          }
           expectedTypeName = expectedInitialValue.runtimeType.toString();
         }
       }

@@ -291,7 +291,7 @@ class _FieldRegistrarState extends ConsumerState<_FieldRegistrar> {
   void _registerFields() {
     final controller = ref.read(widget.controllerProvider.notifier);
 
-    final fieldsToRegister = <FormixField<dynamic>>[];
+    final fieldsToRegister = <FormixField>[];
 
     for (final config in widget.fields) {
       final field = config.toField();

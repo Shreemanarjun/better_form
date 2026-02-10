@@ -17,6 +17,11 @@
   - Exposed `onData` for better integration in parent-child field relationships.
 - **Type-Safe Field Preservation**:
   - Safely preserve and reuse existing field validators and transformers during re-registration (e.g., during hot reload or wizard step navigation) by introducing wrapped versions for automatic type conversion.
+- **Refined Type Validation for Inheritance**:
+  - Enhanced `_batchUpdate` to support "upgrading" from raw String initial values (e.g., from JSON) to custom Objects (like `ProfilePhoto` subclasses) when a typed `FormixFieldID` is used.
+  - Improved inheritance support for raw string updates: Transitions between different custom objects (non-primitives) are now allowed to facilitate sealed class hierarchies even without explicit field registration.
+  - Maintained strict type safety for core primitives (num, bool, String, DateTime) to prevent unintended type mismatches.
+  - Fixed a potential type-inference loss in `_FieldRegistrar` by improving internal generic list handling during field registration.
 
 ### 🛠️ Core Improvements
 - **Consistent Batch Updates**:
