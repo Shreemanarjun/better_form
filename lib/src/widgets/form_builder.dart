@@ -206,6 +206,11 @@ class FormixScope {
 /// This is the preferred way to build custom form controls or status displays
 /// without creating a separate class.
 ///
+/// **Performance Note:** By default, [FormixBuilder] does *not* rebuild when
+/// form values change. It only provides the [FormixScope]. You must use
+/// [FormixScope.watchValue] or similar methods to subscribe to specific
+/// updates, or provide a [select] callback to watch a derived value.
+///
 /// Example:
 /// ```dart
 /// FormixBuilder(
@@ -238,6 +243,9 @@ class FormixBuilder extends ConsumerStatefulWidget {
 }
 
 class _FormixBuilderState extends ConsumerState<FormixBuilder> {
+  FormixScope? _scope;
+  FormixController? _previousController;
+
   @override
   void dispose() {
     // Clean up any resources if necessary.
@@ -261,21 +269,22 @@ class _FormixBuilderState extends ConsumerState<FormixBuilder> {
       // Rebuild only when selected state changes if select is provided
       if (widget.select != null) {
         ref.watch(provider.select(widget.select!));
-      } else {
-        // Fallback: watch the whole provider (standard behavior)
-        ref.watch(provider);
       }
 
       // We watch the notifier so we get the new controller if it's recreated.
       final controller = ref.watch(provider.notifier);
 
-      final scope = FormixScope(
-        context: context,
-        ref: ref,
-        controller: controller,
-      );
+      // Cache the scope to prevent unnecessary allocations
+      if (_scope == null || _previousController != controller) {
+        _scope = FormixScope(
+          context: context,
+          ref: ref,
+          controller: controller,
+        );
+        _previousController = controller;
+      }
 
-      return widget.builder(context, scope);
+      return widget.builder(context, _scope!);
     } catch (e) {
       return FormixConfigurationErrorWidget(
         message: 'Failed to initialize FormixBuilder',
@@ -325,6 +334,9 @@ abstract class FormixWidget extends ConsumerStatefulWidget {
 }
 
 class _FormixWidgetState extends ConsumerState<FormixWidget> {
+  FormixScope? _scope;
+  FormixController? _previousController;
+
   @override
   Widget build(BuildContext context) {
     final errorWidget = FormixAncestorValidator.validate(
@@ -340,20 +352,21 @@ class _FormixWidgetState extends ConsumerState<FormixWidget> {
       // Rebuild only when selected state changes if select is provided
       if (widget.select != null) {
         ref.watch(provider.select(widget.select!));
-      } else {
-        // Fallback: watch the whole provider (standard behavior)
-        ref.watch(provider);
       }
 
       final controller = ref.watch(provider.notifier);
 
-      final scope = FormixScope(
-        context: context,
-        ref: ref,
-        controller: controller,
-      );
+      // Cache the scope to prevent unnecessary allocations
+      if (_scope == null || _previousController != controller) {
+        _scope = FormixScope(
+          context: context,
+          ref: ref,
+          controller: controller,
+        );
+        _previousController = controller;
+      }
 
-      return widget.buildForm(context, scope);
+      return widget.buildForm(context, _scope!);
     } catch (e) {
       return FormixConfigurationErrorWidget(
         message: 'Failed to initialize ${widget.runtimeType}',
