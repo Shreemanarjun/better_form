@@ -44,6 +44,8 @@ class _BenchmarkContainerState extends State<_BenchmarkContainer> {
 }
 
 void main() {
+  final results = <String, double>{};
+
   group('📊 Formix Performance Benchmarks', () {
     group('Pure Overhead (Minimal Widget)', () {
       testWidgets('Rebuild Cost (Optimized - No Mount/Unmount)', (tester) async {
@@ -87,6 +89,7 @@ void main() {
 
         final avgTotalMs = runTimes.reduce((a, b) => a + b) / runs;
         final avgPerRebuild = avgTotalMs / iterations;
+        results['pure_rebuild'] = avgPerRebuild;
 
         print('┌─────────────────────────────────────────────────┐');
         print('│ Pure Formix Overhead (Rebuild Only)            │');
@@ -147,6 +150,7 @@ void main() {
 
         final avgTotalMs = runTimes.reduce((a, b) => a + b) / runs;
         final avgPerCycle = avgTotalMs / iterations;
+        results['pure_mount'] = avgPerCycle;
 
         print('┌─────────────────────────────────────────────────┐');
         print('│ Pure Formix Overhead (Mount+Unmount+Build)     │');
@@ -169,6 +173,7 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
+            theme: ThemeData(useMaterial3: false),
             home: Scaffold(
               body: StatefulBuilder(
                 builder: (context, setState) {
@@ -213,6 +218,7 @@ void main() {
 
         final avgTotalMs = runTimes.reduce((a, b) => a + b) / runs;
         final avgPerRebuild = avgTotalMs / iterations;
+        results['baseline_passive'] = avgPerRebuild;
 
         print('┌─────────────────────────────────────────────────┐');
         print('│ Flutter TextFormField Baseline (No Formix)     │');
@@ -229,6 +235,7 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
+            theme: ThemeData(useMaterial3: false),
             home: Scaffold(
               body: ValueListenableBuilder<bool>(
                 valueListenable: showField,
@@ -274,6 +281,7 @@ void main() {
 
         final avgTotalMs = runTimes.reduce((a, b) => a + b) / runs;
         final avgPerCycle = avgTotalMs / iterations;
+        results['baseline_mount'] = avgPerCycle;
 
         print('┌─────────────────────────────────────────────────┐');
         print('│ Flutter TextFormField Mount/Unmount Baseline   │');
@@ -293,6 +301,7 @@ void main() {
         await tester.pumpWidget(
           ProviderScope(
             child: MaterialApp(
+              theme: ThemeData(useMaterial3: false),
               home: Scaffold(
                 body: Formix(
                   child: StatefulBuilder(
@@ -341,6 +350,7 @@ void main() {
 
         final avgTotalMs = runTimes.reduce((a, b) => a + b) / runs;
         final avgPerRebuild = avgTotalMs / iterations;
+        results['full_mount_rebuild'] = avgPerRebuild;
 
         print('┌─────────────────────────────────────────────────┐');
         print('│ FormixTextFormField (Mount+Unmount)            │');
@@ -363,6 +373,7 @@ void main() {
         await tester.pumpWidget(
           ProviderScope(
             child: MaterialApp(
+              theme: ThemeData(useMaterial3: false),
               home: Scaffold(
                 body: Formix(
                   child: StatefulBuilder(
@@ -410,6 +421,7 @@ void main() {
 
         final avgTotalMs = runTimes.reduce((a, b) => a + b) / runs;
         final avgPerRebuild = avgTotalMs / iterations;
+        results['full_passive_rebuild'] = avgPerRebuild;
 
         print('┌─────────────────────────────────────────────────┐');
         print('│ FormixTextFormField (Passive Rebuild)          │');
@@ -427,6 +439,7 @@ void main() {
         await tester.pumpWidget(
           ProviderScope(
             child: MaterialApp(
+              theme: ThemeData(useMaterial3: false),
               home: Scaffold(
                 body: Formix(
                   child: ValueListenableBuilder<bool>(
@@ -468,6 +481,7 @@ void main() {
 
         final avgTotalMs = runTimes.reduce((a, b) => a + b) / runs;
         final avgPerCycle = avgTotalMs / iterations;
+        results['full_mount_cycle'] = avgPerCycle;
 
         print('┌─────────────────────────────────────────────────┐');
         print('│ FormixTextFormField (Mount/Unmount Cycles)     │');
@@ -481,20 +495,42 @@ void main() {
 
     group('Performance Summary', () {
       test('Display Summary', () {
+        final pure = results['pure_rebuild'] ?? 0.0;
+        final pureMount = results['pure_mount'] ?? 0.0;
+        final baseline = results['baseline_passive'] ?? 0.0;
+        final baselineMount = results['baseline_mount'] ?? 0.0;
+        final formixPassive = results['full_passive_rebuild'] ?? 0.0;
+        final formixMountCycle = results['full_mount_cycle'] ?? 0.0;
+        final formixMountRebuild = results['full_mount_rebuild'] ?? 0.0;
+
+        final formixOverhead = pure;
+        final relativeOverhead = (formixPassive - baseline) / baseline * 100;
+
         print('\n╔═══════════════════════════════════════════════════╗');
         print('║         FORMIX PERFORMANCE BENCHMARK              ║');
         print('╠═══════════════════════════════════════════════════╣');
         print('║ Each test runs 3 times with 1000 iterations      ║');
         print('║ Results are averaged for accuracy                ║');
         print('║                                                   ║');
-        print('║ Key Metrics (Expected):                           ║');
-        print('║ • Pure Overhead: ~0.1-0.4ms per rebuild           ║');
-        print('║ • Passive Rebuild (const): ~2-4ms per rebuild     ║');
-        print('║ • Mount/Unmount (new key): ~8-12ms per cycle      ║');
-        print('║ • Mount/Unmount (toggle): ~1-3ms per cycle        ║');
+        print('║ Key Metrics (Actual Computed):                    ║');
+        print('║ • Pure Formix Overhead: ${pure.toStringAsFixed(3)}ms / rebuild    ║');
+        print('║ • Pure Mount Overhead:  ${pureMount.toStringAsFixed(3)}ms / cycle      ║');
+        print('║                                                   ║');
+        print('║ Baseline (TextFormField):                         ║');
+        print('║ • Passive Rebuild:    ${baseline.toStringAsFixed(3)}ms / rebuild      ║');
+        print('║ • Mount/Unmount:      ${baselineMount.toStringAsFixed(3)}ms / cycle      ║');
+        print('║                                                   ║');
+        print('║ Formix (Full Widget):                             ║');
+        print('║ • Passive Rebuild:    ${formixPassive.toStringAsFixed(3)}ms / rebuild      ║');
+        print('║ • Mount/Unmount Cycle:${formixMountCycle.toStringAsFixed(3)}ms / cycle      ║');
+        print('║ • Total Rebuild Time: ${formixMountRebuild.toStringAsFixed(3)}ms / rebuild      ║');
+        print('║                                                   ║');
+        print('║ Summary Analysis:                                 ║');
+        print('║ • Formix adds ${formixOverhead.toStringAsFixed(3)}ms vs pure widget.       ║');
+        print('║ • Total overhead vs baseline: ${relativeOverhead.toStringAsFixed(1)}%            ║');
         print('║                                                   ║');
         print('║ Note: Most overhead is Flutter TextFormField,     ║');
-        print('║ not Formix. Pure Formix adds only ~0.1ms.         ║');
+        print('║ not Formix. Pure Formix adds only ~${pure.toStringAsFixed(2)}ms.        ║');
         print('╚═══════════════════════════════════════════════════╝\n');
       });
     });
