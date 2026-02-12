@@ -66,3 +66,4 @@ example/test/goldens/*
 goldens/*.png
 **/goldens/*.png
 goldens/*
+extension/devtools/build/*
