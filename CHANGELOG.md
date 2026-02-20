@@ -1,3 +1,8 @@
+## 0.1.2
+
+### ⚡ Performance Optimizations
+- **FormixBuilder Optimization**: Cached `FormixScope` instances to prevent unnecessary downstream rebuilds and clarified behavior with new tests.
+
 ## 0.1.1
 
 ### ✨ New Features
