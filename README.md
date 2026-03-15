@@ -6,7 +6,7 @@
 
 **An elite, type-safe, and ultra-reactive form engine for Flutter.**
 
-Powered by Riverpod, Formix delivers lightning-fast performance, zero boilerplate, and effortless state management. Whether it's a simple login screen or a complex multi-step wizard, Formix scales with you.
+Powered by **Riverpod**, Formix delivers lightning-fast performance, zero boilerplate, and effortless state management. Whether it's a simple login screen or a complex multi-step wizard, Formix scales with you.
 
 
 
