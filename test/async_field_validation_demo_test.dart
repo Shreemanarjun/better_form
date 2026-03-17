@@ -55,7 +55,7 @@ void main() {
 
     // 3. Since the value was set, async validation should be triggered
     // Note: setValue marks it as validating and then starts a timer.
-    // In RiverpodFormController, async validation has a default debounce of 300ms.
+    // In FormixController, async validation has a default debounce of 300ms.
     await tester.pump(const Duration(milliseconds: 100));
     expect(find.text('Validating...'), findsOneWidget);
 

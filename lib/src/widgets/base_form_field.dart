@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:meta/meta.dart';
 
 import '../../formix.dart';
-import 'ancestor_validator.dart';
 
 /// Base class for custom form field widgets that automatically handle controller
 /// registration and value synchronization.
@@ -78,58 +76,8 @@ abstract class FormixFieldWidget<T> extends ConsumerStatefulWidget {
 
   @override
   FormixFieldWidgetState<T> createState();
-
-  @override
-  ConsumerStatefulElement createElement() => FormixFieldWidgetElement<T>(this);
 }
 
-/// Element for [FormixFieldWidget] that intercepts building to show errors.
-class FormixFieldWidgetElement<T> extends ConsumerStatefulElement {
-  /// Creates a [FormixFieldWidgetElement].
-  FormixFieldWidgetElement(FormixFieldWidget<T> super.widget);
-
-  @override
-  Widget build() {
-    // Check for ProviderScope first
-    if (getElementForInheritedWidgetOfExactType<UncontrolledProviderScope>() == null) {
-      return const FormixConfigurationErrorWidget(
-        message: 'Missing ProviderScope',
-        details:
-            'Formix requires a ProviderScope at the root of your application to manage form state using Riverpod.\n\nExample:\nvoid main() {\n  runApp(ProviderScope(child: MyApp()));\n}',
-      );
-    }
-
-    // Check for Formix ancestor or explicit controller
-    // We cast widget because Element.widget is typed as Widget
-    final fieldWidget = widget as FormixFieldWidget<T>;
-
-    final errorWidget = FormixAncestorValidator.validate(
-      this,
-      widgetName: widget.runtimeType.toString(),
-      hasExplicitController: fieldWidget.controller != null,
-    );
-
-    if (errorWidget != null) return errorWidget;
-
-    final state = this.state as FormixFieldWidgetState<T>;
-
-    if (state.initializationError != null) {
-      return FormixConfigurationErrorWidget(
-        message: 'Failed to initialize ${widget.runtimeType}',
-        details: state.initializationError.toString().contains('No ProviderScope found')
-            ? 'Missing ProviderScope. Please wrap your application (or this form) in a ProviderScope widget.\n\nExample:\nvoid main() {\n  runApp(ProviderScope(child: MyApp()));\n}'
-            : 'Error: ${state.initializationError}',
-      );
-    }
-
-    // Check for explicit controller or fallback to default provider (implicit usage)
-    if (!state.hasController) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    return super.build();
-  }
-}
 
 /// State class that provides simplified APIs for form field management
 abstract class FormixFieldWidgetState<T> extends ConsumerState<FormixFieldWidget<T>> {
@@ -141,7 +89,6 @@ abstract class FormixFieldWidgetState<T> extends ConsumerState<FormixFieldWidget
   bool _createdOwnFocusNode = false;
   ProviderSubscription? _controllerSub;
   bool _wasDirty = false;
-  Object? _initializationError;
 
   /// The current value of this field from the controller.
   T? get value => _currentValue;
@@ -191,9 +138,6 @@ abstract class FormixFieldWidgetState<T> extends ConsumerState<FormixFieldWidget
   @override
   bool get mounted => _isMounted;
 
-  /// Internal access to initialization error for the element
-  @internal
-  Object? get initializationError => _initializationError;
 
   ProviderSubscription? _innerProviderSub;
 
@@ -234,26 +178,16 @@ abstract class FormixFieldWidgetState<T> extends ConsumerState<FormixFieldWidget
             _innerProviderSub = ref.listenManual(next, (_, __) {});
           }
 
-          try {
-            final newController = widget.controller ?? ref.read(next.notifier);
-            _setupController(newController);
-            if (mounted) {
-              setState(() {
-                _initializationError = null;
-              });
-            }
-          } catch (e) {
-            if (mounted) {
-              setState(() {
-                _initializationError = e;
-              });
-            }
+          final newController = widget.controller ?? ref.read(next.notifier);
+          _setupController(newController);
+          if (mounted) {
+            setState(() {});
           }
         },
         fireImmediately: true,
       );
-    } catch (e) {
-      _initializationError = e;
+    } catch (_) {
+      // We don't need to do anything here anymore.
     }
   }
 

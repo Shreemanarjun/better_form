@@ -3,10 +3,14 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter/semantics.dart';
 import 'riverpod_controller.dart';
 import 'field_id.dart';
+import 'field.dart';
 import 'validation.dart';
 import '../enums.dart';
+import '../persistence/form_persistence.dart';
+import '../analytics/form_analytics.dart';
 import '../i18n.dart';
 import 'batch.dart';
+
 
 /// A controller for managing form state that is compatible with vanilla Flutter.
 ///
@@ -15,19 +19,64 @@ import 'batch.dart';
 /// This allows non-Riverpod widgets within your app to react to form changes
 /// without needing access to [WidgetRef].
 class FormixController extends RiverpodFormController {
-  /// Creates a [FormixController].
+  /// Creates a [FormixController] with optional configuration.
+  ///
+  /// This constructor supports named parameters for compatibility with tests
+  /// and non-Riverpod usage.
   FormixController({
-    super.initialValue,
-    super.fields,
-    super.messages = const DefaultFormixMessages(),
-    super.persistence,
-    super.formId,
-    super.analytics,
-    super.namespace,
-    super.autovalidateMode = FormixAutovalidateMode.always,
-    super.initialData,
-  }) {
-    addListener(_onStateChanged);
+    Map<String, dynamic> initialValue = const {},
+    List<dynamic> fields = const [],
+    FormixPersistence? persistence,
+    String? formId,
+    FormixAnalytics? analytics,
+    bool keepAlive = false,
+    String? namespace,
+    FormixAutovalidateMode autovalidateMode = FormixAutovalidateMode.always,
+    FormixData? initialData,
+    FormixMessages? messages,
+  }) : super(FormixParameter(
+          initialValue: initialValue,
+          messages: messages,
+          fields: fields.map<FormixFieldConfig>((f) {
+            if (f is FormixFieldConfig) return f;
+            if (f is FormixField) {
+              return f.toConfig();
+            }
+            throw ArgumentError('Invalid field type: ${f.runtimeType}');
+          }).toList(),
+          persistence: persistence,
+          formId: formId,
+          analytics: analytics,
+          keepAlive: keepAlive,
+          namespace: namespace,
+          autovalidateMode: autovalidateMode,
+          initialData: initialData,
+        )) {
+    // For standalone usage, we must manually trigger build to initialize the state.
+    // In Riverpod context, state setter will fallback to _standaloneState until ref is ready.
+    try {
+      state = build();
+    } catch (_) {}
+  }
+
+  /// Internal constructor used by Riverpod families.
+  FormixController.family(super.parameter);
+
+
+  /// Adds a listener to be notified when the form state changes.
+  VoidCallback addListener(void Function(FormixData) listener, {bool fireImmediately = true}) {
+    final removeListenerFunc = addFormListener(listener);
+    if (fireImmediately) {
+      try {
+        listener(state);
+      } catch (_) {}
+    }
+    return removeListenerFunc;
+  }
+
+  /// Removes a previously registered listener.
+  void removeListener(void Function(FormixData) listener) {
+    removeFormListener(listener);
   }
 
   // Cache notifiers to ensure consistency
@@ -44,7 +93,9 @@ class FormixController extends RiverpodFormController {
   ValueNotifier<bool>? _isSubmittingNotifier;
   ValueNotifier<bool>? _isPendingNotifier;
 
-  void _onStateChanged(FormixData state) {
+  @override
+  void onStateChanged(FormixData state) {
+    super.onStateChanged(state);
     // Optimization: If changedFields is present, only update notifiers for those keys.
     // If null, we fall back to checking all cached notifiers (e.g. initial load).
     final changedKeys = state.changedFields;

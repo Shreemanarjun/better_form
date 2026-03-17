@@ -261,9 +261,7 @@ void main() {
       tester,
     ) async {
       const customField = FormixFieldID<String>('custom_field');
-      final customProvider = StateNotifierProvider.autoDispose<FormixController, FormixData>((
-        ref,
-      ) {
+      final customProvider = NotifierProvider.autoDispose<FormixController, FormixData>(() {
         return FormixController(
           initialValue: {'custom_field': 'custom_value'},
         );
@@ -331,7 +329,7 @@ void main() {
             overrides: [
               formControllerProvider(
                 const FormixParameter(initialValue: {}),
-              ).overrideWith((ref) {
+              ).overrideWith(() {
                 return FormixController(
                   initialValue: {'default_field': 'from_default'},
                 );
