@@ -55,6 +55,9 @@ class RiverpodFormController extends Notifier<FormixData> {
   final Map<String, List<String>> _dependentsMap = {};
   final Map<String, Set<String>> _transitiveDependentsCache = {};
 
+  /// The global autovalidate mode applied to all fields in this form.
+  ///
+  /// Individual fields may override this with their own [FormixAutovalidateMode].
   late FormixAutovalidateMode autovalidateMode;
 
   /// Returns the number of registered fields (for testing).

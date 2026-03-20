@@ -226,12 +226,12 @@ class _MultiStepFormPageState extends State<MultiStepFormPage> {
         title: const Text('Multi-Step Registration'),
         elevation: 2,
       ),
-      body: ProviderScope(
-        child: Formix(
+      body: Formix(
           formId: 'multi_step_wizard', // ID required for analytics tracking
           analytics: const LoggingFormixAnalytics(),
           initialValue: const {'newsletter': false, 'notifications': true},
           child: FormixBuilder(
+            select: (state) => Object.hash(state.currentStep, state.isValid),
             builder: (context, scope) {
               final currentStep = scope.watchCurrentStep;
 
@@ -346,7 +346,6 @@ class _MultiStepFormPageState extends State<MultiStepFormPage> {
             },
           ),
         ),
-      ),
     );
   }
 

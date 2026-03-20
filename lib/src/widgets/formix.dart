@@ -123,7 +123,13 @@ class Formix extends StatefulWidget {
 }
 
 /// State for [Formix], allowing external control via [GlobalKey].
-class FormixState extends State<Formix> {
+///
+/// Uses [AutomaticKeepAliveClientMixin] so that when [Formix] is placed inside
+/// a [TabBarView], [PageView], or similar paging widget, its nested
+/// [ProviderScope] is kept alive rather than being disposed mid-frame.
+/// This prevents the Riverpod 3 error:
+///   "setState() called after dispose(): _UncontrolledProviderScopeState"
+class FormixState extends State<Formix> with AutomaticKeepAliveClientMixin {
   late final String _internalFormId;
   FormixParameter? _cachedParameter;
   NotifierProvider<FormixController, FormixData>? _cachedProvider;
@@ -158,6 +164,10 @@ class FormixState extends State<Formix> {
     );
   }
 
+  /// The [NotifierProvider] that backs this form's state.
+  ///
+  /// Cached and recreated only when the form's configuration changes.
+  /// Use this to read or watch form state via Riverpod outside of [Formix].
   NotifierProvider<FormixController, FormixData> get provider {
     final param = _createParameter();
     if (_cachedParameter == param && _cachedProvider != null) {
@@ -181,8 +191,21 @@ class FormixState extends State<Formix> {
   ///
   /// This property is now deprecated in favor of the public [provider] getter.
 
+  /// Whether to keep this [Formix] alive when it is inside a paging widget
+  /// such as [TabBarView] or [PageView].
+  ///
+  /// Always returns `true` to prevent Riverpod 3's [ProviderScope] from being
+  /// disposed while frame callbacks are still pending (which would cause a
+  /// "setState() called after dispose()" error on tab switches).
+  @override
+  bool get wantKeepAlive => true;
+
   @override
   Widget build(BuildContext context) {
+    // Required by AutomaticKeepAliveClientMixin — must be called before
+    // anything else in build().
+    super.build(context);
+
     // 1. Check for ProviderScope first
     final errorWidget = FormixAncestorValidator.validate(
       context,

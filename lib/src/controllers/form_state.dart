@@ -236,7 +236,8 @@ class FormixData {
         resetCount != other.resetCount ||
         errorCount != other.errorCount ||
         dirtyCount != other.dirtyCount ||
-        pendingCount != other.pendingCount) {
+        pendingCount != other.pendingCount ||
+        currentStep != other.currentStep) {
       return false;
     }
 
@@ -274,7 +275,8 @@ class FormixData {
         resetCount.hashCode ^
         errorCount.hashCode ^
         dirtyCount.hashCode ^
-        pendingCount.hashCode;
+        pendingCount.hashCode ^
+        currentStep.hashCode;
   }
 
   /// Converts this state to a map for serialization (restoration).
