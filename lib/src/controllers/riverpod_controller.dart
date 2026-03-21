@@ -269,9 +269,6 @@ class RiverpodFormController extends Notifier<FormixData> {
   /// Updates the messages used for validation errors.
   ///
   /// This will trigger re-validation of all fields to update error messages.
-  /// Updates the messages used for validation errors.
-  ///
-  /// This will trigger re-validation of all fields to update error messages.
   void updateMessages(FormixMessages? newMessages) {
     final effectiveMessages = newMessages ?? const DefaultFormixMessages();
     if (messages == effectiveMessages) return;
