@@ -1606,7 +1606,6 @@ class RiverpodFormController extends Notifier<FormixData> {
   /// Returns `true` if the transition was successful.
   bool nextStep({List<FormixFieldID>? fields, int? targetStep}) {
     final isValid = validate(fields: fields);
-    debugPrint('nextStep: currentStep=${state.currentStep}, fields=$fields, isValid=$isValid');
     if (isValid) {
       state = state.copyWith(currentStep: targetStep ?? (state.currentStep + 1));
       return true;
