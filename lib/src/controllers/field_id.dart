@@ -36,7 +36,7 @@ class FormixFieldID<T> {
   }
 
   /// Checks if the given [value] matches the type [T].
-  bool isTypeValid(dynamic value) => value == null || value is T;
+  bool isTypeValid(dynamic value) => value is T;
 
   /// Returns true if [T] is a nullable type.
   bool get isNullableType => null is T;

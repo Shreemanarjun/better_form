@@ -127,10 +127,7 @@ class FormixField<T> {
   /// Checks if the given value matches the field's type [T].
   /// This is more robust than runtimeType comparison as it handles
   /// inheritance and generic type compatibility correctly.
-  bool isTypeValid(dynamic value) {
-    if (value == null) return true;
-    return value is T;
-  }
+  bool isTypeValid(dynamic value) => value is T;
 
   /// Returns true if [T] is a nullable type.
   bool get isNullableType => null is T;
