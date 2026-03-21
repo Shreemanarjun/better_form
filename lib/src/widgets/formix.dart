@@ -149,11 +149,23 @@ class FormixState extends State<Formix> with AutomaticKeepAliveClientMixin {
   @override
   void didUpdateWidget(Formix oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.messages != oldWidget.messages && widget.messages != null) {
-      controller.updateMessages(widget.messages!);
+
+    // Compute effective controller.
+    final effectiveController = widget.controller ?? controller;
+
+    // Handle message updates/resets
+    if (widget.messages != oldWidget.messages || widget.controller != oldWidget.controller) {
+      // Update the current effective controller with new or default messages.
+      // This ensures even explicit controllers follow widget-level overrides.
+      effectiveController.updateMessages(widget.messages);
     }
+
     if (widget.keepAlive != oldWidget.keepAlive) {
       updateKeepAlive();
+    }
+    
+    if (widget.controller != oldWidget.controller && widget.controller != null) {
+      widget.controller!.preventDisposal = widget.keepAlive;
     }
   }
 
