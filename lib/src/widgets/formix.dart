@@ -324,9 +324,6 @@ class _FormixBody extends ConsumerWidget {
 
     // If keepAlive is true, we might do something else, but Riverpod's keepAlive is
     // handled at the provider level. FormixParameter has a keepAlive flag.
-    if (form.keepAlive) {
-      // FormixParameter handles riverpod keepAlive.
-    }
 
     if (form.onChanged != null) {
       ref.listen(provider.select((s) => s.values), (previous, next) {

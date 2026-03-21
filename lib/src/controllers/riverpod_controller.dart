@@ -2116,9 +2116,10 @@ class FormixParameter {
 }
 
 /// Provider for form controller with auto-disposal
-final formControllerProvider = NotifierProvider.autoDispose.family<FormixController, FormixData, FormixParameter>((arg) {
-  return FormixController.family(arg);
-}, name: 'formControllerProvider');
+final formControllerProvider = NotifierProvider.autoDispose.family<FormixController, FormixData, FormixParameter>(
+  FormixController.family,
+  name: 'formControllerProvider',
+);
 
 /// Provider for the current controller provider (can be overridden)
 final currentControllerProvider = Provider.autoDispose<NotifierProvider<FormixController, FormixData>>((ref) {
