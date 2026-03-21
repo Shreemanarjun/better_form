@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import '../../formix.dart';
 
 /// Type alias for the Formix controller provider.
-typedef FormixProvider = AutoDisposeStateNotifierProvider<FormixController, FormixData>;
+typedef FormixProvider = NotifierProvider<FormixController, FormixData>;
 
 /// A utility class to validate the presence of required ancestors for Formix widgets.
 class FormixAncestorValidator {
@@ -18,7 +18,9 @@ class FormixAncestorValidator {
     bool requireFormix = true,
   }) {
     // 1. Check for ProviderScope first
-    if (context.getElementForInheritedWidgetOfExactType<UncontrolledProviderScope>() == null) {
+    try {
+      ProviderScope.containerOf(context, listen: false);
+    } catch (_) {
       return const FormixConfigurationErrorWidget(
         message: 'Missing ProviderScope',
         details:

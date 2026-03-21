@@ -8,8 +8,9 @@ import '../controllers/field.dart';
 import '../controllers/riverpod_controller.dart';
 import '../persistence/form_persistence.dart';
 import '../enums.dart';
+import '../i18n.dart';
 import 'form_theme.dart';
-import 'formix_errors.dart';
+import 'ancestor_validator.dart';
 
 /// A form container widget that manages a [FormixController] and provides it
 /// to descendant widgets via the widget tree and Riverpod.
@@ -39,7 +40,7 @@ import 'formix_errors.dart';
 ///   ),
 /// )
 /// ```
-class Formix extends ConsumerStatefulWidget {
+class Formix extends StatefulWidget {
   /// Creates a [Formix].
   const Formix({
     super.key,
@@ -55,6 +56,7 @@ class Formix extends ConsumerStatefulWidget {
     this.autovalidateMode = FormixAutovalidateMode.always,
     this.theme,
     this.initialData,
+    this.messages,
     required this.child,
   });
 
@@ -96,17 +98,17 @@ class Formix extends ConsumerStatefulWidget {
   /// Optional initial state for the form.
   final FormixData? initialData;
 
+  /// Optional custom messages for validation errors.
+  final FormixMessages? messages;
+
   /// The widget subtree.
   final Widget child;
 
   @override
-  ConsumerState<Formix> createState() => FormixState();
-
-  @override
-  ConsumerStatefulElement createElement() => _FormixElement(this);
+  State<Formix> createState() => FormixState();
 
   /// Get the controller provider from the nearest [Formix] ancestor.
-  static AutoDisposeStateNotifierProvider<FormixController, FormixData>? of(
+  static NotifierProvider<FormixController, FormixData>? of(
     BuildContext context,
   ) {
     final _FormixScope? scope = context.dependOnInheritedWidgetOfExactType<_FormixScope>();
@@ -115,22 +117,57 @@ class Formix extends ConsumerStatefulWidget {
 
   /// Get the [FormixController] instance from the nearest [Formix] ancestor.
   static FormixController? controllerOf(BuildContext context) {
-    final _FormixScope? scope = context.dependOnInheritedWidgetOfExactType<_FormixScope>();
-    return scope?.controller;
+    final scope = context.dependOnInheritedWidgetOfExactType<_FormixScope>();
+    if (scope == null) return null;
+    try {
+      return ProviderScope.containerOf(context).read(scope.controllerProvider.notifier);
+    } catch (_) {
+      return null;
+    }
   }
 }
 
 /// State for [Formix], allowing external control via [GlobalKey].
-class FormixState extends ConsumerState<Formix> {
+///
+/// Uses [AutomaticKeepAliveClientMixin] so that when [Formix] is placed inside
+/// a [TabBarView], [PageView], or similar paging widget, its nested
+/// [ProviderScope] is kept alive rather than being disposed mid-frame.
+/// This prevents the Riverpod 3 error:
+///   "setState() called after dispose(): _UncontrolledProviderScopeState"
+class FormixState extends State<Formix> with AutomaticKeepAliveClientMixin {
   late final String _internalFormId;
   FormixParameter? _cachedParameter;
-  AutoDisposeStateNotifierProvider<FormixController, FormixData>? _cachedProvider;
+  NotifierProvider<FormixController, FormixData>? _cachedProvider;
 
   @override
   void initState() {
     super.initState();
     final typeName = widget.runtimeType.toString();
     _internalFormId = widget.formId ?? '${typeName}_${identityHashCode(this)}';
+  }
+
+  @override
+  void didUpdateWidget(Formix oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (widget.keepAlive != oldWidget.keepAlive) {
+      updateKeepAlive();
+    }
+
+    final effectiveController = widget.controller ?? controller;
+
+    // Ownership check: Formix only synchronizes state, it doesn't manage lifecycle if it doesn't own it.
+    if (widget.messages != oldWidget.messages || widget.controller != oldWidget.controller) {
+      effectiveController.updateMessages(widget.messages);
+    }
+  }
+
+  @override
+  void dispose() {
+    // If we own the controller (internal), Riverpod handles its disposal via ref.onDispose.
+    // If we don't own it (external), we should not dispose it as per user ownership semantics.
+    // So we don't manually call dispose() on either here to avoid conflicts and timer issues.
+    super.dispose();
   }
 
   FormixParameter _createParameter() {
@@ -147,7 +184,11 @@ class FormixState extends ConsumerState<Formix> {
     );
   }
 
-  AutoDisposeStateNotifierProvider<FormixController, FormixData> get _provider {
+  /// The [NotifierProvider] that backs this form's state.
+  ///
+  /// Cached and recreated only when the form's configuration changes.
+  /// Use this to read or watch form state via Riverpod outside of [Formix].
+  NotifierProvider<FormixController, FormixData> get provider {
     final param = _createParameter();
     if (_cachedParameter == param && _cachedProvider != null) {
       return _cachedProvider!;
@@ -158,85 +199,80 @@ class FormixState extends ConsumerState<Formix> {
   }
 
   /// Access the controller to perform actions like [submit] or [reset].
-  FormixController get controller => ref.read(_provider.notifier);
+  FormixController get controller => ProviderScope.containerOf(context).read(provider.notifier);
 
   /// Access the current immutable state of the form.
   ///
   /// Note: This is a snapshot. To watch state reactively, use [FormixBuilder].
-  FormixData get data => ref.read(_provider);
+  FormixData get data => ProviderScope.containerOf(context).read(provider);
 
-  /// Access the provider for Riverpod-specific utilities.
-  ///
-  /// This allows you to use Riverpod's `ref.watch`, `ref.listen`, etc.
-  /// outside of the widget tree.
-  ///
-  /// Example:
-  /// ```dart
-  /// final formKey = GlobalKey<FormixState>();
-  ///
-  /// // In a Consumer or ConsumerWidget:
-  /// final provider = formKey.currentState?.provider;
-  /// if (provider != null) {
-  ///   // Watch the form state
-  ///   final state = ref.watch(provider);
-  ///
-  ///   // Listen to specific changes
-  ///   ref.listen(provider.select((s) => s.isValid), (prev, next) {
-  ///     print('Validation changed: $next');
-  ///   });
   /// }
   /// ```
-  AutoDisposeStateNotifierProvider<FormixController, FormixData> get provider => _provider;
+  ///
+  /// This property is now deprecated in favor of the public [provider] getter.
+
+  /// Whether to keep this [Formix] alive when it is inside a paging widget
+  /// such as [TabBarView] or [PageView].
+  @override
+  bool get wantKeepAlive => widget.keepAlive;
 
   @override
   Widget build(BuildContext context) {
-    final provider = _provider;
+    // Required by AutomaticKeepAliveClientMixin — must be called before
+    // anything else in build().
+    super.build(context);
 
-    // Keep provider alive if requested - by watching it, it won't be disposed
-    if (widget.keepAlive) {
-      ref.watch(provider);
-    }
+    // 1. Check for ProviderScope first
+    final errorWidget = FormixAncestorValidator.validate(
+      context,
+      widgetName: 'Formix',
+      requireFormix: false, // Formix is the one providing it
+    );
+    if (errorWidget != null) return errorWidget;
 
-    final controllerInstance = ref.watch(provider.notifier);
-
-    if (widget.onChanged != null) {
-      ref.listen(provider.select((s) => s.values), (previous, next) {
-        if (previous != next) {
-          widget.onChanged!(next);
-        }
-      });
-    }
-
-    if (widget.onChangedData != null) {
-      ref.listen(provider, (previous, next) {
-        if (previous != next) {
-          widget.onChangedData!(next);
-        }
-      });
-    }
-
-    final content = _FieldRegistrar(
-      controllerProvider: provider,
-      fields: widget.fields,
-      child: _FormixScope(
-        controller: controllerInstance,
-        controllerProvider: provider,
+    final providerInstance = provider;
+    final content = _FormixBody(
+      provider: providerInstance,
+      form: widget,
+      child: _FieldRegistrar(
+        controllerProvider: providerInstance,
         fields: widget.fields,
-        child: widget.child,
+        child: _FormixScope(
+          controllerProvider: providerInstance,
+          fields: widget.fields,
+          child: widget.child,
+        ),
       ),
     );
 
+    _cachedProvider = provider;
+
     return ProviderScope(
+      key: ValueKey('${identityHashCode(widget.controller)}_${identityHashCode(widget.messages)}'),
       overrides: [
         if (widget.controller != null)
-          provider.overrideWith((ref) {
-            if (widget.keepAlive) {
-              ref.keepAlive();
-              widget.controller!.preventDisposal = true;
-            }
-            return widget.controller!;
-          }),
+          provider.overrideWith(() => widget.controller!),
+
+        if (widget.messages != null)
+          formixMessagesProvider.overrideWithValue(widget.messages!),
+
         currentControllerProvider.overrideWithValue(provider),
+        fieldValueProvider,
+        fieldValidationProvider,
+        fieldErrorProvider,
+        fieldValidatingProvider,
+        fieldIsValidProvider,
+        fieldDirtyProvider,
+        fieldTouchedProvider,
+        fieldPendingProvider,
+        fieldValidationModeProvider,
+        formValidProvider,
+        formDirtyProvider,
+        formSubmittingProvider,
+        formCurrentStepProvider,
+        formDataProvider,
+        groupValidProvider,
+        groupDirtyProvider,
       ],
       child: Semantics(
         container: true,
@@ -251,18 +287,61 @@ class FormixState extends ConsumerState<Formix> {
 class _FormixScope extends InheritedWidget {
   const _FormixScope({
     required super.child,
-    required this.controller,
     required this.controllerProvider,
     required this.fields,
   });
 
-  final FormixController controller;
-  final AutoDisposeStateNotifierProvider<FormixController, FormixData> controllerProvider;
+  FormixController get controller {
+    throw UnimplementedError('Obsolete. Use Formix.controllerOf(context)');
+  }
+
+  final NotifierProvider<FormixController, FormixData> controllerProvider;
   final List<FormixFieldConfig<dynamic>> fields;
 
   @override
   bool updateShouldNotify(_FormixScope oldWidget) {
-    return controller != oldWidget.controller || controllerProvider != oldWidget.controllerProvider || !const ListEquality().equals(fields, oldWidget.fields);
+    return controllerProvider != oldWidget.controllerProvider || !const ListEquality().equals(fields, oldWidget.fields);
+  }
+}
+
+class _FormixBody extends ConsumerWidget {
+  const _FormixBody({
+    required this.provider,
+    required this.form,
+    required this.child,
+  });
+
+  final NotifierProvider<FormixController, FormixData> provider;
+  final Formix form;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // TIE provider lifecycle to the Formix widget.
+    // By listening to the provider, we keep it alive as long as Formix is mounted
+    // WITHOUT causing whole-form rebuilds when the state changes.
+    ref.listen(provider, (_, __) {});
+
+    // If keepAlive is true, we might do something else, but Riverpod's keepAlive is
+    // handled at the provider level. FormixParameter has a keepAlive flag.
+
+    if (form.onChanged != null) {
+      ref.listen(provider.select((s) => s.values), (previous, next) {
+        if (previous != next) {
+          form.onChanged!(next);
+        }
+      });
+    }
+
+    if (form.onChangedData != null) {
+      ref.listen(provider, (previous, next) {
+        if (previous != next) {
+          form.onChangedData!(next);
+        }
+      });
+    }
+
+    return child;
   }
 }
 
@@ -273,7 +352,7 @@ class _FieldRegistrar extends ConsumerStatefulWidget {
     required this.child,
   });
 
-  final AutoDisposeStateNotifierProvider<FormixController, FormixData> controllerProvider;
+  final NotifierProvider<FormixController, FormixData> controllerProvider;
   final List<FormixFieldConfig<dynamic>> fields;
   final Widget child;
 
@@ -326,25 +405,5 @@ class _FieldRegistrarState extends ConsumerState<_FieldRegistrar> {
   @override
   Widget build(BuildContext context) {
     return widget.child;
-  }
-}
-
-/// Element for [Formix] that intercepts building to show configuration errors.
-class _FormixElement extends ConsumerStatefulElement {
-  /// Creates a [_FormixElement].
-  _FormixElement(super.widget);
-
-  @override
-  Widget build() {
-    // Check for ProviderScope (using its internal InheritedWidget)
-    // We use getElementForInheritedWidgetOfExactType as it's O(1) and doesn't register dependency
-    if (getElementForInheritedWidgetOfExactType<UncontrolledProviderScope>() == null) {
-      return const FormixConfigurationErrorWidget(
-        message: 'Missing ProviderScope',
-        details:
-            'Formix requires a ProviderScope at the root of your application to manage form state using Riverpod.\n\nExample:\nvoid main() {\n  runApp(ProviderScope(child: MyApp()));\n}',
-      );
-    }
-    return super.build();
   }
 }

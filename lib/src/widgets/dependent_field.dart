@@ -43,7 +43,7 @@ class FormixDependentField<T> extends ConsumerStatefulWidget {
   final Object? Function(T? value)? select;
 
   /// Optional explicit controller provider. If null, it looks up the nearest [Formix].
-  final AutoDisposeStateNotifierProvider<FormixController, FormixData>? controllerProvider;
+  final NotifierProvider<FormixController, FormixData>? controllerProvider;
 
   @override
   ConsumerState<FormixDependentField<T>> createState() => _FormixDependentFieldState<T>();

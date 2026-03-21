@@ -1,3 +1,17 @@
+## 0.1.3 - Dev (Unreleased)
+- **Message Updates & Localization**:
+  - Re-introduced optimization to prevent form controller resets during global message/locale updates by switching to `ref.listen` and excluding `messages` from `FormixParameter` equality.
+  - Added `messages` property to `Formix` widget for local message overrides, which now update reactively via `didUpdateWidget`.
+  - Added `updateMessages()` to `FormixController` to allow manual message updates without resetting state.
+  - Exported `FormixValidationKeys` for easier use of standard localized error messages in custom validators.
+- **Type Safety Persistence**:
+  - Restored strict nullability enforcement in `FormixFieldID.isTypeValid` and `FormixField.isTypeValid`. `null` is now only considered valid if the type parameter `T` is nullable (e.g., `FormixFieldID<String?>`). 
+- **Bug Fixes & Refactoring**:
+  - Fixed regression in standalone `FormixController` (outside of Riverpod `ProviderScope`) by safely handling `ref` access.
+  - Riverpod 3 migration improvements.
+  - Fixed cross field validation and multi step form validation issues.
+  - Add more examples and updated stability test suite (664 tests passing).
+
 ## 0.1.2
 
 ### ⚡ Performance Optimizations

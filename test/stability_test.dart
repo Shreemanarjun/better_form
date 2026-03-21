@@ -6,7 +6,7 @@ void main() {
   group('Rebuild and Stability Tests', () {
     testWidgets('FormixController instance is preserved when localization messages change', (tester) async {
       // We'll override the messages provider to trigger updates
-      final messagesStateProvider = StateProvider<FormixMessages>((ref) => const DefaultFormixMessages());
+      final messagesStateProvider = NotifierProvider<MessagesNotifier, FormixMessages>(MessagesNotifier.new);
 
       await tester.pumpWidget(
         ProviderScope(
@@ -140,6 +140,14 @@ void main() {
       expect(p1 == p4, isTrue);
     });
   });
+}
+
+class MessagesNotifier extends Notifier<FormixMessages> {
+  @override
+  FormixMessages build() => const DefaultFormixMessages();
+
+  @override
+  set state(FormixMessages value) => super.state = value;
 }
 
 class CustomMessages extends DefaultFormixMessages {

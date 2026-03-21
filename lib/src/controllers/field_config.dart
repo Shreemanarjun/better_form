@@ -19,6 +19,8 @@ class FormixFieldConfig<T> {
     this.hint,
     this.asyncValidator,
     this.debounceDuration,
+    this.transformer,
+    this.emptyValue,
     this.validationMode = FormixAutovalidateMode.auto,
     this.initialValueStrategy = FormixInitialValueStrategy.preferLocal,
     this.inputFormatters,
@@ -93,6 +95,12 @@ class FormixFieldConfig<T> {
   /// Keyboard action (e.g. next, done)
   final TextInputAction? textInputAction;
 
+  /// Optional transformer to convert raw input to specific type
+  final T Function(dynamic value)? transformer;
+
+  /// Value to use when the field is cleared or reset
+  final T? emptyValue;
+
   /// Callback when field is submitted
   final void Function(String)? onSubmitted;
 
@@ -117,6 +125,8 @@ class FormixFieldConfig<T> {
       initialValueStrategy: initialValueStrategy,
       inputFormatters: inputFormatters,
       textInputAction: textInputAction,
+      transformer: transformer,
+      emptyValue: emptyValue,
       onSubmitted: onSubmitted,
     );
   }
@@ -139,6 +149,8 @@ class FormixFieldConfig<T> {
           initialValueStrategy == other.initialValueStrategy &&
           inputFormatters == other.inputFormatters &&
           textInputAction == other.textInputAction &&
+          transformer == other.transformer &&
+          emptyValue == other.emptyValue &&
           onSubmitted == other.onSubmitted;
 
   @override
@@ -156,6 +168,8 @@ class FormixFieldConfig<T> {
       initialValueStrategy.hashCode ^
       inputFormatters.hashCode ^
       textInputAction.hashCode ^
+      transformer.hashCode ^
+      emptyValue.hashCode ^
       onSubmitted.hashCode;
 
   @override

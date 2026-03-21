@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:formix/formix.dart';
 
 // Test-specific providers for easier testing
-final testControllerProvider = StateNotifierProvider.autoDispose<FormixController, FormixData>((ref) {
+final testControllerProvider = NotifierProvider.autoDispose<FormixController, FormixData>(() {
   return FormixController(initialValue: {});
 });
 
@@ -209,7 +209,7 @@ void main() {
           overrides: [
             formControllerProvider(
               const FormixParameter(initialValue: {}),
-            ).overrideWith((ref) {
+            ).overrideWith(() {
               return FormixController(initialValue: {'newsletter': false});
             }),
           ],

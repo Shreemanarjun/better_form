@@ -148,7 +148,7 @@ void main() {
     ) async {
       const fieldId = FormixFieldID<String>('disposable_field');
       final showField = ValueNotifier(true);
-      late RiverpodFormController controller;
+      late FormixController controller;
 
       await tester.pumpWidget(
         ProviderScope(
@@ -157,7 +157,7 @@ void main() {
               body: Formix(
                 child: FormixBuilder(
                   builder: (context, scope) {
-                    controller = scope.controller as RiverpodFormController;
+                    controller = scope.controller;
                     return ValueListenableBuilder<bool>(
                       valueListenable: showField,
                       builder: (context, show, _) {

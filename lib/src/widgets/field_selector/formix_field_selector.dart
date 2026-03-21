@@ -1,5 +1,6 @@
 import 'package:formix/formix.dart';
 import 'package:flutter/material.dart';
+import '../ancestor_validator.dart';
 
 /// A highly optimized, declarative widget that rebuilds only when a specific field changes
 /// Provides granular performance and detailed change information
@@ -63,28 +64,7 @@ class _FormixFieldSelectorState<T> extends ConsumerState<FormixFieldSelector<T>>
   ValidationResult? _previousValidation;
   bool? _previousIsDirty;
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _updateController();
-  }
-
-  void _updateController() {
-    FormixController? newController = widget.controller;
-
-    if (newController == null) {
-      var provider = Formix.of(context);
-      if (provider == null) {
-        try {
-          provider = ref.watch(currentControllerProvider);
-        } catch (_) {}
-      }
-
-      if (provider != null) {
-        newController = ref.read(provider.notifier);
-      }
-    }
-
+  void _updateController(FormixController? newController) {
     if (newController != _controller) {
       if (_controller != null) {
         _controller!.removeFieldListener(widget.fieldId, _onFieldChanged);
@@ -104,13 +84,19 @@ class _FormixFieldSelectorState<T> extends ConsumerState<FormixFieldSelector<T>>
   void didUpdateWidget(FormixFieldSelector<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (oldWidget.controller != widget.controller || oldWidget.fieldId != widget.fieldId) {
-      _updateController();
-    } else if (oldWidget.select != widget.select) {
-      // If the selector changed, we might need a rebuild if the newly selected value
-      // is different from the previously selected value.
-      // Easiest is to just re-initialize the state.
-      _updateCurrentState();
+    final fieldChanged = oldWidget.fieldId != widget.fieldId;
+    final selectChanged = oldWidget.select != widget.select;
+
+    if ((fieldChanged || selectChanged) && _controller != null) {
+      if (fieldChanged) {
+        // Unbind from the old field and rebind to the new one
+        _controller!.removeFieldListener(oldWidget.fieldId, _onFieldChanged);
+        _updateCurrentState();
+        _controller!.addFieldListener(widget.fieldId, _onFieldChanged);
+      } else {
+        // If only the selector changed, just refresh current state for comparisons
+        _updateCurrentState();
+      }
     }
   }
 
@@ -124,13 +110,13 @@ class _FormixFieldSelectorState<T> extends ConsumerState<FormixFieldSelector<T>>
 
   void _updateCurrentState() {
     if (_controller == null) return;
-    _currentValue = _controller!.getValue(widget.fieldId) ?? _controller!.initialValue[widget.fieldId.key] as T?;
+    _currentValue = _controller!.getValue(widget.fieldId);
     _currentValidation = _controller!.getValidation(widget.fieldId);
     _currentIsDirty = _controller!.isFieldDirty(widget.fieldId);
 
     // Check if initial value has changed
     final initialValue = _controller!.initialValue[widget.fieldId.key];
-    _hasInitialValueChanged = initialValue != null && _currentValue != initialValue;
+    _hasInitialValueChanged = _currentValue != initialValue;
   }
 
   void _onFieldChanged() {
@@ -172,13 +158,44 @@ class _FormixFieldSelectorState<T> extends ConsumerState<FormixFieldSelector<T>>
 
   @override
   Widget build(BuildContext context) {
-    if (_controller == null) {
-      return const FormixConfigurationErrorWidget(
-        message: 'FormixFieldSelector used without ProviderScope',
-        details:
-            'Missing ProviderScope. Please wrap your application (or this form) in a ProviderScope widget.\n\nExample:\nvoid main() {\n  runApp(ProviderScope(child: MyApp()));\n}',
-      );
+    FormixController? effectiveController = widget.controller;
+
+    if (effectiveController == null) {
+      // Try to find the provider from the nearest Formix ancestor.
+      final formixProvider = Formix.of(context);
+
+      if (formixProvider != null) {
+        // KEY FIX: Use ref.watch (not ref.read) so this widget is registered as
+        // a Riverpod listener. This prevents the autoDispose provider from being
+        // disposed between pump() calls.
+        ref.watch(formixProvider.notifier);
+        effectiveController = ref.read(formixProvider.notifier);
+      } else {
+        // Fallback: no Formix ancestor; try currentControllerProvider.
+        try {
+          final provider = ref.watch(currentControllerProvider);
+          ref.watch(provider.notifier);
+          effectiveController = ref.read(provider.notifier);
+        } catch (_) {
+          // Not in a Riverpod context. effectiveController stays null.
+        }
+      }
     }
+
+    // Update the internal _controller (registers/unregisters field listeners).
+    _updateController(effectiveController);
+
+    final errorWidget = FormixAncestorValidator.validate(
+      context,
+      widgetName: 'FormixFieldSelector',
+      requireFormix: true,
+      hasExplicitController: widget.controller != null,
+    );
+
+    if (errorWidget != null) {
+      return errorWidget;
+    }
+
     final info = FieldChangeInfo<T>(
       fieldId: widget.fieldId,
       value: _currentValue,

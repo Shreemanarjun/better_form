@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'base_form_field.dart';
 import '../enums.dart';
 import 'form_theme.dart';
+import 'ancestor_validator.dart';
 
 /// A Formix-based text form field that is lifecycle aware.
 class FormixTextFormField extends FormixFieldWidget<String> {
@@ -254,6 +255,14 @@ class FormixTextFormFieldState extends FormixFieldWidgetState<String> with Formi
 
   @override
   Widget build(BuildContext context) {
+    final errorWidget = FormixAncestorValidator.validate(
+      context,
+      widgetName: 'FormixTextFormField',
+      requireFormix: true,
+      hasExplicitController: widget.controller != null,
+    );
+    if (errorWidget != null) return errorWidget;
+
     final fieldWidget = widget as FormixTextFormField;
 
     // Use combined notifier for better performance (1 listenable instead of 4)
