@@ -1,3 +1,9 @@
+## 0.1.3 - Dev (Unreleased)
+- Riverpod 3 migration
+- Fix cross field validation
+- Fix multi step form validation
+- Add more examples
+
 ## 0.1.2
 
 ### ⚡ Performance Optimizations
