@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../formix.dart';
 
@@ -78,7 +79,6 @@ abstract class FormixFieldWidget<T> extends ConsumerStatefulWidget {
   FormixFieldWidgetState<T> createState();
 }
 
-
 /// State class that provides simplified APIs for form field management
 abstract class FormixFieldWidgetState<T> extends ConsumerState<FormixFieldWidget<T>> {
   FormixController? _controller;
@@ -138,7 +138,6 @@ abstract class FormixFieldWidgetState<T> extends ConsumerState<FormixFieldWidget
   @override
   bool get mounted => _isMounted;
 
-
   ProviderSubscription? _innerProviderSub;
 
   @override
@@ -186,8 +185,17 @@ abstract class FormixFieldWidgetState<T> extends ConsumerState<FormixFieldWidget
         },
         fireImmediately: true,
       );
-    } catch (_) {
-      // We don't need to do anything here anymore.
+    } catch (e, stack) {
+      if (kDebugMode) {
+        debugPrint(
+          'Formix Error: Failed to setup controller subscription in ${widget.runtimeType} '
+          '(field: ${widget.fieldId}). This usually happens if '
+          'FormixAncestorValidator.validate() failed to find a ProviderScope or '
+          'if the field is used in a standalone context without Riverpod. '
+          '_controller remained uninitialized. '
+          'Error: $e\n$stack',
+        );
+      }
     }
   }
 
