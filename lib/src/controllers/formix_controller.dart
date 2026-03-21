@@ -54,13 +54,11 @@ class FormixController extends RiverpodFormController {
         )) {
     // For standalone usage, we must manually trigger build to initialize the state.
     // In Riverpod context, state setter will fallback to _standaloneState until ref is ready.
-    try {
-      state = build();
-    } catch (_) {}
+    state = build();
   }
 
   /// Internal constructor used by Riverpod families.
-  FormixController.family(super.parameter);
+  FormixController.family(FormixParameter parameter) : super(parameter, false);
 
 
   /// Adds a listener to be notified when the form state changes.

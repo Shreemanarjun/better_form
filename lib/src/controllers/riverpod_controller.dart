@@ -38,8 +38,25 @@ class RiverpodFormController extends Notifier<FormixData> {
   /// The parameter passed to the family provider.
   final FormixParameter parameter;
 
+  final bool _standaloneMode;
+  bool _isRefReady = false;
+
   /// Creates a [RiverpodFormController].
-  RiverpodFormController([this.parameter = const FormixParameter()]);
+  RiverpodFormController([
+    this.parameter = const FormixParameter(),
+    this._standaloneMode = true,
+  ]) {
+    _initFields();
+  }
+
+  void _initFields() {
+    persistence = parameter.persistence;
+    formId = parameter.formId;
+    analytics = parameter.analytics;
+    autovalidateMode = parameter.autovalidateMode;
+    _registeredDevToolsId = parameter.formId ?? parameter.namespace;
+    messages = parameter.messages ?? const DefaultFormixMessages();
+  }
 
   /// Internationalization messages for validation errors
   late FormixMessages messages;
@@ -109,12 +126,8 @@ class RiverpodFormController extends Notifier<FormixData> {
   /// Helper to check if the notifier is still active.
   bool get mounted {
     if (_isDisposed) return false;
-    try {
-      return ref.mounted;
-    } catch (_) {
-      // In standalone mode or not yet bound, we rely on _isDisposed.
-      return true;
-    }
+    if (_standaloneMode || !_isRefReady) return true;
+    return ref.mounted;
   }
 
   FormixData? _standaloneState;
@@ -179,12 +192,10 @@ class RiverpodFormController extends Notifier<FormixData> {
   void _applyState(FormixData value) {
     if (!mounted) return;
 
-    try {
-      // In Riverpod context, we set the underlying state.
-      super.state = value;
-    } catch (_) {
-      // Standalone mode or not yet bound to a provider.
+    if (_standaloneMode || !_isRefReady) {
       _standaloneState = value;
+    } else {
+      super.state = value;
     }
 
     // We notify AFTER setting the state to ensure that listeners (and getValue calls) see the new state.
@@ -193,11 +204,10 @@ class RiverpodFormController extends Notifier<FormixData> {
 
   @override
   FormixData get state {
-    try {
-      return super.state;
-    } catch (_) {
+    if (_standaloneMode || !_isRefReady) {
       return _standaloneState ??= build();
     }
+    return super.state;
   }
 
   /// Hook for subclasses (like FormixController) to handle local state changes
@@ -266,7 +276,17 @@ class RiverpodFormController extends Notifier<FormixData> {
     final effectiveMessages = newMessages ?? const DefaultFormixMessages();
     if (messages == effectiveMessages) return;
     messages = effectiveMessages;
-    validate(); // Re-validate to update error strings
+
+    // We must defer validation if we are in Riverpod mode to avoid
+    // modifying the provider's state during the widget tree build/update phase
+    // (e.g. while didUpdateWidget is running).
+    if (!_standaloneMode && _isRefReady) {
+      Future.microtask(() {
+        if (mounted) validate();
+      });
+    } else {
+      validate();
+    }
   }
 
   /// Get the validation mode for a specific field.
@@ -291,9 +311,10 @@ class RiverpodFormController extends Notifier<FormixData> {
 
   @override
   FormixData build() {
-    // 1. Initialize messages from parameter or global provider
-    // ref calls may throw in standalone mode (no Riverpod)
-    try {
+    if (!_standaloneMode) {
+      _isRefReady = true;
+
+      // 1. Initialize messages from parameter or global provider
       messages = parameter.messages ?? ref.read(formixMessagesProvider);
 
       // 2. Listen for global message changes (e.g. language change)
@@ -303,14 +324,7 @@ class RiverpodFormController extends Notifier<FormixData> {
           updateMessages(next);
         }
       });
-    } catch (_) {
-      messages = parameter.messages ?? const DefaultFormixMessages();
     }
-    persistence = parameter.persistence;
-    formId = parameter.formId;
-    analytics = parameter.analytics;
-    autovalidateMode = parameter.autovalidateMode;
-    _registeredDevToolsId = parameter.formId ?? parameter.namespace;
 
     _startTime = DateTime.now();
     analytics?.onFormStarted(formId);
@@ -344,13 +358,11 @@ class RiverpodFormController extends Notifier<FormixData> {
     }
 
     // ref calls below may throw if running in standalone mode (no Riverpod)
-    try {
+    if (!_standaloneMode) {
       if (parameter.keepAlive) {
         ref.keepAlive();
       }
       ref.onDispose(dispose);
-    } catch (_) {
-      // Ignored for standalone mode
     }
 
     return initialState;
