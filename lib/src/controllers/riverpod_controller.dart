@@ -2086,6 +2086,7 @@ class FormixParameter {
 
     return formId == other.formId &&
         namespace == other.namespace &&
+        messages == other.messages &&
         autovalidateMode == other.autovalidateMode &&
         keepAlive == other.keepAlive &&
         deepEquals.equals(initialData, other.initialData) &&
@@ -2099,6 +2100,7 @@ class FormixParameter {
     return Object.hash(
       formId,
       namespace,
+      messages,
       autovalidateMode,
       keepAlive,
       formId != null ? null : deepEquals.hash(initialValue),
