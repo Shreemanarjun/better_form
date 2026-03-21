@@ -84,9 +84,19 @@ class _FormixFieldSelectorState<T> extends ConsumerState<FormixFieldSelector<T>>
   void didUpdateWidget(FormixFieldSelector<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (oldWidget.select != widget.select && _controller != null) {
-      // If the selector changed, re-initialize the state for correct comparisons.
-      _updateCurrentState();
+    final fieldChanged = oldWidget.fieldId != widget.fieldId;
+    final selectChanged = oldWidget.select != widget.select;
+
+    if ((fieldChanged || selectChanged) && _controller != null) {
+      if (fieldChanged) {
+        // Unbind from the old field and rebind to the new one
+        _controller!.removeFieldListener(oldWidget.fieldId, _onFieldChanged);
+        _updateCurrentState();
+        _controller!.addFieldListener(widget.fieldId, _onFieldChanged);
+      } else {
+        // If only the selector changed, just refresh current state for comparisons
+        _updateCurrentState();
+      }
     }
   }
 
