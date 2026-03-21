@@ -65,8 +65,9 @@ void main() {
     // Pump to trigger cleanup
     await tester.pumpAndSettle(); await tester.pump(const Duration(seconds: 1));
 
-    // Check if disposed
-    expect(controller.isDisposed, isTrue);
+    // In the new ownership model, Formix DOES NOT dispose controllers it didn't create.
+    // The caller who provided the controller is now responsible for its disposal.
+    expect(controller.isDisposed, isFalse);
   });
 
   testWidgets('FormixController is NOT disposed when navigating away if keepAlive: true (External Controller)', (tester) async {

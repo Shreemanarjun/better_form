@@ -97,7 +97,7 @@ class Formix extends StatefulWidget {
 
   /// Optional initial state for the form.
   final FormixData? initialData;
-  
+
   /// Optional custom messages for validation errors.
   final FormixMessages? messages;
 
@@ -150,31 +150,23 @@ class FormixState extends State<Formix> with AutomaticKeepAliveClientMixin {
   void didUpdateWidget(Formix oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    // Compute effective controller.
-    final effectiveController = widget.controller ?? controller;
-
-    // Handle message updates/resets
-    if (widget.messages != oldWidget.messages || widget.controller != oldWidget.controller) {
-      // Update the current effective controller with new or default messages.
-      // This ensures even explicit controllers follow widget-level overrides.
-      effectiveController.updateMessages(widget.messages);
-    }
-
     if (widget.keepAlive != oldWidget.keepAlive) {
       updateKeepAlive();
     }
-    
-    if (widget.controller != oldWidget.controller && widget.controller != null) {
-      widget.controller!.preventDisposal = widget.keepAlive;
+
+    final effectiveController = widget.controller ?? controller;
+
+    // Ownership check: Formix only synchronizes state, it doesn't manage lifecycle if it doesn't own it.
+    if (widget.messages != oldWidget.messages || widget.controller != oldWidget.controller) {
+      effectiveController.updateMessages(widget.messages);
     }
   }
 
   @override
   void dispose() {
-    if (widget.controller != null && !widget.keepAlive) {
-      widget.controller!.preventDisposal = false;
-      widget.controller!.dispose();
-    }
+    // If we own the controller (internal), Riverpod handles its disposal via ref.onDispose.
+    // If we don't own it (external), we should not dispose it as per user ownership semantics.
+    // So we don't manually call dispose() on either here to avoid conflicts and timer issues.
     super.dispose();
   }
 
@@ -253,15 +245,14 @@ class FormixState extends State<Formix> with AutomaticKeepAliveClientMixin {
       ),
     );
 
-    if (widget.controller != null) {
-      widget.controller!.preventDisposal = widget.keepAlive;
-    }
+    _cachedProvider = provider;
 
     return ProviderScope(
+      key: ValueKey('${identityHashCode(widget.controller)}_${identityHashCode(widget.messages)}'),
       overrides: [
         if (widget.controller != null)
           provider.overrideWith(() => widget.controller!),
-          
+
         if (widget.messages != null)
           formixMessagesProvider.overrideWithValue(widget.messages!),
 

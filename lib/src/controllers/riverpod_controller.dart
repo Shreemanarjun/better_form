@@ -527,7 +527,7 @@ class RiverpodFormController extends Notifier<FormixData> {
 
   /// Disposes resources used by this controller.
   void dispose() {
-    if (preventDisposal) return;
+    if (_isDisposed || preventDisposal) return;
     _isDisposed = true;
     if (_registeredDevToolsId != null) {
       FormixDevToolsService.unregisterController(_registeredDevToolsId!);
