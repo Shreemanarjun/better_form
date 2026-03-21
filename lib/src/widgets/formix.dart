@@ -152,6 +152,9 @@ class FormixState extends State<Formix> with AutomaticKeepAliveClientMixin {
     if (widget.messages != oldWidget.messages && widget.messages != null) {
       controller.updateMessages(widget.messages!);
     }
+    if (widget.keepAlive != oldWidget.keepAlive) {
+      updateKeepAlive();
+    }
   }
 
   @override
@@ -206,12 +209,8 @@ class FormixState extends State<Formix> with AutomaticKeepAliveClientMixin {
 
   /// Whether to keep this [Formix] alive when it is inside a paging widget
   /// such as [TabBarView] or [PageView].
-  ///
-  /// Always returns `true` to prevent Riverpod 3's [ProviderScope] from being
-  /// disposed while frame callbacks are still pending (which would cause a
-  /// "setState() called after dispose()" error on tab switches).
   @override
-  bool get wantKeepAlive => true;
+  bool get wantKeepAlive => widget.keepAlive;
 
   @override
   Widget build(BuildContext context) {
