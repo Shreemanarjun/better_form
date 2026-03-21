@@ -287,7 +287,21 @@ class RiverpodFormController extends Notifier<FormixData> {
 
   @override
   FormixData build() {
-    messages = parameter.messages ?? const DefaultFormixMessages();
+    // 1. Initialize messages from parameter or global provider
+    // ref calls may throw in standalone mode (no Riverpod)
+    try {
+      messages = parameter.messages ?? ref.read(formixMessagesProvider);
+
+      // 2. Listen for global message changes (e.g. language change)
+      // We only react if there's no explicit override in the parameter
+      ref.listen<FormixMessages>(formixMessagesProvider, (previous, next) {
+        if (parameter.messages == null) {
+          updateMessages(next);
+        }
+      });
+    } catch (_) {
+      messages = parameter.messages ?? const DefaultFormixMessages();
+    }
     persistence = parameter.persistence;
     formId = parameter.formId;
     analytics = parameter.analytics;
@@ -2059,7 +2073,6 @@ class FormixParameter {
         namespace == other.namespace &&
         autovalidateMode == other.autovalidateMode &&
         keepAlive == other.keepAlive &&
-        messages == other.messages &&
         deepEquals.equals(initialData, other.initialData) &&
         (formId != null ? true : deepEquals.equals(initialValue, other.initialValue)) &&
         ((formId != null || namespace != null) ? true : deepEquals.equals(fields, other.fields));
@@ -2073,7 +2086,6 @@ class FormixParameter {
       namespace,
       autovalidateMode,
       keepAlive,
-      messages,
       formId != null ? null : deepEquals.hash(initialValue),
       (formId != null || namespace != null) ? null : deepEquals.hash(fields),
       deepEquals.hash(initialData),

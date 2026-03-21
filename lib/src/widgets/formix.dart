@@ -8,6 +8,7 @@ import '../controllers/field.dart';
 import '../controllers/riverpod_controller.dart';
 import '../persistence/form_persistence.dart';
 import '../enums.dart';
+import '../i18n.dart';
 import 'form_theme.dart';
 import 'ancestor_validator.dart';
 
@@ -55,6 +56,7 @@ class Formix extends StatefulWidget {
     this.autovalidateMode = FormixAutovalidateMode.always,
     this.theme,
     this.initialData,
+    this.messages,
     required this.child,
   });
 
@@ -95,6 +97,9 @@ class Formix extends StatefulWidget {
 
   /// Optional initial state for the form.
   final FormixData? initialData;
+  
+  /// Optional custom messages for validation errors.
+  final FormixMessages? messages;
 
   /// The widget subtree.
   final Widget child;
@@ -139,6 +144,14 @@ class FormixState extends State<Formix> with AutomaticKeepAliveClientMixin {
     super.initState();
     final typeName = widget.runtimeType.toString();
     _internalFormId = widget.formId ?? '${typeName}_${identityHashCode(this)}';
+  }
+
+  @override
+  void didUpdateWidget(Formix oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.messages != oldWidget.messages && widget.messages != null) {
+      controller.updateMessages(widget.messages!);
+    }
   }
 
   @override
@@ -237,6 +250,10 @@ class FormixState extends State<Formix> with AutomaticKeepAliveClientMixin {
       overrides: [
         if (widget.controller != null)
           provider.overrideWith(() => widget.controller!),
+          
+        if (widget.messages != null)
+          formixMessagesProvider.overrideWithValue(widget.messages!),
+
         currentControllerProvider.overrideWithValue(provider),
         fieldValueProvider,
         fieldValidationProvider,
