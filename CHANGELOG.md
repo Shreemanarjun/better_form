@@ -10,7 +10,7 @@
   - Fixed regression in standalone `FormixController` (outside of Riverpod `ProviderScope`) by safely handling `ref` access.
   - Riverpod 3 migration improvements.
   - Fixed cross field validation and multi step form validation issues.
-  - Add more examples and updated stability test suite (659 tests passing).
+  - Add more examples and updated stability test suite (664 tests passing).
 
 ## 0.1.2
 

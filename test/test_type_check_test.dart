@@ -8,11 +8,8 @@ void main() {
       fields: [const FormixField<String>(id: nameField, initialValue: 'initial')],
     );
 
-    final FormixField<String> field = controller.formFieldDefinitions['name'] as FormixField<String>;
-    print('field.isTypeValid(123): ${field.isTypeValid(123)}');
-    print('field type: ${field.runtimeType}');
+    final FormixField<String> _ = controller.formFieldDefinitions['name'] as FormixField<String>;
 
-    final res = controller.setValues({nameField: 123}, strict: false);
-    print('res success: ${res.success}, type mismatches: ${res.typeMismatches}');
+    final _ = controller.setValues({nameField: 123}, strict: false);
   });
 }

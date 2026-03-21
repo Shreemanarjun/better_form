@@ -266,17 +266,21 @@ class FormixData {
 
   @override
   int get hashCode {
-    return values.hashCode ^
-        validations.hashCode ^
-        dirtyStates.hashCode ^
-        touchedStates.hashCode ^
-        pendingStates.hashCode ^
-        isSubmitting.hashCode ^
-        resetCount.hashCode ^
-        errorCount.hashCode ^
-        dirtyCount.hashCode ^
-        pendingCount.hashCode ^
-        currentStep.hashCode;
+    const mapEquals = MapEquality();
+
+    return Object.hash(
+      mapEquals.hash(values),
+      mapEquals.hash(validations),
+      mapEquals.hash(dirtyStates),
+      mapEquals.hash(touchedStates),
+      mapEquals.hash(pendingStates),
+      isSubmitting,
+      resetCount,
+      errorCount,
+      dirtyCount,
+      pendingCount,
+      currentStep,
+    );
   }
 
   /// Converts this state to a map for serialization (restoration).
